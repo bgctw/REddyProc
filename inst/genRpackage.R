@@ -65,7 +65,8 @@ if ( Sys.getenv('HOME') == "/Users/amoffat" ) { #AMM's local setup for generatin
   setwd(Dir.s)
   
   # Make zip file with code (and code structure)
-  system('rm -fr REddyProc_0.31_Code/*')
+  system('rm -fr REddyProc_0.31_Code')
+  system('mkdir REddyProc_0.31_Code')
   system('mkdir REddyProc_0.31_Code/REddyProc')
   system('cp -r data REddyProc_0.31_Code/REddyProc')
   system('cp DESCRIPTION REddyProc_0.31_Code/REddyProc')

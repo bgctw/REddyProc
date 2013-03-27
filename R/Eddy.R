@@ -181,11 +181,17 @@ attr(sEddyProc.example,"ex") <- function(){
     #+++ Initalize R5 reference class sEddyProc for processing of eddy data
     EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
     
+    #+++ Plot data
+    EddyProc.C$sPlotFingerprint('NEE')
+    
     #+++ Fill gaps of NEE with MDS gap filling algorithm
     EddyProc.C$sMDSGapFill('NEE', Verbose.b=T)
     
     #+++ Plot results
     EddyProc.C$sPlotHHFluxes('NEE_f')
+    EddyProc.C$sPlotFingerprint('NEE_f')
+    EddyProc.C$sPlotDailySums('NEE_f','NEE_fsd')
+    EddyProc.C$sPlotHHMeans('NEE_f')
     
     #+++ Export gap filled data to standard data frame
     FilledEddyData.F <- EddyProc.C$sExportData()
