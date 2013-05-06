@@ -19,6 +19,7 @@ source("R/FileHandling.R")
 # Parse R5 methods to generate documentation with inlinedocs
 CodeIn.V.s <- fInitFilesDir('R','Eddy')
 CodeOut.V.s <- gsub('Eddy','Dummy', CodeIn.V.s)
+# File.i <- 1
 for (File.i in 1:length(CodeIn.V.s)) {
   #Read in script
   ScriptIn.s <- fSetFile(CodeIn.V.s[File.i], 'R', IO.b=T, 'genRpackage')
@@ -28,6 +29,11 @@ for (File.i in 1:length(CodeIn.V.s)) {
   Code.s <- gsub('initialize =','sEddyProc.new =', Code.s)
   Code.s <- gsub('\\}\\)','}',Code.s)
   Code.s <- gsub('<<-','<-',Code.s)
+  # Delete definition of R5 class - need to complete setRefClass with a line starting with "))" and not use it before
+  while( length(lineStart <- grep("\\ssetRefClass", Code.s)) ){
+	  lineEnd <- grep("^\\)\\)", Code.s[-(1:lineStart)])
+	  Code.s <- Code.s[-(lineStart:(lineStart+lineEnd))]
+  }
   # Add new header
   Code.s <- c('#+++ !!! Auxiliary file only, generated for documentating methods of R5 class sEddyProc with inlinedocs !!!+++ \n', Code.s)
   # Write to file
@@ -41,13 +47,27 @@ for (File.i in 1:length(CodeIn.V.s)) {
 
 # Generate new inlinedocs documentation
 require(inlinedocs)
-system('rm -f man/*')
-package.skeleton.dx('.') # produces *.Rd files in ./man directory
+system('rm -f man/*')		# twutz: depends on rm, maybe base on R unlink instead
 
-# Remove files generated only for the code documentation
+# temporarily move R5 classes to avoid generation of nun-useful Docu
+dir.create("tmp", showWarnings = FALSE)
+#if( !all(file.rename(paste("R",CodeIn.V.s,sep="/"), rep("tmp",length(CodeIn.V.s)) )) )
+if( !all(file.rename(paste("R",CodeIn.V.s,sep="/"), paste("tmp",CodeIn.V.s,sep="/") )) )
+		stop("could not move Eddy files to tmp")
+
+package.skeleton.dx('.') 	# produces *.Rd files in ./man directory
+
+# Remove files generated only for the code documentation, and move original files back
 system('rm -f R/Dummy*')
+#file.rename(paste("tmp",CodeIn.V.s,sep="/"), rep("R",length(CodeIn.V.s)) )
+file.rename(paste("tmp",CodeIn.V.s,sep="/"), paste("R",CodeIn.V.s,sep="/") )
+
+# overwrite generated REddyProc-package.Rd by version from inst/genData
+file.copy("inst/genData/REddyProc-package.Rd","man", overwrite = TRUE)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# genRd(execInlinedocs = FALSE)		# using package twDev from twutz
 
 # Install, build and reload package
 if ( Sys.getenv('HOME') == "/Users/amoffat" ) { #AMM's local setup for generating the package

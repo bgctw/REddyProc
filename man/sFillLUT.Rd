@@ -1,42 +1,31 @@
-\name{sFillLUT}
-\alias{sFillLUT}
-\title{sEddyProc$sFillLUT - Gap filling with look up table}
-\description{Look up table (LUT) algorithm based on up to five conditions within prescribed window size}
-\usage{
-sFillLUT(WinDays.i,
-V1.s = "none",
-T1.n = NA_real_,
-V2.s = "none",
-T2.n = NA_real_,
-V3.s = "none",
-T3.n = NA_real_,
-V4.s = "none",
-T4.n = NA_real_,
-V5.s = "none",
-T5.n = NA_real_,
-Verbose.b = TRUE)
-}
-\arguments{
-  \item{WinDays.i}{window size for filling in days}
-  \item{V1.s}{Condition variable 1}
-  \item{T1.n}{Tolerance interval 1}
-  \item{V2.s}{Condition variable 2}
-  \item{T2.n}{Tolerance interval 2}
-  \item{V3.s}{Condition variable 3}
-  \item{T3.n}{Tolerance interval 3}
-  \item{V4.s}{Condition variable 4}
-  \item{T4.n}{Tolerance interval 4}
-  \item{V5.s}{Condition variable 5}
-  \item{T5.n}{Tolerance interval 5}
-  \item{Verbose.b}{Print status information to screen}
-}
-
-\value{LUT filling results in sTEMP data frame.}
-
-\author{AMM
-(Antje M. Moffat, Kerstin Sickel, Thomas Wutzler)}
-
-
-
-
-
+\name{sFillLUT}
+\alias{sFillLUT}
+\title{sEddyProc$sFillLUT - Gap filling with look up table}
+\description{Look up table (LUT) algorithm based on up to five conditions within prescribed window size}
+\usage{sFillLUT(WinDays.i, V1.s = "none", T1.n = NA_real_, V2.s = "none", 
+    T2.n = NA_real_, V3.s = "none", T3.n = NA_real_, V4.s = "none", 
+    T4.n = NA_real_, V5.s = "none", T5.n = NA_real_, Verbose.b = TRUE)}
+\arguments{
+  \item{WinDays.i}{window size for filling in days}
+  \item{V1.s}{Condition variable 1}
+  \item{T1.n}{Tolerance interval 1}
+  \item{V2.s}{Condition variable 2}
+  \item{T2.n}{Tolerance interval 2}
+  \item{V3.s}{Condition variable 3}
+  \item{T3.n}{Tolerance interval 3}
+  \item{V4.s}{Condition variable 4}
+  \item{T4.n}{Tolerance interval 4}
+  \item{V5.s}{Condition variable 5}
+  \item{T5.n}{Tolerance interval 5}
+  \item{Verbose.b}{Print status information to screen}
+}
+
+\value{LUT filling results in sTEMP data frame.}
+
+\author{AMM
+(Antje M. Moffat, Kerstin Sickel, Thomas Wutzler)}
+
+
+
+
+

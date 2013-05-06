@@ -1,22 +1,8 @@
-\name{REddyProc-package}
-\alias{REddyProc-package}
-\docType{package}
-\title{Package for data processing of half-hourly eddy-covariance measurements}
-\description{R eddy processing package with MDS gap filling algorithm adopted after PV-Wave source code from Markus Reichstein. Package is being extended to also include ustar filtering and flux partitioning.}
-\details{
-\tabular{ll}{Package: \tab REddyProc\cr
-Title: \tab Package for data processing of half-hourly eddy-covariance measurements\cr
-Version: \tab 0.31\cr
-Date: \tab 2013-03-31\cr
-Author: \tab (Antje M. Moffat, Kerstin Sickel, Thomas Wutzler)\cr
-Maintainer: \tab Antje M. Moffat <antje.moffat@bgc.mpg.de>\cr
-License: \tab GPL-2\cr
-LazyLoad: \tab yes\cr
-Depends: \tab R (>= 1.15.0), methods\cr
-Suggests: \tab RNetCDF, testthat, inlinedocs\cr}
-}
-\author{(Antje M. Moffat, Kerstin Sickel, Thomas Wutzler)}
-
-\keyword{ package }
-
-
+\name{REddyProc-package}
+\alias{REddyProc-package}\alias{REddyProc}
+\title{EddyCovariance data processing and plotting utilities}
+\description{EddyCovariance data processing and plotting utilities}
+\details{Work of the package can be best seen by an \link{sEddyProc.example}.First the package helps to prepare your data for analysis \itemize{\item{ Loading text files into dataframes: \code{\link{fLoadTXTIntoDataframe}}  }\item{ Preparing a proper time field: \code{\link{fConvertTimeToPosix}}  }\item{ Initalize R5 reference class for the dataset: \code{\link{sEddyProc.new}}  }}%itemizeThe function are are assembled in class EddyProc (see \code{\link{sEddyProc.new}})Plotting\itemize{\item{ Fingerprints: \code{\link{sPlotFingerprint}}  }\item{ half-hourly fluxes and their daily means: \code{\link{sPlotHHFluxes}}  }\item{ daily sums: \code{\link{sPlotDailySums}}  }\item{ half-hourly means: \code{\link{sPlotHHMeans}}  }}%itemizeProcessing\itemize{\item{ Gapfilling: \code{\link{sMDSGapFill}}  }}%itemize}%details\author{Antje Moffat, Thomas Wutzler, Kerstin Sickel}
+\keyword{ package }
+
+
