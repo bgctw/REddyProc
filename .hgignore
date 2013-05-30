@@ -7,3 +7,5 @@ syntax: regexp
 ^\.RData$
 syntax: regexp
 ^tmp$
+syntax: regexp
+^plots$

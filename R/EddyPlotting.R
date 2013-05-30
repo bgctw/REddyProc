@@ -54,9 +54,10 @@ sEddyProc$methods(
     ,PlotType.s         ##<< Internal plot type
     ,WInch.n            ##<< Width in inch
     ,HInch.n            ##<< Height in inch
-    ,Format.s           ##<< Graphics format ('png' or 'pdf')
+    ,Format.s           ##<< Graphics format ('png' or 'pdf' or 'cairo-png')
     ,Dir.s              ##<< Directory for plotting
     ,CallFunction.s=''  ##<< Name of function called from
+	,dotsPerInc.n=72	##<< number of dots per inch for converting width and height to pixels on png output
   )
   ##author<<
   ## KS, AMM
@@ -65,6 +66,11 @@ sEddyProc$methods(
     # Check variable to fill and apply quality flag
     SubCallFunc.s <- paste(CallFunction.s, 'fOpenPlot', sep=':::')
     
+	fileExtension.s <- switch( Format.s
+			,"cairo-png" = "png"
+			,Format.s
+	)
+
     #Set file name
     FileName.s <- 
       if (QFvar.s != 'none') {
@@ -72,14 +78,22 @@ sEddyProc$methods(
       } else {
         paste(sID, '_', sINFO$Y.NAME, '_', Var.s, '_', PlotType.s, sep='')
       }
-    PlotFile.s <- fSetFile(paste(FileName.s, '.', Format.s, sep=''), Dir.s, F, SubCallFunc.s)
+    PlotFile.s <- fSetFile(paste(FileName.s, '.', fileExtension.s, sep=''), Dir.s, F, SubCallFunc.s)
     
+	
+	##details<< 
+	## Not all formats are supported on all platforms. The \code{png} will not work on unix without X-system. However 
+	## there might be cairo support be built into R, allowing to use the "cairo-png" format.
+	
     # Prepare the name and open the plot output file
     if (Format.s == 'png') {
-      png(file=PlotFile.s, units='px', pointsize=12, width=WInch.n*40, height=HInch.n*40)
+      png(file=PlotFile.s, units='px', pointsize=12, width=round(WInch.n*dotsPerInc.n), height=round(HInch.n*dotsPerInc.n) )
     } else if (Format.s == 'pdf') {
       pdf(file=PlotFile.s, width=WInch.n, height=HInch.n)
-    } else
+	} else if (Format.s == 'cairo-png') {
+		#png(file=PlotFile.s, width=WInch.n, height=HInch.n, bg = "transparent", type = "cairo-png")
+		png(file=PlotFile.s, width=round(WInch.n*dotsPerInc.n), height=round(HInch.n*dotsPerInc.n), type = "cairo-png")
+	} else
       stop(SubCallFunc.s, '::: Format.s not valid: ', Format.s)
     
     PlotFile.s
@@ -170,11 +184,12 @@ sEddyProc$methods(
     ##title<<
     ## sEddyProc$sPlotFingerprint - Image with fingerprints of each year
     ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with fingerprint, see also \code{\link{sPlotFingerprintY}}.
+    ## Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
+	## with fingerprint, see also \code{\link{sPlotFingerprintY}}.
     Var.s               ##<< Variable to plot
     ,QFvar.s='none'     ##<< Quality flag of variable to be filled
     ,QFvalue.n=NA       ##<< Value of quality flag for data to plot
-    ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
+    ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}
     ,Dir.s='plots'      ##<< Directory for plotting
   )
     ##author<<

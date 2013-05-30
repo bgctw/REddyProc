@@ -8,7 +8,7 @@
   \item{Var.s}{Variable to plot}
   \item{QFvar.s}{Quality flag of variable to be filled}
   \item{QFvalue.n}{Value of quality flag for data to plot}
-  \item{Format.s}{Graphics file format ('pdf' or 'png')}
+  \item{Format.s}{Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}}
   \item{Dir.s}{Directory for plotting}
 }
 
