@@ -62,7 +62,7 @@ sEddyProc$methods(
     sID <<- ID.s
     ##details<<
     ## sDATA is a data frame with site data.
-    sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s])
+    sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s, drop=FALSE])	# twutz: drop=FALSE necessary else strange type conflict on a single Column
     
     #Initialization of site data information from POSIX time stamp.
     YStart.n <- as.numeric(format(sDATA$sDateTime[1], "%Y"))
