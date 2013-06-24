@@ -4,9 +4,10 @@
 #+++ Dependencies: Eddy.R, DataFunctions.R
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# TEST: sDATA <- EPTha.C$sDATA; sID <- EPTha.C$sID; sINFO <- EPTha.C$sINFO; 
-# TEST: sDATA <- EPThaNC.C$sDATA; sID <- EPThaNC.C$sID; sINFO <- EPThaNC.C$sINFO;
-# TEST: Var.s <- 'NEE';  Format.s <- 'pdf'; Dir.s <- 'plots'; QFvar.s <- 'none'; QFvalue.n <- NA;
+# TEST: sDATA <- EPTha.C$sDATA; sID <- EPTha.C$sID; sINFO <- EPTha.C$sINFO; sTEMP <- EPTha.C$sTEMP;
+# TEST: sDATA <- EPThaNC.C$sDATA; sID <- EPThaNC.C$sID; sINFO <- EPThaNC.C$sINFO; sTEMP <- EPThaNC.C$sTEMP;
+# TEST: sDATA <- EPThaNCsub.C$sDATA; sID <- EPThaNCsub.C$sID; sINFO <- EPThaNCsub.C$sINFO; sTEMP <- EPThaNCsub.C$sTEMP;
+# TEST: Var.s <- 'NEE';  Format.s <- 'pdf'; Dir.s <- 'plots'; QFVar.s <- 'none'; QFValue.n <- NA; Legend.b <- T
 # TEST: Var.s <- 'NEE_f'; VarUnc.s <- 'NEE_fsd';
 # TEST: Year.i <- 1998; Month.i <- 10; Name.s <- 'Test'
 
@@ -20,8 +21,8 @@ sEddyProc$methods(
     ##description<<
     ## Set title of plot.
     Var.s               ##<< Variable to plot
-    ,QFvar.s            ##<< Quality flag of variable to be filled
-    ,QFvalue.n          ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Name.s             ##<< Name of plot
   )
     ##author<<
@@ -29,8 +30,8 @@ sEddyProc$methods(
   {
     'Set title of plot'
     # Set title depending on quality flag
-    if (QFvar.s != 'none') {
-      Title.s <- paste(Name.s, ' of ', Var.s, ' with ', QFvar.s, '=', round(QFvalue.n, digits=3), '\n for ', sID, sep='')
+    if (QFVar.s != 'none') {
+      Title.s <- paste(Name.s, ' of ', Var.s, ' with ', QFVar.s, '=', round(QFValue.n, digits=3), '\n for ', sID, sep='')
     } else {
       Title.s <- paste(Name.s, ' of ', Var.s, '\n', 'for ', sID, sep='')
     }
@@ -49,52 +50,51 @@ sEddyProc$methods(
     ##description<<
     ## Open graphics device.
     Var.s               ##<< Variable to plot
-    ,QFvar.s            ##<< Quality flag of variable to be filled
-    ,QFvalue.n          ##<< Value of quality flag for data to plot
+    ,QFVar.s            ##<< Quality flag of variable to be filled
+    ,QFValue.n          ##<< Value of quality flag for data to plot
     ,PlotType.s         ##<< Internal plot type
     ,WInch.n            ##<< Width in inch
     ,HInch.n            ##<< Height in inch
     ,Format.s           ##<< Graphics format ('png' or 'pdf' or 'cairo-png')
     ,Dir.s              ##<< Directory for plotting
     ,CallFunction.s=''  ##<< Name of function called from
-	,dotsPerInc.n=72	##<< number of dots per inch for converting width and height to pixels on png output
+	  ,DotsPerInc.n=72	  ##<< Number of dots per inch for converting width and height to pixels on png output
   )
   ##author<<
-  ## KS, AMM
+  ## AMM, KS, TW
 { 
     'Open graphics device.'
-    # Check variable to fill and apply quality flag
-    SubCallFunc.s <- paste(CallFunction.s, 'fOpenPlot', sep=':::')
-    
-	fileExtension.s <- switch( Format.s
-			,"cairo-png" = "png"
-			,Format.s
-	)
-
+    # Check if variable names exist and numeric before opening plot
+    SubCallFunc.s <- paste(CallFunction.s, 'sxOpenPlot', sep=':::')
+    fCheckColNames(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
+    fCheckColNum(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
+  
     #Set file name
     FileName.s <- 
-      if (QFvar.s != 'none') {
-        paste(sID, '_', sINFO$Y.NAME, '_', Var.s, '_', PlotType.s, '_', QFvar.s, '=', round(QFvalue.n, digits=3), sep='')
+      if (QFVar.s != 'none') {
+        paste(sID, '_', sINFO$Y.NAME, '_', PlotType.s, '_', Var.s, '_', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
       } else {
-        paste(sID, '_', sINFO$Y.NAME, '_', Var.s, '_', PlotType.s, sep='')
+        paste(sID, '_', sINFO$Y.NAME, '_', PlotType.s, '_', Var.s, sep='')
       }
-    PlotFile.s <- fSetFile(paste(FileName.s, '.', fileExtension.s, sep=''), Dir.s, F, SubCallFunc.s)
+    FileExtension.s <- if( Format.s=='cairo-png' ||  Format.s=='cairo' ) 'png' else Format.s
+    PlotFile.s <- fSetFile(paste(FileName.s, '.', FileExtension.s, sep=''), Dir.s, F, SubCallFunc.s)
+        
+    ##details<< 
+    ## Not all formats are supported on all platforms. The \code{png} will not work on unix without X-system. However 
+    ## there might be cairo support be built into R, allowing to use the 'cairo-png' format.
     
-	
-	##details<< 
-	## Not all formats are supported on all platforms. The \code{png} will not work on unix without X-system. However 
-	## there might be cairo support be built into R, allowing to use the "cairo-png" format.
-	
     # Prepare the name and open the plot output file
     if (Format.s == 'png') {
-      png(file=PlotFile.s, units='px', pointsize=12, width=round(WInch.n*dotsPerInc.n), height=round(HInch.n*dotsPerInc.n) )
+      png(file=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n) )
     } else if (Format.s == 'pdf') {
       pdf(file=PlotFile.s, width=WInch.n, height=HInch.n)
-	} else if (Format.s == 'cairo-png') {
-		#png(file=PlotFile.s, width=WInch.n, height=HInch.n, bg = "transparent", type = "cairo-png")
-		png(file=PlotFile.s, width=round(WInch.n*dotsPerInc.n), height=round(HInch.n*dotsPerInc.n), type = "cairo-png")
-	} else
-      stop(SubCallFunc.s, '::: Format.s not valid: ', Format.s)
+    } else if (Format.s == 'cairo') { #Should work on Mac but needs bug fix by developer, see http://tolstoy.newcastle.edu.au/R/e17/devel/12/01/0128.html
+      png(file=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n), type = 'cairo')
+    } else if (Format.s == 'cairo-png') {
+      png(file=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n), type = 'cairo-png')
+    } else {
+      stop(SubCallFunc.s, '::: Format.s not valid: ', Format.s, '!')
+    }
     
     PlotFile.s
     ##value<<
@@ -133,19 +133,22 @@ sEddyProc$methods(
     ##description<<
     ## The fingerprint for a single year is plotted to the current device, scaled to all data.
     Var.s               ##<< Variable to plot
-    ,QFvar.s            ##<< Quality flag of variable to be filled
-    ,QFvalue.n          ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
+    ,Legend.b=F         ##<< Plot only legend
   )
     ##author<<
-    ## KS, AMM
+    ## AMM, KS
     # TEST: sPlotFingerprintY('NEE', 'none', NA, 1998); sPlotFingerprintY('NEE_f', 'NEE_fqc', 1, 1998)
   {
     'Plot fingerprint of specified year'
     # Set plot contents
-    Plot.V.n <- fSetQF(sDATA, Var.s, QFvar.s, QFvalue.n, 'sPlotFingerprintY')
-    t.b <- (Year.i == as.numeric(format(sDATA$sDateTime, '%Y')))
-    
+    Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
+    FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotFingerprintY')
+    Time.V.n <- FullYearData.F$DateTime
+    Plot.V.n <- FullYearData.F$Data
+        
     # Calculate plot parameters
     XAxis.V.n <- seq(0, 24, by=2)
     YAxis.V.n <- seq(15, 345, by=30)
@@ -155,20 +158,29 @@ sEddyProc$methods(
     YMin.n <- min(Plot.V.n, na.rm=T)
     YMax.n <- max(Plot.V.n, na.rm=T)
     
-    # Plot fingerprint
-    if (Year.i <= sINFO$Y.END) { #Plot single years
-      # Daily sequence of DoY
-      DoY.V.d  <- c(0:max(as.numeric(format(sDATA$sDateTime, '%j'))[t.b], na.rm=T))    
-      # Plot
+    # Daily sequence of DoY
+    DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))    
+    
+    # Plot
+    if( !sum(!is.na(Plot.V.n))==0 && Legend.b==F ) {
+      # Plot fingerprint
       par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by=0.5), DoY.V.d, matrix(Plot.V.n[t.b], nrow=48), zlim=c(YMin.n,YMax.n), col=fJetColors(Jet.n),
+      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=fJetColors(Jet.n),
             axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
       axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet') 
       box()
-      
+    } else if ( Legend.b==F ) {
+      #Plot empy box
+      par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
+      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=fJetColors(Jet.n),
+           axes=F, xlab='', ylab='', main=Year.i)
+      axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
+      axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
+      box()
+      warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
     } else { #Plot legend and title
-      Title.s <- sxSetTitle(Var.s, QFvar.s, QFvalue.n, 'Fingerprint')
+      Title.s <- sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
       Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(Jet.n-1))
       par(mai=c(3,1,3,1))
       image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=fJetColors(Jet.n), zlim=c(YMin.n,YMax.n),
@@ -185,10 +197,10 @@ sEddyProc$methods(
     ## sEddyProc$sPlotFingerprint - Image with fingerprints of each year
     ##description<<
     ## Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
-	## with fingerprint, see also \code{\link{sPlotFingerprintY}}.
+	  ## with fingerprint, see also \code{\link{sPlotFingerprintY}}.
     Var.s               ##<< Variable to plot
-    ,QFvar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFvalue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}
     ,Dir.s='plots'      ##<< Directory for plotting
   )
@@ -204,16 +216,18 @@ sEddyProc$methods(
     
     # Open plot
     PlotType.s <- 'FP'
-    PlotFile.s <- sxOpenPlot(Var.s, QFvar.s, QFvalue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotFingerprint')
+    PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotFingerprint')
     
     tryCatch({
       #Split into Screens.n screens with 3 columns
       split.screen(c(Screens.n,3))
       
-      for( Year.i in sINFO$Y.START:(sINFO$Y.END+1) ) {
+      for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1)
-        sPlotFingerprintY(Var.s, QFvar.s, QFvalue.n, Year.i)
+        sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, Year.i)
       }
+      screen(sINFO$Y.END-sINFO$Y.START+2)
+      sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, sINFO$Y.END, Legend=T)
       
       # Close plot
     }, finally=sxClosePlot(PlotFile.s))
@@ -224,78 +238,85 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sPlotHHMeansM = function(
+  sPlotDiurnalCycleM = function(
     ##title<<
-    ## sEddyProc$sPlotHHMeansM - Plot half-hourly means of specified months
+    ## sEddyProc$sPlotDiurnalCycleM - Plot half-hourly means of specified months
     ##description<<
     ## The half-hourly means of a single months (averaged over all years) are potted to the current device, scaled to all data.
     Var.s               ##<< Variable to plot
-    ,QFvar.s            ##<< Quality flag of variable to be filled
-    ,QFvalue.n          ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Month.i            ##<< Month to plot
+    ,Legend.b=T         ##<< Plot with legend
   )
     ##author<<
-    ## KS, AMM
-    # TEST: sPlotHHMeansM('NEE', 'none', NA, 10)
+    ## AMM, KS
+    # TEST: sPlotDiurnalCycleM('NEE', 'none', NA, 10)
   {
     'Plot half-hourly means of specified months'
     # Set plot contents
     # Half-hourly means 
-    Plot.V.n <- fSetQF(sDATA, Var.s, QFvar.s, QFvalue.n, 'sPlotHHMeansM')
-    Month.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%m')), ncol=48, byrow=T)[,1]
-    Plot.M.n <- matrix(Plot.V.n, ncol=48, byrow=T)
-    Mean.M.m <- as.matrix(aggregate(Plot.M.n, by=list(Month.V.d), FUN=mean, simplify=T, na.rm=T)[,-1])
+    Plot.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotDiurnalCycleM')
+    Month.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%m')), nrow=sINFO$DTS)[1,]
+    DYear.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%Y')), nrow=sINFO$DTS)[1,]
+    Plot.M.n <- matrix(Plot.V.n, ncol=sINFO$DTS, byrow=T)
+    # Average all years: Mean.M.m <- as.matrix(aggregate(Plot.M.n, by=list(Month.V.d), FUN=mean, simplify=T, na.rm=T)[,-1])
+    Mean.F.m <- aggregate(Plot.M.n, by=list(Year=DYear.V.d,Month=Month.V.d), FUN=mean, simplify=T, na.rm=T)
     
     # Scale to all data
-    YMin.n <- min(Mean.M.m, na.rm=T)
-    YMax.n <- max(Mean.M.m, na.rm=T)   
+    YMin.n <- min(Mean.F.m[,c(-1,-2)], na.rm=T)
+    YMax.n <- max(Mean.F.m[,c(-1,-2)], na.rm=T)   
     # Axis settings
     XAxis.V.n <- seq(0, 24, by=2)
     
     # Plot half-hourly means
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-    if( !sum(!is.na(Mean.M.m[Month.i,]))==0 ) {
+    if( sum(!is.na(Mean.F.m[Mean.F.m$Month==Month.i,c(-1,-2)])) > 0 ) {
       # Plot
-      plot(as.vector(Mean.M.m[Month.i,]) ~ seq(0.0, 23.5, by=0.5), ylim=c(YMin.n,YMax.n),
-           type='o', lty='solid', lwd=1, col='dark green', pch=20, cex=1,
-           axes=F, xlab='', ylab='', main=month.name[Month.i])
+      plot(rep(0,sINFO$DTS)~seq(0.0, 23.5, by=(24/sINFO$DTS)), type='n',
+            axes=F, xlab='', ylab='', ylim=c(YMin.n,YMax.n), main=month.name[Month.i])
+      for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
+        MeanY.V.m <- as.numeric(Mean.F.m[Mean.F.m$Year==Year.i & Mean.F.m$Month==Month.i,c(-1,-2)])
+        points(MeanY.V.m ~ seq(0.0, 23.5, by=(24/sINFO$DTS)), type='o', lty='solid', lwd=1, col=(Year.i-sINFO$Y.START)+2, pch=20, cex=1)
+      }
       abline(h=0, col='grey')
       axis(1, at=XAxis.V.n, cex.axis=0.9, col.axis='blue')
-      axis(2, cex.axis=1.0) 
+      axis(2, cex.axis=1.0)
+      if( Legend.b ) legend('bottomright', legend=c(sINFO$Y.START:sINFO$Y.END), lty='solid', col=((sINFO$Y.START:sINFO$Y.END)-sINFO$Y.START)+2 )
       box()
     } else {
       # Plot empty box
-      plot(rep(0,length(HMean.V.h)) ~ seq(0.0, 23.5, by=0.5), type='n', axes=F, main=month.name[Month.i])
+      plot(rep(0,sINFO$DTS)~seq(0.0, 23.5, by=(24/sINFO$DTS)), type='n', axes=F, xlab='', ylab='', main=month.name[Month.i])
       axis(1, at=XAxis.V.n, cex.axis=1.0, col.axis='blue')
       box()
-      warning('sPlotHHMeansM::: No data available for month: ', month.name[Month.i])
+      warning('sPlotDiurnalCycleM::: No data available for month: ', month.name[Month.i], '!')
     }
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sPlotHHMeans = function(
+  sPlotDiurnalCycle = function(
     ##title<<  
-    ## sEddyProc$sPlotHHMeans - Image with half-hourly means of each month
+    ## sEddyProc$sPlotDiurnalCycle - Image with half-hourly means of each month
     ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with half-hourly means, see also \code{\link{sPlotHHMeansM}}.
+    ## Generates image in specified format ('pdf' or 'png') with half-hourly means, see also \code{\link{sPlotDiurnalCycleM}}.
     Var.s               ##<< Variable to plot
-    ,QFvar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFvalue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
   )
     ##author<<
     ## KS, AMM
-    # TEST: sPlotHHMeans('NEE')
+    # TEST: sPlotDiurnalCycle('NEE')
   {
     'Image with half-hourly means of each month'
     # Open plot
     PlotType.s <- 'HM'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * 5
-    PlotFile.s <- sxOpenPlot(Var.s, QFvar.s, QFvalue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotHHMeans')
+    PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDiurnalCycle')
     
     tryCatch({  
       # Slpit the printing area in 5 lines and 3 rows
@@ -308,14 +329,18 @@ sEddyProc$methods(
       
       # Set title of plot
       screen(6) 
-      mtext(sxSetTitle(Var.s, QFvar.s, QFvalue.n, 'Half-hourly means'), line=-3, side=3, cex=2.0)
+      mtext(sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Half-hourly means'), line=-3, side=3, cex=2.0)
       screen(8)
       mtext(sINFO$Y.NAME, line=1, side=3, cex=2.0)
       
       # Loop over all months
       for (Month.i in 1:12){
         screen(Month.i+8)
-        sPlotHHMeansM(Var.s, QFvar.s, QFvalue.n, Month.i)
+        if (Month.i == 12) {
+          sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i) #with legend
+        } else {
+          sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i, Legend.b=F)
+        }
       }
       
       # Close plot  
@@ -333,45 +358,47 @@ sEddyProc$methods(
     ##description<<
     ## The half-hourly fluxes for a single year are plotted to the current device, scaled to all data.
     Var.s               ##<< Variable to plot
-    ,QFvar.s            ##<< Quality flag of variable to be filled
-    ,QFvalue.n          ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
   )
     ##author<<
-    ## KS, AMM
+    ## AMM, KS
     # TEST: sPlotHHFluxesY('NEE', 'none', NA, 1998)
   {
     'Plot half-hourly fluxes of specified year'
     # Set plot contents
-    Plot.V.n <- fSetQF(sDATA, Var.s, QFvar.s, QFvalue.n, 'sPlotHHFluxesY')
-    t.b <- (Year.i == as.numeric(format(sDATA$sDateTime, '%Y')))
-    DMean.V.n <- rep(apply(matrix(Plot.V.n[t.b], nrow=48), 2, mean, na.rm=T), each=48)
-    #Counter for half-hours
-    hh.i <- (c(1:sum(t.b))-1) / sum(t.b)
+    Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotHHFluxesY')
+    FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotHHFluxesY')
+    Time.V.n <- FullYearData.F$DateTime
+    Plot.V.n <- FullYearData.F$Data
+    # Additional line with daily mean
+    DMean.V.n <- rep(apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, mean, na.rm=T), each=sINFO$DTS)
     
     #Scale to all data
     YMin.n <- min(Plot.V.n, na.rm=T)
     YMax.n <- max(Plot.V.n, na.rm=T)
     # Axis settings
-    XAxis.V.n <- seq((15*48)/sum(t.b), 345*48/sum(t.b), by=30*48/sum(t.b))
+    Julian.i <- julian(Time.V.n, origin=as.POSIXct(paste(Year.i, '01-01', sep='-'), tz='GMT'))
+    XAxis.V.n <- seq(15, 345, by=30)
     
     # Plot half-hourly fluxes
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-    if( !sum(!is.na(Plot.V.n[t.b]))==0 ) {
+    if( !sum(!is.na(Plot.V.n))==0 ) {
       # Plot
-      plot(Plot.V.n[t.b] ~ hh.i, ylim=c(YMin.n,YMax.n), col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3, 
+      plot(Plot.V.n ~ Julian.i, ylim=c(YMin.n,YMax.n), col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3, 
            axes=F, xlab='', ylab='', main=Year.i)    
       abline(h=0, col='grey')
-      lines(DMean.V.n ~ hh.i, lty='solid', lwd=1, col='red', pch=0, cex=1)
+      lines(DMean.V.n ~ Julian.i, lty='solid', lwd=1, col='red', pch=0, cex=1)
       axis(1, at=XAxis.V.n, cex.axis=1.0, col.axis='dark violet', labels=month.abb)
       axis(2, cex.axis=1.0) 
       box() 
     } else {
       # Plot empty box
-      plot(rep(0,length(Plot.V.n[t.b])) ~ hh.i, type='n', axes=F, main=Year.i)
+      plot(rep(0,length(Time.V.n)) ~ Julian.i, type='n', axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, col.axis='dark violet', labels=month.abb)
       box()
-      warning('sPlotHHFluxesY::: No data available in year: ', Year.i)
+      warning('sPlotHHFluxesY::: No data available in year: ', Year.i, '!')
     }
   })
 
@@ -385,8 +412,8 @@ sEddyProc$methods(
     ## Generates image in specified format ('pdf' or 'png') with half-hourly fluxes and their daily means,
     ## see also \code{\link{sPlotHHFluxesY}}.
     Var.s               ##<< (Filled) variable to plot
-    ,QFvar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFvalue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFVar.s='none'     ##<< Quality flag of variable to be filled
+    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
   )
@@ -399,7 +426,7 @@ sEddyProc$methods(
     PlotType.s <- 'Flux'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * (sINFO$Y.NUMS+1)
-    PlotFile.s <- sxOpenPlot(Var.s, QFvar.s, QFvalue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotHHFluxes')
+    PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotHHFluxes')
     
     tryCatch({
       # Split the screen
@@ -408,12 +435,12 @@ sEddyProc$methods(
       
       # Set title of plot
       screen(sINFO$Y.NUMS + 3)
-      mtext(sxSetTitle(Var.s, QFvar.s, QFvalue.n, 'Half-hourly fluxes and daily means'), line=-3, side=3, cex=2.0)
+      mtext(sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Half-hourly fluxes and daily means'), line=-3, side=3, cex=2.0)
       
       # Loop over all years
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1 + 1)
-        sPlotHHFluxesY(Var.s, QFvar.s, QFvalue.n, Year.i)
+        sPlotHHFluxesY(Var.s, QFVar.s, QFValue.n, Year.i)
       }
       
       # Close plot
@@ -432,18 +459,23 @@ sEddyProc$methods(
     ## The daily sums for a single year are plotted to the current device, scaled to all data.
     ## The daily sums are only calculated for days with complete data.
     Var.s               ##<< (Filled) variable to plot
-    ,VarUnc.s           ##<< Uncertainty estimates for variable
+    ,VarUnc.s='none'    ##<< Uncertainty estimates for variable
     ,Year.i             ##<< Year to plot
   )
     ##author<<
-    ## KS, AMM
+    ## AMM, KS
     # TEST: sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
   {
     'Plot daily sum of specified year'
     # Set plot contents
-    Plot.V.n <- fSetQF(sDATA, Var.s, 'none', NA, 'sPlotDailySumsY')
+    Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, 'none', NA, 'sPlotDailySumsY')
+    FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')
+    Time.V.n <- FullYearData.F$DateTime
+    Plot.V.n <- FullYearData.F$Data
+    
     if (VarUnc.s != 'none') {
-      PlotSD.V.n <- fSetQF(sDATA, VarUnc.s, 'none', NA, 'sPlotDailySumsY')
+      DataSD.V.n <- fSetQF(cbind(sDATA,sTEMP), VarUnc.s, 'none', NA, 'sPlotDailySumsY')
+      PlotSD.V.n <- fExpandToFullYear(sDATA$sDateTime, DataSD.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')$Data
     } else { # Set uncertainties to Zero
       PlotSD.V.n <- (rep(0, length(Plot.V.n)))
     }
@@ -453,12 +485,11 @@ sEddyProc$methods(
     CountMissingUnc.n <- sum(!is.na(Plot.V.n) & is.na(PlotSD.V.n))
     
     # Set daily sums
-    DYear.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%Y')), nrow=48)[1,]
-    DoY.V.d  <- matrix(as.numeric(format(sDATA$sDateTime, '%j')) , nrow=48)[1,]
-    DSum.V.d <- 0.5 * apply(matrix(Plot.V.n, nrow=48), 2, sum)
+    DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow=sINFO$DTS)[1,]
+    DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow=sINFO$DTS)[1,]
+    DSum.V.d <- (24/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, sum)
     fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
-    DUnc.V.d <- 0.5 * sqrt(apply(matrix(PlotSD.V.n, nrow=48), 2, fSumOfSquares))
-    y.b <- (Year.i == DYear.V.d)
+    DUnc.V.d <- (24/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
     
     # Scale to all data
     YMin.n <- min(DSum.V.d-DUnc.V.d, na.rm=T)
@@ -468,29 +499,29 @@ sEddyProc$methods(
     
     # Plot daily sums
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-    if( !sum(!is.na(DSum.V.d[y.b])) == 0 && CountMissingUnc.n == 0 ) {
+    if( !sum(!is.na(DSum.V.d)) == 0 && CountMissingUnc.n == 0 ) {
       # Plot
-      plot(DSum.V.d[y.b] ~ DoY.V.d[y.b], type='n', ylim=c(YMin.n,YMax.n),
+      plot(DSum.V.d ~ DoY.V.d, type='n', ylim=c(YMin.n,YMax.n),
            axes=F, xlab='', ylab='', main=Year.i)
       if (VarUnc.s != 'none')
-        polygon(c(DoY.V.d[y.b], rev(DoY.V.d[y.b])), c(DSum.V.d[y.b]+DUnc.V.d[y.b], rev(DSum.V.d[y.b]-DUnc.V.d[y.b])), 
+        polygon(c(DoY.V.d, rev(DoY.V.d)), c(DSum.V.d+DUnc.V.d, rev(DSum.V.d-DUnc.V.d)), 
                 col='dark grey', border=NA)
       abline(h=0, col='grey')
-      lines(DSum.V.d[y.b], lty='solid', lwd=1, col='dark green')
-      points(DSum.V.d[y.b], pch=20, cex=0.7, col='dark green')
+      lines(DSum.V.d, lty='solid', lwd=1, col='dark green')
+      points(DSum.V.d, pch=20, cex=0.7, col='dark green')
       axis(1, at=XAxis.V.n, cex.axis=1.0, labels=month.abb, col.axis='dark violet')
       axis(2, cex.axis=1.0) 
       box() 
     } else { 
       # Plot empty box
-      plot(rep(0, length(DSum.V.d[y.b])) ~ DoY.V.d[y.b], type='n', axes=F, main=Year.i)
+      plot(rep(0, length(DSum.V.d)) ~ DoY.V.d, type='n', axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, labels=month.abb, col.axis='dark violet')
       box()
       if (CountMissingUnc.n != 0) {
         warning('sPlotDailySumsY::: Uncertainty estimates missing for ', CountMissingUnc.n, ' data points of ', Var.s, 
                 ' in year: ', Year.i, 'This will cause an empty plot!')
       } else {
-        warning('sPlotDailySumsY::: Missing data in year: ', Year.i)
+        warning('sPlotDailySumsY::: Missing data in year: ', Year.i, '!')
       }
     }
   })

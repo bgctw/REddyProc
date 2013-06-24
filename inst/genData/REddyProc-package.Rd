@@ -1,8 +1,50 @@
-\name{REddyProc-package}
-\alias{REddyProc-package}\alias{REddyProc}
-\title{EddyCovariance data processing and plotting utilities}
-\description{EddyCovariance data processing and plotting utilities}
-\details{Work of the package can be best seen by an \link{sEddyProc.example}.This page gives an overview. A complete list of functions be viewed by clicking on the index link at the bottom of the page.First the package helps to prepare your data for analysis \itemize{\item{ Loading text files into dataframes: \code{\link{fLoadTXTIntoDataframe}}  }\item{ Preparing a proper time field: \code{\link{fConvertTimeToPosix}}  }\item{ Initalize R5 reference class for the dataset: \code{\link{sEddyProc.new}}  }}%itemizeThe function are are assembled in class EddyProc (see \code{\link{sEddyProc.new}})Plotting\itemize{\item{ Fingerprints: \code{\link{sPlotFingerprint}}  }\item{ half-hourly fluxes and their daily means: \code{\link{sPlotHHFluxes}}  }\item{ daily sums: \code{\link{sPlotDailySums}}  }\item{ half-hourly means: \code{\link{sPlotHHMeans}}  }}%itemizeProcessing\itemize{\item{ Gapfilling: \code{\link{sMDSGapFill}}  }}%itemize}%details\author{Antje Moffat, Thomas Wutzler, Kerstin Sickel}
-\keyword{ package }
-
-
+\name{REddyProc-package}
+\alias{REddyProc-package}
+\alias{REddyProc}
+\title{Data processing and plotting utilities of (half-)hourly eddy-covariance measurements}
+\description{
+R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
+}
+\details{
+
+In the following is a first overview of the REddyProc functions.
+A \bold{detailed example} of the processing can be found under \code{\link{sEddyProc.example}}. 
+
+These functions help with the preparation of your data for the analysis: 
+\itemize{
+\item{ Loading text files into dataframes: \code{\link{fLoadTXTIntoDataframe}} }
+\item{ Preparing a proper time stamp: \code{\link{fConvertTimeToPosix}} }
+\item{ Calculating latent variables, e.g. VPD: \code{\link{fCalcVPDfromRHandTair}} }
+}%itemize
+
+Then the data can be processed in an R5 reference class framework:
+\itemize{
+\item{ Initalizing the R5 reference class: \code{\link{sEddyProc.new}} }
+\item{ Gap filling: \code{\link{sMDSGapFill}}  }
+\item{ Flux partitioning: \emph{in preparation} }
+\item{ Ustar filtering: \emph{in preparation} }
+}%itemize
+
+Before or after processing, the data can be plotted:
+\itemize{
+\item{ Fingerprints: \code{\link{sPlotFingerprint}} }
+\item{ Half-hourly fluxes and their daily means: \code{\link{sPlotHHFluxes}} }
+\item{ Daily sums (and their uncertainties): \code{\link{sPlotDailySums}} }
+\item{ Diurnal cycle: \code{\link{sPlotDiurnalCycle}} }
+}%itemize
+
+A \bold{complete list} of REddyProc functions be viewed by clicking on the \bold{Index} link at the bottom of this help page.
+
+}%details
+
+
+\author{ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany }
+
+\references{ Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
+into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439. }
+
+\examples{
+See \code{\link{sEddyProc.example}}.
+}
+
+\keyword{ package }

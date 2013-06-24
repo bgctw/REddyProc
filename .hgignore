@@ -9,3 +9,10 @@ syntax: regexp
 ^tmp$
 syntax: regexp
 ^plots$
+\.Rhistory
+out
+R_InWork
+REddyProc_0\.31_Code
+REddyProc_0\.40\.tgz
+web
+\.hgignore

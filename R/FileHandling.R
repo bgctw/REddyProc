@@ -9,7 +9,7 @@
 
 fLoadTXTIntoDataframe <- function(
   ##title<<
-  ## Load text file with one header and one (discarded) unit row into data frame
+  ## Load text file with one header and one unit row into data frame
   ##description<<
   ## If gaps with the flag -9999.0 exist, these are set to NA.
   FileName.s            ##<< File name
@@ -17,17 +17,28 @@ fLoadTXTIntoDataframe <- function(
   ) 
   ##author<<
   ## AMM
+  # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'data'
 {
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')  
 
   # Read in header
-  Header.F <- read.csv(InputFile.s, header=T, sep='', dec='.')
+  Header.V.s <- as.character(read.csv(InputFile.s, header=F, sep='', dec='.', nrows=1, stringsAsFactors=F))
+  Units.V.s <- as.character(read.csv(InputFile.s, header=F, sep='', dec='.', skip=1, nrows=1, stringsAsFactors=F))
+  if( length(Header.V.s) != length(Units.V.s) )
+    stop('fLoadTXTIntoDataframe::: Entries in header row and unit row are not the same length: \n', 
+         length(Header.V.s), ': ', paste(Header.V.s, collapse=' '), '\n', 
+         length(Units.V.s), ': ', paste(Units.V.s, collapse=' '))
   # Skip unit row and read in data
   Data.F <- read.csv(InputFile.s, header=F, skip=2, sep='', dec='.')
   # Rename columns with header information
-  names(Data.F) <- names(Header.F)
-  message('Loaded file ', FileName.s, ' with the following headers:')
-  message('*** ', paste(colnames(Data.F), collapse=' ', sep=''))
+  names(Data.F) <- Header.V.s
+  # Add units (and also varnames) as attribute
+  for (Var.i in 1:length(Header.V.s)) {
+    attr(Data.F[,Header.V.s[Var.i]], 'varnames') <- Header.V.s[Var.i]
+    attr(Data.F[,Header.V.s[Var.i]], 'units') <- Units.V.s[Var.i]
+  } 
+  message('Loaded file ', FileName.s, ' with the following variables (units):')
+  message('*** ', paste(colnames(Data.F), '(', as.character(lapply(Data.F, attr, which='units')), ')', collapse=' ', sep=''))
   # Convert gap flags to NA
   Data.F <- fConvertGapsToNA(Data.F)
   
@@ -54,27 +65,27 @@ fLoadFluxNCIntoDataframe <- function(
   ## The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour' (Fluxnet BGI format).
   VarList.V.s           ##<< Vector of variables to be read in 
   ,FileName.s           ##<< File name             
-  ,Dir.s                ##<< Directory      
+  ,Dir.s=''             ##<< Directory      
   ) 
   ##author<<
   ## AMM, KS
-  # TEST: FileName.s <- 'Example_DE-Tha.1996.2006.hourly.nc'; Dir.s <- 'data'; VarList.V.s <- c('NEE', 'Rg', 'Rh', 'Tair', 'NEE_f')
+  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata'; VarList.V.s <- c('NEE', 'Rg', 'rH', 'Tair', 'NEE_f')
 {
   # Read in time variables
-  Data.F <- fAddNCFVar(NULL, 'year', FileName.s, Dir.s)
-  Data.F <- fAddNCFVar(Data.F, 'month', FileName.s, Dir.s)
-  Data.F <- fAddNCFVar(Data.F, 'day', FileName.s, Dir.s)
-  Data.F <- fAddNCFVar(Data.F, 'hour', FileName.s, Dir.s)
+  Data.F <- fAddNCFVar(NULL, 'year', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(Data.F, 'month', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(Data.F, 'day', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(Data.F, 'hour', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
   
   # Convert time format to POSIX
   Data.F <- fConvertTimeToPosix(Data.F, 'YMDH', Year.s = 'year', Month.s='month', Day.s = 'day', Hour.s = 'hour')
   
   # Read in variables from a given list of needed variables 
   for (i in 1: length(VarList.V.s))  {
-    Data.F <- fAddNCFVar(Data.F, VarList.V.s[i], FileName.s, Dir.s)
+    Data.F <- fAddNCFVar(Data.F, VarList.V.s[i], FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
   }
   message('Loaded BGI Fluxnet NC file: ', FileName.s, ' with the following headers:')
-  message('*** ', paste(colnames(Data.F), collapse=' ', sep=''))
+  message('*** ', paste(colnames(Data.F), '(', as.character(lapply(Data.F, attr, which='units')), ')', collapse=' ', sep=''))
   
   Data.F 
   ##value<<
@@ -82,8 +93,8 @@ fLoadFluxNCIntoDataframe <- function(
 }
 attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
   # Example code
-  if( file.exists('inst/MDSdata/Example_DE-Tha.1996.2006.hourly.nc') )
-    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.2006.hourly.nc', 'inst/MDSdata')
+  if( file.exists('inst/MDSdata/Example_DE-Tha.1996.1998.hourly.nc') )
+    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.1998.hourly.nc', 'inst/MDSdata')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -94,25 +105,29 @@ fAddNCFVar <- function(
   Data.F                ##<< Data frame
   ,Var.s                ##<< Variable name
   ,FileName.s           ##<< NetCDF file name
-  ,Dir.s                ##<< Directory      
+  ,Dir.s                ##<< Directory
+  ,CallFunction.s=''    ##<< Name of function called from
   )
   ##author<<
   ## AMM, KS
-  # TEST: Data.F <- NULL; Var.s <- 'time'; FileName.s <- 'Example_DE-Tha.1996.2006.hourly.nc'; Dir.s <- 'data'
+  # TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata'
 {
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
   
   if( !require(RNetCDF) )  
-    stop('Required package RNetCDF could not be loaded!')   # for handling Fluxnet netcdf files
+    stop(CallFunction.s, ':::fAddNCFVar Required package RNetCDF could not be loaded!')   # for handling Fluxnet netcdf files
   NCFile.C <- open.nc(InputNCF.s)
   tryCatch({
-    NewCol.M <- cbind(var.get.nc(NCFile.C,Var.s))
-    # Rename columns with name of variable
-    colnames(NewCol.M) <- Var.s
-    # Set column to data frame    
-    Data.F <- as.data.frame(cbind(Data.F,NewCol.M))
-  }, 
-   finally = close.nc(NCFile.C)
+    NewCol.F <- data.frame(var.get.nc(NCFile.C, Var.s))
+    names(NewCol.F)[[1]] <- Var.s
+    attr(NewCol.F[[1]], 'varnames') <- Var.s
+    attr(NewCol.F[[1]], 'units') <- att.get.nc(NCFile.C, Var.s, 'units')
+
+    # Use c() instead of cbind() to be able to bind dataframe Data.F even if empty
+    Data.F <- data.frame(c(Data.F, NewCol.F))
+    #attr(Data.F[[1]], 'units')
+    }, 
+       finally = close.nc(NCFile.C)
   )
   
   Data.F
@@ -128,26 +143,21 @@ fWriteDataframeToFile <- function(
   ##title<<
   ## Write data frame to ASCII or NetCDF file
   Data.F                ##<< Data frame     
-  ,BaseName.s           ##<< File base name
-  ,Dir.s                ##<< Directory
+  ,FileName.s           ##<< File base name
+  ,Dir.s=''             ##<< Directory
   ,FileType.s='txt'     ##<< File output type
-  ,OutputName.s='none'  ##<< Optional: Alternative complete file name
 )
   ##author<<
   ## AMM, KS
   ##details<<
-  ## 'txt' - for tab delimited text file
-  ## 'nc' - for NetCDF file
+  ## 'txt' - for tab delimited text file with header and unit row
+  ## 'nc' - for very simple NetCDF file of numeric columns
   ## With missing values flagged as -9999.0
+  # !!!TODO: NC file output: add non-numeric columns and units
   # TEST: Data.F <- EddyData.F; BaseName.s <- 'OutputTest'; FileType.s='nc'; Dir.s <- 'data'; OutputName.s='none';
 {
   # Set file name
-  if( OutputName.s == 'none' ) {
-    FileName.s <- paste(BaseName.s, '_', format(Sys.time(), '%y-%m-%d_%H-%M-%S'), '.', FileType.s, sep='')
-    OutputFile.s <- fSetFile(FileName.s, Dir.s, F, 'fWriteDataframeToFile')
-  } else {
-    OutputFile.s <- fSetFile(OutputName.s, '', F, 'fWriteDataframeToFile')
-  }
+  OutputFile.s <- fSetFile(FileName.s, Dir.s, F, 'fWriteDataframeToFile')
   
   # Convert NAs to gap flag
   Data.F <- fConvertNAsToGap(Data.F)
@@ -156,13 +166,18 @@ fWriteDataframeToFile <- function(
   if( FileType.s=='txt') {
     # Write tab delimited file
     # supressWarnings()
-    write.table(Data.F, file=OutputFile.s, col.names=T, row.names=F, sep='\t', quote=F)
+    Lines.V.s <- vector(mode='character', length = 2)
+    Lines.V.s[1] <- paste(colnames(Data.F), collapse='\t')
+    Lines.V.s[2] <- paste(as.character(lapply(Data.F, attr, which='units')), collapse='\t')
+    Lines.V.s[2] <- gsub('NULL', '--', Lines.V.s[2])
+    write(Lines.V.s, file=OutputFile.s, append=F)
+    write.table(format(Data.F, digits=5, drop0trailing=T, trim=T), file=OutputFile.s, col.names=F, row.names=F, sep='\t', quote=F, append=T)
     message('Wrote tab separated textfile: ', OutputFile.s)
     
   } else if( FileType.s=='nc') {
     # Write NetCDF file
     if( !require(RNetCDF) )  
-      stop('Required package RNetCDF could not be loaded!')   # for handling Fluxnet netcdf files
+      stop('fWriteDataframeToFile::: Required package RNetCDF could not be loaded!')   # for handling Fluxnet netcdf files
     NCFile.C <- create.nc(OutputFile.s, clobber=T, large=T, prefill=F)
     tryCatch({
       dim.def.nc(NCFile.C, 'time', unlim=TRUE)
@@ -174,7 +189,7 @@ fWriteDataframeToFile <- function(
           var.put.nc(NCFile.C, variable=names(Data.F)[Var.i], data=Data.F[,Var.i])
           att.put.nc(NCFile.C, variable=names(Data.F)[Var.i], name='miss_val', type=VarType.s, value=-9999.0)
         }
-        else next; #Skip non-numeric columsn for now !!!TODO
+        else next; #! Skips non-numeric columsn for now 
       }
     }, 
              finally = close.nc(NCFile.C)

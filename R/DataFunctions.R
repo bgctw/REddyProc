@@ -37,7 +37,7 @@ fConvertTimeToPosix <- function(
   ## Implemented time formats:
   if (TFormat.s == 'YDH' ){
     if( any(c(Year.s, Day.s, Hour.s) == 'none') ) 
-      stop('With time format \'YDH\' year, month and DoY must be specified.')
+      stop('With time format \'YDH\' year, month and DoY need to be specified!')
     ## YDH - year, day of year, hour in decimal (e.g. 1998, 1, 10.5)
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The day format is day of year (1-365 or 1-366 in leap years).
@@ -66,11 +66,11 @@ fConvertTimeToPosix <- function(
     #Set time format
     lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz='GMT')
     if(sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp.')
+      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp!')
     
   } else if (TFormat.s == 'YMDH') {
     if( any(c(Year.s, Month.s, Day.s, Hour.s) == 'none') ) 
-      stop('With time format \'YMDH\' year, month, day, and hour must be specified.')
+      stop('With time format \'YMDH\' year, month, day, and hour need to be specified!')
     ## YMDH - year, month, day of month, hour in decimal (e.g. 1998, 1, 1, 10.5)
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The month format is (1-12)
@@ -78,7 +78,7 @@ fConvertTimeToPosix <- function(
     ## The day format is day of month (1-31).
     fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
     ## The hour format is (0.0-23.5)
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>=', 24.0), 'fConvertTimeToPosix(YMDH no 24h correction)')
+    fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>=', 24.0), 'fConvertTimeToPosix (For format \'YMDH\' no 24h correction in old R versions (2.13 and below))')
     ## No extra corrections.
     lYear.V.n <- Data.F[,Year.s]
     lMonth.V.n <- Data.F[,Month.s]
@@ -88,11 +88,11 @@ fConvertTimeToPosix <- function(
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
     lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
     if(sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), 'time stamps could not be converted.')
+      stop(sum(is.na(lTime.V.p)), 'time stamps could not be converted!')
     
   } else if (TFormat.s == 'YMDHM') {
     if( any(c(Year.s, Month.s, Day.s, Hour.s, Min.s) == 'none') )
-      stop('With time format \'YMDHM\' year, month, day, hour and min must be specified.')
+      stop('With time format \'YMDHM\' year, month, day, hour and min need to be specified!')
     ## YMDHM - year, month, day of month, integer hour, minute (e.g. 1998, 1, 1, 10, 30)
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The month format is (1-12)
@@ -120,6 +120,8 @@ fConvertTimeToPosix <- function(
   #POSIXlt converted to POSIXct in data.frame... !
   Data.F <- cbind(lTime.V.p, Data.F)
   names(Data.F)[1] <- TName.s
+  attr(Data.F[,TName.s], 'units') <- 'POSIXDate Time'
+  attr(Data.F[,TName.s], 'varnames') <- TName.s
   message('Converted time format \'', TFormat.s, '\' to POSIX with column name \'', TName.s, '\'.')
   
   Data.F
@@ -137,30 +139,122 @@ fCheckHHTimeSeries <- function(
   ##title<<
   ## Check half-hourly time series data
   Time.V.p              ##<< Time vector in POSIX format
+  ,DTS.n                ##<< Number of daily time steps (24 or 48)
   ,CallFunction.s=''    ##<< Name of function called from
   )
   ##author<<
   ## AMM
+  # TEST: Time.V.p <- Data.F[,'DateTime']
 {
   # Check time series properties
   ##details<<
+  ## The number of steps per day can be 24 (hourly) or 48 (half-hourly).
+  if( DTS.n!=24 && DTS.n!=48 )
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Daily time step need to be hourly (24) or half-hourly (48). The following value is not valid: ', DTS.n, '!')
+  ##details<<
   ## The time stamp needs to be provided in POSIX time format,
   if( !inherits(Time.V.p, 'POSIXt') )
-    stop(CallFunction.s, ':::Provided time stamp data not in POSIX time format.')
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Provided time stamp data not in POSIX time format!')
   ## equidistant half-hours,
-  NotDistHH.i <- sum(as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != 1800)
-  if (NotDistHH.i > 0)
-    stop(CallFunction.s, ':::Time stamp is not equidistant half-hours in ', NotDistHH.i , ' cases!')
+  NotDistHH.i <- sum(as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != (24/DTS.n * 60 * 60))
+  if( NotDistHH.i > 0 )
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in ', NotDistHH.i , ' cases!')
   ## and stamped on the half hour.
-  NotOnHH.i <- sum(as.numeric(Time.V.p) %% 1800 != 0)
-  if (NotOnHH.i > 0)
-    stop(CallFunction.s, ':::Time step is not stamped at half-hours in ', NotOnHH.i , ' cases!')
+  NotOnHH.i <- sum(as.numeric(Time.V.p) %% (24/DTS.n * 60 * 60) != 0)
+  if( NotOnHH.i > 0 )
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time step is not stamped at half-hours in ', NotOnHH.i , ' cases!')
   ## The sEddyProc procedures require at least three months of data.
-  if (length(Time.V.p) < 4000 )
-    stop(CallFunction.s, '::: Time series is shorter than three months of data!')
+  if( length(Time.V.p) < (3 * 30 * DTS.n) )
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time series is shorter than 90 days (three months) of data: ', 3 * 30 - length(Time.V.p) / DTS.n, ' days missing!' )
+  ## Full days of data are preferred: the total amount of data rows should be a multiple of the daily time step, and
+  Residual.i <- length(Time.V.p) %% DTS.n
+  if( Residual.i != 0 )
+    warning(CallFunction.s, ':::fCheckHHTimeSeries::: Data not provided in full days (multiple of daily time step). One day only has ', Residual.i , ' (half-)hours!')
+  ## in accordance with FLUXNET standards, the dataset is spanning from the end of the first (half-)hour (0:30 or 1:00, respectively) and to midnight (0:00).
+  if( DTS.n==48 && !(as.POSIXlt(Time.V.p[1])$hour == 0 && as.POSIXlt(Time.V.p)$min == 30) ) 
+    warning(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp of first data row is not at the end of the first half-hour: ', format(Time.V.p[1], '%H:%M'), ' instead of 00:30!')
+  if( DTS.n==24 && !(as.POSIXlt(Time.V.p[1])$hour == 1 && as.POSIXlt(Time.V.p)$min == 00) )
+    warning(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp of first data row is not at the end of the first hour: ', format(Time.V.p[1], '%H:%M'), ' instead of 01:00!')
+  if( !(as.POSIXlt(Time.V.p[length(Time.V.p)])$hour == 0 && as.POSIXlt(Time.V.p[length(Time.V.p)])$min == 0) )
+    warning(CallFunction.s, ':::fCheckHHTimeSeries::: The last time stamp is not midnight: 0:00!')
   
   ##value<< 
   ## Function stops on errors.
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+fFullYearTimeSteps <- function(
+  ##title<<
+  ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
+  Year.i                ##<< Data frame to be converted
+  ,DTS.n                ##<< Daily time steps
+  ,CallFunction.s =''   ##<< Name of function called from
+  #TEST: Year.i <- 2008; DTS.n <- 48
+)
+  ##author<<
+  ## AMM
+{
+  if( DTS.n==48) {  
+    TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 15, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+    TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 45, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+  } else if( DTS.n==24) { 
+    TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+    TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+  } else { 
+    stop(CallFuncion.s, ':::fFullYearTimeSteps::: Only implemented for 24 or 48 daily time steps, not ', DTS.n , '!') 
+  }
+  #DateTime vector with (half-)hourly time stamps
+  #Time.F.p <- data.frame(sDateTime=seq(TimeStart.n, TimeEnd.n, (24/DTS.n * 60 * 60)))
+  FullTime.V.p <- seq(TimeStart.n, TimeEnd.n, (24/DTS.n * 60 * 60))
+  
+  FullTime.V.p
+  ##value<<
+  ## Vector with time steps of full year in POSIX format
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+fExpandToFullYear <- function(
+  ##title<<
+  ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
+  Time.V.p                    ##<< Time stamp in POSIX time format
+  ,Data.V.n                   ##<< Data vector to be expanded
+  ,Year.i                     ##<< Year (e.g. to plot)
+  ,DTS.n                      ##<< Daily time steps
+  ,CallFunction.s =''         ##<< Name of function called from
+  #TEST: Time.V.p <- sDATA$sDateTime; DTS.n <- 48
+)
+  ##author<<
+  ## AMM
+{
+  # Check if year within time span of data set
+  if( sum(Year.i == as.numeric(format(Time.V.p, '%Y'))) == 0 )
+    stop(CallFunction.s, ':::fExpandToFullYear::: Year ', Year.i, ' not within time span of this dataset!')
+  
+  ##details<<
+  ## Function to expand vectors to full year, e.g. to plot in correct time format
+  SubCallFunc.s <- paste(CallFunction.s,'fExpandToFullYear', sep=':::')
+  FullYear.V.p <- fFullYearTimeSteps(Year.i, DTS.n, SubCallFunc.s)
+  TimeYear.V.p <- Time.V.p[(Year.i == as.numeric(format(Time.V.p, '%Y')))]
+  DataYear.V.n <- Data.V.n[(Year.i == as.numeric(format(Time.V.p, '%Y')))]
+  
+  if( sum(!is.na(DataYear.V.n)) == 0 )
+  {
+    ExpData.F.n <- data.frame(cbind(DateTime=FullYear.V.p, Data=rep(NA, length(FullYear.V.p))))
+    warning(CallFunction.s, ':::fExpandToFullYear::: Variable \'', attr(Data.V.n,'varnames'), '\' contains no data for year ', Year.i, '!')
+  } else if (length(TimeYear.V.p != length(FullYear.V.p))) {
+    ExpData.F.n <- merge(cbind(DateTime=FullYear.V.p), cbind(DateTime=TimeYear.V.p, Data=DataYear.V.n), by='DateTime', all=T, sort=T)
+  } else {
+    ExpData.F.n <- data.frame(cbind(DataTime=TimeYear.V.p, Data=Data.V.n))
+  }
+  ExpData.F.n$DateTime <- .POSIXct(ExpData.F.n$DateTime, tz='GMT')
+  attr(ExpData.F.n$Data, 'varnames') <- attr(Data.V.n, 'varnames')
+  attr(ExpData.F.n$Data, 'units') <- attr(Data.V.n, 'units')
+  
+  ExpData.F.n
+  ##value<<
+  ## Expanded time and data vector as data frame
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -292,7 +386,7 @@ fCheckColNames <- function(
   NameCols.b <- ColNames.V.s[!NoneCols.b] %in% colnames(Data.F)
   if( !all(NameCols.b) ){
     ColNames.s <- paste( ColNames.V.s[!NoneCols.b][!NameCols.b], collapse=', ', sep='' )
-    stop(CallFunction.s, '::: Missing specified columns in dataset: ', ColNames.s, '!')
+    stop(CallFunction.s, ':::fCheckColNames::: Missing specified columns in dataset: ', ColNames.s, '!')
   }
   
   ##value<< 
@@ -318,7 +412,7 @@ fCheckColNum <- function(
   NumCols.b <- sapply(Data.F[,ColNames.V.s[!NoneCols.b]], is.numeric)
   if( !all(NumCols.b) ){
     ColNames.s <- paste( ColNames.V.s[!NoneCols.b][!NumCols.b], collapse=',' )
-    stop(CallFunction.s, '::: Detected following columns in dataset to be non numeric: ', ColNames.s, '!')
+    stop(CallFunction.s, ':::fCheckColNum::: Detected following columns in dataset to be non numeric: ', ColNames.s, '!')
   }
   
   ##value<< 
@@ -345,30 +439,29 @@ fCheckOutsideRange <- function(
 {
   fCheckColNames(Data.F, VarName.s, paste(CallFunction.s, 'fCheckOutsideRange', sep=':::'))
   fCheckColNum(Data.F, VarName.s, paste(CallFunction.s, 'fCheckOutsideRange',  sep=':::'))
-  Var.V.n <- Data.F[VarName.s]
+  Var.V.n <- Data.F[,VarName.s]
   
   # Check condition
   CondText.s <- if( length(Condition.V.s) == 2 && Condition.V.s[1]  %in% c('<','<=','==','>=','>','!=') && nzchar(Condition.V.s[2]) ) { 
     # One condition
-    paste('Var.V.n ', Condition.V.s[1], ' ', Condition.V.s[2], sep='')
+    paste('Var.V.n ', Condition.V.s[1], ' ', Condition.V.s[2], ' & !is.na(Var.V.n)', sep='')
   } else if( length(Condition.V.s) == 5 && all(Condition.V.s[c(1,4)]  %in% c('<','<=','==','>=','>','!=')) 
              && all(nzchar(Condition.V.s[2]),nzchar(Condition.V.s[5])) && (Condition.V.s[3] %in% c('|','&')) ) {
     # Two conditions
-    paste('Var.V.n ', Condition.V.s[1], ' ', Condition.V.s[2],'  ', Condition.V.s[3], ' Var.V.n ', Condition.V.s[4], ' ', Condition.V.s[5], sep='')
+    paste('Var.V.n ', Condition.V.s[1], ' ', Condition.V.s[2],'  ', Condition.V.s[3], ' Var.V.n ', Condition.V.s[4], ' ', Condition.V.s[5], ' & !is.na(Var.V.n)', sep='')
   } else {
-    stop('Incorrect condition definition: ', paste(Condition.V.s, collapse=' '), '!')
+    stop(CallFunction.s, ':::fCheckOutsideRange::: Incorrect condition definition: ', paste(Condition.V.s, collapse=' '), '!')
   }
-  Range.b <- eval(parse(text=CondText.s))
-  
+
   # Warning message
-  OutsideRange.n <- sum(Range.b, na.rm=T) 
-  if ( OutsideRange.n > 0 )
-    warning(CallFunction.s, '::: The variable \'', VarName.s, '\' is outside range! Number of rows fulfilling the condition \'', 
-            paste(Condition.V.s, collapse=' '), '\': ', OutsideRange.n)
-  
-  OutsideRange.n
-  ##value<< 
-  ## Number of rows outside range.
+  Outside.b <- eval(parse(text=CondText.s))
+  Outside.n <- sum(Outside.b)
+  if ( Outside.n > 0 )
+    warning(CallFunction.s, ':::fCheckOutsideRange::: Variable outside (plausible) range in ', Outside.n, 
+            ' cases! Invalid values with \'', VarName.s, ' ',
+            paste(Condition.V.s, collapse=' '), '\': ', paste(format(Var.V.n[Outside.b][1:(min(Outside.n,50))], digits=2), collapse=','), ' ...')
+
+  return(invisible(NULL))
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -389,34 +482,62 @@ fCheckColPlausibility <- function(
   fCheckColNames(Data.F, VarName.V.s, SubCallFunc.s)
   ##details<<
   ## Variables CONTAINing the following abbreviations are checked for plausibility
+  # Separated checks for upper and lower limit to have separate warnings
   for (v.i in 1:length(VarName.V.s)) {
     ## 'Rg' - global radiation, W m-2
     if( grepl('Rg', VarName.V.s[v.i]) )
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0, '|', '>', 1200), SubCallFunc.s)
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 1200), SubCallFunc.s)
+    }
     ## 'PPFD' or 'ppfd' - photosynthetic active radiation, umol m-2 s-1
     if( grepl('PPFD', VarName.V.s[v.i], ignore.case=TRUE) )
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0, '|', '>', 2500), SubCallFunc.s)
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 2500), SubCallFunc.s)
+    }
     ## 'PAR' or 'par' - photosynthetic active radiation, umol m-2 s-1
     if( grepl('PAR', VarName.V.s[v.i], ignore.case=TRUE) )
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0, '|', '>', 2500), SubCallFunc.s)
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 2500), SubCallFunc.s)
+    }
     ## 'Ta' - air temperature in °C
-    if( grepl('Ta', VarName.V.s[v.i]) ) 
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -70, '|', '>', 60), SubCallFunc.s)
+    if( grepl('Ta', VarName.V.s[v.i]) )
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -70), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 60), SubCallFunc.s)
+    }
     ## 'Ts' - soil temperature in °C
-    if( grepl('Ts', VarName.V.s[v.i]) ) 
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -20, '|', '>', 80), SubCallFunc.s)
+    if( grepl('Ts', VarName.V.s[v.i]) )
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -20), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 80), SubCallFunc.s)
+    }
     ## 'VPD' - vapour pressure deficit in hPa
     if( grepl('VPD', VarName.V.s[v.i]) ) 
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0, '|', '>', 50), SubCallFunc.s)
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 50), SubCallFunc.s)
+    }
     ## 'Rh' - relative humidity in %
     if( grepl('Rh', VarName.V.s[v.i]) ) 
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -10, '|', '>', 110), SubCallFunc.s)
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -10), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 110), SubCallFunc.s)
+    }
     ## 'NEE' - in umol CO2 m-2 s-1 oder g C m-2 day-1
     if( grepl('NEE', VarName.V.s[v.i]) ) 
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -50, '|', '>', 100), SubCallFunc.s)
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -50), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 100), SubCallFunc.s)
+    }
     ## 'ustar' - in m s-1
-    if( grepl('ustar', VarName.V.s[v.i]) ) 
-      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -1, '|', '>', 50), SubCallFunc.s)
+    if( grepl('ustar', VarName.V.s[v.i]) )
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -1), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 50), SubCallFunc.s)
+    }
     ## FLUXNET _fqc, 0: data are original, 1: gapfilled high quality, 2: gapfilled medium quality, 3: gapfilled low quality
     if( grepl('_fqc', VarName.V.s[v.i]) && !grepl('_fqcOK', VarName.V.s[v.i], ignore.case=TRUE) ) # 0 is best
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0, '|', '>', 3), SubCallFunc.s)
@@ -438,28 +559,35 @@ fSetQF <- function(
   ## Generate new vector from data and quality flag column.
   Data.F                ##<< Data frame
   ,Var.s                ##<< Variable to be filled
-  ,QFvar.s              ##<< Quality flag of variable to be filled
-  ,QFvalue.n            ##<< Numeric value of quality flag for _good_ data, other data is set to missing
+  ,QFVar.s              ##<< Quality flag of variable to be filled
+  ,QFValue.n            ##<< Numeric value of quality flag for _good_ data, other data is set to missing
   ,CallFunction.s =''   ##<< Name of function called from
 )
   ##author<<
   ## AMM
-  # TEST: Data.F <- EddyData.F; Var.s <- 'NEE'; QFvar.s <- 'QF'; QFvalue.n <- 0; CallFunction.s='dummy'
+  # TEST: Data.F <- EddyData.F; Var.s <- 'NEE'; QFVar.s <- 'QF'; QFValue.n <- 0; CallFunction.s='dummy'
 {
   # Check if specified columns exist and are numeric
   SubCallFunc.s <- paste(CallFunction.s,'fCheckPlausibility', sep=':::')
-  fCheckColNames(Data.F, c(Var.s, QFvar.s), SubCallFunc.s)
-  fCheckColNum(Data.F, c(Var.s, QFvar.s), SubCallFunc.s)
-  fCheckColPlausibility(Data.F, c(Var.s, QFvar.s), SubCallFunc.s)
+  fCheckColNames(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
+  fCheckColNum(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
+  fCheckColPlausibility(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
       
-  if (QFvar.s != 'none') {
+  if (QFVar.s != 'none') {
     # Only use data values when good data (quality flag is equal to flag value)
-    Var.V.n <- ifelse(Data.F[,QFvar.s]==QFvalue.n, Data.F[,Var.s], NA_real_)
+    Var.V.n <- ifelse(Data.F[,QFVar.s]==QFValue.n, Data.F[,Var.s], NA_real_)
+    if( sum(!is.na(Var.V.n)) == 0 )
+      warning(CallFunction.s, ':::fSetQF::: Variable \'', Var.s, '\' contains no data after applying quality flag \'', QFVar.s, '\' with value ', QFValue.n, '!')
   } else {
     # Use all data
     Var.V.n <- Data.F[,Var.s]
+    if( sum(!is.na(Var.V.n)) == 0 )
+      warning(CallFunction.s, ':::fSetQF::: Variable \'', Var.s, '\' contains no data!')
   }
-  
+  # Add units
+  attr(Var.V.n, 'units') <- attr(Data.F[[Var.s]], 'units')
+  attr(Var.V.n, 'varnames') <- if( QFVar.s != 'none' ) paste(Var.s, sep='') else paste(Var.s, '_', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
+      
   Var.V.n
   ##value<< 
   ## Numeric vector with _good_ data.

@@ -69,9 +69,9 @@ test_that("Time format name unvalid",{
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 test_that("Time format values unvalid (fCheckOutsideRange)",{
-  expect_warning(expect_error( 
+  expect_warning( 
     res <- fConvertTimeToPosix(Date.F.x, "YMDH", Year.s="Year.n", Month.s="Month.n", Day.s="Day.n", Hour.s="FluxnetHourDec.n" ) 
-  ))
+    )
 })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

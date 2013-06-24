@@ -75,34 +75,37 @@ if ( Sys.getenv('HOME') == "/Users/amoffat" ) { #AMM's local setup for generatin
   
   # Reinstall package, set for local libraries of AMM with build binary in gzp-file
   # Without library path, it gets installed to library ‘/Applications/RStudio.app/Contents/Resources/R/library’!
-  system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/2.13/Resources/library ../REddyProc')
+  system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   
-  # Windows compatible zip-file (for users withour R tools)
-  setwd('/Library/Frameworks/R.framework/Versions/2.13/Resources/library')
-  system('zip -rq REddyProc_0.31.zip REddyProc')
-  system(paste('mv REddyProc_0.31.zip ', Dir.s, '/.', sep=''))
-  #Reset working directory
-  setwd(Dir.s)
+  if (FALSE) {
+    # Windows compatible zip-file (for users withour R tools)
+    setwd('/Library/Frameworks/R.framework/Versions/current/Resources/library')
+    system('zip -rq REddyProc_0.31.zip REddyProc')
+    system(paste('mv REddyProc_0.31.zip ', Dir.s, '/.', sep=''))
+    #Reset working directory
+    setwd(Dir.s)
   
-  # Make zip file with code (and code structure)
-  system('rm -fr REddyProc_0.31_Code')
-  system('mkdir REddyProc_0.31_Code')
-  system('mkdir REddyProc_0.31_Code/REddyProc')
-  system('cp -r data REddyProc_0.31_Code/REddyProc')
-  system('cp DESCRIPTION REddyProc_0.31_Code/REddyProc')
-  system('cp -r inst REddyProc_0.31_Code/REddyProc')
-  system('cp -r man REddyProc_0.31_Code/REddyProc')
-  system('cp NAMESPACE REddyProc_0.31_Code/REddyProc')
-  system('cp -r R REddyProc_0.31_Code/REddyProc')
-  system('cp -r tests REddyProc_0.31_Code/REddyProc')
-  system('zip -rq REddyProc_0.31_Code.zip REddyProc_0.31_Code/REddyProc')
   
-  message('Generated REddyProc package archives.')
+    # Make zip file with code (and code structure)
+    system('rm -fr REddyProc_0.31_Code')
+    system('mkdir REddyProc_0.31_Code')
+    system('mkdir REddyProc_0.31_Code/REddyProc')
+    system('cp -r data REddyProc_0.31_Code/REddyProc')
+    system('cp DESCRIPTION REddyProc_0.31_Code/REddyProc')
+    system('cp -r inst REddyProc_0.31_Code/REddyProc')
+    system('cp -r man REddyProc_0.31_Code/REddyProc')
+    system('cp NAMESPACE REddyProc_0.31_Code/REddyProc')
+    system('cp -r R REddyProc_0.31_Code/REddyProc')
+    system('cp -r tests REddyProc_0.31_Code/REddyProc')
+    system('zip -rq REddyProc_0.31_Code.zip REddyProc_0.31_Code/REddyProc')
+    
+    message('Generated REddyProc package archives.')
+  }
   
   if (FALSE) { #Test installing package from archive files
     # Install package from gzp or zip file
     install.packages('REddyProc_0.31.gzp', repos=NULL)
-    install.packages('REddyProc_0.2.zip', repos=NULL)
+    install.packages('REddyProc_0.31.zip', repos=NULL)
   }
   
   #Only load if REddyProc was already package loaded (sometimes not wanted during testing)

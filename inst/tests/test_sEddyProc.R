@@ -43,22 +43,50 @@ test_that("POSIX time stamp: wrong column type",{
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Check sEddyProc initialization: Time series problems
+test_that("Invalid number of daily time steps",{
+  expect_error( 
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'), DTS.n=12)
+  )
+})
 test_that("Time series not in equidistant steps",{
   expect_error(
     EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(-50,-60),], c('NEE','Rg', 'Tair', 'VPD'))
   )
+  expect_error( #Pseudo hourly by [c(F,T),]
+    EddyProcH.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][c(-50,-60),], c('NEE','Rg', 'Tair', 'VPD'), DTS.n=24)
+  ) 
 })
-test_that("Time series not stamped on the half-hour",{
+test_that("Time series not stamped on the (half-)hour",{
+  #Shift half-hourly time stamp
   EddyDataShiftedPosix.F <- EddyDataWithPosix.F
   EddyDataShiftedPosix.F$DateTime <- EddyDataShiftedPosix.F$DateTime - (15 * 60)
   expect_error(
-    #Shifted time stamp
     EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataShiftedPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
+  )
+  expect_error(
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataShiftedPosix.F[c(F,T),], c('NEE','Rg', 'Tair', 'VPD'), DTS.n=24)
+  )
+})
+test_that("Time series not in full days and starting at end of first (half-)hour (and ending at midnight).",{
+  expect_warning( 
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(nrow(EddyDataWithPosix.F)-1),], c('NEE','Rg', 'Tair', 'VPD'))
+    )
+  expect_warning( 
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(nrow(EddyDataWithPosix.F[c(F,T),])-1),], c('NEE','Rg', 'Tair', 'VPD'), DTS.n=24)
+  )
+  expect_warning( 
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[2:(nrow(EddyDataWithPosix.F)-47),], c('NEE','Rg', 'Tair', 'VPD'))  
+    )
+  expect_warning( 
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][2:(nrow(EddyDataWithPosix.F[c(F,T),])-23),], c('NEE','Rg', 'Tair', 'VPD'), DTS.n=24)
   )
 })
 test_that("Time series less than three month of data",{
   expect_error( 
-    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:3999,], c('NEE','Rg', 'Tair', 'VPD'))
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*(3*30-1)),], c('NEE','Rg', 'Tair', 'VPD'))
+  )
+  expect_error( 
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*(3*30-1)),], c('NEE','Rg', 'Tair', 'VPD'), DTS.n=24)
   )
 })
 
@@ -74,18 +102,26 @@ test_that("Test sGetData",{
 
 test_that("Test sMDSGapFill",{
   EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=c(1,0,1,0,1,0,0,0,0,0))
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:4000,], c('NEE','Rg', 'Tair', 'VPD'))
-  EddyProc2.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:4000,], c('NEE','Rg', 'Tair', 'VPD', 'QF'))
+  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'))
   expect_error( #Not existing variable
-    Data2.F <- EddyProc2.C$sMDSGapFill('fee','QF','0', Verbose.b=F)
+    EddyProc.C$sMDSGapFill('fee','QF','0', Verbose.b=F)
   )
-  expect_error( #Empty variable to fill
-    Data2.F <- EddyProc2.C$sMDSGapFill('NEE','QF','100', Verbose.b=F)
+  expect_warning( #Empty variable to fill
+    EddyProc.C$sMDSGapFill('Rg','QF','100', Verbose.b=F)
   )
-  Data.F <- EddyProc.C$sMDSGapFill('NEE', Verbose.b=F)
-  expect_that(Data.F[1,'NEE_fnum'], equals(53))
-  Data2.F <- EddyProc2.C$sMDSGapFill('NEE','QF','0', Verbose.b=F)
-  expect_that(Data2.F[1,'NEE_fnum'], equals(34))
+  EddyProc.C$sMDSGapFill('NEE', Verbose.b=F)
+  EddyProc.C$sMDSGapFill('Tair','QF','0', Verbose.b=F)
+  Results.F <- EddyProc.C$sExportResults()
+  expect_that(Results.F[1,'NEE_fnum'], equals(54)) #Equal to 53 with old MR PV-Wave congruent settings
+  expect_that(Results.F[1,'Tair_fnum'], equals(96))
+  # Shorter version for hourly  
+  EddyHour.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS.n=24)
+  EddyHour.C$sMDSGapFill('Tair','QF','0', Verbose.b=F)
+  Results.F <- EddyHour.C$sExportResults()
+  expect_that(Results.F[1,'Tair_fnum'], equals(68))
 })
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 
