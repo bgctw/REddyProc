@@ -47,7 +47,7 @@ EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
 # Add dummy quality flag for tests
 EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units="dummy_flag"))
 # Add POSIX time stamp
-EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'Day', Hour.s = 'Hour')
+EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
 
 # Write data to files
 fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Results.txt', 'out')
@@ -59,7 +59,7 @@ fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Results.nc', 'out', 'nc')
 if (LongTest.b) {
   # Load MDS output data
   MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_MDSOutput_DataSetafterGapfill.txt','inst/MDSdata')
-  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
+  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'DoY', Hour.s = 'Hour', Min.s = 'Minute')
   
   # Load NC file with multiple years (upload includes time conversion)
   lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK')
