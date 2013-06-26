@@ -3,7 +3,7 @@
 \alias{REddyProc}
 \title{Data processing and plotting utilities of (half-)hourly eddy-covariance measurements}
 \description{
-R eddy processing package with MDS gap filling algorithm adopted after PV-Wave source code from Markus Reichstein.
+R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
 }
 \details{
 

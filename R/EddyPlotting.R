@@ -1,6 +1,6 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ R script with sEddyProc methods for plotting +++
-#+++ fingerprint, half-hourly means, half-hourly fluxes, and daily sums +++
+#+++ fingerprint, diurnal cycle, half-hourly fluxes, and daily sums +++
 #+++ Dependencies: Eddy.R, DataFunctions.R
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -234,15 +234,15 @@ sEddyProc$methods(
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+++ Half-hourly means
+#+++ Diurnal cycles
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
   sPlotDiurnalCycleM = function(
     ##title<<
-    ## sEddyProc$sPlotDiurnalCycleM - Plot half-hourly means of specified months
+    ## sEddyProc$sPlotDiurnalCycleM - Plot diurnal cycles of specified month
     ##description<<
-    ## The half-hourly means of a single months (averaged over all years) are potted to the current device, scaled to all data.
+    ## The diurnal cycles of a single month are potted to the current device, scaled to all data. Each year is plotted as a different (coloured) line.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA       ##<< Value of quality flag for data to plot
@@ -253,9 +253,9 @@ sEddyProc$methods(
     ## AMM, KS
     # TEST: sPlotDiurnalCycleM('NEE', 'none', NA, 10)
   {
-    'Plot half-hourly means of specified months'
+    'Plot diurnal cycles of specified month'
     # Set plot contents
-    # Half-hourly means 
+    # Diurnal cycles 
     Plot.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotDiurnalCycleM')
     Month.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%m')), nrow=sINFO$DTS)[1,]
     DYear.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%Y')), nrow=sINFO$DTS)[1,]
@@ -269,7 +269,7 @@ sEddyProc$methods(
     # Axis settings
     XAxis.V.n <- seq(0, 24, by=2)
     
-    # Plot half-hourly means
+    # Plot diurnal cycles
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
     if( sum(!is.na(Mean.F.m[Mean.F.m$Month==Month.i,c(-1,-2)])) > 0 ) {
       # Plot
@@ -298,9 +298,9 @@ sEddyProc$methods(
 sEddyProc$methods(
   sPlotDiurnalCycle = function(
     ##title<<  
-    ## sEddyProc$sPlotDiurnalCycle - Image with half-hourly means of each month
+    ## sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month
     ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with half-hourly means, see also \code{\link{sPlotDiurnalCycleM}}.
+    ## Generates image in specified format ('pdf' or 'png') with diurnal cycles, see also \code{\link{sPlotDiurnalCycleM}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA       ##<< Value of quality flag for data to plot
@@ -311,9 +311,9 @@ sEddyProc$methods(
     ## KS, AMM
     # TEST: sPlotDiurnalCycle('NEE')
   {
-    'Image with half-hourly means of each month'
+    'Image with diurnal cycles of each month'
     # Open plot
-    PlotType.s <- 'HM'
+    PlotType.s <- 'DC'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * 5
     PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDiurnalCycle')
@@ -329,7 +329,7 @@ sEddyProc$methods(
       
       # Set title of plot
       screen(6) 
-      mtext(sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Half-hourly means'), line=-3, side=3, cex=2.0)
+      mtext(sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Diurnal cycles'), line=-3, side=3, cex=2.0)
       screen(8)
       mtext(sINFO$Y.NAME, line=1, side=3, cex=2.0)
       
@@ -503,9 +503,12 @@ sEddyProc$methods(
       # Plot
       plot(DSum.V.d ~ DoY.V.d, type='n', ylim=c(YMin.n,YMax.n),
            axes=F, xlab='', ylab='', main=Year.i)
-      if (VarUnc.s != 'none')
-        polygon(c(DoY.V.d, rev(DoY.V.d)), c(DSum.V.d+DUnc.V.d, rev(DSum.V.d-DUnc.V.d)), 
+      
+      if (VarUnc.s != 'none'){
+        t.b <- !is.na(DUnc.V.d) #Polygons sensitive to NAs 
+        polygon(c(DoY.V.d[t.b], rev(DoY.V.d[t.b])), c(DSum.V.d[t.b]+DUnc.V.d[t.b], rev(DSum.V.d[t.b]-DUnc.V.d[t.b])), 
                 col='dark grey', border=NA)
+      }
       abline(h=0, col='grey')
       lines(DSum.V.d, lty='solid', lwd=1, col='dark green')
       points(DSum.V.d, pch=20, cex=0.7, col='dark green')

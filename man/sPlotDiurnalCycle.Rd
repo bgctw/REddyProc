@@ -1,7 +1,7 @@
 \name{sPlotDiurnalCycle}
 \alias{sPlotDiurnalCycle}
-\title{sEddyProc$sPlotDiurnalCycle - Image with half-hourly means of each month}
-\description{Generates image in specified format ('pdf' or 'png') with half-hourly means, see also \code{\link{sPlotDiurnalCycleM}}.}
+\title{sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month}
+\description{Generates image in specified format ('pdf' or 'png') with diurnal cycles, see also \code{\link{sPlotDiurnalCycleM}}.}
 \usage{sPlotDiurnalCycle(Var.s, QFVar.s = "none", QFValue.n = NA, Format.s = "pdf", 
     Dir.s = "plots")}
 \arguments{
