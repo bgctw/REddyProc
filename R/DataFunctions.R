@@ -448,7 +448,7 @@ fCheckOutsideRange <- function(
   } else if( length(Condition.V.s) == 5 && all(Condition.V.s[c(1,4)]  %in% c('<','<=','==','>=','>','!=')) 
              && all(nzchar(Condition.V.s[2]),nzchar(Condition.V.s[5])) && (Condition.V.s[3] %in% c('|','&')) ) {
     # Two conditions
-    paste('Var.V.n ', Condition.V.s[1], ' ', Condition.V.s[2],'  ', Condition.V.s[3], ' Var.V.n ', Condition.V.s[4], ' ', Condition.V.s[5], ' & !is.na(Var.V.n)', sep='')
+    paste('(Var.V.n ', Condition.V.s[1], ' ', Condition.V.s[2],'  ', Condition.V.s[3], ' Var.V.n ', Condition.V.s[4], ' ', Condition.V.s[5], ') & !is.na(Var.V.n)', sep='')
   } else {
     stop(CallFunction.s, ':::fCheckOutsideRange::: Incorrect condition definition: ', paste(Condition.V.s, collapse=' '), '!')
   }
