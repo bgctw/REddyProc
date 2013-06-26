@@ -22,7 +22,7 @@ Please use NA as a gap flag for missing data or low quality data not to be used 
 
 sID is a string for the site ID.
 
-sDATA is a data frame with the site data.
+sDATA is a data frame with site data.
 
 sTEMP is a temporal data frame with the processing results.
 

@@ -75,6 +75,8 @@ if ( Sys.getenv('HOME') == "/Users/amoffat" ) { #AMM's local setup for generatin
   
   # Reinstall package, set for local libraries of AMM with build binary in gzp-file
   # Without library path, it gets installed to library ‘/Applications/RStudio.app/Contents/Resources/R/library’!
+  # Check library paths with .libPaths()
+  # For RStudio specific information see here http://www.rstudio.com/ide/docs/server/configuration
   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   
   if (FALSE) {

@@ -50,24 +50,23 @@ if (Develop.b) {
 EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
 # Add dummy quality flag for tests
 EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units="dummy_flag"))
+# Test calculation of VPD
+EddyData.F$VPDnew <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
+
 # Add POSIX time stamp
 EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
 
-# Write data to files
-fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.txt', 'out')
-fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.nc', 'out', 'nc')
-
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Load other datasets
+
+# Load NC file with multiple years (upload includes time conversion)
+lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK')
+EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
 
 if (LongTest.b) {
   # Load MDS output data
   MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_MDSOutput_DataSetafterGapfill.txt','inst/MDSdata')
   MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'DoY', Hour.s = 'Hour', Min.s = 'Minute')
-  
-  # Load NC file with multiple years (upload includes time conversion)
-  lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK')
-  EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
 }
 
 # Run loop over all (site) files in BGI Fluxnet data directory
@@ -83,14 +82,32 @@ if (T==F) {
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Write data to files
+if (LongTest.b) {
 
-# Load data into REddyProc classes
+  fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.txt', 'out')
+  fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.nc', 'out', 'nc')
+}
+
+#Produce new ascii test files from BGI netcdf fluxnet files
+if (LongTest.b) {
+  fWriteDataframeToFile(EddyNCData.F, 'DE-Tha.1996.1998.txt','out')
+  Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Load data into REddyProc class instances
+
 # Standard dataset
 EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
 # Dataset with pseudo hourly data
 EPThaH.C <- sEddyProc$new('DE-Tha-H', EddyDataWithPosix.F[c(F,T),], c('NEE', 'QF', 'Rg', 'Tair', 'VPD'), DTS.n=24)
 # Subset of dataset
 EPThaS.C <- sEddyProc$new('DE-Tha-S', EddyDataWithPosix.F[(4321:8640),], c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
+# Limited dataset with NEE only
+EPThaL1.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE'))
+EPThaL2.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg'))
+EPThaL3.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair'))
 
 # Work with (subsets of) multiple years
 if (LongTest.b) {
@@ -105,9 +122,16 @@ if (LongTest.b) {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Fill gaps with MDS algorithm
 
-EPTha.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) #system.time(...)
-EPThaH.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) #system.time(...)
-EPThaS.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) #system.time(...)
+#system.time(...)
+EPTha.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) 
+EPTha.C$sMDSGapFill('NEE', V1.s='none', Verbose.b=T)
+EPThaH.C$sMDSGapFill('NEE','QF','0', Verbose.b=T)
+EPThaS.C$sMDSGapFill('NEE','QF','0', Verbose.b=T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s='none', T1.n=NA_real_, V2.s='none', T2.n=NA_real_, V3.s='none', T3.n=NA_real_, Verbose.b=T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s='none', Verbose.b=T)
+EPThaL1.C$sMDSGapFill('NEE', Verbose.b=T)
+EPThaL2.C$sMDSGapFill('NEE', Verbose.b=T)
+EPThaL3.C$sMDSGapFill('NEE', Verbose.b=T)
 
 # Fill also other variables
 if( LongTest.b ) {

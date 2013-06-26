@@ -167,6 +167,7 @@ sEddyProc$methods(
           
           #Set window size and quality flag
           lVAR_fwin.n  <- 2*WinDays.i                      #! Full window length, congruent with MR PV-Wave, in paper single window sizes stated
+          lVAR_fmeth.n <- NA; lVAR_fqc.n <- NA;
           if( V1.s != 'none' && V2.s != 'none' && V3.s != 'none') { #Three conditions
             lVAR_fmeth.n <- 1
             if( lVAR_fwin.n <= 14 ) lVAR_fqc.n <- 1        #! Limit '14' congruent with MR PV-Wave, in paper different limit of '28' (stated as single window size of 14 days)
@@ -305,7 +306,7 @@ sEddyProc$methods(
   ##references<<
   ## Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
-  # TEST: sDATA <- EPTha.C$sDATA; sINFO <- EPTha.C$sINFO; Var.s <- 'NEE'; QFVar.s <- 'none'; QFValue.n <- NA_real_;
+  # TEST: sDATA <- EPTha.C$sDATA; sINFO <- EPTha.C$sINFO; sTEMP <- EPTha.C$sTEMP; Var.s <- 'NEE'; QFVar.s <- 'none'; QFValue.n <- NA_real_;
   # TEST: V1.s <- 'Rg'; T1.n <- 50; V2.s <- 'VPD'; T2.n <- 5; V3.s <- 'Tair'; T3.n <- 2.5; Verbose.b <- TRUE
 {
     'MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.'
@@ -316,7 +317,12 @@ sEddyProc$methods(
     if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n)) )
       return(invisible(-111)) # Do not execute gap filling if initialization of sTEMP failed
     
-    # Check if specified condition columns exist and are numeric (with 'none' as dummy)
+    # If variables are at default values but do not exist as columns, set to dummy ('none')
+    if( V1.s == 'Rg'  & !(V1.s %in% c(colnames(sDATA), 'none')) ) V1.s <- 'none'
+    if( V2.s == 'VPD'  & !(V2.s %in% c(colnames(sDATA), 'none')) ) V2.s <- 'none'
+    if( V3.s == 'Tair'  & !(V3.s %in% c(colnames(sDATA), 'none')) ) V3.s <- 'none'
+    
+    # Check if specified columns are numeric and plausible (with 'none' as dummy)
     fCheckColNames(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
     fCheckColNum(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
     fCheckColPlausibility(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
@@ -346,38 +352,39 @@ sEddyProc$methods(
     # Run gap filling scheme depending on auxiliary data availability
     #! Attention: Artificial gaps are filled with itself if Var.s %in%  == c(V1.s, V2.s, V3.s), this is congruent to PV-Wave code.
     ##details<<
-    ## MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+    ## MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
+    ## and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+    ##details<<
     ## To run dataset only with MDC algorithm \code{\link{sFillMDC}}, set condition variable V1.s to 'none'.
-    if( 
-      V1.s == 'none'               # There is no first condition defined
-      || sum(!is.na(sDATA[,V1.s]))==0 # First condition variable is empty
-    ) {
-      #+++ Fill with MDC only
-      # Step 4 and 5; 0, 1, 2 days
-      sFillMDC(0, Verbose.b=Verbose.b)
-      sFillMDC(1, Verbose.b=Verbose.b)
-      sFillMDC(2, Verbose.b=Verbose.b)
-      # Step 8; >= 7 days
-      for (WinDays.i in seq(7,210,7)) sFillMDC(WinDays.i, Verbose.b=Verbose.b)
-    } else { 
-      
-      #+++ Full algorithm
-      # Step 1 and 2; method 1; 7, 14 days
-      sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-      sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-      # Step 3; method 2; 7 days
-      sFillLUT(7, V1.s, T1.n, Verbose.b=Verbose.b)
-      # Step 4 and 5; 0, 1, 2 days  
-      sFillMDC(0, Verbose.b=Verbose.b)
-      sFillMDC(1, Verbose.b=Verbose.b)
-      sFillMDC(2, Verbose.b=Verbose.b)
-      # Step 6; method 1; >= 7 days  
-      for (WinDays.i in seq(21,70,7)) sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-      # Step 7; method 2; >= 14 days  
-      for (WinDays.i in seq(14,70,7)) sFillLUT(WinDays.i, V1.s, T1.n, Verbose.b=Verbose.b)
-      # Step 8; >= 7 days  
-      for (WinDays.i in seq(7,210,7)) sFillMDC(WinDays.i, Verbose.b=Verbose.b)    
-    }
+    
+    # Check availablility of meteorological data for LUT
+    Met.n <- 
+      if( V1.s != 'none' && V2.s != 'none' && V3.s != 'none' 
+          && sum(!is.na(sDATA[,V1.s]))!=0 && sum(!is.na(sDATA[,V2.s]))!=0 && sum(!is.na(sDATA[,V3.s]))!=0 ) {  
+        3 #Three meteo conditions available for LUT
+      } else if( V1.s != 'none' && sum(!is.na(sDATA[,V1.s]))!=0 ) {
+        1 #One meteo condition available for LUT
+      } else { 
+        0 #No meteo condition available (use MDC only)
+      } 
+    
+    #+++ Full MDS algorithm
+    # Step 1 and 2; method 1; 7, 14 days
+    if( Met.n == 3 ) sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
+    if( Met.n == 3 ) sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
+    # Step 3; method 2; 7 days
+    if( Met.n == 3 || Met.n == 1) sFillLUT(7, V1.s, T1.n, Verbose.b=Verbose.b)
+    # Step 4 and 5; method 3; 0, 1, 2 days  
+    sFillMDC(0, Verbose.b=Verbose.b)
+    sFillMDC(1, Verbose.b=Verbose.b)
+    sFillMDC(2, Verbose.b=Verbose.b)
+    # Step 6; method 1; >= 7 days  
+    if( Met.n == 3 ) for( WinDays.i in seq(21,70,7) ) sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
+    # Step 7; method 2; >= 14 days  
+    if( Met.n == 3 || Met.n == 1) for( WinDays.i in seq(14,70,7) ) sFillLUT(WinDays.i, V1.s, T1.n, Verbose.b=Verbose.b)
+    # Step 8; method 3; >= 7 days  
+    for( WinDays.i in seq(7,210,7) ) sFillMDC(WinDays.i, Verbose.b=Verbose.b)
+    
     # Set long gaps again to NA
     sTEMP$VAR_fall <<- suppressMessages(fConvertGapsToNA(sTEMP$VAR_fall))
     # Generate filled variable column

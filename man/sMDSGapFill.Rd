@@ -21,7 +21,9 @@
 
 Long gaps (larger than 60 days) are not filled.
 
-MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
+and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+
 To run dataset only with MDC algorithm \code{\link{sFillMDC}}, set condition variable V1.s to 'none'.}
 \value{Gap filling results in sTEMP data frame (with renamed columns).}
 \references{Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 

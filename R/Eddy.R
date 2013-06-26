@@ -62,13 +62,11 @@ sEddyProc$methods(
     ## sID is a string for the site ID.
     sID <<- ID.s
     ##details<<
-    ## sDATA is a data frame with the site data.
-    sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s])
+    ## sDATA is a data frame with site data.
+    sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s, drop=FALSE])
     ##details<<
     ## sTEMP is a temporal data frame with the processing results.
     sTEMP <<- data.frame(sDateTime=Time.V.p)
-    ## sDATA is a data frame with site data.
-    sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s, drop=FALSE])    
     #Initialization of site data information from POSIX time stamp.
     YStart.n <- as.numeric(format(sDATA$sDateTime[1], '%Y'))
     YEnd.n <- as.numeric(format(sDATA$sDateTime[length(sDATA$sDateTime)], '%Y'))
