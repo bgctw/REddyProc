@@ -22,6 +22,10 @@ if ( Sys.getenv('HOME') == '/Users/amoffat' ) {
   setwd('/Users/ksickel/REddyProc')
   DirFluxnet.s <- paste('/Volumes/BGI/data/DataStructureMDI/DATA/site/Fluxnet/halfhourly/level5_new_v2/Data/single_sites/')
 # Unknown
+} else if ( Sys.getenv('HOME') == 'C:/Users/ksickel/Documents' ) { 
+  setwd('D:/my_R/REddyProc')
+  DirFluxnet.s <- paste('L:/BGI/data/DataStructureMDI/DATA/site/Fluxnet/halfhourly/level5_new_v2/Data/single_sites/')
+# Unknown
 } else {
   stop('R working directory could not be set, unkown home directory.')
 }
