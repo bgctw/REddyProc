@@ -1,7 +1,7 @@
 \name{sPlotDiurnalCycleM}
 \alias{sPlotDiurnalCycleM}
-\title{sEddyProc$sPlotDiurnalCycleM - Plot half-hourly means of specified months}
-\description{The half-hourly means of a single months (averaged over all years) are potted to the current device, scaled to all data.}
+\title{sEddyProc$sPlotDiurnalCycleM - Plot diurnal cycles of specified month}
+\description{The diurnal cycles of a single month are potted to the current device, scaled to all data. Each year is plotted as a different (coloured) line.}
 \usage{sPlotDiurnalCycleM(Var.s, QFVar.s = "none", QFValue.n = NA, Month.i, 
     Legend.b = T)}
 \arguments{

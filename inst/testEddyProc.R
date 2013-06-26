@@ -24,7 +24,11 @@ if (Develop.b) {
 } else {
   # Source settings for R environment and standard functions
   source('inst/setREnvir.R')
+  # If needed, generate package
+  # system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
+  # system('R CMD INSTALL --build --html ../REddyProc')
   # Load REddyProc package
+  if( sum(grepl("REddyProc", (.packages()))) == 1 ) detach("package:REddyProc")
   require('REddyProc')
   # Test to source data
   #   data('Example_DETha98')
@@ -50,8 +54,8 @@ EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(Edd
 EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
 
 # Write data to files
-fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Results.txt', 'out')
-fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Results.nc', 'out', 'nc')
+fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.txt', 'out')
+fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.nc', 'out', 'nc')
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Load other datasets
@@ -102,6 +106,8 @@ if (LongTest.b) {
 # Fill gaps with MDS algorithm
 
 EPTha.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) #system.time(...)
+EPThaH.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) #system.time(...)
+EPThaS.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) #system.time(...)
 
 # Fill also other variables
 if( LongTest.b ) {
@@ -120,8 +126,10 @@ if (LongTest.b) {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Export processing results
+ThaFilled.F <- EPTha.C$sExportResults()
+fWriteDataframeToFile(cbind(EddyDataWithPosix.F,ThaFilled.F), 'DE-Tha-Results.txt', 'out')
+
 if (LongTest.b) {
-  ThaFilled.F <- EPTha.C$sExportResults()
   ThaHFilled.F <- EPThaH.C$sExportResults()
   ThaSFilled.F <- EPThaS.C$sExportResults()
   ThaNCFilled.F <- EPThaNC.C$sExportResults()
@@ -177,6 +185,16 @@ if (LongTest.b) {
   EPTha.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
   EPTha.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
   EPTha.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
+  
+  EPThaS.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
+  EPThaS.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
+  EPThaS.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
+  EPThaS.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
+  
+  EPThaH.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
+  EPThaH.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
+  EPThaH.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
+  EPThaH.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
   
   EPThaH.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
   EPThaH.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)

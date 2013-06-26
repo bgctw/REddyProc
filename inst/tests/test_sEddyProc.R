@@ -20,7 +20,7 @@ if( sum(grepl("REddyProc", (.packages()))) == 1 ) {  #REddyProc already package 
   stop('test_sEddyProc.R::: Data could not be loaded.')
 }
 #Include POSIX time stamp column
-EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='Day', Hour.s='Hour'))
+EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
