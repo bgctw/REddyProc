@@ -134,11 +134,9 @@ EPThaL2.C$sMDSGapFill('NEE', Verbose.b=T)
 EPThaL3.C$sMDSGapFill('NEE', Verbose.b=T)
 
 # Fill also other variables
-if( LongTest.b ) {
-  EPTha.C$sMDSGapFill('Rg', Verbose.b=T)
-  EPTha.C$sMDSGapFill('VPD', Verbose.b=T)
-  EPTha.C$sMDSGapFill('Tair', Verbose.b=T)
-}
+EPTha.C$sMDSGapFill('Rg', Verbose.b=T)
+EPTha.C$sMDSGapFill('VPD', Verbose.b=T)
+EPTha.C$sMDSGapFill('Tair', Verbose.b=T)
 
 # Fill multiple years
 if (LongTest.b) {
@@ -244,6 +242,10 @@ EPTha.C$sPlotHHFluxes('NEE_f','NEE_fqc',1)
 EPTha.C$sPlotDailySums('NEE')
 EPTha.C$sPlotDailySums('NEE_f')
 EPTha.C$sPlotDailySums('NEE_f','NEE_fsd')
+EPTha.C$sPlotDailySums('Rg_f','Rg_fsd')
+EPTha.C$sPlotDailySums('VPD_f','Tair_fsd')
+EPTha.C$sPlotDailySums('Tair_f','Tair_fsd')
+
 
 # Images for multiple year data
 if (LongTest.b) {

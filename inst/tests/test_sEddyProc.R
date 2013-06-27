@@ -17,7 +17,7 @@ if( sum(grepl("REddyProc", (.packages()))) == 1 ) {  #REddyProc already package 
 } else if( file.exists('../../data/Example_DETha98.txt') ) {
   EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../../data'))
 } else {
-  stop('test_sEddyProc.R::: Data could not be loaded.')
+  stop('test_sEddyProc.R::: Example data could not be loaded.')
 }
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
@@ -113,12 +113,12 @@ test_that("Test sMDSGapFill",{
   EddyProc.C$sMDSGapFill('Tair','QF','0', Verbose.b=F)
   Results.F <- EddyProc.C$sExportResults()
   expect_that(Results.F[1,'NEE_fnum'], equals(54)) #Equal to 53 with old MR PV-Wave congruent settings
-  expect_that(Results.F[1,'Tair_fnum'], equals(96))
+  expect_that(Results.F[1,'Tair_fnum'], equals(173)) #Equal to 96 with old MR PV-Wave congruent settings
   # Shorter version for hourly  
   EddyHour.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS.n=24)
   EddyHour.C$sMDSGapFill('Tair','QF','0', Verbose.b=F)
   Results.F <- EddyHour.C$sExportResults()
-  expect_that(Results.F[1,'Tair_fnum'], equals(68))
+  expect_that(Results.F[1,'Tair_fnum'], equals(124)) #Equal to 68 with old MR PV-Wave congruent settings
 })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

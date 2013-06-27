@@ -317,10 +317,15 @@ sEddyProc$methods(
     if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n)) )
       return(invisible(-111)) # Do not execute gap filling if initialization of sTEMP failed
     
-    # If variables are at default values but do not exist as columns, set to dummy ('none')
-    if( V1.s == 'Rg'  & !(V1.s %in% c(colnames(sDATA), 'none')) ) V1.s <- 'none'
-    if( V2.s == 'VPD'  & !(V2.s %in% c(colnames(sDATA), 'none')) ) V2.s <- 'none'
-    if( V3.s == 'Tair'  & !(V3.s %in% c(colnames(sDATA), 'none')) ) V3.s <- 'none'
+    #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
+    # If variables are at default values but do not exist as columns, set to 'none' (=disabled identifier).
+    # This allows running MDS with less variables than prescribed in the default setting.
+    # If meteo condition variable are same as variable to fill, also set to 'none'.
+    # This prevents filling artificial gaps (for uncertainty estimates) with itself as meteo condition variable.
+    #! Attention: Non-congruent with MR PV-Wave. There artificial gaps in Rg, VPD, Tair are filled with itself.
+    if( (V1.s ==   'Rg' && !(V1.s %in% c(colnames(sDATA)))) || (V1.s == Var.s) )   V1.s <- 'none'
+    if( (V2.s ==  'VPD' && !(V2.s %in% c(colnames(sDATA)))) || (V2.s == Var.s) )   V2.s <- 'none'
+    if( (V3.s == 'Tair' && !(V3.s %in% c(colnames(sDATA)))) || (V3.s == Var.s) )   V3.s <- 'none'
     
     # Check if specified columns are numeric and plausible (with 'none' as dummy)
     fCheckColNames(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
@@ -349,8 +354,7 @@ sEddyProc$methods(
       warning('sMDSGapFill::: The long gap between position ', Start.i, ' and ', End.i, ' will not be filled!')
     }
     
-    # Run gap filling scheme depending on auxiliary data availability
-    #! Attention: Artificial gaps are filled with itself if Var.s %in%  == c(V1.s, V2.s, V3.s), this is congruent to PV-Wave code.
+    # Run gap filling scheme depending on auxiliary meteo data availability
     ##details<<
     ## MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
     ## and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
