@@ -114,21 +114,44 @@ fAddNCFVar <- function(
 {
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
   
-  if( !require(RNetCDF) )  
-    stop(CallFunction.s, ':::fAddNCFVar Required package RNetCDF could not be loaded!')   # for handling Fluxnet netcdf files
-  NCFile.C <- open.nc(InputNCF.s)
-  tryCatch({
-    NewCol.F <- data.frame(var.get.nc(NCFile.C, Var.s))
-    names(NewCol.F)[[1]] <- Var.s
-    attr(NewCol.F[[1]], 'varnames') <- Var.s
-    attr(NewCol.F[[1]], 'units') <- att.get.nc(NCFile.C, Var.s, 'units')
-
-    # Use c() instead of cbind() to be able to bind dataframe Data.F even if empty
-    Data.F <- data.frame(c(Data.F, NewCol.F))
-    #attr(Data.F[[1]], 'units')
+  RNetCDF.b <- suppressWarnings(require(RNetCDF))
+  ncdf.b    <- suppressWarnings(require(ncdf))
+  
+  if ( !RNetCDF.b && !ncdf.b )
+      stop(CallFunction.s, ':::fAddNCFVar::: Required package RNetCDF or ncdf could not be loaded!') # for handling BGI Fluxnet netcdf files
+  
+  if( RNetCDF.b ) {
+    NCFile.C <- open.nc(InputNCF.s)
+    tryCatch({
+      NewCol.F <- data.frame(var.get.nc(NCFile.C, Var.s))
+      names(NewCol.F)[[1]] <- Var.s
+      attr(NewCol.F[[1]], 'varnames') <- Var.s
+      attr(NewCol.F[[1]], 'units') <- att.get.nc(NCFile.C, Var.s, 'units')
+      
+      # Use c() instead of cbind() to be able to bind dataframe Data.F even if empty
+      Data.F <- data.frame(c(Data.F, NewCol.F))
+      #attr(Data.F[[1]], 'units')
     }, 
-       finally = close.nc(NCFile.C)
-  )
+             finally = close.nc(NCFile.C)
+    )
+  } else if( ncdf.b ) {
+    stop('not implemented')
+    NCFile.C <- open.ncdf(InputNCF.s)
+    tryCatch({
+      NewCol.F <- data.frame(get.var.ncdf(NCFile.C, Var.s))
+      names(NewCol.F)[[1]] <- Var.s
+      attr(NewCol.F[[1]], 'varnames') <- Var.s
+      attr(NewCol.F[[1]], 'units') <- att.get.ncdf(NCFile.C, Var.s, 'units')
+      
+      # Use c() instead of cbind() to be able to bind dataframe Data.F even if empty
+      Data.F <- data.frame(c(Data.F, NewCol.F))
+      #attr(Data.F[[1]], 'units')
+    }, 
+             finally = close.ncdf(NCFile.C)
+    )
+  } else {
+    stop(CallFunction.s, ':::fAddNCFVar::: NC files could not be opened!')
+  }
   
   Data.F
   ##value<<
@@ -176,28 +199,43 @@ fWriteDataframeToFile <- function(
     
   } else if( FileType.s=='nc') {
     # Write NetCDF file
-    if( !require(RNetCDF) )  
-      stop('fWriteDataframeToFile::: Required package RNetCDF could not be loaded!')   # for handling Fluxnet netcdf files
-    NCFile.C <- create.nc(OutputFile.s, clobber=T, large=T, prefill=F)
-    tryCatch({
-      dim.def.nc(NCFile.C, 'time', unlim=TRUE)
-      for (Var.i in 1:ncol(Data.F))  {
-        if( is.numeric(Data.F[,Var.i]) ) 
-        {
-          VarType.s <- 'NC_DOUBLE'
-          var.def.nc(NCFile.C, varname=names(Data.F)[Var.i], vartype=VarType.s, dimensions='time')
-          var.put.nc(NCFile.C, variable=names(Data.F)[Var.i], data=Data.F[,Var.i])
-          att.put.nc(NCFile.C, variable=names(Data.F)[Var.i], name='miss_val', type=VarType.s, value=-9999.0)
+    RNetCDF.b <- suppressWarnings(require(RNetCDF))
+    ncdf.b    <- suppressWarnings(require(ncdf))
+    
+    if ( !RNetCDF.b && !ncdf.b )
+      stop(CallFunction.s, ':::fWriteDataframeToFile::: Required package RNetCDF or ncdf could not be loaded!') # for handling BGI Fluxnet netcdf files
+    
+    if( RNetCDF.b ) {
+      NCFile.C <- create.nc(OutputFile.s, clobber=T, large=T, prefill=F)
+      tryCatch({
+        dim.def.nc(NCFile.C, 'time', unlim=TRUE)
+        for (Var.i in 1:ncol(Data.F))  {
+          if( is.numeric(Data.F[,Var.i]) ) 
+          {
+            VarType.s <- 'NC_DOUBLE'
+            var.def.nc(NCFile.C, varname=names(Data.F)[Var.i], vartype=VarType.s, dimensions='time')
+            var.put.nc(NCFile.C, variable=names(Data.F)[Var.i], data=Data.F[,Var.i])
+            att.put.nc(NCFile.C, variable=names(Data.F)[Var.i], name='miss_val', type=VarType.s, value=-9999.0)
+          }
+          else next; #! Skips non-numeric columsn for now 
         }
-        else next; #! Skips non-numeric columsn for now 
-      }
-    }, 
-             finally = close.nc(NCFile.C)
-    )
+      }, 
+               finally = close.nc(NCFile.C)
+      )
+    } else if( ncdf.b ) {
+      stop('!!! Error: not yet implemented !!!')
+      tryCatch({
+        NULL
+      },
+               finally = NULL
+      )
+    } else {
+      stop(CallFunction.s, ':::fWriteDataframeToFile::: NC files could not be opened!')
+    }
     message('Wrote numeric columns to nc file: ', OutputFile.s)
   }
   
-  ##value<<
+##value<<
   ## Output of data frame written to file of specified type.
 }
 
