@@ -59,6 +59,7 @@ EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', D
 # Load other datasets
 
 # Load NC file with multiple years (upload includes time conversion)
+lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK') #!!! Attention NEE_fqcOK or NEE_fqcok, both exists
 EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
 
 if (LongTest.b) {
