@@ -1,9 +1,12 @@
-
+syntax: regexp
+^R_InWork$
 syntax: regexp
 ^plots$
 syntax: regexp
-^tmp$
+^out$
 syntax: regexp
 ^\.project$
 syntax: regexp
 ^\.RData$
+syntax: regexp
+^\.Rhistory$
