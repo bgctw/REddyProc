@@ -59,9 +59,7 @@ EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', D
 # Load other datasets
 
 # Load NC file with multiple years (upload includes time conversion)
-lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK')
 EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
-EddyNCDataRNetCDF.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
 
 if (LongTest.b) {
   # Load MDS output data
@@ -79,20 +77,29 @@ if (T==F) {
   }
   lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK') #!!! Attention NEE_fqcOK or NEE_fqcok, both exists
   EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s)
+  # EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s,'RNetCDF')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Write data to files
 if (LongTest.b) {
-
   fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.txt', 'out')
 }
 
 #Produce new ascii test files from BGI netcdf fluxnet files
 if (LongTest.b) {
-  fWriteDataframeToFile(EddyNCData.F, 'DE-Tha.ncdf4.1996.1998.txt','out')
-  #fWriteDataframeToFile(EddyNCDataRNetCDF.F, 'DE-Tha.RNetCDF.1996.1998.txt','out')
-  Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.ncdf4.1996.1998.txt','out')
+  lVar.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f')
+  Example.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
+  # Example.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
+  ColNames.s <- colnames(Example.F)
+  ColNames.s[ColNames.s=='year']  <- 'Year'
+  ColNames.s[ColNames.s=='month']  <- 'Month'
+  ColNames.s[ColNames.s=='day']  <- 'DoY'
+  ColNames.s[ColNames.s=='hour']  <- 'Hour'
+  ColNames.s[ColNames.s=='Tsoil_f']  <- 'Tsoil'
+  colnames(Example.F) <- ColNames.s
+  fWriteDataframeToFile(Example.F, 'DE-Tha.1996.1998.txt','out')
+  Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

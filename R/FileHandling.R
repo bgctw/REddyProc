@@ -71,14 +71,14 @@ fLoadFluxNCIntoDataframe <- function(
   ) 
   ##author<<
   ## AMM, KS
-  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata'; VarList.V.s <- c('NEE', 'Rg', 'rH', 'Tair', 'NEE_f')
-  # TEST: NcPackage.s <- 'ncdf4'
+  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata';
+  # TEST: VarList.V.s <- c('NEE', 'Rg', 'rH', 'Tair', 'NEE_f'); NcPackage.s <- 'ncdf4'
 {
   # Check for R NetCDF packages
-  if( NcPackage.s=='ncdf4' ) { suppressWarnings(require(ncdf4))  
-  } else if( NcPackage.s=='RNetCDF' ) { suppressWarnings(require(RNetCDF))  
-  } else {
-    stop(CallFunction.s, ':::fLoadFluxNCIntoDataframe::: Required package \'RNetCDF\' or \'ncdf4\' could not be loaded!') }
+  if( !(( NcPackage.s=='ncdf4' && suppressWarnings(require(ncdf4)) )
+      || ( NcPackage.s=='RNetCDF' && suppressWarnings(require(RNetCDF)) )) )
+    stop('fLoadFluxNCIntoDataframe::: Required package \'', NcPackage.s, '\' could not be loaded!')
+  
 
   # Read in time variables
   Data.F <- fAddNCFVar(NULL, 'year', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')

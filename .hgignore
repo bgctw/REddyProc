@@ -7,6 +7,12 @@ syntax: regexp
 syntax: regexp
 ^\.project$
 syntax: regexp
+^\.Rproj.user$
+syntax: regexp
 ^\.RData$
 syntax: regexp
 ^\.Rhistory$
+syntax: regexp
+^\REddyProc.Rproj
+syntax: regexp
+^\.Rbuildignore
