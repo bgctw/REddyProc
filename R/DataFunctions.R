@@ -241,7 +241,7 @@ fExpandToFullYear <- function(
   
   if( sum(!is.na(DataYear.V.n)) == 0 )
   {
-    ExpData.F.n <- data.frame(cbind(DateTime=FullYear.V.p, Data=rep(NA, length(FullYear.V.p))))
+    ExpData.F.n <- data.frame(cbind(DateTime=FullYear.V.p, Data=rep(NA_real_, length(FullYear.V.p))))
     warning(CallFunction.s, ':::fExpandToFullYear::: Variable \'', attr(Data.V.n,'varnames'), '\' contains no data for year ', Year.i, '!')
   } else if (length(TimeYear.V.p != length(FullYear.V.p))) {
     ExpData.F.n <- merge(cbind(DateTime=FullYear.V.p), cbind(DateTime=TimeYear.V.p, Data=DataYear.V.n), by='DateTime', all=T, sort=T)

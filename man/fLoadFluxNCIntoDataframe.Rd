@@ -1,12 +1,15 @@
 \name{fLoadFluxNCIntoDataframe}
 \alias{fLoadFluxNCIntoDataframe}
-\title{Load specified variables and time stamp information from NetCDF file}
-\description{The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour' (Fluxnet BGI format).}
-\usage{fLoadFluxNCIntoDataframe(VarList.V.s, FileName.s, Dir.s = "")}
+\title{Load NetCDF file}
+\description{Load specified variables and time stamp information from NetCDF file in Fluxnet BGI format.
+The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour'.}
+\usage{fLoadFluxNCIntoDataframe(VarList.V.s, FileName.s, Dir.s = "", 
+    NcPackage.s = "ncdf4")}
 \arguments{
   \item{VarList.V.s}{Vector of variables to be read in}
   \item{FileName.s}{File name}
   \item{Dir.s}{Directory}
+  \item{NcPackage.s}{Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
 }
 
 \value{Data frame with data from nc file.}

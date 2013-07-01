@@ -1,6 +1,6 @@
 Package: REddyProc
 Title: Data processing and plotting utilities of (half-)hourly eddy-covariance measurements
-Version: 0.40
+Version: 0.41
 Date: 2013-06-24
 Author: (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)
 Maintainer: Antje M. Moffat <antje.moffat@bgc.mpg.de>
@@ -8,4 +8,4 @@ Description: R eddy processing package with MDS gap filling algorithm, adopted a
 License: GPL-2
 LazyLoad: yes
 Depends: R (>= 2.13), methods
-Suggests: RNetCDF, testthat, inlinedocs
+Suggests: ncdf4, RNetCDF, testthat, inlinedocs

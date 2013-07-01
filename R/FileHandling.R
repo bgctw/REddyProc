@@ -60,29 +60,38 @@ attr(fLoadTXTIntoDataframe, 'ex') <- function() {
 
 fLoadFluxNCIntoDataframe <- function(
   ##title<<
-  ## Load specified variables and time stamp information from NetCDF file
+  ## Load NetCDF file
   ##description<<
-  ## The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour' (Fluxnet BGI format).
+  ## Load specified variables and time stamp information from NetCDF file in Fluxnet BGI format.
+  ## The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour'.
   VarList.V.s           ##<< Vector of variables to be read in 
   ,FileName.s           ##<< File name             
-  ,Dir.s=''             ##<< Directory      
+  ,Dir.s=''             ##<< Directory
+  ,NcPackage.s='ncdf4'  ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
   ) 
   ##author<<
   ## AMM, KS
   # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata'; VarList.V.s <- c('NEE', 'Rg', 'rH', 'Tair', 'NEE_f')
+  # TEST: NcPackage.s <- 'ncdf4'
 {
+  # Check for R NetCDF packages
+  if( NcPackage.s=='ncdf4' ) { suppressWarnings(require(ncdf4))  
+  } else if( NcPackage.s=='RNetCDF' ) { suppressWarnings(require(RNetCDF))  
+  } else {
+    stop(CallFunction.s, ':::fLoadFluxNCIntoDataframe::: Required package \'RNetCDF\' or \'ncdf4\' could not be loaded!') }
+
   # Read in time variables
-  Data.F <- fAddNCFVar(NULL, 'year', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
-  Data.F <- fAddNCFVar(Data.F, 'month', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
-  Data.F <- fAddNCFVar(Data.F, 'day', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
-  Data.F <- fAddNCFVar(Data.F, 'hour', FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(NULL, 'year', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(Data.F, 'month', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(Data.F, 'day', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
+  Data.F <- fAddNCFVar(Data.F, 'hour', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
   
   # Convert time format to POSIX
   Data.F <- fConvertTimeToPosix(Data.F, 'YMDH', Year.s = 'year', Month.s='month', Day.s = 'day', Hour.s = 'hour')
   
   # Read in variables from a given list of needed variables 
   for (i in 1: length(VarList.V.s))  {
-    Data.F <- fAddNCFVar(Data.F, VarList.V.s[i], FileName.s, Dir.s, 'fLoadFluxNCIntoDataframe')
+    Data.F <- fAddNCFVar(Data.F, VarList.V.s[i], FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
   }
   message('Loaded BGI Fluxnet NC file: ', FileName.s, ' with the following headers:')
   message('*** ', paste(colnames(Data.F), '(', as.character(lapply(Data.F, attr, which='units')), ')', collapse=' ', sep=''))
@@ -106,21 +115,17 @@ fAddNCFVar <- function(
   ,Var.s                ##<< Variable name
   ,FileName.s           ##<< NetCDF file name
   ,Dir.s                ##<< Directory
+  ,NcPackage.s          ##<< Name of R NetCDF package
   ,CallFunction.s=''    ##<< Name of function called from
   )
   ##author<<
   ## AMM, KS
   # TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata'
+  # TEST: NcPackage.s <- 'ncdf4'
 {
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
   
-  RNetCDF.b <- suppressWarnings(require(RNetCDF))
-  ncdf.b    <- suppressWarnings(require(ncdf4))
-  
-  if ( !RNetCDF.b && !ncdf.b )
-      stop(CallFunction.s, ':::fAddNCFVar::: Required package RNetCDF or ncdf could not be loaded!') # for handling BGI Fluxnet netcdf files
-  
-  if( RNetCDF.b ) {
+  if( NcPackage.s=='RNetCDF' ) {
     NCFile.C <- open.nc(InputNCF.s)
     tryCatch({
       NewCol.F <- data.frame(var.get.nc(NCFile.C, Var.s))
@@ -134,18 +139,14 @@ fAddNCFVar <- function(
     }, 
              finally = close.nc(NCFile.C)
     )
-  } else if( ncdf.b ) {
-#    stop('not implemented')
+  } else if( NcPackage.s=='ncdf4' ) {
     NCFile.C <- nc_open(InputNCF.s, write=FALSE, readunlim=TRUE, verbose=FALSE)
-      tryCatch({
-        NewCol.F <- data.frame(ncvar_get(NCFile.C, Var.s))
-        names(NewCol.F)[[1]] <- Var.s
-        attr(NewCol.F[[1]], 'varnames') <- Var.s
-        attr(NewCol.F[[1]], 'units') <- ncatt_get(NCFile.C, Var.s, 'units')
-        
-      # Use c() instead of cbind() to be able to bind dataframe Data.F even if empty
+    tryCatch({
+      NewCol.F <- data.frame(ncvar_get(NCFile.C, Var.s))
+      names(NewCol.F)[[1]] <- Var.s
+      attr(NewCol.F[[1]], 'varnames') <- Var.s
+      attr(NewCol.F[[1]], 'units') <- ncatt_get(NCFile.C, Var.s, 'units')$value
       Data.F <- data.frame(c(Data.F, NewCol.F))
-      #attr(Data.F[[1]], 'units')
     }, 
              finally = nc_close(NCFile.C)
     )
@@ -164,20 +165,16 @@ fAddNCFVar <- function(
 
 fWriteDataframeToFile <- function(
   ##title<<
-  ## Write data frame to ASCII or NetCDF file
+  ## Write data frame to ASCII tab-separated text file
   Data.F                ##<< Data frame     
   ,FileName.s           ##<< File base name
   ,Dir.s=''             ##<< Directory
-  ,FileType.s='txt'     ##<< File output type
 )
   ##author<<
   ## AMM, KS
   ##details<<
-  ## 'txt' - for tab delimited text file with header and unit row
-  ## 'nc' - for very simple NetCDF file of numeric columns
-  ## With missing values flagged as -9999.0
-  # !!!TODO: NC file output: add non-numeric columns and units
-  # TEST: Data.F <- EddyData.F; BaseName.s <- 'OutputTest'; FileType.s='nc'; Dir.s <- 'data'; OutputName.s='none';
+  ## Missing values are flagged as -9999.0
+  # TEST: Data.F <- EddyData.F; FileName.s='none'; Dir.s <- 'data'; 
 {
   # Set file name
   OutputFile.s <- fSetFile(FileName.s, Dir.s, F, 'fWriteDataframeToFile')
@@ -185,67 +182,27 @@ fWriteDataframeToFile <- function(
   # Convert NAs to gap flag
   Data.F <- fConvertNAsToGap(Data.F)
   
-  # Write data to files
-  if( FileType.s=='txt') {
-    # Write tab delimited file
-    # supressWarnings()
-    Lines.V.s <- vector(mode='character', length = 2)
-    Lines.V.s[1] <- paste(colnames(Data.F), collapse='\t')
-    Lines.V.s[2] <- paste(as.character(lapply(Data.F, attr, which='units')), collapse='\t')
-    Lines.V.s[2] <- gsub('NULL', '--', Lines.V.s[2])
-    write(Lines.V.s, file=OutputFile.s, append=F)
-    write.table(format(Data.F, digits=5, drop0trailing=T, trim=T), file=OutputFile.s, col.names=F, row.names=F, sep='\t', quote=F, append=T)
-    message('Wrote tab separated textfile: ', OutputFile.s)
-    
-  } else if( FileType.s=='nc') {
-    # Write NetCDF file
-    RNetCDF.b <- suppressWarnings(require(RNetCDF))
-    ncdf.b    <- suppressWarnings(require(ncdf4))
-    
-    if ( !RNetCDF.b && !ncdf.b )
-      stop(CallFunction.s, ':::fWriteDataframeToFile::: Required package RNetCDF or ncdf could not be loaded!') # for handling BGI Fluxnet netcdf files
-    
-    if( RNetCDF.b ) {
-      NCFile.C <- create.nc(OutputFile.s, clobber=T, large=T, prefill=F)
-      tryCatch({
-        dim.def.nc(NCFile.C, 'time', unlim=TRUE)
-        for (Var.i in 1:ncol(Data.F))  {
-          if( is.numeric(Data.F[,Var.i]) ) 
-          {
-            VarType.s <- 'NC_DOUBLE'
-            var.def.nc(NCFile.C, varname=names(Data.F)[Var.i], vartype=VarType.s, dimensions='time')
-            var.put.nc(NCFile.C, variable=names(Data.F)[Var.i], data=Data.F[,Var.i])
-            att.put.nc(NCFile.C, variable=names(Data.F)[Var.i], name='miss_val', type=VarType.s, value=-9999.0)
-          }
-          else next; #! Skips non-numeric columsn for now 
-        }
-      }, 
-               finally = close.nc(NCFile.C)
-      )
-    } else if( ncdf.b ) {
-      stop('!!! Error: not yet implemented !!!')
-      tryCatch({
-        NULL
-      },
-               finally = NULL
-      )
-    } else {
-      stop(CallFunction.s, ':::fWriteDataframeToFile::: NC files could not be opened!')
-    }
-    message('Wrote numeric columns to nc file: ', OutputFile.s)
-  }
+  # Write tab delimited file
+  Lines.V.s <- vector(mode='character', length = 2)
+  Lines.V.s[1] <- paste(colnames(Data.F), collapse='\t')
+  Lines.V.s[1] <- gsub('DateTime', 'Date Time', Lines.V.s[1]) #POSIX column
+  Lines.V.s[2] <- paste(as.character(lapply(Data.F, attr, which='units')), collapse='\t')
+  Lines.V.s[2] <- gsub('NULL', '-', Lines.V.s[2])
+  Lines.V.s[2] <- gsub('DateTime', 'Date Time', Lines.V.s[2])  #POSIX column
+  write(Lines.V.s, file=OutputFile.s, append=F)
+  write.table(format(Data.F, digits=5, drop0trailing=T, trim=T), file=OutputFile.s, col.names=F, row.names=F, sep='\t', quote=F, append=T)
+  message('Wrote tab separated textfile: ', OutputFile.s)
   
-##value<<
+  ##value<<
   ## Output of data frame written to file of specified type.
 }
 
 attr(fWriteDataframeToFile, 'ex') <- function() {
   # Example code
+  if (FALSE) { #Example code, do not always execute (e.g. on package installation)
   if( file.exists('data/Example_DETha98.txt') ) {
-    EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
-    if (FALSE) { #Example code, do not always execute (e.g. on package installation)
-      fWriteDataframeToFile(EddyData.F, 'OutputTest', 'out')
-      fWriteDataframeToFile(EddyData.F, 'OutputTest', 'out', 'nc')
+      EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
+      fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', 'out')
     }
   }
 }
@@ -309,20 +266,21 @@ fSetFile <- function(
 )
   ##author<<
   ## AMM
-  # TEST: Dir.s <- 'data'; FileName.s <- 'test'; FileName.s <- 'Example_DETha98.txt'; IO.b <- T
+  # TEST: Dir.s <- 'data'; FileName.s <- 'Example_DETha98.txt'; IO.b <- T; CallFunction.s <- 'test'
 {
   # Check if string for directory provided
   Dir.b <- fCheckValString(Dir.s)
 
   # Check if directory exists
-  if ( Dir.b && !file.exists(Dir.s) && IO.b )
-    stop(CallFunction.s, '::: Directory does not exist: ', Dir.s)
+  if ( Dir.b && (file.access(Dir.s, mode=4) != 0) && IO.b )
+    stop(CallFunction.s, ':::fSetFile::: Directory does not exist: ', Dir.s)
   
   # Make directory if mode is output
-  if( Dir.b && !file.exists(Dir.s) && !IO.b ) {
+  if( Dir.b && (file.access(Dir.s, mode=0) != 0) && !IO.b ) {
     dir.create(Dir.s)
-    if( !file.exists(Dir.s) )
-      stop(CallFunction.s, '::: Directory could not be created: ', Dir.s)
+    message(CallFunction.s, ':::fSetFile::: Directory created: ', Dir.s)
+    if( file.access(Dir.s, mode=2) != 0 )
+      stop(CallFunction.s, ':::fSetFile::: Directory could not be created: ', Dir.s)
   }
   
   # Set file name accordingly
@@ -330,8 +288,8 @@ fSetFile <- function(
   } else { FileName.s }
   
   # If input file, check if file exists
-  if ( IO.b && !file.exists(File.s))
-    stop(CallFunction.s, '::: File does not exist: ', File.s)
+  if ( IO.b && (file.access(File.s, mode=4) != 0) )
+    stop(CallFunction.s, ':::fSetFile::: File does not exist: ', File.s)
   
   File.s
   ##value<< 

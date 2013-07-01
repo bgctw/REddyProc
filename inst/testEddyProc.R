@@ -25,10 +25,9 @@ if (Develop.b) {
   # Source settings for R environment and standard functions
   source('inst/setREnvir.R')
   # If needed, generate package
-  # system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
-  # system('R CMD INSTALL --build --html ../REddyProc')
-  # Load REddyProc package
-  if( sum(grepl("REddyProc", (.packages()))) == 1 ) detach("package:REddyProc")
+  #   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
+  #   system('R CMD INSTALL --build --html ../REddyProc')
+  # Requires restart of R console
   require('REddyProc')
   # Test to source data
   #   data('Example_DETha98')
@@ -62,6 +61,7 @@ EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', D
 # Load NC file with multiple years (upload includes time conversion)
 lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK')
 EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
+EddyNCDataRNetCDF.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
 
 if (LongTest.b) {
   # Load MDS output data
@@ -86,13 +86,13 @@ if (T==F) {
 if (LongTest.b) {
 
   fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.txt', 'out')
-  fWriteDataframeToFile(EddyDataWithPosix.F, 'DE-Tha-Data.nc', 'out', 'nc')
 }
 
 #Produce new ascii test files from BGI netcdf fluxnet files
 if (LongTest.b) {
-  fWriteDataframeToFile(EddyNCData.F, 'DE-Tha.1996.1998.txt','out')
-  Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
+  fWriteDataframeToFile(EddyNCData.F, 'DE-Tha.ncdf4.1996.1998.txt','out')
+  #fWriteDataframeToFile(EddyNCDataRNetCDF.F, 'DE-Tha.RNetCDF.1996.1998.txt','out')
+  Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.ncdf4.1996.1998.txt','out')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -149,7 +149,7 @@ if (LongTest.b) {
 
 # Export processing results
 ThaFilled.F <- EPTha.C$sExportResults()
-fWriteDataframeToFile(cbind(EddyDataWithPosix.F,ThaFilled.F), 'DE-Tha-Results.txt', 'out')
+fWriteDataframeToFile(cbind(EddyDataWithPosix.F,ThaFilled.F), 'DE-Tha-ResultsTest.txt', 'out')
 
 if (LongTest.b) {
   ThaHFilled.F <- EPThaH.C$sExportResults()

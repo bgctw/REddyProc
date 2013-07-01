@@ -51,13 +51,13 @@ sEddyProc$methods(
     ## VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)
     lTEMP <- data.frame(
       VAR_orig=Var.V.n               # Original values of variable VAR used for gap filling
-      ,VAR_f=NA                      # Original values and filled gaps
-      ,VAR_fall=NA                   # All values considered as gaps (for uncertainty estimates)
-      ,VAR_fnum=NA                   # Number of datapoints used for gap-filling
-      ,VAR_fsd=NA                    # Standard deviation of data points used for filling
-      ,VAR_fmeth=NA                  # Method used for gap filling
-      ,VAR_fwin= NA                  # Full window length used for gap filling
-      ,VAR_fqc= NA                   # Quality flag assigned depending on gap filling method and window length
+      ,VAR_f=NA_real_                # Original values and filled gaps
+      ,VAR_fall=NA_real_             # All values considered as gaps (for uncertainty estimates)
+      ,VAR_fnum=NA_real_             # Number of datapoints used for gap-filling
+      ,VAR_fsd=NA_real_              # Standard deviation of data points used for filling
+      ,VAR_fmeth=NA_real_            # Method used for gap filling
+      ,VAR_fwin=NA_real_             # Full window length used for gap filling
+      ,VAR_fqc=NA_real_              # Quality flag assigned depending on gap filling method and window length
     )
     sTEMP <<- data.frame(c(sTEMP, lTEMP))
     
@@ -99,7 +99,7 @@ sEddyProc$methods(
     #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
     #! (rather than changing single values in sTEMP which copies the data frame each time!)
     #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
-    lGF.M <- matrix(NA, nrow=0, ncol=7, dimnames=list(NULL,c('index','mean','fnum','fsd','fmeth','fwin','fqc')))
+    lGF.M <- matrix(NA_real_, nrow=0, ncol=7, dimnames=list(NULL,c('index','mean','fnum','fsd','fmeth','fwin','fqc')))
     
     # Check if sTEMP has been initialized with new VAR_ columns
     if( !exists('VAR_f', sTEMP) )
@@ -167,7 +167,7 @@ sEddyProc$methods(
           
           #Set window size and quality flag
           lVAR_fwin.n  <- 2*WinDays.i                      #! Full window length, congruent with MR PV-Wave, in paper single window sizes stated
-          lVAR_fmeth.n <- NA; lVAR_fqc.n <- NA;
+          lVAR_fmeth.n <- NA_real_; lVAR_fqc.n <- NA_real_;
           if( V1.s != 'none' && V2.s != 'none' && V3.s != 'none') { #Three conditions
             lVAR_fmeth.n <- 1
             if( lVAR_fwin.n <= 14 ) lVAR_fqc.n <- 1        #! Limit '14' congruent with MR PV-Wave, in paper different limit of '28' (stated as single window size of 14 days)
@@ -217,7 +217,7 @@ sEddyProc$methods(
     #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
     #! (rather than changing single values in sTEMP which copies the data frame each time!)
     #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
-    lGF.M <- matrix(NA, nrow=0, ncol=7, dimnames=list(NULL,c('index','mean','fnum','fsd','fmeth','fwin','fqc')))
+    lGF.M <- matrix(NA_real_, nrow=0, ncol=7, dimnames=list(NULL,c('index','mean','fnum','fsd','fmeth','fwin','fqc')))
     
     # Determine gap positions
     ToBeFilled.V.i <- which(is.na(sTEMP$VAR_fall))
