@@ -89,18 +89,17 @@ if (LongTest.b) {
 
 #Produce new ascii test files from BGI netcdf fluxnet files
 if (LongTest.b) {
-  lVar.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f')
+  lVar.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday')
   Example.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
   # Example.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
-  ColNames.s <- colnames(Example.F)
-  ColNames.s[ColNames.s=='year']  <- 'Year'
-  ColNames.s[ColNames.s=='month']  <- 'Month'
-  ColNames.s[ColNames.s=='day']  <- 'DoY'
-  ColNames.s[ColNames.s=='hour']  <- 'Hour'
-  ColNames.s[ColNames.s=='Tsoil_f']  <- 'Tsoil'
-  colnames(Example.F) <- ColNames.s
+  Example.F$Year  <- as.numeric(format(Example.F$DateTime, '%Y'))
+  Example.F$Month <- as.numeric(format(Example.F$DateTime, '%m'))
+  Example.F$DoY   <- as.numeric(format(Example.F$DateTime, '%j'))
+  Example.F$Hour  <- as.numeric(format(Example.F$DateTime, '%H')) + as.numeric(format(Example.F$DateTime, '%M'))/60
   fWriteDataframeToFile(Example.F, 'DE-Tha.1996.1998.txt','out')
   Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
+  # Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+  # fCheckHHTimeSeries(Eddy3Years.F$DateTime, DTS.n=48)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

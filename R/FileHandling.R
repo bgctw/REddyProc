@@ -87,6 +87,7 @@ fLoadFluxNCIntoDataframe <- function(
   Data.F <- fAddNCFVar(Data.F, 'hour', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
   
   # Convert time format to POSIX
+  # !Attention: Use YMDH time format because julday and hour time stamps inconsistent at end of year
   Data.F <- fConvertTimeToPosix(Data.F, 'YMDH', Year.s = 'year', Month.s='month', Day.s = 'day', Hour.s = 'hour')
   
   # Read in variables from a given list of needed variables 
