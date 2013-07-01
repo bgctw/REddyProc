@@ -37,7 +37,7 @@ fConvertTimeToPosix <- function(
   ## Implemented time formats:
   if (TFormat.s == 'YDH' ){
     if( any(c(Year.s, Day.s, Hour.s) == 'none') ) 
-      stop('With time format \'YDH\' year, month and DoY need to be specified!')
+      stop('With time format \'YDH\' year, day of year (DoY), and hour need to be specified!')
     ## YDH - year, day of year, hour in decimal (e.g. 1998, 1, 10.5)
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The day format is day of year (1-365 or 1-366 in leap years).
