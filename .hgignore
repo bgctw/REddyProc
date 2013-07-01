@@ -1,0 +1,9 @@
+
+syntax: regexp
+^plots$
+syntax: regexp
+^tmp$
+syntax: regexp
+^\.project$
+syntax: regexp
+^\.RData$
