@@ -115,7 +115,7 @@ fAddNCFVar <- function(
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
   
   RNetCDF.b <- suppressWarnings(require(RNetCDF))
-  ncdf.b    <- suppressWarnings(require(ncdf))
+  ncdf.b    <- suppressWarnings(require(ncdf4))
   
   if ( !RNetCDF.b && !ncdf.b )
       stop(CallFunction.s, ':::fAddNCFVar::: Required package RNetCDF or ncdf could not be loaded!') # for handling BGI Fluxnet netcdf files
@@ -135,19 +135,19 @@ fAddNCFVar <- function(
              finally = close.nc(NCFile.C)
     )
   } else if( ncdf.b ) {
-    stop('not implemented')
-    NCFile.C <- open.ncdf(InputNCF.s)
-    tryCatch({
-      NewCol.F <- data.frame(get.var.ncdf(NCFile.C, Var.s))
-      names(NewCol.F)[[1]] <- Var.s
-      attr(NewCol.F[[1]], 'varnames') <- Var.s
-      attr(NewCol.F[[1]], 'units') <- att.get.ncdf(NCFile.C, Var.s, 'units')
-      
+#    stop('not implemented')
+    NCFile.C <- nc_open(InputNCF.s, write=FALSE, readunlim=TRUE, verbose=FALSE)
+      tryCatch({
+        NewCol.F <- data.frame(ncvar_get(NCFile.C, Var.s))
+        names(NewCol.F)[[1]] <- Var.s
+        attr(NewCol.F[[1]], 'varnames') <- Var.s
+        attr(NewCol.F[[1]], 'units') <- ncatt_get(NCFile.C, Var.s, 'units')
+        
       # Use c() instead of cbind() to be able to bind dataframe Data.F even if empty
       Data.F <- data.frame(c(Data.F, NewCol.F))
       #attr(Data.F[[1]], 'units')
     }, 
-             finally = close.ncdf(NCFile.C)
+             finally = nc_close(NCFile.C)
     )
   } else {
     stop(CallFunction.s, ':::fAddNCFVar::: NC files could not be opened!')
@@ -200,7 +200,7 @@ fWriteDataframeToFile <- function(
   } else if( FileType.s=='nc') {
     # Write NetCDF file
     RNetCDF.b <- suppressWarnings(require(RNetCDF))
-    ncdf.b    <- suppressWarnings(require(ncdf))
+    ncdf.b    <- suppressWarnings(require(ncdf4))
     
     if ( !RNetCDF.b && !ncdf.b )
       stop(CallFunction.s, ':::fWriteDataframeToFile::: Required package RNetCDF or ncdf could not be loaded!') # for handling BGI Fluxnet netcdf files
