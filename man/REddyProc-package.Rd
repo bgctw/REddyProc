@@ -4,6 +4,8 @@
 \title{Data processing and plotting utilities of (half-)hourly eddy-covariance measurements}
 \description{
 R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
+
+The online tool: \url{http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb} is based on this package.
 }
 \details{
 

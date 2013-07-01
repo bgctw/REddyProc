@@ -47,8 +47,10 @@ if (FALSE) { #Do not always execute (e.g. on package installation)
   EddyProc.C$sPlotDailySums('NEE_f','NEE_fsd')
   EddyProc.C$sPlotDiurnalCycle('NEE_f')
   
-  #+++ Plot other individual years/months to screen (of current R graphics device)
-  EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.s=1998)
+  #+++ Plot individual years/months to screen (of current R graphics device)
+  EddyProc.C$sPlotHHFluxesY('NEE_f', Year.i=1998)
+  EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
+  EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998)
   EddyProc.C$sPlotDiurnalCycleM('NEE_f', Month.i=1)
   
   #+++ Export gap filled data to standard data frame
@@ -65,20 +67,19 @@ if (FALSE) { #Do not always execute (e.g. on package installation)
   #+++ Quality flag vector (e.g. from applying ustar filter)
   EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10))
   #+++ Step function vector to simulate e.g. high/low water table
-  EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, Step= ifelse(EddyData.F$Day < 200 | EddyData.F$Day > 250, 0, 1))
+  EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, Step=ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1))
 
   #+++ Initialize eddy processing class with more columns
-  EddyTest.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'Rh', 'VPD', 'QF', 'Step'))
+  EddyTest.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
 
-  #+++ Gap fill variable after applying quality flag QF with (non-default) variables and limits
+  #+++ Gap fill variable with (non-default) variables and limits including preselection with quality flag QF 
   EddyTest.C$sMDSGapFill('LE', QFVar.s='QF', QFValue.n=0, V1.s='Rg', T1.n=30, V2.s='Tsoil', T2.n=2, 'Step', 0.1, Verbose.b=T)
 
-  #+++ Try the gap filling subroutines individually for different window sizes and up to five variables and limits
-  EddyTest.C$sFillInit('NEE') #Initalize to fill variable 'NEE'
-  Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'Rh',15, 'Tair',2.5, 'Tsoil',1, 'Step',0.1)
+  #+++ Use individual gap filling subroutines with different window sizes and up to five variables and limits
+  EddyTest.C$sFillInit('NEE') #Initalize 'NEE' as variable to fill
+  Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'rH',30, 'Tair',2.5, 'Tsoil',2, 'Step',0.5)
   Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair',2.5, 'VPD',3, 'Step',0.1)
   Result_Step3.F <- EddyTest.C$sFillMDC(3)
-  EddyTest.C$sPlotHHFluxes('VAR_f') #Individual fill result columns are called 'VAR_...'
-
+  EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i=1998) #Individual fill result columns are called 'VAR_...'
 }
 }

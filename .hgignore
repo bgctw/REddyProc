@@ -1,17 +1,25 @@
 syntax: regexp
-^R_InWork$
+^\R_InWork$
 syntax: regexp
-^plots$
+^\plots$
 syntax: regexp
-^out$
+^\out$
+syntax: regexp
+^\tmp$
+syntax: regexp
+^\web$
+syntax: regexp
+.Rhistory$
+syntax: regexp
+^\.project$
+syntax: regexp
+^\REddyProc_.*\.tgz$
 syntax: regexp
 ^\.project$
 syntax: regexp
 ^\.Rproj.user$
 syntax: regexp
 ^\.RData$
-syntax: regexp
-^\.Rhistory$
 syntax: regexp
 ^\REddyProc.Rproj
 syntax: regexp
