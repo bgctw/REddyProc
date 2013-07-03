@@ -145,6 +145,10 @@ sEddyProc$methods(
     'Plot fingerprint of specified year'
     # Set plot contents
     Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
+    # Scale to all data
+    YMin.n <- min(Data.V.n, na.rm=T)
+    YMax.n <- max(Data.V.n, na.rm=T)
+    #Set yearly data
     FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotFingerprintY')
     Time.V.n <- FullYearData.F$DateTime
     Plot.V.n <- FullYearData.F$Data
@@ -154,9 +158,6 @@ sEddyProc$methods(
     YAxis.V.n <- seq(15, 345, by=30)
     fJetColors <- colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))
     Jet.n <- 50 
-    # Scale to all data
-    YMin.n <- min(Plot.V.n, na.rm=T)
-    YMax.n <- max(Plot.V.n, na.rm=T)
     
     # Daily sequence of DoY
     DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))    
