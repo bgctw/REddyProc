@@ -89,7 +89,7 @@ fCalcVPDfromRHandTair <- function(
   ##title<<
   ## Calculate VPD from rH and Tair
   RH.V.n                ##<< Data vector of relative humidity (rH, %)
-  ,Tair.V.n             ##<< Data vector of air temperature (°Tair, C)
+  ,Tair.V.n             ##<< Data vector of air temperature (Tair,°C)
   ##author<<
   ## AMM
   )
@@ -166,4 +166,25 @@ fCalcETfromLE <- function(
   return(ET.V.n)
   ##value<<
   ## Data vector of evapotranspiration (ET, mmol H20 m-2 s-1)
+}
+
+fLloydTaylor <- function(
+  ##title<<
+  ## Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)
+  Tsoil.V.n             ##<< Data vector of soil temperature in Kelvin (°K)
+  ,R_ref.n              ##<< Respiration rate at reference temperature
+  ,T_ref.n              ##<< Reference temperature in Kelvin (°K)
+  ,E_0.n                ##<< Activation temperature in Kelvin (°K)
+  ##author<<
+  ## AMM
+  ##reference<<
+  ## Lloyd J, Taylor JA (1994) On the temperature dependence of soil respiration. Functional Ecology, 8, 315-323.
+)
+{
+  # Fitting temperature T_0 from LloydTaylor 1994 paper
+  T_0.n <- 227.13 # degKelvin
+  R <- R_ref.n * exp(E_0.n * ( 1/(T_ref.n-T_0.n) - 1/(Tsoil.V.n-T_0.n) ) )
+  return(R)
+  ##value<<
+  ## Data vector of respiration rate
 }

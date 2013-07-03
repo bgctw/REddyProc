@@ -478,7 +478,7 @@ fCheckColPlausibility <- function(
   # TEST: VarName.V.s <- c('Rg_s'); v.i <- 1
 {
   #Check column names
-  SubCallFunc.s <- paste(CallFunction.s,'fCheckPlausibility', sep=':::')
+  SubCallFunc.s <- paste(CallFunction.s,'fCheckColPlausibility', sep=':::')
   fCheckColNames(Data.F, VarName.V.s, SubCallFunc.s)
   ##details<<
   ## Variables CONTAINing the following abbreviations are checked for plausibility
@@ -568,7 +568,7 @@ fSetQF <- function(
   # TEST: Data.F <- EddyData.F; Var.s <- 'NEE'; QFVar.s <- 'QF'; QFValue.n <- 0; CallFunction.s='dummy'
 {
   # Check if specified columns exist and are numeric
-  SubCallFunc.s <- paste(CallFunction.s,'fCheckPlausibility', sep=':::')
+  SubCallFunc.s <- paste(CallFunction.s,'fSetQF', sep=':::')
   fCheckColNames(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
   fCheckColNum(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
   fCheckColPlausibility(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)

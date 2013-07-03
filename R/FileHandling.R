@@ -13,7 +13,7 @@ fLoadTXTIntoDataframe <- function(
   ##description<<
   ## If gaps with the flag -9999.0 exist, these are set to NA.
   FileName.s            ##<< File name
-  ,Dir.s                ##<< Directory
+  ,Dir.s=''             ##<< Directory
   ) 
   ##author<<
   ## AMM

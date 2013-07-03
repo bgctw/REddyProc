@@ -65,7 +65,7 @@ EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hou
 if (LongTest.b) {
   # Load MDS output data
   MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_MDSOutput_DataSetafterGapfill.txt','inst/MDSdata')
-  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'DoY', Hour.s = 'Hour', Min.s = 'Minute')
+  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
 }
 
 # Run loop over all (site) files in BGI Fluxnet data directory
@@ -76,7 +76,6 @@ if (T==F) {
     message(paste('Handling site file ', Site.i, ': \"', SiteName.V.s[Site.i],'\"', sep='')) 
     #...  
   }
-  lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK') #!!! Attention NEE_fqcOK or NEE_fqcok, both exists
   EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s)
   # EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s,'RNetCDF')
 }
@@ -89,9 +88,9 @@ if (LongTest.b) {
 
 #Produce new ascii test files from BGI netcdf fluxnet files
 if (LongTest.b) {
-  lVar.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday')
-  Example.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
-  # Example.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
+  lVar2.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday')
+  Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
+  # Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
   Example.F$Year  <- as.numeric(format(Example.F$DateTime, '%Y'))
   Example.F$Month <- as.numeric(format(Example.F$DateTime, '%m'))
   Example.F$DoY   <- as.numeric(format(Example.F$DateTime, '%j'))
@@ -119,11 +118,11 @@ EPThaL3.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair')
 # Work with (subsets of) multiple years
 if (LongTest.b) {
   # All three years of data
-  EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, c('NEE','Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
+  EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, lVar.V.s)
   # Single year 1996
-  EPThaNC96.C <- sEddyProc$new('DE-Tha', EddyNCData.F[1:17568,], c('NEE','Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
+  EPThaNC96.C <- sEddyProc$new('DE-Tha', EddyNCData.F[1:17568,], lVar.V.s)
   # Subset of half 1996 to half of 1997
-  EPThaNCsub.C <- sEddyProc$new('DE-Tha', EddyNCData.F[8737:(17568+9600),], c('NEE','Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
+  EPThaNCsub.C <- sEddyProc$new('DE-Tha', EddyNCData.F[8737:(17568+9600),], lVar.V.s)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
