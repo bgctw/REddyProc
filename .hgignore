@@ -16,3 +16,4 @@ syntax: regexp
 ^\REddyProc.Rproj
 syntax: regexp
 ^\.Rbuildignore
+web
