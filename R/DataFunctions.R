@@ -586,7 +586,7 @@ fSetQF <- function(
   }
   # Add units
   attr(Var.V.n, 'units') <- attr(Data.F[[Var.s]], 'units')
-  attr(Var.V.n, 'varnames') <- if( QFVar.s != 'none' ) paste(Var.s, sep='') else paste(Var.s, '_', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
+  attr(Var.V.n, 'varnames') <- if( QFVar.s == 'none' ) paste(Var.s, sep='') else paste(Var.s, '_', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
       
   Var.V.n
   ##value<< 
