@@ -30,7 +30,6 @@ sEddyProc$methods(
       return(-111)
     }
       
-      
     ##details<<
     ## Description of newly generated variables with gap filled data and qualifiers:
     ##details<<
@@ -397,7 +396,7 @@ sEddyProc$methods(
     
     # Message on gap filling
     TimeDiff.p <- as.numeric(Sys.time()) - as.numeric(TimeStart.p)
-    message('Finished gap filling in ', floor(TimeDiff.p), ' seconds. Artificial gaps filled: ', length(sTEMP$VAR_fall) - sum(is.na(sTEMP$VAR_fall)),
+    message('Finished gap filling of \'', Var.s, '\' in ', floor(TimeDiff.p), ' seconds. Artificial gaps filled: ', length(sTEMP$VAR_fall) - sum(is.na(sTEMP$VAR_fall)),
             ', real gaps filled: ', sum(is.na(sTEMP$VAR_orig)), 
             ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
     
