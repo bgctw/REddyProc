@@ -129,10 +129,10 @@ if (LongTest.b) {
 # Fill gaps with MDS algorithm
 
 #system.time(...)
-EPTha.C$sMDSGapFill('NEE','QF','0', Verbose.b=T) 
+EPTha.C$sMDSGapFill('NEE','QF', 0, Verbose.b=T) 
 EPTha.C$sMDSGapFill('NEE', V1.s='none', Verbose.b=T)
-EPThaH.C$sMDSGapFill('NEE','QF','0', Verbose.b=T)
-EPThaS.C$sMDSGapFill('NEE','QF','0', Verbose.b=T)
+EPThaH.C$sMDSGapFill('NEE','QF', 0, Verbose.b=T)
+EPThaS.C$sMDSGapFill('NEE','QF', 0, Verbose.b=T)
 EPThaL1.C$sMDSGapFill('NEE', V1.s='none', T1.n=NA_real_, V2.s='none', T2.n=NA_real_, V3.s='none', T3.n=NA_real_, Verbose.b=T)
 EPThaL1.C$sMDSGapFill('NEE', V1.s='none', Verbose.b=T)
 EPThaL1.C$sMDSGapFill('NEE', Verbose.b=T)

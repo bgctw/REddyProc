@@ -2,12 +2,13 @@
 \alias{fLloydTaylor}
 \title{Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)}
 
-\usage{fLloydTaylor(Tsoil.V.n, R_ref.n, T_ref.n, E_0.n)}
+\usage{fLloydTaylor(Tsoil.V.n, R_ref.n, E_0.n, T_ref.n = 283.15, T_0.n = 227.13)}
 \arguments{
-  \item{Tsoil.V.n}{Data vector of soil temperature in Kelvin (°K)}
+  \item{Tsoil.V.n}{Data vector of soil temperature in Kelvin (degK)}
   \item{R_ref.n}{Respiration rate at reference temperature}
-  \item{T_ref.n}{Reference temperature in Kelvin (°K)}
-  \item{E_0.n}{Activation temperature in Kelvin (°K)}
+  \item{E_0.n}{Activation "energy" temperature in Kelvin (degK)}
+  \item{T_ref.n}{Reference temperature of 10 degC in Kelvin (degK)}
+  \item{T_0.n}{Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)}
 }
 
 \value{Data vector of respiration rate}

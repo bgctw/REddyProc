@@ -2,7 +2,8 @@
 \alias{sPlotHHFluxesY}
 \title{sEddyProc$sPlotHHFluxesY -  Plot half-hourly fluxes of specified year}
 \description{The half-hourly fluxes for a single year are plotted to the current device, scaled to all data.}
-\usage{sPlotHHFluxesY(Var.s, QFVar.s = "none", QFValue.n = NA, Year.i)}
+\usage{sPlotHHFluxesY(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
+    Year.i)}
 \arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}

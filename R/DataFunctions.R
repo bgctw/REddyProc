@@ -14,12 +14,12 @@ fConvertTimeToPosix <- function(
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate' column is prefixed to the data frame
   Data.F                ##<< Data frame with time columns to be converted
   ,TFormat.s            ##<< Abbreviation for implemented time formats
-  ,Year.s = 'none'      ##<< Column name of year
-  ,Month.s = 'none'     ##<< Column name of month
-  ,Day.s = 'none'       ##<< Column name of day
-  ,Hour.s = 'none'      ##<< Column name of hour
-  ,Min.s = 'none'       ##<< Column name of min
-  ,TName.s = 'DateTime' ##<< Column name of new column
+  ,Year.s='none'        ##<< Column name of year
+  ,Month.s='none'       ##<< Column name of month
+  ,Day.s='none'         ##<< Column name of day
+  ,Hour.s='none'        ##<< Column name of hour
+  ,Min.s='none'         ##<< Column name of min
+  ,TName.s='DateTime'   ##<< Column name of new column
   )
   ##author<<
   ## AMM
@@ -189,7 +189,7 @@ fFullYearTimeSteps <- function(
   ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
   Year.i                ##<< Data frame to be converted
   ,DTS.n                ##<< Daily time steps
-  ,CallFunction.s =''   ##<< Name of function called from
+  ,CallFunction.s=''    ##<< Name of function called from
   #TEST: Year.i <- 2008; DTS.n <- 48
 )
   ##author<<
@@ -202,7 +202,7 @@ fFullYearTimeSteps <- function(
     TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
     TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
   } else { 
-    stop(CallFuncion.s, ':::fFullYearTimeSteps::: Only implemented for 24 or 48 daily time steps, not ', DTS.n , '!') 
+    stop(CallFunction.s, ':::fFullYearTimeSteps::: Only implemented for 24 or 48 daily time steps, not ', DTS.n , '!') 
   }
   #DateTime vector with (half-)hourly time stamps
   #Time.F.p <- data.frame(sDateTime=seq(TimeStart.n, TimeEnd.n, (24/DTS.n * 60 * 60)))
@@ -222,7 +222,7 @@ fExpandToFullYear <- function(
   ,Data.V.n                   ##<< Data vector to be expanded
   ,Year.i                     ##<< Year (e.g. to plot)
   ,DTS.n                      ##<< Daily time steps
-  ,CallFunction.s =''         ##<< Name of function called from
+  ,CallFunction.s=''         ##<< Name of function called from
   #TEST: Time.V.p <- sDATA$sDateTime; DTS.n <- 48
 )
   ##author<<
@@ -337,7 +337,9 @@ fCheckValString <- function(
   ##details<<
   ## See test_CheckValue.R for more details.
 {
-  if( length(Value.s) == 0 || !is.character(Value.s) || !nzchar(Value.s) ) {
+  if(  length(Value.s) == 0 ) {
+    FALSE
+  } else if( !is.na(Value.s) && (!is.character(Value.s) || !nzchar(Value.s)) ) {
     FALSE
   } else {
     TRUE
@@ -351,14 +353,16 @@ fCheckValString <- function(
 fCheckValNum <- function(
   ##title<<
   ## Check if variable is a numeric
-  Value.n               ##<< Value to be checked if numeric
+  Value.n               ##<< Value to be checked if numeric (but can also be NA of any type)
 )
   ##author<<
   ## AMM
   ##details<<
   ## See test_CheckValue.R for more details.
 {
-  if( length(Value.n) == 0 || !is.numeric(Value.n) ) {
+  if(  length(Value.n) == 0 ) {
+    FALSE
+  } else if( !is.na(Value.n) && !is.numeric(Value.n) ) {
     FALSE
   } else {
     TRUE
@@ -427,7 +431,7 @@ fCheckOutsideRange <- function(
   Data.F                ##<< Data frame
   ,VarName.s            ##<< Variable (column) name
   ,Condition.V.s        ##<< Logical condition for outside values
-  ,CallFunction.s =''   ##<< Name of function called from
+  ,CallFunction.s=''   ##<< Name of function called from
 )
   ##author<<
   ## AMM
@@ -471,7 +475,7 @@ fCheckColPlausibility <- function(
   ## Check plausibility of common (eddy) variables
   Data.F                ##<< Data frame
   ,VarName.V.s          ##<< Variable (column) names
-  ,CallFunction.s =''   ##<< Name of function called from
+  ,CallFunction.s=''   ##<< Name of function called from
 )
   ##author<<
   ## AMM
@@ -561,7 +565,7 @@ fSetQF <- function(
   ,Var.s                ##<< Variable to be filled
   ,QFVar.s              ##<< Quality flag of variable to be filled
   ,QFValue.n            ##<< Numeric value of quality flag for _good_ data, other data is set to missing
-  ,CallFunction.s =''   ##<< Name of function called from
+  ,CallFunction.s=''    ##<< Name of function called from
 )
   ##author<<
   ## AMM
@@ -572,8 +576,12 @@ fSetQF <- function(
   fCheckColNames(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
   fCheckColNum(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
   fCheckColPlausibility(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
+
       
   if (QFVar.s != 'none') {
+    # Check quality flag value
+    if( fCheckValNum(QFValue.n) != T )
+      stop(CallFunction.s, ':::fSetQF::: Quality flag \'', QFVar.s, '\' has a non-numeric value: ', QFValue.n, '!')
     # Only use data values when good data (quality flag is equal to flag value)
     Var.V.n <- ifelse(Data.F[,QFVar.s]==QFValue.n, Data.F[,Var.s], NA_real_)
     if( sum(!is.na(Var.V.n)) == 0 )

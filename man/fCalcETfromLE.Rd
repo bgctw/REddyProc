@@ -5,7 +5,7 @@
 \usage{fCalcETfromLE(LE.V.n, Tair.V.n)}
 \arguments{
   \item{LE.V.n}{Data vector of latent heat (LE, W m-2)}
-  \item{Tair.V.n}{Data vector of air temperature (Tair, °C)}
+  \item{Tair.V.n}{Data vector of air temperature (Tair, degC)}
 }
 
 \value{Data vector of evapotranspiration (ET, mmol H20 m-2 s-1)}

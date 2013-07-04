@@ -4,10 +4,10 @@
 
 \usage{fConvertCtoK(Celsius.V.n)}
 \arguments{
-  \item{Celsius.V.n}{Data vector in Celsius (°C)}
+  \item{Celsius.V.n}{Data vector in Celsius (degC)}
 }
 
-\value{Data vector in temperature Kelvin (Temp_K, °K)}
+\value{Data vector in temperature Kelvin (Temp_K, degK)}
 
 \author{AMM
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

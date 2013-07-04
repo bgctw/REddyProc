@@ -22,7 +22,7 @@ sEddyProc$methods(
     ## Set title of plot.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Name.s             ##<< Name of plot
   )
     ##author<<
@@ -134,7 +134,7 @@ sEddyProc$methods(
     ## The fingerprint for a single year is plotted to the current device, scaled to all data.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
     ,Legend.b=F         ##<< Plot only legend
   )
@@ -174,7 +174,7 @@ sEddyProc$methods(
     } else if ( Legend.b==F ) {
       #Plot empy box
       par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=fJetColors(Jet.n),
+      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(0,1), col=fJetColors(Jet.n),
            axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
       axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
@@ -201,7 +201,7 @@ sEddyProc$methods(
 	  ## with fingerprint, see also \code{\link{sPlotFingerprintY}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}
     ,Dir.s='plots'      ##<< Directory for plotting
   )
@@ -246,7 +246,7 @@ sEddyProc$methods(
     ## The diurnal cycles of a single month are potted to the current device, scaled to all data. Each year is plotted as a different (coloured) line.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Month.i            ##<< Month to plot
     ,Legend.b=T         ##<< Plot with legend
   )
@@ -304,7 +304,7 @@ sEddyProc$methods(
     ## Generates image in specified format ('pdf' or 'png') with diurnal cycles, see also \code{\link{sPlotDiurnalCycleM}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
   )
@@ -360,7 +360,7 @@ sEddyProc$methods(
     ## The half-hourly fluxes for a single year are plotted to the current device, scaled to all data.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
   )
     ##author<<
@@ -414,7 +414,7 @@ sEddyProc$methods(
     ## see also \code{\link{sPlotHHFluxesY}}.
     Var.s               ##<< (Filled) variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA       ##<< Value of quality flag for data to plot
+    ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
   )

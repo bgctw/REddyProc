@@ -2,7 +2,7 @@
 \alias{sxSetTitle}
 \title{sEddyProc - Internal function}
 \description{Set title of plot.}
-\usage{sxSetTitle(Var.s, QFVar.s = "none", QFValue.n = NA, Name.s)}
+\usage{sxSetTitle(Var.s, QFVar.s = "none", QFValue.n = NA_real_, Name.s)}
 \arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}

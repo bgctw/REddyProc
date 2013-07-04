@@ -4,7 +4,7 @@
 
 \usage{fCalcSVPfromTair(Tair.V.n)}
 \arguments{
-  \item{Tair.V.n}{Data vector of air temperature (Tair, °C)}
+  \item{Tair.V.n}{Data vector of air temperature (Tair, degC)}
 }
 
 \value{Data vector of saturation VP (SVP, mbar)}

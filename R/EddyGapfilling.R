@@ -204,7 +204,7 @@ sEddyProc$methods(
     ##title<<
     ## sEddyProc$sFillMDC - Gap filling with Mean Diurnal Course (MDC)
     ##description<<
-    ## Mean Diurnal Course (MDC) algorithm based on average values within ± one hour of adjacent days
+    ## Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days
     WinDays.i           ##<< Window size for filling in days
     ,Verbose.b=TRUE     ##<< Print status information to screen
   )
@@ -212,7 +212,7 @@ sEddyProc$methods(
     ## AMM 
     # TEST: WinDays.i <- 2; Pos.i <- 100
   {
-    'Mean Diurnal Course (MDC) algorithm based on average values within ± one hour of adjacent days'
+    'Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days'
     #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
     #! (rather than changing single values in sTEMP which copies the data frame each time!)
     #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
@@ -296,8 +296,8 @@ sEddyProc$methods(
     ,T1.n=50              ##<< Tolerance interval 1 (default: 50 W m-2)
     ,V2.s='VPD'           ##<< Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)
     ,T2.n=5               ##<< Tolerance interval 2 (default: 5 hPa)
-    ,V3.s='Tair'          ##<< Condition variable 3 (default: Air temperature in °C)
-    ,T3.n=2.5             ##<< Tolerance interval 3 (default: 2.5 °C)
+    ,V3.s='Tair'          ##<< Condition variable 3 (default: Air temperature in degC)
+    ,T3.n=2.5             ##<< Tolerance interval 3 (default: 2.5 degC)
     ,Verbose.b=TRUE       ##<< Print status information to screen
   )
   ##author<<

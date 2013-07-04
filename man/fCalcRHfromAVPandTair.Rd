@@ -5,7 +5,7 @@
 \usage{fCalcRHfromAVPandTair(AVP.V.n, Tair.V.n)}
 \arguments{
   \item{AVP.V.n}{Data vector of actual vapour pressure (AVP, mbar)}
-  \item{Tair.V.n}{Data vector of air temperature (Tair, °C)}
+  \item{Tair.V.n}{Data vector of air temperature (Tair, degC)}
 }
 
 \value{Data vector of relative humidity (rH, \%)}

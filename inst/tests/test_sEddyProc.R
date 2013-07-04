@@ -8,12 +8,15 @@ context("sEddyProc-Class")
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Load data
+#message('Unit test directory: ', getwd())
 if( sum(grepl("REddyProc", (.packages()))) == 1 ) {  #REddyProc already package loaded
   # data(Example_DETha98)   # Problem with unit row and thus read in as string factors
   Dir.s <- paste(system.file(package='REddyProc'), '/data', sep='')
   EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s))
 } else if( file.exists('data/Example_DETha98.txt') ) {
   EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','data'))
+} else if( file.exists('../data/Example_DETha98.txt') ) {
+  EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../data'))
 } else if( file.exists('../../data/Example_DETha98.txt') ) {
   EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../../data'))
 } else {
@@ -104,24 +107,19 @@ test_that("Test sMDSGapFill",{
   EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=c(1,0,1,0,1,0,0,0,0,0))
   EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'))
   expect_error( #Not existing variable
-    EddyProc.C$sMDSGapFill('fee','QF','0', Verbose.b=F)
+    EddyProc.C$sMDSGapFill('fee','QF', 0, Verbose.b=F)
   )
   expect_warning( #Empty variable to fill
-    EddyProc.C$sMDSGapFill('Rg','QF','100', Verbose.b=F)
+    EddyProc.C$sMDSGapFill('Rg','QF', 100 , Verbose.b=F)
   )
   EddyProc.C$sMDSGapFill('NEE', Verbose.b=F)
-  EddyProc.C$sMDSGapFill('Tair','QF','0', Verbose.b=F)
+  EddyProc.C$sMDSGapFill('Tair','QF', 0, Verbose.b=F)
   Results.F <- EddyProc.C$sExportResults()
   expect_that(Results.F[1,'NEE_fnum'], equals(54)) #Equal to 53 with old MR PV-Wave congruent settings
   expect_that(Results.F[1,'Tair_fnum'], equals(173)) #Equal to 96 with old MR PV-Wave congruent settings
   # Shorter version for hourly  
   EddyHour.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS.n=24)
-  EddyHour.C$sMDSGapFill('Tair','QF','0', Verbose.b=F)
+  EddyHour.C$sMDSGapFill('Tair','QF', 0, Verbose.b=F)
   Results.F <- EddyHour.C$sExportResults()
   expect_that(Results.F[1,'Tair_fnum'], equals(124)) #Equal to 68 with old MR PV-Wave congruent settings
 })
-
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-

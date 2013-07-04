@@ -13,8 +13,8 @@
   \item{T1.n}{Tolerance interval 1 (default: 50 W m-2)}
   \item{V2.s}{Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)}
   \item{T2.n}{Tolerance interval 2 (default: 5 hPa)}
-  \item{V3.s}{Condition variable 3 (default: Air temperature in °C)}
-  \item{T3.n}{Tolerance interval 3 (default: 2.5 °C)}
+  \item{V3.s}{Condition variable 3 (default: Air temperature in degC)}
+  \item{T3.n}{Tolerance interval 3 (default: 2.5 degC)}
   \item{Verbose.b}{Print status information to screen}
 }
 \details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.

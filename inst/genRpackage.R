@@ -104,16 +104,20 @@ if ( Sys.getenv('HOME') == "/Users/amoffat" ) { #AMM's local setup for generatin
     message('Generated REddyProc package archives.')
   }
   
-  if (FALSE) { #Test installing package from archive files
-    # Install package from gzp or zip file
+  if (FALSE) { #Test installing package from archive files gzp or zip file
     install.packages('REddyProc_0.31.gzp', repos=NULL)
     install.packages('REddyProc_0.31.zip', repos=NULL)
   }
   
-  #Only load if REddyProc was already package loaded (sometimes not wanted during testing)
-  if( sum(grepl("REddyProc", (.packages()))) == 1 ) {
+  if (FALSE) { #Check package
+    system('R CMD CHECK ../REddyProc')
+  }
+  
+  #Only reload REddyProc if it was already package attached
+  if (FALSE &&  sum(grepl("REddyProc", (.packages()))) == 1 ) {
     detach("package:REddyProc")
     require(REddyProc)
     # Dir.s <- system.file(package='REddyProc') # Path to package
+    # Restart of R console required to laod new version of package
   }
 }

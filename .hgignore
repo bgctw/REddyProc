@@ -9,7 +9,8 @@ syntax: regexp
 syntax: regexp
 ^\web$
 syntax: regexp
-.Rhistory$
+^\REddyProc\.Rcheck$
+
 syntax: regexp
 ^\.project$
 syntax: regexp
@@ -24,4 +25,6 @@ syntax: regexp
 ^\REddyProc.Rproj
 syntax: regexp
 ^\.Rbuildignore
-web
+
+syntax: regexp
+.Rhistory$

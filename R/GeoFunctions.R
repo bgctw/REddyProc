@@ -11,7 +11,7 @@
 fConvertCtoK <- function(
   ##title<<
   ## Convert degree Celsius to degree Kelvin
-  Celsius.V.n           ##<< Data vector in Celsius (°C)
+  Celsius.V.n           ##<< Data vector in Celsius (degC)
   ##author<<
   ## AMM
 )
@@ -23,13 +23,13 @@ fConvertCtoK <- function(
   message('Converted degree Celsius to degree Kelvin.')
   return(Kelvin.V.n)
   ##value<<
-  ## Data vector in temperature Kelvin (Temp_K, °K)
+  ## Data vector in temperature Kelvin (Temp_K, degK)
 }
 
 fConvertKtoC <- function(
   ##title<<
   ## Convert degree Kelvin to degree Celsius
-  Kelvin.V.n            ##<< Data vector in Kelvin (°K)
+  Kelvin.V.n            ##<< Data vector in Kelvin (degK)
   ##author<<
   ## AMM
 )
@@ -41,7 +41,7 @@ fConvertKtoC <- function(
   message('Converted degree Kelvin to degree Celsius.')
   return(Celsius.V.n)
   ##value<<
-  ## Data vector in temperature Celsius (Temp_C, °C)
+  ## Data vector in temperature Celsius (Temp_C, degC)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -89,14 +89,14 @@ fCalcVPDfromRHandTair <- function(
   ##title<<
   ## Calculate VPD from rH and Tair
   RH.V.n                ##<< Data vector of relative humidity (rH, %)
-  ,Tair.V.n             ##<< Data vector of air temperature (Tair,°C)
+  ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
   ##author<<
   ## AMM
   )
 { 
   fCheckOutsideRange(cbind(RelHumidity_Percent=RH.V.n), 'RelHumidity_Percent', c('<', 0, '|', '>', 100), 'fCalcVPDfromRHandTair')
   fCheckOutsideRange(cbind(AirTemp_degC=Tair.V.n), 'AirTemp_degC', c('<', -70, '|', '>', 60), 'fCalcVPDfromRHandTair')
-  # See Kolle Logger Tools Software 2012 (Magnus coefficients for water between 0 and 100°C)
+  # See Kolle Logger Tools Software 2012 (Magnus coefficients for water between 0 and 100 degC)
   VPD.V.n <- 6.1078 * (1 -RH.V.n/100) * exp(17.08085*Tair.V.n/(234.175+Tair.V.n))
   attr(VPD.V.n, 'varnames') <- 'VPD'
   attr(VPD.V.n, 'units') <- 'hPa'
@@ -111,7 +111,7 @@ fCalcVPDfromRHandTair <- function(
 fCalcSVPfromTair <- function(
   ##title<<
   ## Calculate SVP (of water) from Tair
-  Tair.V.n              ##<< Data vector of air temperature (Tair, °C)
+  Tair.V.n              ##<< Data vector of air temperature (Tair, degC)
   ##author<<
   ## AMM
   ) {
@@ -132,7 +132,7 @@ fCalcRHfromAVPandTair <- function(
   ##title<<
   ## Calculate relative humidity from actual vapour pressure and air tempature
   AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, mbar)
-  ,Tair.V.n             ##<< Data vector of air temperature (Tair, °C)
+  ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
   ##author<<
   ## AMM
   )
@@ -154,7 +154,7 @@ fCalcETfromLE <- function(
   ##title<<
   ## Calculate ET from LE and Tair
   LE.V.n                ##<< Data vector of latent heat (LE, W m-2)
-  ,Tair.V.n             ##<< Data vector of air temperature (Tair, °C)
+  ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
   ##author<<
   ## AMM
   ) {
@@ -171,18 +171,19 @@ fCalcETfromLE <- function(
 fLloydTaylor <- function(
   ##title<<
   ## Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)
-  Tsoil.V.n             ##<< Data vector of soil temperature in Kelvin (°K)
+  Tsoil.V.n             ##<< Data vector of soil temperature in Kelvin (degK)
   ,R_ref.n              ##<< Respiration rate at reference temperature
-  ,T_ref.n              ##<< Reference temperature in Kelvin (°K)
-  ,E_0.n                ##<< Activation temperature in Kelvin (°K)
+  ,E_0.n                ##<< Activation "energy" temperature in Kelvin (degK)
+  ,T_ref.n=283.15       ##<< Reference temperature of 10 degC in Kelvin (degK)
+  ,T_0.n=227.13         ##<< Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
   ##author<<
   ## AMM
   ##reference<<
   ## Lloyd J, Taylor JA (1994) On the temperature dependence of soil respiration. Functional Ecology, 8, 315-323.
 )
 {
-  # Fitting temperature T_0 from LloydTaylor 1994 paper
-  T_0.n <- 227.13 # degKelvin
+  # Fitting temperature T_0 from  paper
+
   R <- R_ref.n * exp(E_0.n * ( 1/(T_ref.n-T_0.n) - 1/(Tsoil.V.n-T_0.n) ) )
   return(R)
   ##value<<

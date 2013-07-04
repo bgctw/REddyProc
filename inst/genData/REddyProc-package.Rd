@@ -46,7 +46,8 @@ A \bold{complete list} of REddyProc functions be viewed by clicking on the \bold
 into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439. }
 
 \examples{
-See \code{\link{sEddyProc.example}}.
+#+++ Detailed example code can be found here:
+help('sEddyProc.example')
 }
 
 \keyword{ package }

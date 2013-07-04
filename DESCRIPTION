@@ -1,11 +1,11 @@
 Package: REddyProc
 Title: Data processing and plotting utilities of (half-)hourly eddy-covariance measurements
-Version: 0.41
-Date: 2013-06-24
+Version: 0.42
+Date: 2013-07-04
 Author: (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)
 Maintainer: Antje M. Moffat <antje.moffat@bgc.mpg.de>
 Description: R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
 License: GPL-2
 LazyLoad: yes
-Depends: R (>= 2.13), methods
+Depends: R (>= 3.0.1), methods
 Suggests: ncdf4, RNetCDF, testthat, inlinedocs
