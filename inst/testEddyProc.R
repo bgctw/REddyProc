@@ -41,7 +41,7 @@ require(testthat)
 if (Develop.b) {
   test_dir('inst/tests') # works only if R scripts are sourced
 } else {
-  test_package('REddyProc') # works only if loaded as package
+  test_package('REddyProc') # works only if package is installed (not necessarily loaded)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -95,6 +95,7 @@ if (LongTest.b) {
   Example.F$Month <- as.numeric(format(Example.F$DateTime, '%m'))
   Example.F$DoY   <- as.numeric(format(Example.F$DateTime, '%j'))
   Example.F$Hour  <- as.numeric(format(Example.F$DateTime, '%H')) + as.numeric(format(Example.F$DateTime, '%M'))/60
+  colnames(Example.F)[colnames(Example.F)=='Tsoil_f']  <- 'Tsoil'
   fWriteDataframeToFile(Example.F, 'DE-Tha.1996.1998.txt','out')
   Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
   # Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')

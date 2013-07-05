@@ -171,9 +171,9 @@ fCalcETfromLE <- function(
 fLloydTaylor <- function(
   ##title<<
   ## Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)
-  Tsoil.V.n             ##<< Data vector of soil temperature in Kelvin (degK)
-  ,R_ref.n              ##<< Respiration rate at reference temperature
-  ,E_0.n                ##<< Activation "energy" temperature in Kelvin (degK)
+  R_ref.n               ##<< Respiration rate at reference temperature
+  ,E_0.n                ##<< Temperature sensitivity ("activation energy") in Kelvin (degK)
+  ,Tsoil.n              ##<< Soil temperature in Kelvin (degK)
   ,T_ref.n=283.15       ##<< Reference temperature of 10 degC in Kelvin (degK)
   ,T_0.n=227.13         ##<< Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
   ##author<<
@@ -183,8 +183,7 @@ fLloydTaylor <- function(
 )
 {
   # Fitting temperature T_0 from  paper
-
-  R <- R_ref.n * exp(E_0.n * ( 1/(T_ref.n-T_0.n) - 1/(Tsoil.V.n-T_0.n) ) )
+  R <- R_ref.n * exp(E_0.n * ( 1/(T_ref.n-T_0.n) - 1/(Tsoil.n-T_0.n) ) )
   return(R)
   ##value<<
   ## Data vector of respiration rate

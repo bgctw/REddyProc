@@ -127,7 +127,7 @@ sEddyProc$methods(
         if( Start.i <= 0 ) Start.i <- 1
         if( End.i > nrow(sTEMP) ) End.i <- nrow(sTEMP)
         
-        # Special treatment of Rg to be congruent with MR PV-Wave, in paper not mentioned 
+        #! Special treatment of Rg to be congruent with MR PV-Wave, in paper not mentioned 
         T1red.n <- if( grepl('Rg', V1.s) ) {
           # Reduce tolerance of radiation if variable name contains 'Rg' to [20,50] depending on measurement
           max(min(T1.n, sDATA[Gap.i,V1.s], na.rm=T), 20, na.rm=T)
@@ -249,7 +249,7 @@ sEddyProc$methods(
           #Set window size and quality flag
           if (T==T) {
             #! Non-congruent with MR PV-Wave
-            lVAR_fwin.n <- 2*WinDays.i + 1                 #Full window length, not congruent with MR PV-Wave (see below), in paper single window sizes stated
+            lVAR_fwin.n <- 2*WinDays.i + 1                 #! Full window length, not congruent with MR PV-Wave (see below), in paper single window sizes stated
           } else { 
             #! Code if required to be congruent with MR PV-Wave --> window calculation changes depending on size
             lVAR_fwin.n <- if( WinDays.i < 7 ) { 

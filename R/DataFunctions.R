@@ -575,8 +575,6 @@ fSetQF <- function(
   SubCallFunc.s <- paste(CallFunction.s,'fSetQF', sep=':::')
   fCheckColNames(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
   fCheckColNum(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
-  fCheckColPlausibility(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
-
       
   if (QFVar.s != 'none') {
     # Check quality flag value
