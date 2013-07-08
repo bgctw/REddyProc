@@ -7,24 +7,15 @@ context("sEddyProc-Class")
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#Load eample data
-PkgDir.s <- system.file(package='REddyProc')
-if( nzchar(PkgDir.s) ) {  #Package already installed 
-  Dir.s <- paste(PkgDir.s, '/data', sep='')
-  EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s))
-} else if( file.exists('data/Example_DETha98.txt') ) {
-  EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','data'))
-} else if( file.exists('../data/Example_DETha98.txt') ) {
-  EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../data'))
-} else if( file.exists('../../data/Example_DETha98.txt') ) {
-  EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../../data'))
-} else { # Try to load data from package
-  data(Example_DETha98)
-  if( is.data.frame(Example_DETha98) ) {
-    EddyData.F <- as.data.frame(apply(Example_DETha98[-1,], 2, as.numeric)) # Discard unit row
+#Load example data
+data('Example_DETha98', package='REddyProc')
+if( sum(grepl('EddyData.F',ls())) == 0 ) {
+  if( file.exists('../examples/Example_DETha98.txt') ) {
+    EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../examples'))
   } else {
-    message('Unit test directory: ', getwd())
-    stop('test_sEddyProc.R::: Example data could not be loaded.')
+  message('Unit test directory: ', getwd())
+  message('Workspace: ', ls())
+  stop('test_sEddyProc.R::: Example data could not be loaded.')
   }
 }
 #Include POSIX time stamp column

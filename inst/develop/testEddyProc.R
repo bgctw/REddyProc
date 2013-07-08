@@ -9,7 +9,7 @@ LongTest.b <- F #True if in intensive test mode including NC files, all plots an
 
 if (Develop.b) {
   # Source settings for R environment and standard functions
-  source('inst/setREnvir.R')
+  source('inst/develop/setREnvir.R')
   
   # Source file and data handling scripts
   source("R/DataFunctions.R")
@@ -21,19 +21,28 @@ if (Develop.b) {
   source("R/EddyPlotting.R")
   # Source geo functions
   source("R/GeoFunctions.R")
+  # Load standard example data from file
+  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
 } else {
   # Source settings for R environment and standard functions
-  source('inst/setREnvir.R')
+  source('inst/develop/setREnvir.R')
   # If needed, generate package
   #   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   #   system('R CMD INSTALL --build --html ../REddyProc')
   # Requires restart of R console
   require('REddyProc')
   # Test to source data
-  #   data('Example_DETha98')
-  #   str(Example_DETha98) # --> problems because of unit row in header...
+  data('Example_DETha98')
 }
 
+if( FALSE ) {
+  #Short test
+  data('Example_DETha98')
+  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+  EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD'))
+  EPTha.C$sMDSGapFill('NEE')
+  View(EPTha.C$sTEMP)
+}
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Packages to source for unit tests
@@ -45,27 +54,22 @@ if (Develop.b) {
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Load standard example data from file
-EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
+
+# Data handling of standard example data
 # Add dummy quality flag for tests
-EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units="dummy_flag"))
+EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units="dummy_unit"))
 # Test calculation of VPD
 EddyData.F$VPDnew <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
-
 # Add POSIX time stamp
 EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Load other datasets
-
-# Load NC file with multiple years (upload includes time conversion)
-lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK') #!!! Attention NEE_fqcOK or NEE_fqcok, both exists
-EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
+# Load netcdf datasets in BGI format
 
 if (LongTest.b) {
-  # Load MDS output data
-  MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_MDSOutput_DataSetafterGapfill.txt','inst/MDSdata')
-  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
+  # Load NC file with multiple years (upload includes time conversion)
+  lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK') #!!! Attention NEE_fqcOK or NEE_fqcok, both exists
+  EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/examples')
 }
 
 # Run loop over all (site) files in BGI Fluxnet data directory
@@ -89,17 +93,19 @@ if (LongTest.b) {
 #Produce new ascii test files from BGI netcdf fluxnet files
 if (LongTest.b) {
   lVar2.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday')
-  Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata')
-  # Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/MDSdata', 'RNetCDF')
+  Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/examples')
+  #Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/examples', 'RNetCDF')
   Example.F$Year  <- as.numeric(format(Example.F$DateTime, '%Y'))
   Example.F$Month <- as.numeric(format(Example.F$DateTime, '%m'))
   Example.F$DoY   <- as.numeric(format(Example.F$DateTime, '%j'))
   Example.F$Hour  <- as.numeric(format(Example.F$DateTime, '%H')) + as.numeric(format(Example.F$DateTime, '%M'))/60
   colnames(Example.F)[colnames(Example.F)=='Tsoil_f']  <- 'Tsoil'
   fWriteDataframeToFile(Example.F, 'DE-Tha.1996.1998.txt','out')
+  
+  # Try to reload data file
   Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
-  # Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-  # fCheckHHTimeSeries(Eddy3Years.F$DateTime, DTS.n=48)
+  Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+  #fCheckHHTimeSeries(Eddy3Years.F$DateTime, DTS.n=48)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -177,103 +183,57 @@ if (LongTest.b) {
 
 # Show data in reference class
 # EPTha.C$sPrintData()
-# rstudio::viewData(EPTha.C$sDATA)
+# View(EPTha.C$sDATA)
+# View(EPTha.C$sTEMP)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++]
 # Plotting of single years/month
+fPlots <- function(ClassName.s, Var.s, QFVar.s='none', QFValue.n=NA, VarUnc.s='none', Month.i=NA, Year.i=NA) {
+  if( is.na(Year.i)) { #All years/months and save to file
+    eval(parse(text=paste(ClassName.s, '$sPlotFingerprint(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
+    eval(parse(text=paste(ClassName.s, '$sPlotHHFluxes(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
+    eval(parse(text=paste(ClassName.s, '$sPlotDailySums(\'', Var.s, '\', VarUnc.s=\'', VarUnc.s, '\')', sep='')))
+    eval(parse(text=paste(ClassName.s, '$sPlotDiurnalCycle(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))  
+  } else {  #Individual years/months
+    eval(parse(text=paste(ClassName.s, '$sPlotFingerprintY(\'', Var.s, '\', QFVar.s=\'', 
+                          QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
+    eval(parse(text=paste(ClassName.s, '$sPlotHHFluxesY(\'', Var.s, '\', QFVar.s=\'', 
+                          QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
+    eval(parse(text=paste(ClassName.s, '$sPlotDailySumsY(\'', Var.s, '\', VarUnc.s=\'', 
+                          VarUnc.s, '\', Year.i=', Year.i, ')', sep='')))
+    eval(parse(text=paste(ClassName.s, '$sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s=\'', 
+                          QFVar.s, '\', QFValue.n=', QFValue.n, ', Month.i=', Month.i, ')', sep='')))
+  }
+}
 
 if (LongTest.b) {
   #Before filling
-  EPTha.C$sPlotFingerprintY('NEE',Year.i=1998)
-  EPTha.C$sPlotDailySumsY('NEE', Year.i=1998)
-  EPTha.C$sPlotDiurnalCycleM('NEE', Month.i=10)
-  EPTha.C$sPlotHHFluxesY('NEE',Year.i=1998)
-  
-  EPThaH.C$sPlotFingerprintY('NEE',Year.i=1998)
-  EPThaH.C$sPlotDailySumsY('NEE', Year.i=1998)
-  EPThaH.C$sPlotDiurnalCycleM('NEE', Month.i=10)
-  EPThaH.C$sPlotHHFluxesY('NEE',Year.i=1998)
-  
-  EPThaS.C$sPlotFingerprintY('NEE',Year.i=1998)
-  EPThaS.C$sPlotDailySumsY('NEE', Year.i=1998)
-  EPThaS.C$sPlotDiurnalCycleM('NEE', Month.i=6)
-  EPThaS.C$sPlotHHFluxesY('NEE',Year.i=1998)
-  
-  EPThaNCsub.C$sPlotFingerprintY('NEE',Year.i=1996)
-  EPThaNCsub.C$sPlotHHFluxesY('NEE',Year.i=1996)
-  EPThaNCsub.C$sPlotDiurnalCycleM('NEE', Month.i=6)
-  EPThaNCsub.C$sPlotDailySumsY('NEE',Year.i=1996)
-  
-  EPThaNCsub.C$sPlotFingerprintY('NEE',Year.i=1997)
-  EPThaNCsub.C$sPlotHHFluxesY('NEE',Year.i=1997)
-  EPThaNCsub.C$sPlotDailySumsY('NEE',Year.i=1997)
-  EPThaNCsub.C$sPlotDailySumsY('NEE',Year.i=1998)
-  
+  fPlots('EPTha.C', 'NEE', Month.i=10, Year.i=1998)
+  fPlots('EPThaH.C', 'NEE', Month.i=10, Year.i=1998)
+  fPlots('EPThaS.C', 'NEE', Month.i=10, Year.i=1998)
+  fPlots('EPThaNCsub.C', 'NEE', Month.i=6, Year.i=1996)
+  fPlots('EPThaNCsub.C', 'NEE', Month.i=6, Year.i=1997)
   #After filling
-  EPTha.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
-  EPTha.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
-  EPTha.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
-  EPTha.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
-  
-  EPThaS.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
-  EPThaS.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
-  EPThaS.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
-  EPThaS.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
-  
-  EPThaH.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
-  EPThaH.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
-  EPThaH.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
-  EPThaH.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
-  
-  EPThaH.C$sPlotFingerprintY('NEE_f','NEE_fqc', 1, 1998)
-  EPThaH.C$sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
-  EPThaH.C$sPlotDiurnalCycleM('NEE','none', NA, 10)
-  EPThaH.C$sPlotHHFluxesY('NEE_f','NEE_fqc', 1, 1998)
+  fPlots('EPTha.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i=10, Year.i=1998)
+  fPlots('EPThaH.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i=10, Year.i=1998)
+  fPlots('EPThaS.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i=10, Year.i=1998)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Plotting of standard example, unfilled and filled columns
-EPTha.C$sPlotFingerprint('NEE')
-EPTha.C$sPlotFingerprint('NEE_f')
-EPTha.C$sPlotFingerprint('NEE_f','NEE_fqc',1)
-
-EPTha.C$sPlotDiurnalCycle('NEE')
-EPTha.C$sPlotDiurnalCycle('NEE_f')
-EPTha.C$sPlotDiurnalCycle('NEE_f','NEE_fqc',1)
-
-EPTha.C$sPlotHHFluxes('NEE')
-EPTha.C$sPlotHHFluxes('NEE_f')
-EPTha.C$sPlotHHFluxes('NEE_f','NEE_fqc',1)
-
-EPTha.C$sPlotDailySums('NEE')
-EPTha.C$sPlotDailySums('NEE_f')
-EPTha.C$sPlotDailySums('NEE_f','NEE_fsd')
-EPTha.C$sPlotDailySums('Rg_f','Rg_fsd')
-EPTha.C$sPlotDailySums('VPD_f','Tair_fsd')
-EPTha.C$sPlotDailySums('Tair_f','Tair_fsd')
-
+fPlots('EPTha.C', 'NEE')
+fPlots('EPTha.C', 'NEE_f')
+fPlots('EPTha.C', 'NEE_f', 'NEE_fqc', 1)
 
 # Images for multiple year data
 if (LongTest.b) {
   # Multiple year plots with leap year
-  EPThaNC.C$sPlotFingerprint('NEE')
-  EPThaNC96.C$sPlotFingerprint('NEE')
-  EPThaNCsub.C$sPlotFingerprint('NEE')
-  EPThaNC.C$sPlotFingerprint('NEE_f')
-  EPThaNC.C$sPlotFingerprint('NEE_f','NEE_fqc',1)
-  
-  EPThaNC.C$sPlotDiurnalCycle('NEE')
-  EPThaNC96.C$sPlotDiurnalCycle('NEE')
-  EPThaNCsub.C$sPlotDiurnalCycle('NEE')
-  EPThaNC.C$sPlotDiurnalCycle('NEE_f')
-  EPThaNC.C$sPlotDiurnalCycle('NEE_f','NEE_fqc',1)
-  
-  EPThaNC.C$sPlotHHFluxes('NEE')
-  EPThaNC96.C$sPlotHHFluxes('NEE')
-  EPThaNCsub.C$sPlotHHFluxes('NEE')
-  EPThaNC.C$sPlotHHFluxes('NEE_f')
-  EPThaNC.C$sPlotHHFluxes('NEE_f','NEE_fqc',1)
+  fPlots('EPThaNC.C', 'NEE')
+  fPlots('EPThaNC.C', 'NEE_f')
+  fPlots('EPThaNC.C', 'NEE_f', 'NEE_fqc', 1)
+  fPlots('EPThaNC96.C', 'NEE')
+  fPlots('EPThaNCsub.C', 'NEE')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -285,51 +245,35 @@ if (LongTest.b) {
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 # Compare data of old MDS filling with new filling
-if (LongTest.b) { 
-  # Rename 'NEE' to have different column names for old and new processing (though in different data frames: original data in sDATA and results in sTEMP)
+
+if (LongTest.b) {
+  
+  # Standard filling - without ustar filtering
+  EPTha98.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
+  EPTha98.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
+  
+  # Load MDS output data from old PV-Wave online tool - without ustar filtering
+  MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_PVWave_DataSetafterGapfill.txt','inst/examples')
+  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
+
+  # Plot difference between old and new MDS
+  plot(EPTha98.C$sTEMP$NEE_f ~ MDSData.F$NEE_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+
+  
+  # Load MDS output data from LaThuile BGI fluxnet files with ustar filtering
+  # Rename 'NEE' to have different column names for old and new processing 
+  # (though in different data frames: original data in sDATA and results in sTEMP)
   EddyNCData.F <- cbind(EddyNCData.F, NEEnew = EddyNCData.F$NEE)
   EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, c('NEEnew', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
-  # Fill gaps
+  # Fill gaps - with ustar through NEE_fqc=0
   EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
   
   # Plot difference between old and new MDS
-  plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f)
-
-  # Usual plots...
-  EPThaNC.C$sPlotHHFluxes('NEEnew_f')
-  EPThaNC.C$sPlotHHFluxes('NEE_f')
-  EPThaNC.C$sPlotDiurnalCycle('NEEnew_f')
-  EPThaNC.C$sPlotDiurnalCycle('NEE_f')
-  EPThaNC.C$sPlotDailySums('NEEnew_f', 'NEEnew_fsd')
-  EPThaNC.C$sPlotDailySums('NEE_f', 'NEE_fs')
+  plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+  
+  # Plot combination of the two BUT this is mixing with and without ustar filtering...
+  plot(EPTha98.C$sTEMP$NEE_f ~ EPThaNC.C$sTEMP$NEEnew_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+  plot(MDSData.F$NEE_f ~ EPThaNC.C$sDATA$NEE_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Other tests, here unit attributes
-if (T==F) {
-  
-  t1 <- data.frame(a=c(1,2,3), b=c(4,5,6))
-  attr(t1$b, "units") <- 'b_u'
-  attr(t1$b, "units") 
-  attr(t1[[2]], "units")
-  attr(t1[[1,2]], "units") ##does not work...
-  attributes(t1[,'b'])
-  attributes(t1[['b']])
-  attributes(t1$b)
-  
-  t2 <- list(t1)
-  attr(t2[[1]]$b, "units")
-  attr(t2[[1]][['b']], "units")
-  attributes(t2[[1]][['b']])
-  
-  t3 <- data.frame(t2)
-  attr(t3$b, "units") #works!
-  
-  t22 <- c(t1)
-  attr(t22$b, "units")
-  
-  t33 <- data.frame(t22)
-  attr(t33$b, "units") #works!
-}
