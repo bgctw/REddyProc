@@ -64,6 +64,7 @@ file.rename(paste("tmp",CodeIn.V.s,sep="/"), paste("R",CodeIn.V.s,sep="/") )
 
 # overwrite generated REddyProc-package.Rd by version from inst/genData
 file.copy("inst/genData/REddyProc-package.Rd","man", overwrite = TRUE)
+#file.copy("inst/genData/Example_DETha98.Rd","man", overwrite = TRUE)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
