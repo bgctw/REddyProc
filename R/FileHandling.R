@@ -273,11 +273,11 @@ fSetFile <- function(
   Dir.b <- fCheckValString(Dir.s)
 
   # Check if directory exists
-  if ( Dir.b && (file.access(Dir.s, mode=4) != 0) && IO.b )
+  if ( IO.b && Dir.b && (file.access(Dir.s, mode=4) != 0))
     stop(CallFunction.s, ':::fSetFile::: Directory does not exist: ', Dir.s)
   
   # Make directory if mode is output
-  if( Dir.b && (file.access(Dir.s, mode=0) != 0) && !IO.b ) {
+  if(  !IO.b && Dir.b && (file.access(Dir.s, mode=0) != 0) ) {
     dir.create(Dir.s)
     message(CallFunction.s, ':::fSetFile::: Directory created: ', Dir.s)
     if( file.access(Dir.s, mode=2) != 0 )
@@ -290,7 +290,7 @@ fSetFile <- function(
   
   # If input file, check if file exists
   if ( IO.b && (file.access(File.s, mode=4) != 0) )
-    stop(CallFunction.s, ':::fSetFile::: File does not exist: ', File.s)
+    stop(CallFunction.s, ':::fSetFile::: File does not exist or has no read permission: ', File.s)
   
   File.s
   ##value<< 

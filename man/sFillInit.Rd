@@ -2,11 +2,12 @@
 \alias{sFillInit}
 \title{sEddyProc$sFillInit - Initialize gap filling}
 \description{Initializes data frame sTEMP for newly generated gap filled data and qualifiers.}
-\usage{sFillInit(Var.s, QFVar.s = "none", QFValue.n = NA_real_)}
+\usage{sFillInit(Var.s, QFVar.s = "none", QFValue.n = NA_real_, FillAll.b = TRUE)}
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}
   \item{QFValue.n}{Value of quality flag for _good_ data, other data is set to missing}
+  \item{FillAll.b}{Fill all values to estimate uncertainties}
 }
 \details{Description of newly generated variables with gap filled data and qualifiers:
 
@@ -14,7 +15,11 @@ VAR\emph{_orig} - Original values used for gap filling
 
 VAR\emph{_f   } - Original values and gaps filled with mean of selected datapoints (condition depending on gap filling method)
 
+VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and window length (0 = original data, 1 = most reliable, 2 = medium, 3 = least reliable)
+
 VAR\emph{_fall} - All values considered as gaps (for uncertainty estimates)
+
+VAR\emph{_fall_qc} - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)
 
 VAR\emph{_fnum} - Number of datapoints used for gap-filling
 
@@ -24,7 +29,7 @@ VAR\emph{_fmeth} - Method used for gap filling (1 = similar meteo condition (sFi
 
 VAR\emph{_fwin} - Full window length used for gap filling
 
-VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)}
+Long gaps (larger than 60 days) are not filled.}
 
 
 \author{AMM

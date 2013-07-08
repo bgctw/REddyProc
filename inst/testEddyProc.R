@@ -130,26 +130,26 @@ if (LongTest.b) {
 # Fill gaps with MDS algorithm
 
 #system.time(...)
-EPTha.C$sMDSGapFill('NEE','QF', 0, Verbose.b=T) 
-EPTha.C$sMDSGapFill('NEE', V1.s='none', Verbose.b=T)
-EPThaH.C$sMDSGapFill('NEE','QF', 0, Verbose.b=T)
-EPThaS.C$sMDSGapFill('NEE','QF', 0, Verbose.b=T)
-EPThaL1.C$sMDSGapFill('NEE', V1.s='none', T1.n=NA_real_, V2.s='none', T2.n=NA_real_, V3.s='none', T3.n=NA_real_, Verbose.b=T)
-EPThaL1.C$sMDSGapFill('NEE', V1.s='none', Verbose.b=T)
-EPThaL1.C$sMDSGapFill('NEE', Verbose.b=T)
-EPThaL2.C$sMDSGapFill('NEE', Verbose.b=T)
-EPThaL3.C$sMDSGapFill('NEE', Verbose.b=T)
+EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T) 
+EPTha.C$sMDSGapFill('NEE', V1.s='none', FillAll.b=T, Verbose.b=T)
+EPThaH.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
+EPThaS.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s='none', T1.n=NA_real_, V2.s='none', T2.n=NA_real_, V3.s='none', T3.n=NA_real_, FillAll.b=T, Verbose.b=T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s='none', FillAll.b=T, Verbose.b=T)
+EPThaL1.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
+EPThaL2.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
+EPThaL3.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
 
 # Fill also other variables
-EPTha.C$sMDSGapFill('Rg', Verbose.b=T)
-EPTha.C$sMDSGapFill('VPD', Verbose.b=T)
-EPTha.C$sMDSGapFill('Tair', Verbose.b=T)
+EPTha.C$sMDSGapFill('Rg', FillAll.b=T, Verbose.b=T)
+EPTha.C$sMDSGapFill('VPD', FillAll.b=T, Verbose.b=T)
+EPTha.C$sMDSGapFill('Tair', FillAll.b=T, Verbose.b=T)
 
 # Fill multiple years
 if (LongTest.b) {
-  EPThaNC.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, Verbose.b=T)
-  EPThaNC96.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, Verbose.b=T)
-  EPThaNCsub.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, Verbose.b=T)
+  EPThaNC.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
+  EPThaNC96.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
+  EPThaNCsub.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -292,7 +292,7 @@ if (LongTest.b) {
   EddyNCData.F <- cbind(EddyNCData.F, NEEnew = EddyNCData.F$NEE)
   EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, c('NEEnew', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
   # Fill gaps
-  EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, Verbose.b=T)
+  EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
   
   # Plot difference between old and new MDS
   plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f)

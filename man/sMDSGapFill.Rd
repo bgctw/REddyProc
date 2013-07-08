@@ -4,7 +4,7 @@
 \description{MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.}
 \usage{sMDSGapFill(Var.s, QFVar.s = "none", QFValue.n = NA_real_, V1.s = "Rg", 
     T1.n = 50, V2.s = "VPD", T2.n = 5, V3.s = "Tair", T3.n = 2.5, 
-    Verbose.b = TRUE)}
+    FillAll.b = TRUE, Verbose.b = TRUE)}
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}
@@ -15,11 +15,10 @@
   \item{T2.n}{Tolerance interval 2 (default: 5 hPa)}
   \item{V3.s}{Condition variable 3 (default: Air temperature in degC)}
   \item{T3.n}{Tolerance interval 3 (default: 2.5 degC)}
+  \item{FillAll.b}{Fill all values to estimate uncertainties}
   \item{Verbose.b}{Print status information to screen}
 }
 \details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
-
-Long gaps (larger than 60 days) are not filled.
 
 MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
 and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.

@@ -13,6 +13,7 @@ sEddyProc$methods(
     Var.s                 ##<< Variable to be filled
     ,QFVar.s='none'       ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ data, other data is set to missing
+    ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
   )
     ##author<<
     ## AMM
@@ -29,7 +30,6 @@ sEddyProc$methods(
       warning('sFillInit::: Variable to be filled (', Var.s, ') contains no data at all!')
       return(-111)
     }
-      
     ##details<<
     ## Description of newly generated variables with gap filled data and qualifiers:
     ##details<<
@@ -37,7 +37,11 @@ sEddyProc$methods(
     ##details<<
     ## VAR\emph{_f   } - Original values and gaps filled with mean of selected datapoints (condition depending on gap filling method)
     ##details<<
+    ## VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and window length (0 = original data, 1 = most reliable, 2 = medium, 3 = least reliable)
+    ##details<<
     ## VAR\emph{_fall} - All values considered as gaps (for uncertainty estimates)
+    ##details<<
+    ## VAR\emph{_fall_qc} - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)
     ##details<<
     ## VAR\emph{_fnum} - Number of datapoints used for gap-filling
     ##details<<
@@ -46,17 +50,17 @@ sEddyProc$methods(
     ## VAR\emph{_fmeth} - Method used for gap filling (1 = similar meteo condition (sFillLUT with Rg, VPD, Tair), 2 = similar meteo (sFillLUT with Rg only), 3 = mean diurnal course (sFillMDC))
     ##details<<
     ## VAR\emph{_fwin} - Full window length used for gap filling
-    ##details<<
-    ## VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable)
+
     lTEMP <- data.frame(
       VAR_orig=Var.V.n               # Original values of variable VAR used for gap filling
       ,VAR_f=NA_real_                # Original values and filled gaps
+      ,VAR_fqc=NA_real_              # Quality flag assigned depending on gap filling method and window length
       ,VAR_fall=NA_real_             # All values considered as gaps (for uncertainty estimates)
+      ,VAR_fall_qc=NA_real_          # Quality flag assigned depending on gap filling method and window length
       ,VAR_fnum=NA_real_             # Number of datapoints used for gap-filling
       ,VAR_fsd=NA_real_              # Standard deviation of data points used for filling
       ,VAR_fmeth=NA_real_            # Method used for gap filling
       ,VAR_fwin=NA_real_             # Full window length used for gap filling
-      ,VAR_fqc=NA_real_              # Quality flag assigned depending on gap filling method and window length
     )
     sTEMP <<- data.frame(c(sTEMP, lTEMP))
     
@@ -65,7 +69,27 @@ sEddyProc$methods(
     attr(sTEMP$VAR_fall, 'units') <<- attr(Var.V.n, 'units')
     attr(sTEMP$VAR_fsd, 'units') <<- attr(Var.V.n, 'units')
     
-    message('Initialized gap filling of variable: \'', Var.s, '\' with ', sum(is.na(sTEMP$VAR_orig)), ' real gaps.')
+    ##details<<
+    ## Long gaps (larger than 60 days) are not filled.
+    #! Not congruent with PV-Wave, there the code is performed on single years only with long gaps of 60 days in the beginning or end skipped.
+    GapLength.V.n <- fCalcLengthOfGaps(sTEMP$VAR_orig)
+    kMaxGap.n <- sINFO$DTS * 60 #Halfhours in 60 days
+    while ( max(GapLength.V.n) > kMaxGap.n ) {
+      #Flag long gap with -9999.0
+      End.i <- which(GapLength.V.n == max(GapLength.V.n))
+      Start.i <- End.i - max(GapLength.V.n) + 1
+      sTEMP$VAR_fall[Start.i:End.i] <<- -9999.0 #Set to -9999.0 as a flag for long gaps
+      GapLength.V.n[Start.i:End.i] <- -1 #Set to -1 since accounted for
+      warning('sMDSGapFill::: The long gap between position ', Start.i, ' and ', End.i, ' will not be filled!')
+    }
+    
+    if( FillAll.b==T) {
+      message('Initialized variable \'', Var.s, '\' with ', sum(is.na(sTEMP$VAR_orig)), 
+              ' real gaps for gap filling of all ', sum(is.na(sTEMP$VAR_fall)) ,' values (to estimate uncertainies).')
+    } else {
+      message('Initialized variable \'', Var.s, '\' with ', sum(is.na(sTEMP$VAR_orig)),
+              ' real gaps for gap filling.')
+    }
     return(invisible(NULL))
   })
 
@@ -298,6 +322,7 @@ sEddyProc$methods(
     ,T2.n=5               ##<< Tolerance interval 2 (default: 5 hPa)
     ,V3.s='Tair'          ##<< Condition variable 3 (default: Air temperature in degC)
     ,T3.n=2.5             ##<< Tolerance interval 3 (default: 2.5 degC)
+    ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
     ,Verbose.b=TRUE       ##<< Print status information to screen
   )
   ##author<<
@@ -306,14 +331,14 @@ sEddyProc$methods(
   ## Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
   # TEST: sDATA <- EPTha.C$sDATA; sINFO <- EPTha.C$sINFO; sTEMP <- EPTha.C$sTEMP; Var.s <- 'NEE'; QFVar.s <- 'none'; QFValue.n <- NA_real_;
-  # TEST: V1.s <- 'Rg'; T1.n <- 50; V2.s <- 'VPD'; T2.n <- 5; V3.s <- 'Tair'; T3.n <- 2.5; Verbose.b <- TRUE
+  # TEST: V1.s <- 'Rg'; T1.n <- 50; V2.s <- 'VPD'; T2.n <- 5; V3.s <- 'Tair'; T3.n <- 2.5; FillAll.b <- TRUE; Verbose.b <- TRUE
 {
     'MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.'
 
     TimeStart.p <- Sys.time()
     ##details<<
     ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
-    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n)) )
+    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b)) )
       return(invisible(-111)) # Do not execute gap filling if initialization of sTEMP failed
     
     #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
@@ -338,20 +363,6 @@ sEddyProc$methods(
     }
     if( sum(is.na(c(T1.n, T2.n, T3.n)[!NoneCols.b])) )
       stop('sMDSGapFill::: If condition variable is specified (dummy name is \'none\'), the tolerance interval must be specified!')
-    
-    ##details<<
-    ## Long gaps (larger than 60 days) are not filled.
-    #! Not congruent with PV-Wave, there the code is performed on single years only with long gaps of 60 days in the beginning or end skipped.
-    GapLength.V.n <- fCalcLengthOfGaps(sTEMP$VAR_orig)
-    kMaxGap.n <- sINFO$DTS * 60 #Halfhours in 60 days
-    while ( max(GapLength.V.n) > kMaxGap.n ) {
-      #Flag long gap with -9999.0
-      End.i <- which(GapLength.V.n == max(GapLength.V.n))
-      Start.i <- End.i - max(GapLength.V.n) + 1
-      sTEMP$VAR_fall[Start.i:End.i] <<- -9999.0 #Set to -9999.0 as a flag for long gaps
-      GapLength.V.n[Start.i:End.i] <- -1 #Set to -1 since accounted for
-      warning('sMDSGapFill::: The long gap between position ', Start.i, ' and ', End.i, ' will not be filled!')
-    }
     
     # Run gap filling scheme depending on auxiliary meteo data availability
     ##details<<
