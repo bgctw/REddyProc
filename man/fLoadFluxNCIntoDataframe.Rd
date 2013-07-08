@@ -21,7 +21,8 @@ The time stamp information needs to be provided as variables 'year', 'month', 'd
 
 
 \examples{
-# Example code
-if( file.exists('inst/MDSdata/Example_DE-Tha.1996.1998.hourly.nc') )
-  EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.1998.hourly.nc', 'inst/MDSdata')
+if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+  EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.1998.hourly.nc', Dir.s)
+}
 }

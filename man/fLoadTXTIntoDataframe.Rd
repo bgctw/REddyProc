@@ -17,7 +17,8 @@
 
 
 \examples{
-# Example code
-if( file.exists('data/Example_DETha98.txt') )
-  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
+if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt',Dir.s)
+}
 }

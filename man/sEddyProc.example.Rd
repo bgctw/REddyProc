@@ -15,10 +15,10 @@
 \examples{
 #+++ Simple example code for using the sEddyProc reference class +++
 
-if (FALSE) { #Do not always execute (e.g. on package installation)
+if( FALSE ) { #Do not always execute example code (e.g. on package installation)
   
   #+++ Load data with one header and one unit row from (tab-delimited) text file
-  Dir.s <- paste(system.file(package='REddyProc'), '/data', sep='')
+  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
   EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
   #+++ If not provided, calculate VPD from Tair and rH
   EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
@@ -26,7 +26,8 @@ if (FALSE) { #Do not always execute (e.g. on package installation)
   #+++ Add time stamp in POSIX time format
   EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 
-  #+++ Initalize R5 reference class sEddyProc for processing of eddy data with all variables needed for processing later
+  #+++ Initalize R5 reference class sEddyProc for processing of eddy data
+  #+++ with all variables needed for processing later
   EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
   
   #+++ Generate plots of all data in directory \plots (of current R working dir)
@@ -38,8 +39,8 @@ if (FALSE) { #Do not always execute (e.g. on package installation)
   EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
   
   #+++ Fill gaps in variables with MDS gap filling algorithm
-  EddyProc.C$sMDSGapFill('NEE', Verbose.b=T)
-  EddyProc.C$sMDSGapFill('Rg', Verbose.b=T)
+  EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE)
+  EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
   
   #+++ Generate plots of filled data in directory \plots (of current R working dir)
   EddyProc.C$sPlotHHFluxes('NEE_f')
@@ -70,15 +71,16 @@ if (FALSE) { #Do not always execute (e.g. on package installation)
   EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, Step=ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1))
 
   #+++ Initialize eddy processing class with more columns
-  EddyTest.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
+  EddyTest.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+                              c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
 
   #+++ Gap fill variable with (non-default) variables and limits including preselection with quality flag QF 
-  EddyTest.C$sMDSGapFill('LE', QFVar.s='QF', QFValue.n=0, V1.s='Rg', T1.n=30, V2.s='Tsoil', T2.n=2, 'Step', 0.1, Verbose.b=T)
+  EddyTest.C$sMDSGapFill('LE', QFVar.s='QF', QFValue.n=0, V1.s='Rg', T1.n=30, V2.s='Tsoil', T2.n=2, 'Step', 0.1)
 
   #+++ Use individual gap filling subroutines with different window sizes and up to five variables and limits
   EddyTest.C$sFillInit('NEE') #Initalize 'NEE' as variable to fill
   Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'rH',30, 'Tair',2.5, 'Tsoil',2, 'Step',0.5)
-  Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair',2.5, 'VPD',3, 'Step',0.1)
+  Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair',2.5, 'VPD',3, 'Step',0.5)
   Result_Step3.F <- EddyTest.C$sFillMDC(3)
   EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i=1998) #Individual fill result columns are called 'VAR_...'
 }

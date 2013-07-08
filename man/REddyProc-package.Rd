@@ -29,7 +29,7 @@ Then the data can be processed in an R5 reference class framework:
 
 Before or after processing, the data can be plotted:
 \itemize{
-\item{ Fingerprints: \code{\link{sPlotFingerprint}} }
+\item{ Fingerprint: \code{\link{sPlotFingerprint}} }
 \item{ Half-hourly fluxes and their daily means: \code{\link{sPlotHHFluxes}} }
 \item{ Daily sums (and their uncertainties): \code{\link{sPlotDailySums}} }
 \item{ Diurnal cycle: \code{\link{sPlotDiurnalCycle}} }
