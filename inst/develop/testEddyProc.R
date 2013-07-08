@@ -91,7 +91,7 @@ if (LongTest.b) {
 }
 
 #Produce new ascii test files from BGI netcdf fluxnet files
-if (LongTest.b) {
+if( FALSE ) {
   lVar2.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday')
   Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/examples')
   #Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/examples', 'RNetCDF')

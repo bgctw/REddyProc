@@ -79,7 +79,7 @@ sEddyProc$methods(
       #Flag long gap with -9999.0
       End.i <- which(GapLength.V.n == max(GapLength.V.n))
       Start.i <- End.i - max(GapLength.V.n) + 1
-      lTEMP$VAR_fall[Start.i:End.i] <<- -9999.0 #Set to -9999.0 as a flag for long gaps
+      lTEMP$VAR_fall[Start.i:End.i] <- -9999.0 #Set to -9999.0 as a flag for long gaps
       GapLength.V.n[Start.i:End.i] <- -1 #Set to -1 since accounted for
       warning('sMDSGapFill::: The long gap between position ', Start.i, ' and ', End.i, ' will not be filled!')
     }
