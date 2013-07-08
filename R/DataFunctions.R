@@ -40,12 +40,12 @@ fConvertTimeToPosix <- function(
       stop('With time format \'YDH\' year, day of year (DoY), and hour need to be specified!')
     ## YDH - year, day of year, hour in decimal (e.g. 1998, 1, 10.5)
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
-    ## The day format is day of year (1-365 or 1-366 in leap years).
+    ## The day format is day of year (DoY, 1-365 or 1-366 in leap years).
     fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
-    ## The hour format is (0.0-23.5)
+    ## The hour format is (0.0-23.5).
     fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
-    ## 366d-correction and 24h-correction, see unit test in test_fConvertTimeToPosix.R for details
-    ## to the first day in next year
+    ## 366d-correction and 24h-correction to the first day in next year,
+    ## see unit test in test_fConvertTimeToPosix.R for details.
     lYear.V.n <- Data.F[,Year.s]
     lDoY.V.n <- Data.F[,Day.s]
     lHour.V.n <- Data.F[,Hour.s] %/% 1

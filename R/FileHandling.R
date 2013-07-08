@@ -17,7 +17,7 @@ fLoadTXTIntoDataframe <- function(
   ) 
   ##author<<
   ## AMM
-  # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'data'
+  # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'inst/data'
 {
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')  
 
@@ -48,9 +48,10 @@ fLoadTXTIntoDataframe <- function(
 }
 
 attr(fLoadTXTIntoDataframe, 'ex') <- function() {
-  # Example code
-  if( file.exists('data/Example_DETha98.txt') )
-    EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
+  if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+    EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt',Dir.s)
+  }
 }
 
 
@@ -102,9 +103,10 @@ fLoadFluxNCIntoDataframe <- function(
   ## Data frame with data from nc file.
 }
 attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
-  # Example code
-  if( file.exists('inst/MDSdata/Example_DE-Tha.1996.1998.hourly.nc') )
-    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.1998.hourly.nc', 'inst/MDSdata')
+  if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.1998.hourly.nc', Dir.s)
+  }
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -175,7 +177,7 @@ fWriteDataframeToFile <- function(
   ## AMM, KS
   ##details<<
   ## Missing values are flagged as -9999.0
-  # TEST: Data.F <- EddyData.F; FileName.s='none'; Dir.s <- 'data'; 
+  # TEST: Data.F <- EddyData.F; FileName.s='none'; Dir.s <- 'inst/data'; 
 {
   # Set file name
   OutputFile.s <- fSetFile(FileName.s, Dir.s, F, 'fWriteDataframeToFile')
@@ -199,12 +201,10 @@ fWriteDataframeToFile <- function(
 }
 
 attr(fWriteDataframeToFile, 'ex') <- function() {
-  # Example code
-  if (FALSE) { #Example code, do not always execute (e.g. on package installation)
-  if( file.exists('data/Example_DETha98.txt') ) {
-      EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','data')
-      fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', 'out')
-    }
+  if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+    EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+    fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', 'out')
   }
 }
 
@@ -227,10 +227,11 @@ fInitFilesDir <- function(
   ## Character vector with names of all available site files.
 }
 
-attr(fInitFilesDir, 'ex') <- function() {
-  # Example code
-  if( file.exists('data/Example_DETha98.txt') )
-    fInitFilesDir('data','txt')
+attr(fInitFilesDir, 'ex') <- function()   {
+  if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+    fInitFilesDir(Dir.s, 'txt')
+  }
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -249,10 +250,11 @@ fStripFileExtension <- function(
   ## Character vector containing the first part of file names (before first dot in file name).
 }
 
-attr(fStripFileExtension, 'ex') <- function() {
-  # Example code
-  if( file.exists('data/Example_DETha98.txt') )
-    fStripFileExtension(fInitFilesDir('data','txt'))
+attr(fStripFileExtension, 'ex') <- function()  {
+  if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+    fStripFileExtension(fInitFilesDir(Dir.s, 'txt'))
+  }
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -267,7 +269,7 @@ fSetFile <- function(
 )
   ##author<<
   ## AMM
-  # TEST: Dir.s <- 'data'; FileName.s <- 'Example_DETha98.txt'; IO.b <- T; CallFunction.s <- 'test'
+  # TEST: Dir.s <- 'inst/data'; FileName.s <- 'Example_DETha98.txt'; IO.b <- T; CallFunction.s <- 'test'
 {
   # Check if string for directory provided
   Dir.b <- fCheckValString(Dir.s)
