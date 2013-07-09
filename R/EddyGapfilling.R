@@ -69,6 +69,7 @@ sEddyProc$methods(
     attr(lTEMP$VAR_f, 'units') <- attr(Var.V.n, 'units')
     attr(lTEMP$VAR_fall, 'units') <- attr(Var.V.n, 'units')
     attr(lTEMP$VAR_fsd, 'units') <- attr(Var.V.n, 'units')
+    attr(lTEMP$VAR_fwin, 'units') <- 'days'
     
     ##details<<
     ## Long gaps (larger than 60 days) are not filled.
