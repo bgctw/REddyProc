@@ -17,7 +17,7 @@ fLoadTXTIntoDataframe <- function(
   ) 
   ##author<<
   ## AMM
-  # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'inst/data'
+  # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'inst/examples'
 {
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')  
 
@@ -72,7 +72,7 @@ fLoadFluxNCIntoDataframe <- function(
   ) 
   ##author<<
   ## AMM, KS
-  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata';
+  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples';
   # TEST: VarList.V.s <- c('NEE', 'Rg', 'rH', 'Tair', 'NEE_f'); NcPackage.s <- 'ncdf4'
 {
   # Check for R NetCDF packages
@@ -123,8 +123,8 @@ fAddNCFVar <- function(
   )
   ##author<<
   ## AMM, KS
-  # TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/MDSdata'
-  # TEST: NcPackage.s <- 'ncdf4'
+  #TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples'
+  #TEST: NcPackage.s <- 'ncdf4'
 {
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
   
@@ -177,7 +177,7 @@ fWriteDataframeToFile <- function(
   ## AMM, KS
   ##details<<
   ## Missing values are flagged as -9999.0
-  # TEST: Data.F <- EddyData.F; FileName.s='none'; Dir.s <- 'inst/data'; 
+  # TEST: Data.F <- EddyData.F; FileName.s='none'; Dir.s <- 'inst/examples'; 
 {
   # Set file name
   OutputFile.s <- fSetFile(FileName.s, Dir.s, F, 'fWriteDataframeToFile')
@@ -269,7 +269,7 @@ fSetFile <- function(
 )
   ##author<<
   ## AMM
-  # TEST: Dir.s <- 'inst/data'; FileName.s <- 'Example_DETha98.txt'; IO.b <- T; CallFunction.s <- 'test'
+  # TEST: Dir.s <- 'inst/examples'; FileName.s <- 'Example_DETha98.txt'; IO.b <- T; CallFunction.s <- 'test'
 {
   # Check if string for directory provided
   Dir.b <- fCheckValString(Dir.s)

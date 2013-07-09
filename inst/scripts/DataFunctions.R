@@ -323,6 +323,33 @@ fCalcLengthOfGaps <- function(
   ## An integer vector with length of gap since start of gap.
 }
 
+fInterpolateGaps <- function(
+  ##title<<
+  ## Interpolate linearly between gaps, with constant values at beginning/end
+  Data.V.n              ##<< Numeric vector with gaps (missing values, NAs)
+)
+  ##author<<
+  ## AMM
+  # TEST: Data.V.n <- sDATA$NEE
+{
+  # Fill in both ends to have constant interpolation with first/last value
+  Data.V.n[1] <- Data.V.n[which(!is.na(Data.V.n))[1]] 
+  Data.V.n[length(Data.V.n)] <- Data.V.n[rev(which(!is.na(Data.V.n)))[1]]
+  # Linear interpolation between all points
+  Filled.V.n <- approx(seq_along(Data.V.n)[!is.na(Data.V.n)], Data.V.n[!is.na(Data.V.n)], xout=seq_along(Data.V.n))$y
+  
+  if( FALSE ) {
+    # Nice plot to see interpolation
+    plot(seq_along(Data.V.n), Data.V.n)
+    points(Filled.V.n, col = 2, pch = "*")
+  }
+  
+  Filled.V.n
+  ##value<< 
+  ## Numeric with NAs linearly interpolated.
+}
+
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Variable check functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -481,9 +508,12 @@ fCheckColPlausibility <- function(
   ## AMM
   # TEST: VarName.V.s <- c('Rg_s'); v.i <- 1
 {
-  #Check column names
+  # Check column names
   SubCallFunc.s <- paste(CallFunction.s,'fCheckColPlausibility', sep=':::')
   fCheckColNames(Data.F, VarName.V.s, SubCallFunc.s)
+  # Strip variable name to before dot '.' (because quality flag setting after dot)
+  VarName.V.s <- sub('[.].*','',VarName.V.s)
+  
   ##details<<
   ## Variables CONTAINing the following abbreviations are checked for plausibility
   # Separated checks for upper and lower limit to have separate warnings
@@ -542,6 +572,12 @@ fCheckColPlausibility <- function(
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -1), SubCallFunc.s)
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 50), SubCallFunc.s)
     }
+    ## 'E_0' - in degK
+    if( grepl('E_0', VarName.V.s[v.i]) )
+    {
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
+      fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 600), SubCallFunc.s)
+    }
     ## FLUXNET _fqc, 0: data are original, 1: gapfilled high quality, 2: gapfilled medium quality, 3: gapfilled low quality
     if( grepl('_fqc', VarName.V.s[v.i]) && !grepl('_fqcOK', VarName.V.s[v.i], ignore.case=TRUE) ) # 0 is best
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0, '|', '>', 3), SubCallFunc.s)
@@ -593,7 +629,7 @@ fSetQF <- function(
   # Add units
   attr(Var.V.n, 'units') <- attr(Data.F[[Var.s]], 'units')
   attr(Var.V.n, 'varnames') <- if( QFVar.s == 'none' ) { paste(Var.s, sep='')
-    } else { paste(Var.s, '(', QFVar.s, '=', round(QFValue.n, digits=3), ')', sep='') }
+    } else { paste(Var.s, '.', QFVar.s, '_', round(QFValue.n, digits=3), sep='') }
   
   Var.V.n
   ##value<< 

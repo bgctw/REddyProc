@@ -360,7 +360,7 @@ sEddyProc$methods(
     if( (V2.s ==  'VPD' && !(V2.s %in% c(colnames(sDATA)))) || (V2.s == Var.s) )   V2.s <- 'none'
     if( (V3.s == 'Tair' && !(V3.s %in% c(colnames(sDATA)))) || (V3.s == Var.s) )   V3.s <- 'none'
     
-    # Check if specified columns are numeric and plausible (with 'none' as dummy)
+    # Check if specified conditions are numeric and plausible (with 'none' as dummy)
     fCheckColNames(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
     fCheckColNum(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
     fCheckColPlausibility(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
@@ -418,7 +418,6 @@ sEddyProc$methods(
             ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
     
     # Rename new columns generated during gap filling
-    #! Note: Columns of sTEMP get unique new names to avoid overwriting of old results
     colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, '_', sep=''), colnames(sTEMP))
     
     return(invisible(NULL))
