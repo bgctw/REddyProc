@@ -8,7 +8,7 @@
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}
-  \item{QFValue.n}{Value of quality flag for _good_ data, other data is set to missing}
+  \item{QFValue.n}{Value of quality flag for _good_ (original) data, other data is set to missing}
   \item{V1.s}{Condition variable 1 (default: Global radiation 'Rg' in  W m-2)}
   \item{T1.n}{Tolerance interval 1 (default: 50 W m-2)}
   \item{V2.s}{Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)}

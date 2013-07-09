@@ -72,7 +72,7 @@ sEddyProc$methods(
     #Set file name
     FileName.s <- 
       if (QFVar.s != 'none') {
-        paste(sID, '_', sINFO$Y.NAME, '_', PlotType.s, '_', Var.s, '_', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
+        paste(sID, '_', sINFO$Y.NAME, '_', PlotType.s, '_', Var.s, '(', QFVar.s, '=', round(QFValue.n, digits=3), ')', sep='')
       } else {
         paste(sID, '_', sINFO$Y.NAME, '_', PlotType.s, '_', Var.s, sep='')
       }

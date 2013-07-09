@@ -15,7 +15,7 @@ sEddyProc$methods(
     ## Initializes data frame sTEMP for newly generated gap filled data and qualifiers.
     Var.s                 ##<< Variable to be filled
     ,QFVar.s='none'       ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ data, other data is set to missing
+    ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ (original) data, other data is set to missing
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
   )
     ##author<<
@@ -326,7 +326,7 @@ sEddyProc$methods(
     ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
     Var.s                 ##<< Variable to be filled
     ,QFVar.s='none'       ##<< Quality flag of variable to be filled
-    ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ data, other data is set to missing
+    ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ (original) data, other data is set to missing
     ,V1.s='Rg'            ##<< Condition variable 1 (default: Global radiation 'Rg' in  W m-2)
     ,T1.n=50              ##<< Tolerance interval 1 (default: 50 W m-2)
     ,V2.s='VPD'           ##<< Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)
@@ -418,6 +418,7 @@ sEddyProc$methods(
             ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
     
     # Rename new columns generated during gap filling
+    #! Note: Columns of sTEMP get unique new names to avoid overwriting of old results
     colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, '_', sep=''), colnames(sTEMP))
     
     return(invisible(NULL))

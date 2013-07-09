@@ -42,7 +42,7 @@ fConvertTimeToPosix <- function(
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The day format is day of year (DoY, 1-365 or 1-366 in leap years).
     fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
-    ## The hour format is (0.0-23.5).
+    ## The hour format is decimal time (0.0-23.5).
     fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
     ## 366d-correction and 24h-correction to the first day in next year,
     ## see unit test in test_fConvertTimeToPosix.R for details.
@@ -77,7 +77,7 @@ fConvertTimeToPosix <- function(
     fCheckOutsideRange(Data.F, Month.s, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
     ## The day format is day of month (1-31).
     fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
-    ## The hour format is (0.0-23.5)
+    ## The hour format is decimal time (0.0-23.5)
     fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>=', 24.0), 'fConvertTimeToPosix (For format \'YMDH\' no 24h correction in old R versions (2.13 and below))')
     ## No extra corrections.
     lYear.V.n <- Data.F[,Year.s]
@@ -592,8 +592,9 @@ fSetQF <- function(
   }
   # Add units
   attr(Var.V.n, 'units') <- attr(Data.F[[Var.s]], 'units')
-  attr(Var.V.n, 'varnames') <- if( QFVar.s == 'none' ) paste(Var.s, sep='') else paste(Var.s, '_', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
-      
+  attr(Var.V.n, 'varnames') <- if( QFVar.s == 'none' ) { paste(Var.s, sep='')
+    } else { paste(Var.s, '(', QFVar.s, '=', round(QFValue.n, digits=3), ')', sep='') }
+  
   Var.V.n
   ##value<< 
   ## Numeric vector with _good_ data.
