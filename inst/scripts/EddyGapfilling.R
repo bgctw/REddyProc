@@ -28,7 +28,7 @@ sEddyProc$methods(
     fCheckColPlausibility(sDATA, c(Var.s, QFVar.s), 'sFillInit')
     Var.V.n <- fSetQF(sDATA, Var.s, QFVar.s, QFValue.n, 'sFillInit')
     
-    # Check if variable to be filled contains any data
+    # Abort if variable to be filled contains no data
     if( sum(!is.na(Var.V.n)) == 0 ) {
       warning('sFillInit::: Variable to be filled (', Var.s, ') contains no data at all!')
       return(-111)
@@ -349,7 +349,7 @@ sEddyProc$methods(
     ##details<<
     ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
     if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b)) )
-      return(invisible(-111)) # Do not execute gap filling if initialization of sTEMP failed
+      return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
     
     #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
     # If variables are at default values but do not exist as columns, set to 'none' (=disabled identifier).
