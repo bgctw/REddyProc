@@ -174,7 +174,7 @@ fLloydTaylor <- function(
   R_ref.n               ##<< Respiration rate at reference temperature
   ,E_0.n                ##<< Temperature sensitivity ("activation energy") in Kelvin (degK)
   ,Tsoil.n              ##<< Soil temperature in Kelvin (degK)
-  ,T_ref.n=283.15       ##<< Reference temperature of 10 degC in Kelvin (degK)
+  ,T_ref.n=273.15+10    ##<< Reference temperature of 10 degC in Kelvin (degK)
   ,T_0.n=227.13         ##<< Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
   ##author<<
   ## AMM

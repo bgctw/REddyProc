@@ -4,7 +4,7 @@
 # Author: AMM
 
 # Remove all objects in R environment (but Develop.b and Testing.b)
-rm(list = ls(all=TRUE)[!ls(all=TRUE) %in% c('Develop.b', 'LongTest.b')])
+rm(list = ls(all=TRUE)[!ls(all=TRUE) %in% c('Develop.b', 'LongTest.b', 'TestData.F')])
 if( sum(grepl('REddyProc', (.packages()))) == 1 )
   detach('package:REddyProc')
 message('Start with empty R environment with REddyProc detached.')
