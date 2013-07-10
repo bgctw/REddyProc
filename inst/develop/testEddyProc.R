@@ -277,3 +277,66 @@ if (LongTest.b) {
   plot(MDSData.F$NEE_f ~ EPThaNC.C$sDATA$NEE_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
 }
 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+stopp()
+# Tests for flux partitioning
+source('inst/develop/EddyFluxPartitioning.R')
+# Load standard example data from file
+lVarPart.V.s <- c('NEE', 'Rg', 'Tair_f', 'Tair_fqcOK', 'Tsoil_f', 'NEE_f', 'NEE_fqc', 'Rg_pot', 'Reco', 'GPP_f')
+EddyNCData.F <- fLoadFluxNCIntoDataframe(lVarPart.V.s, 'Example_DE-Tha.1996.1998.hourly.nc','inst/examples')
+EddyNCData.F$Tair_fqc <- ifelse(EddyNCData.F$Tair_fqcOK == 1, 0, 4)
+EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F[17569:52608,], c(lVarPart.V.s, 'Tair_fqc'))
+
+sDATA <- EPThaNC.C$sDATA #units get lost!
+attr(sDATA$NEE_f, 'units') <- 'umol...'
+sTEMP <- EPThaNC.C$sTEMP
+sINFO <- EPThaNC.C$sINFO
+
+Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0;
+
+#byHand since <<- missing: sMRFluxPartition(Lat_deg.n=Lat_deg.n, Long_deg.n=Long_deg.n, TimeZone_h.n=TimeZone_h.n)
+
+plot(sTEMP$Reco ~ sDATA$Reco, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+plot(sTEMP$GPP_f ~ sDATA$GPP_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+
+plot(sTEMP$GPP_f - sDATA$GPP_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+plot(sTEMP$R_ref, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+
+#+++
+
+Online.F <- fLoadTXTIntoDataframe('Example_DETha98_PVWave_DataSetafterFluxpart.txt', 'inst/examples')
+Online.F <- fConvertTimeToPosix(Online.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
+Online.C <- sEddyProc$new('DE-Tha', Online.F, c('NEE', 'Rg', 'Tair_f', 'Tair_fqc', 
+                                                'NEE_f', 'NEE_fqc', 'NEENight', 'E0_2_from_Tair', 'Rrefopt_OrdE0_2_from', 'Reco', 'GPP_f') )
+sDATA <- Online.C$sDATA #units get lost!
+attr(sDATA$NEE_f, 'units') <- 'umol...'
+sTEMP <- Online.C$sTEMP
+sINFO <- Online.C$sINFO
+
+Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0;
+sMRFluxPartition(Lat_deg.n=Lat_deg.n, Long_deg.n=Long_deg.n, TimeZone_h.n=TimeZone_h.n)
+
+#Similar difference between Markus' versions
+plot(EddyNCData.F$Reco[35089:52608] ~ Online.F$Reco, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+
+plot(sTEMP$Reco ~ Online.F$Reco, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+plot(sTEMP$Reco ~ EddyNCData.F$Reco[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+plot(sTEMP$GPP_f ~ Online.F$GPP_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+plot(sTEMP$NEE_night ~ Online.F$NEENight, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+sum(is.na(Online.F$NEENight)); sum(is.na(sTEMP$NEE_night))
+plot(sTEMP$E_0 ~ Online.F$E0_2_from_Tair, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+Online.F$E0_2_from_Tair[1]
+
+plot(sTEMP$NEW_Reco ~ Online.F$Reco, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+plot(sTEMP$NEW_R_ref ~ Online.F$Rrefopt_OrdE0_2_from, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+
+plot(sTEMP$R_ref, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+points(Online.F$Rrefopt_OrdE0_2_from, col='red', pch=20, cex=0.3)
+
+plot(sTEMP$NEW_R_ref, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+points(Online.F$Rrefopt_OrdE0_2_from, col='red', pch=20, cex=0.3)
+
+
