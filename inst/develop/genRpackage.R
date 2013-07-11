@@ -92,6 +92,18 @@ if ( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generatin
   # For RStudio specific information see here http://www.rstudio.com/ide/docs/server/configuration
   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   
+  # Windows compatible zip-file (for users withour R tools)
+  setwd('/Library/Frameworks/R.framework/Versions/current/Resources/library')
+  system('zip -rq REddyProc_0.5.zip REddyProc')
+  system(paste('mv REddyProc_0.5.zip ', Dir.s, '/.', sep=''))
+  #Reset working directory
+  setwd(Dir.s)
+  
+  # To update to newest version on cluster:
+  #   Update repository
+  #   On pc026: R CMD INSTALL --build --html REddyProc
+  #   Email TW since REddyProcWeb is based on this
+  
   if (FALSE) { #Check package
     system('R CMD CHECK ../REddyProc')
   }

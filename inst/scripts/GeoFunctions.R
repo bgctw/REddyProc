@@ -20,7 +20,6 @@ fConvertCtoK <- function(
   Kelvin.V.n <-  Celsius.V.n + 273.15
   attr(Kelvin.V.n, 'varnames') <- 'Temp_K'
   attr(Kelvin.V.n, 'units') <- 'degK'
-  message('Converted degree Celsius to degree Kelvin.')
   return(Kelvin.V.n)
   ##value<<
   ## Data vector in temperature Kelvin (Temp_K, degK)
@@ -38,7 +37,6 @@ fConvertKtoC <- function(
   Celsius.V.n <-  Kelvin.V.n - 273.15
   attr(Celsius.V.n, 'varnames') <- 'Temp_C'
   attr(Celsius.V.n, 'units') <- 'degC'
-  message('Converted degree Kelvin to degree Celsius.')
   return(Celsius.V.n)
   ##value<<
   ## Data vector in temperature Celsius (Temp_C, degC)
@@ -56,7 +54,6 @@ fConvertVisibleWm2toPhotons <- function(
   Photons.V.n <- 4.6 * Wm2.V.n
   attr(Vis.V.n, 'varnames') <- 'PPFD'
   attr(Vis.V.n, 'units') <- 'umol_m-2_s-1'
-  message('Converted units of visible radiation from irradiance to photons flux.')
   return(Photons.V.n)
   ##value<<
   ## Data vector in units of photons flux (PPFD, umol photons m-2 s-1)
@@ -74,7 +71,6 @@ fConvertGlobalToVisible <- function(
   Vis.V.n <- 0.5 * Global.V.n
   attr(Vis.V.n, 'varnames') <- 'VisRad'
   attr(Vis.V.n, 'units') <- 'W_m-2'
-  message('Partitioned global (solar) radiation into only visible.')
   return(Vis.V.n)
   ##value<<
   ## Data vector of visible part of solar radiation (VisRad, W m-2)
@@ -100,7 +96,6 @@ fCalcVPDfromRHandTair <- function(
   VPD.V.n <- 6.1078 * (1 -RH.V.n/100) * exp(17.08085*Tair.V.n/(234.175+Tair.V.n))
   attr(VPD.V.n, 'varnames') <- 'VPD'
   attr(VPD.V.n, 'units') <- 'hPa'
-  message('Calculated VPD from rH and Tair.')
   return(VPD.V.n)
   ##value<<
   ## Data vector of vapour pressure deficit (VPD, hPa)
@@ -120,7 +115,6 @@ fCalcSVPfromTair <- function(
   SVP.V.n <- exp(54.8781919 - 6790.4985 / (Tair.V.n+TZero.c) - 5.02808 * log(Tair.V.n+TZero.c))
   attr(SVP.V.n, 'varnames') <- 'SVP'
   attr(SVP.V.n, 'units') <- 'mbar'
-  message('Calculated SVP (of water) from Tair.')
   return(SVP.V.n)
   ##value<<
   ## Data vector of saturation VP (SVP, mbar)
@@ -142,7 +136,6 @@ fCalcRHfromAVPandTair <- function(
   RH.V.n <- AVP.V.n/SVP.V.n * 100
   attr(RH.V.n, 'varnames') <- 'rH'
   attr(RH.V.n, 'units') <- '%'
-  message('Calculated relative humidity from actual vapour pressure and air tempature.')
   return(RH.V.n)
   ##value<<
   ## Data vector of relative humidity (rH, %)
@@ -162,7 +155,6 @@ fCalcETfromLE <- function(
   ET.V.n <- LE.V.n / ((2.501 - 0.00236 * Tair.V.n) * 18.016)
   attr(ET.V.n, 'varnames') <- 'ET'
   attr(ET.V.n, 'units') <- 'mmol_m-2_s-1'
-  message('Calculated ET from LE and Tair.')
   return(ET.V.n)
   ##value<<
   ## Data vector of evapotranspiration (ET, mmol H20 m-2 s-1)

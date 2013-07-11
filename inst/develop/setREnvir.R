@@ -8,6 +8,7 @@ rm(list = ls(all=TRUE)[!ls(all=TRUE) %in% c('Develop.b', 'LongTest.b', 'TestData
 if( sum(grepl('REddyProc', (.packages()))) == 1 )
   detach('package:REddyProc')
 message('Start with empty R environment with REddyProc detached.')
+gc() #garbage collect
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

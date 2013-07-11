@@ -5,7 +5,7 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #TEST: FluxVar.s <- 'NEE_f'; QFFluxVar.s <- 'NEE_fqc'; QFFluxValue.n <- 0; TempVar.s <- 'Tair_f'; QFTempVar.s <- 'Tair_fqc'; QFTempValue.n <- 0
 #TEST: RadVar.s <- 'Rg'; Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0; CallFunction.s='test'
-#TEST: NightFlux.s='VAR_night';  TempVar.s='NEW_TempFP'; WinDays.i=7; DayStep.i=5; TempRange.n=5; NumE_0.n=3
+#TEST: NightFlux.s='VAR_night';  TempVar.s='NEW_TempFP'; WinDays.i=7; DayStep.i=5; TempRange.n=5; NumE_0.n=3; Trim.n=5
 #TEST: NightFlux.s='VAR_night';  TempVar.s='NEW_TempFP'; E_0.s='NEW_E_0'; WinDays.i=4; DayStep.i=4;
 
 sRegrE0fromShortTerm <- function(
@@ -18,7 +18,8 @@ sRegrE0fromShortTerm <- function(
   ,WinDays.i=7          ##<< Window size for \code{\link{fLloydTaylor()}} regression in days
   ,DayStep.i=5          ##<< Window step for \code{\link{fLloydTaylor()}} regression in days
   ,TempRange.n=5        ##<< Threshold temperature range to start regression (#! Could be larger for Tair)
-  ,NumE_0.n=3           ##<< Number of best E_0's to average over 
+  ,NumE_0.n=3           ##<< Number of best E_0's to average over
+  ,Trim.n=5             ##<< Percentile to trim residual (%)
   ,CallFunction.s=''    ##<< Name of function called from
   ##author<<
   ## AMM
@@ -33,22 +34,8 @@ sRegrE0fromShortTerm <- function(
   
   # Regression settings
   NLSRes.F <- data.frame(NULL) #Results of non-linear regression
+  NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
   MinData.n <- 6 # Minimum number of data points
-  MinR_ref.n <- 0.000001 # Minimum reference temperature (non-zero limit for regression)
-  MaxR_ref.n <- 200 # Maximum reference temperature 
-  if( grepl('Tair', TempVar.s) ) {
-    #Limits in PV-Wave code for Tair
-    MinE_0.n <- 30
-    MaxE_0.n <- 350
-  } else if( grepl('Tsoil', TempVar.s) ) {
-    #Limits in PV-Wave code for Tsoil
-    MinE_0.n <- 30
-    MaxE_0.n <- 550 # Higher values due to potentially high Q10 values
-  } else {
-    #Default limits taken from paper
-    MinE_0.n <- 30 
-    MaxE_0.n <- 450
-  }
   
   # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
   NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
@@ -56,6 +43,7 @@ sRegrE0fromShortTerm <- function(
   
   # Loop regression periods
   DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
+  CountRegr.i <- 0
   for (DayMiddle.i in seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i)) {
     #TEST: DayMiddle.i <- 8
     DayStart.i <- DayMiddle.i-WinDays.i
@@ -66,67 +54,81 @@ sRegrE0fromShortTerm <- function(
     Subset.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i & !is.na(NightFlux.V.n) & !is.na(TempVar.V.n)
     NEEnight.V.n <- subset(NightFlux.V.n, Subset.b)
     Temp.V.n <- subset(TempVar.V.n, Subset.b)
-    Temp_degK.V.n <- suppressMessages(fConvertCtoK(Temp.V.n))
+    Temp_degK.V.n <- fConvertCtoK(Temp.V.n)
     
     if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
+      CountRegr.i <- CountRegr.i+1
       tryCatch({
-        NLS.L <- if( F ) { #??? same results, which version preferred ???
-            nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='port', trace=FALSE,
-                     data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200), 
-                     lower=list(R_ref=MinR_ref.n,E_0=MinE_0.n), upper=list(R_ref= MaxR_ref.n,E_0=MaxE_0.n))
-        } else {
-          nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-              data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200))
-        }
+        # Non-linear regression
+        NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+              data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200))        
+        # Remove points with residuals outside Trim.n quantiles
+        Residuals.V.n <- fLloydTaylor(R_ref=coef(summary(NLS.L))['R_ref',1], E_0=coef(summary(NLS.L))['E_0',1],
+                                      Temp_degK.V.n, T_ref.n=273.15+15) - NEEnight.V.n
+        t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
+        # Trimmed non-linear regression
+        NLS_trim.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+                     data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b])), start=list(R_ref=2,E_0=200))
+        
         NLSRes.F <- rbind(NLSRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
                                           R_ref=coef(summary(NLS.L))['R_ref',1], R_ref_SD=coef(summary(NLS.L))['R_ref',2], 
-                                          E_0=coef(summary(NLS.L))['E_0',1], E_0_SD=coef(summary(NLS.L))['E_0',2]))
-        
-        #! PV-Wave code has NLR with trimming: calculation of cost function and iterative trimming of the 10% highest absolute residuals
-        #! Omitted since not critical for the regression of finding the best three E_0 (and trimming questionable for non-linear regression)
-        #! New code: NLR performed with PORT algorithm with lower and upper limit bounds, whereas in PV-Wave invalid values omitted after NLR
+                                          E_0=coef(summary(NLS.L))['E_0',1], E_0_SD=coef(summary(NLS.L))['E_0',2], 
+                                          E_0_trim=coef(summary(NLS_trim.L))['E_0',1], E_0_trim_SD=coef(summary(NLS_trim.L))['E_0',2]))
+        #! PV-Wave code has NLR with trimming: calculation of cost function and iterative trimming of the 10% highest absolute residuals.
+        #! New code: Implemented as trimming of residuals outside 5% percentiles. Generally trimming questionable for non-linear regression.
         
         # Note on other tested algorithms:
+        # Standard require(stats) nls with PORT algorithm and lower and upper bounds
         # require(FME) for modFit and modCost, has PORT algorithm included (and other algorithms like MCMC)
         # require(robustbase) for ltsReg but only linear regression
         # require(nlme) for heteroscedastic and mixed NLR but no port algo with upper and lower bounds
-        # require(nlstools) for bootstrapping with nlsBoot(nls...)
-        
+        # require(nlstools) for bootstrapping with nlsBoot(nls...)      
       }, error = function(e) {
         NLSRes.F <- rbind(NLSRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
-                                          R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA))
+                                          R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA, E_0_trim=NA, E_0_trim_SD=NA))
       })
       
       if( F ) { # Plots for testing
         plot(NEEnight.V.n ~ Temp.V.n)
-        curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0'], suppressMessages(fConvertCtoK(x)), T_ref.n=273.15+15), add=T, col='red')
+        curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(x), T_ref.n=273.15+15), add=T, col='red')
       }      
     }
   }
   
-  # Check for validity of regression results
+  # Check for validity of E_0 regression results
+  if( grepl('Tair', TempVar.s) ) {
+    #Limits in PV-Wave code for Tair
+    MinE_0.n <- 30; MaxE_0.n <- 350
+  } else if( grepl('Tsoil', TempVar.s) ) {
+    #Limits in PV-Wave code for Tsoil
+    MinE_0.n <- 30; MaxE_0.n <- 550 # Higher values due to potentially high Q10 values
+  } else {
+    #Default limits taken from paper
+    MinE_0.n <- 30; MaxE_0.n <- 450
+  }
+  Limits.b <- ( NLSRes.F$E_0_trim - NLSRes.F$E_0_trim_SD > MinE_0.n & NLSRes.F$E_0_trim + NLSRes.F$E_0_trim_SD < MaxE_0.n )
   #! New code: Check validity with SD (standard deviation) limits, in PV-Wave without SD, in paper if E_0_SD < (E_0 * 50%)
-  Limits.b <- ( NLSRes.F$E_0 - NLSRes.F$E_0_SD > MinE_0.n & NLSRes.F$E_0 + NLSRes.F$E_0_SD < MaxE_0.n 
-                & NLSRes.F$R_ref - NLSRes.F$R_ref_SD > MinR_ref.n & NLSRes.F$R_ref + NLSRes.F$R_ref_SD < MaxR_ref.n )
-  NLSRes.F$E_0_ok <- ifelse( Limits.b, NLSRes.F$E_0, NA)
-  NLSRes.F$E_0_SD_ok <- ifelse( Limits.b, NLSRes.F$E_0_SD, NA)
+  NLSRes.F$E_0_trim_ok <- ifelse( Limits.b, NLSRes.F$E_0_trim, NA)
+  NLSRes.F$E_0_trim_SD_ok <- ifelse( Limits.b, NLSRes.F$E_0_trim_SD, NA)
   
   # Sort data frame for smallest standard deviation
-  NLSsort.F <- NLSRes.F[order(NLSRes.F$E_0_SD_ok),] # ordered data.frame  
+  NLSsort.F <- NLSRes.F[order(NLSRes.F$E_0_trim_SD_ok),] # ordered data.frame  
+
   ##details<< 
   ## Take average of the three E_0 with lowest standard deviation
-  E_0.n <- mean(NLSsort.F$E_0_ok[1:NumE_0.n]) #??? maybe more than three values ???
+  E_0_trim.n <- round(mean(NLSsort.F$E_0_trim_ok[1:NumE_0.n]), digits=2) 
   
   # Abort flux partitioning if regression of E_0 failed
-  if( is.na(E_0.n) ) {
-    warning(CallFunction.s, ':::sRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ', length(seq(WinDays.i+1, max(DayCounter.V.i))), ' periods!')
+  if( is.na(E_0_trim.n) ) {
+    warning(CallFunction.s, ':::sRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ', 
+            CountRegr.i, ' periods!')
     return(-111)
   }
 
-  message('Estimate of the temperature sensitivity E_0 from short term data: ', format(E_0.n, digits=5), '.')
+  message('Estimate of the temperature sensitivity E_0 from short term data: ', format(E_0_trim.n, digits=5), '.')
   
   # Add constant value of E_0 as column vector to sTEMP
-  E_0.V.n <- rep(E_0.n, nrow(sTEMP))
+  E_0.V.n <- rep(E_0_trim.n, nrow(sTEMP))
   attr(E_0.V.n, 'varnames') <- 'E_0'
   attr(E_0.V.n, 'units') <- 'degK'
   
@@ -145,7 +147,7 @@ sRegrRref <- function(
   NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
   ,TempVar.s            ##<< Variable with (original) air temperature (degC)
   ,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sRegrE0fromShortTerm}}
-  ,WinDays.i=4          ##<< Window size for \code{\link{fLloydTaylor()}} regression in days !!! ??? 3 days ???
+  ,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor()}} regression in days
   ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor()}} regression in days
   ,CallFunction.s=''    ##<< Name of function called from
   ##author<<
@@ -161,8 +163,6 @@ sRegrRref <- function(
   
   # Regression settings
   LMRes.F <- data.frame(NULL) #Results of linear regression
-  MinR_ref.n <- 0.000001 # Minimum reference temperature (positive, non-zero limit AFTER regression)
-  MaxR_ref.n <- 20 # (Realistic) maximum reference temperature 
   MinData.n <- 2 # Minimum number of data points for regression
   
   # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
@@ -171,6 +171,7 @@ sRegrRref <- function(
   
   # Loop regression periods
   DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
+  CountRegr.i <- 0
   for (DayMiddle.i in seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i)) {
     #TEST: DayMiddle.i <- 8
     DayStart.i <- DayMiddle.i-WinDays.i
@@ -182,10 +183,11 @@ sRegrRref <- function(
     MeanHour.i <- round(mean(which(Subset.b))) # Weighted middle of the time period
     NEEnight.V.n <- subset(NightFlux.V.n, Subset.b)
     Temp.V.n <- subset(TempVar.V.n, Subset.b)
-    Temp_degK.V.n <- suppressMessages(fConvertCtoK(Temp.V.n))
+    Temp_degK.V.n <- fConvertCtoK(Temp.V.n)
     E_0.V.n <- subset(sTEMP[,E_0.s], Subset.b) # (Constant value)
     
     if( length(NEEnight.V.n) > MinData.n ) {
+      CountRegr.i <- CountRegr.i+1
       tryCatch({
           LM.L <- lm(R_eco ~ 0 + fLloydTaylor(R_ref, E_0, Temp_degK, T_ref.n=273.15+15), data=as.data.frame(cbind(R_eco=NEEnight.V.n, R_ref=1, E_0=E_0.V.n, Temp_degK=Temp_degK.V.n)))
           LMRes.F <- rbind(LMRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), MeanH=MeanHour.i, 
@@ -204,9 +206,8 @@ sRegrRref <- function(
   }
   
   # Check for validity of regression results
-  LMRes.F$R_ref_ok <- ifelse(LMRes.F$R_ref - LMRes.F$R_ref_SD > MinR_ref.n, LMRes.F$R_ref, NA)
-  LMRes.F$R_ref_ok <- ifelse(LMRes.F$R_ref + LMRes.F$R_ref_SD < MaxR_ref.n, LMRes.F$R_ref, NA)
-  #! New code: Accounting for standard deviation !!! ??? same as E_0 ???
+  LMRes.F$R_ref_ok <- ifelse( LMRes.F$R_ref < 0 , NA, LMRes.F$R_ref )
+  #! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
   #TODO later: Flag for long distances between R_refs, especially if long distance in the beginning
   #TODO later: Provide some kind of uncertainty estimate from R_ref_SD
   
@@ -217,7 +218,7 @@ sRegrRref <- function(
   attr(Rref.V.n, 'varnames') <- 'R_ref'
   attr(Rref.V.n, 'units') <- attr(sTEMP[,NightFlux.s], 'units')
   
-  message('Valid estimates of reference temperature R_ref for ', sum(!is.na(LMRes.F$R_ref_ok)), ' of the ', length(seq(WinDays.i+1, max(DayCounter.V.i))), ' periods.')
+  message('Regression of reference temperature R_ref for ', sum(!is.na(LMRes.F$R_ref_ok)), ' periods.')
   
   Rref.V.n
   ##value<< 
@@ -266,9 +267,10 @@ sMRFluxPartition <- function(
   
   # Filter night time values only
   #! Note: Rg <= 10 congruent with MR PV-Wave, in paper Rg <= 20
-  sTEMP$VAR_night <<- ifelse(sDATA[,RadVar.s] < 10 | sTEMP$NEW_PotRad == 0, Var.V.n, NA)
+  sTEMP$VAR_night <<- ifelse(sDATA[,RadVar.s] > 10 | sTEMP$NEW_PotRad > 0, NA,  Var.V.n)
   attr(sTEMP$VAR_night, 'varnames') <<- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
   attr(sTEMP$VAR_night, 'units') <<- attr(Var.V.n, 'units')
+  #! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
   
   # Apply quality flag for temperature
   sTEMP$NEW_TempFP <<- fSetQF(sDATA, TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
@@ -282,14 +284,14 @@ sMRFluxPartition <- function(
   sTEMP$NEW_R_ref <<- sRegrRref('VAR_night', 'NEW_TempFP', 'NEW_E_0', CallFunction.s='sMRFluxPartition')
     
   # Calculate the ecosystem respiration R_eco
-  sTEMP$NEW_Reco <<- fLloydTaylor(sTEMP$NEW_R_ref, sTEMP$NEW_E_0, suppressMessages(fConvertCtoK(sDATA[,TempVar.s])), T_ref.n=273.15+15)
+  sTEMP$NEW_Reco <<- fLloydTaylor(sTEMP$NEW_R_ref, sTEMP$NEW_E_0, fConvertCtoK(sDATA[,TempVar.s]), T_ref.n=273.15+15)
   attr(sTEMP$NEW_Reco, 'varnames') <<- 'R_eco'
   attr(sTEMP$NEW_Reco, 'units') <<- attr(Var.V.n, 'units')
   
   # Calculate the gross primary production GPP_f
   sTEMP$NEW_GPP_f <<- -sDATA[,FluxVar.s] + sTEMP$NEW_Reco
   sTEMP$NEW_GPP_fqc <<- sDATA[,QFFluxVar.s]
-  #TODO!!! GPP_fmet and GPP_fwin not copied from NEE_f, since "not known" here  ???
+  #! New code: GPP_fmet and GPP_fwin are not copied from NEE_fmet and NEE_fwin since not known within this function
   attr(sTEMP$NEW_GPP_f, 'varnames') <<- 'GPP_f'
   attr(sTEMP$NEW_GPP_f, 'units') <<- attr(Var.V.n, 'units')
   
@@ -301,6 +303,3 @@ sMRFluxPartition <- function(
   ##value<< 
   ## Flux partitioning results in sTEMP data frame (with renamed columns).
 }
-
-#??? How similar should the results look ???
-#??? criteria for testing ???
