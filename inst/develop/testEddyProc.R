@@ -29,6 +29,10 @@ if (Develop.b) {
   # If needed, generate package
   #   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   #   system('R CMD INSTALL --build --html ../REddyProc')
+  #  install.packages("REddyProc", repos="http://R-Forge.R-project.org") #!!! does not work !!!
+  install.packages('../_FromRForge/REddyProc_0.5.tgz',  repos = NULL)
+  install.packages('../_FromRForge/REddyProc_0.5.tar.gz',  repos = NULL)
+  install.packages('REddyProc_0.5.tgz',  repos = NULL)
   # Requires restart of R console
   require('REddyProc')
   # Test to source data

@@ -16,6 +16,8 @@ syntax: regexp
 syntax: regexp
 ^\REddyProc_.*\.tgz$
 syntax: regexp
+^\REddyProc_.*\.zip$
+syntax: regexp
 ^\.project$
 syntax: regexp
 ^\.Rproj.user$
