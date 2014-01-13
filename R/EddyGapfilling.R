@@ -22,6 +22,7 @@ sEddyProc$methods(
     ## AMM
   {
     'Initializes data frame sTEMP for newly generated gap filled data and qualifiers.'
+    
     # Check variable to fill and apply quality flag
     fCheckColNames(sDATA, c(Var.s, QFVar.s), 'sFillInit')
     Var.V.n <- fSetQF(sDATA, Var.s, QFVar.s, QFValue.n, 'sFillInit')
@@ -121,6 +122,7 @@ sEddyProc$methods(
   #TEST: WinDays.i <- 7; Pos.i <- 18;
 {
     'Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size'
+    
     #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
     #! (rather than changing single values in sTEMP which copies the data frame each time!)
     #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
@@ -243,6 +245,7 @@ sEddyProc$methods(
     # TEST: WinDays.i <- 2; Pos.i <- 100
   {
     'Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days'
+    
     #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
     #! (rather than changing single values in sTEMP which copies the data frame each time!)
     #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)

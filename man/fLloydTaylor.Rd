@@ -1,7 +1,7 @@
 \name{fLloydTaylor}
 \alias{fLloydTaylor}
-\title{Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)}
-
+\title{Temperature dependence of soil respiration}
+\description{Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)}
 \usage{fLloydTaylor(R_ref.n, E_0.n, Tsoil.n, T_ref.n = 273.15 + 10, 
     T_0.n = 227.13)}
 \arguments{

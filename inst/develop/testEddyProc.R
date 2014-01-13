@@ -5,7 +5,7 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: AMM
 
-Develop.b <- T #True if in development mode: Load individual scripts, if false test REddyProc as package
+Develop.b <- F #True if in development mode: Load individual scripts, if false test REddyProc as package
 ShortTest.b <- T #Short test only
 LongTest.b <- F #True if in intensive test mode including NC files, all plots and ...
 

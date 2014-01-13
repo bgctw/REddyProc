@@ -164,6 +164,8 @@ fCalcETfromLE <- function(
 
 fLloydTaylor <- function(
   ##title<<
+  ## Temperature dependence of soil respiration
+  ##description<<
   ## Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)
   R_ref.n               ##<< Respiration rate at reference temperature
   ,E_0.n                ##<< Temperature sensitivity ("activation energy") in Kelvin (degK)
