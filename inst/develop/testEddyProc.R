@@ -19,14 +19,15 @@ if (Develop.b) {
   # Source file and data handling scripts
   source('R/DataFunctions.R')
   source('R/FileHandling.R')
+  # Source geo functions
+  source('R/GeoFunctions.R')
   # Initialization of sEddyProc class
   source('R/Eddy.R')
   # sEddyProc methods
   source('R/EddyGapfilling.R')
   source('R/EddyPlotting.R')
-  # Source geo functions
-  source('R/GeoFunctions.R')
-  
+  source('R/EddyPartitioning.R')
+
 } else {
   # Source settings for R environment and standard functions
   source('inst/develop/setREnvir.R')
@@ -62,6 +63,8 @@ if( ShortTest.b ) {
   EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD'))
   EPTha.C$sMDSGapFill('NEE')
+  EPTha.C$sMDSGapFill('Tair',FillAll.b=F)
+  EPTha.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1.0)
   View(EPTha.C$sTEMP)
   stop('No error but short test only.')
 }
