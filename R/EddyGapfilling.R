@@ -382,11 +382,18 @@ sEddyProc$methods(
     Met.n <- 
       if( V1.s != 'none' && V2.s != 'none' && V3.s != 'none' 
           && sum(!is.na(sDATA[,V1.s]))!=0 && sum(!is.na(sDATA[,V2.s]))!=0 && sum(!is.na(sDATA[,V3.s]))!=0 ) {  
-        3 #Three meteo conditions available for LUT
-      } else if( V1.s != 'none' && sum(!is.na(sDATA[,V1.s]))!=0 ) {
-        1 #One meteo condition available for LUT
-      } else { 
-        0 #No meteo condition available (use MDC only)
+        #All three meteo conditions are available and valid to use:
+        message('Full MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f,'varnames'), '\' with LUT(',V1.s,',',V2.s,',',V3.s,') and MDC.')
+        3
+        } else if( V1.s != 'none' && sum(!is.na(sDATA[,V1.s]))!=0 ) {
+        #Only one meteo condition available for LUT
+        message('Limited MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f,'varnames'), '\' with LUT(',V1.s,' only) and MDC.')
+        1
+      } else {
+        #No meteo condition available (use MDC only)
+        message('Restriced MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f,'varnames'), '\' with no meteo conditions available and hence only MDC.')
+        warning('sMDSGapFill::: No meteo conditions available for MDS gap filling!')
+        0
       } 
     
     #+++ Full MDS algorithm
