@@ -160,6 +160,8 @@ fCalcETfromLE <- function(
   ## Data vector of evapotranspiration (ET, mmol H20 m-2 s-1)
 }
 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 fLloydTaylor <- function(
   ##title<<
   ## Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)
@@ -176,9 +178,11 @@ fLloydTaylor <- function(
 {
   # Fitting temperature T_0 from  paper
   R <- R_ref.n * exp(E_0.n * ( 1/(T_ref.n-T_0.n) - 1/(Tsoil.n-T_0.n) ) )
+  attr(R, 'varnames') <- 'R'
+  attr(R, 'units') <- 'umol_m-2_s-1'
   return(R)
   ##value<<
-  ## Data vector of respiration rate
+  ## Data vector of soil respiration rate (R, umol CO2 m-2 s-1)
 }
 
 
@@ -312,9 +316,9 @@ fCalcPotRadiation <- function(
   SolElev_rad.V.n <- fCalcSunPosition(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n)$SolElev
   ExtRadiation.V.n <- fCalcExtRadiation(DoY.V.n)
   PotRadiation.V.n <- ifelse(SolElev_rad.V.n <= 0, 0, ExtRadiation.V.n * sin(SolElev_rad.V.n) )
+  
   attr(PotRadiation.V.n, 'varnames') <- 'PotRad'
   attr(PotRadiation.V.n, 'units') <- attr(ExtRadiation.V.n, 'units')
-  
   PotRadiation.V.n
   ##value<<
   ## Data vector of potential radiation (PotRad, W_m-2)
