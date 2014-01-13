@@ -26,14 +26,14 @@ if (Develop.b) {
 } else {
   # Source settings for R environment and standard functions
   source('inst/develop/setREnvir.R')
-  # If needed, generate package
-  #   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
-  #   system('R CMD INSTALL --build --html ../REddyProc')
-  #  install.packages("REddyProc", repos="http://R-Forge.R-project.org") #!!! does not work !!!
-  install.packages('../_FromRForge/REddyProc_0.5.tgz',  repos = NULL)
-  install.packages('../_FromRForge/REddyProc_0.5.tar.gz',  repos = NULL)
-  install.packages('REddyProc_0.5.tgz',  repos = NULL)
-  # Requires restart of R console
+  # Generate package from local path
+  ###   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
+  ###   system('R CMD INSTALL --build --html ../REddyProc')
+  # Test installation of package from various sources
+  # Requires restart of R console afterwards!
+  ### R-Forge:  install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
+  ### R-Forge after manual download:  install.packages('../_FromRForge/REddyProc_0.5.tar.gz',  repos = NULL)
+  ### Self generated package:  install.packages('REddyProc_0.5.tgz',  repos = NULL)
   require('REddyProc')
   # Test to source data
   data('Example_DETha98')

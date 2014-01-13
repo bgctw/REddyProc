@@ -47,7 +47,7 @@ for (File.i in 1:length(CodeIn.V.s)) {
 
 # Generate new inlinedocs documentation
 require(inlinedocs)
-system('rm -f man/*')		# twutz: depends on rm, maybe base on R unlink instead
+system('rm -f man/*')		# Comment TW: depends on rm, maybe base on R unlink instead
 
 # temporarily move R5 classes to avoid generation of nun-useful Docu
 dir.create('tmp', showWarnings = FALSE)
@@ -61,29 +61,30 @@ package.skeleton.dx('.') 	# produces *.Rd files in ./man directory
 system('rm -f R/Dummy*')
 file.rename(paste('tmp',CodeIn.V.s,sep='/'), paste('R',CodeIn.V.s,sep='/') )
 
-# overwrite generated REddyProc-package.Rd by version from inst/develop/genData
-file.copy('inst/develop/genData/REddyProc-package.Rd','man', overwrite=TRUE)
-file.copy('inst/develop/genData/Example_DETha98.Rd','man', overwrite=TRUE)
+# Overwrite generated documentation by (self-written) version from inst/develop/genData
+DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','*.Rd')
+file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# Update package data example
+# Provide (update) example data for package from txt file
 EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
 save('EddyData.F', file='data/Example_DETha98.Rdata')
-# load('data/Example_DETha98.Rdata')
-# Alternatively use: dump/source
 
-# Provide R script source code with package
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Provide source code as R script files in inst/scripts with package
 RFiles.V.s <- fInitFilesDir('R','.R')
 system('rm -f inst/scripts/*')
 file.copy(paste('R', RFiles.V.s, sep='/'), paste('inst/scripts', RFiles.V.s, sep='/'), overwrite=T)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# genRd(execInlinedocs = FALSE)		# using package twDev from twutz
+# If package twDev from TW is used for documenation generation
+###   genRd(execInlinedocs = FALSE)
 
 # Install, build and reload package
-if ( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generating the package
+if( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generating the package
   Dir.s <- getwd()
   
   # Reinstall package, set for local libraries of AMM with build binary in gzp-file
@@ -94,8 +95,8 @@ if ( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generatin
   
   # Windows compatible zip-file (for users withour R tools)
   setwd('/Library/Frameworks/R.framework/Versions/current/Resources/library')
-  system('zip -rq REddyProc_0.5.zip REddyProc')
-  system(paste('mv REddyProc_0.5.zip ', Dir.s, '/.', sep=''))
+  system('zip -rq REddyProc_0.5-1.zip REddyProc')
+  system(paste('mv REddyProc_0.5-1.zip ', Dir.s, '/.', sep=''))
   #Reset working directory
   setwd(Dir.s)
   
@@ -104,15 +105,10 @@ if ( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generatin
   #   On pc026: R CMD INSTALL --build --html REddyProc
   #   Email TW since REddyProcWeb is based on this
   
-  if (FALSE) { #Check package
+  if( Develop.b ) {
+    #Check package
     system('R CMD CHECK ../REddyProc')
   }
-  
-  #Only reload REddyProc if it was already package attached
-  if (FALSE &&  sum(grepl('REddyProc', (.packages()))) == 1 ) {
-    detach('package:REddyProc')
-    require(REddyProc)
-    # Dir.s <- system.file(package='REddyProc') # Path to package
-    # Restart of R console required to load new version of package
-  }
+
+  # Restart of R console required to load new version of package
 }
