@@ -1,5 +1,6 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+++ Developers' R script to test eddy processing for various datasets +++
+#+++ Developers' R script +++
+#+++ Various test routines to develop and test code and processing for various datasets
 #+++ --> run from package directory
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: AMM

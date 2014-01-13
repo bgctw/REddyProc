@@ -1,7 +1,8 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+++ Generation of code documentation with 'inlinedocs' +++
-#+++ Parse R5 methods to functions +++
-#+++ Run from package directory
+#+++ Developers' R script +++
+#+++ Generation of code documentation with 'inlinedocs' (by parsing R5 methods to functions)
+#+++ Generation of example data, original scripts, package archive
+#+++ --> run from package directory
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: AMM
 
