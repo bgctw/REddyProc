@@ -13,9 +13,9 @@ sEddyProc <- setRefClass('sEddyProc', fields=list(
   ## AMM, after example code of TW
   ##details<< with fields
   sID='character'       ##<< String with Site ID
-  ,sDATA='data.frame'   ##<< Data frame with site data
+  ,sDATA='data.frame'   ##<< Data frame with (fixed) site data
   ,sINFO='list'         ##<< List with site information
-  ,sTEMP='data.frame'   ##<< Data frame with temporary data
+  ,sTEMP='data.frame'   ##<< Data frame with (temporary) result data
   # Note: The documenation of the class is not processed by 'inlinedocs'
 ))
 
@@ -56,7 +56,9 @@ sEddyProc$methods(
     ##details<<
     ## All other columns may only contain numeric data.
     ## Please use NA as a gap flag for missing data or low quality data not to be used in the processing.
+    ## The columns are also checked for plausibility with warnings if outside range.
     fCheckColNum(Data.F, ColNames.V.s, 'sEddyProc.initialize')
+    fCheckColPlausibility(Data.F, ColNames.V.s, 'sEddyProc.initialize')
     
     ##details<<
     ## sID is a string for the site ID.
@@ -146,7 +148,7 @@ sEddyProc$methods(
     ##title<<
     ## sEddyProc$sExportData - Export internal sTEMP data frame with result columns
     ##description<<
-    ## Export class internal sDATA data frame
+    ## Export class internal sTEMP data frame with result columns
     ##author<<
     ## AMM
   {
@@ -160,18 +162,18 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sPrintData = function ()
+  sPrintFrames = function ()
     ##title<<
-    ## sEddyProc$sPrintData - Print internal sDATA data frame
+    ## sEddyProc$sPrintFrames - Print internal sDATA and sTEMP data frame
     ##description<<
-    ## Print class internal sDATA data frame
+    ## Print class internal sDATA and sTEMP data frame
     ##author<<
     ## AMM
   {
     'Print class internal sDATA data frame'
-    NumRows.n <- min(nrow(sDATA),100)
+    NumRows.n <- min(nrow(sDATA),nrow(sTEMP),100)
 
-    print(sDATA[1:NumRows.n,])
+    print(c(sDATA,sTEMP[,-1])[1:NumRows.n,])
     ##value<< 
     ## Print first 100 rows of data frame sDATA.
   })
