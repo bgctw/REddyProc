@@ -4,8 +4,12 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: AMM
 
-Develop.b <- F #True if in development mode: Load individual scripts, if false test REddyProc as package
+Develop.b <- T #True if in development mode: Load individual scripts, if false test REddyProc as package
+ShortTest.b <- T #Short test only
 LongTest.b <- F #True if in intensive test mode including NC files, all plots and ...
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Load package or source files (development mode)
 
 if (Develop.b) {
   # Source settings for R environment and standard functions
@@ -21,8 +25,7 @@ if (Develop.b) {
   source('R/EddyPlotting.R')
   # Source geo functions
   source('R/GeoFunctions.R')
-  # Load standard example data from file
-  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
+  
 } else {
   # Source settings for R environment and standard functions
   source('inst/develop/setREnvir.R')
@@ -35,22 +38,37 @@ if (Develop.b) {
   ### R-Forge after manual download:  install.packages('../_FromRForge/REddyProc_0.5.tar.gz',  repos = NULL)
   ### Self generated package:  install.packages('REddyProc_0.5.tgz',  repos = NULL)
   require('REddyProc')
-  # Test to source data
-  data('Example_DETha98')
 }
 
-if( FALSE ) {
-  #Short test
-  data('Example_DETha98')
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#Load example data directly from package or (if not available) from txt file
+
+data('Example_DETha98', package='REddyProc')
+if( sum(grepl('EddyData.F',ls())) == 0 ) {
+  if( file.exists('../examples/Example_DETha98.txt') ) {
+    EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../examples'))
+  } else {
+    message('Unit test directory: ', getwd())
+    message('Workspace: ', ls())
+    stop('test_sEddyProc.R::: Example data could not be loaded.')
+  }
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Run short test
+
+if( ShortTest.b ) {
   EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD'))
   EPTha.C$sMDSGapFill('NEE')
   View(EPTha.C$sTEMP)
+  stop('No error but short test only.')
 }
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#Packages to source for unit tests
-require(testthat)
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Run unit tests
+
+require(testthat) #Packages to source for unit tests
 if (Develop.b) {
   test_dir('inst/tests') # works only if R scripts are sourced
 } else {
@@ -58,8 +76,8 @@ if (Develop.b) {
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 # Data handling of standard example data
+
 # Add dummy quality flag for tests
 EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units='dummy_unit'))
 # Test calculation of VPD

@@ -19,6 +19,7 @@ Internally the half-hour time stamp is shifted to the middle of the measurement 
 
 All other columns may only contain numeric data.
 Please use NA as a gap flag for missing data or low quality data not to be used in the processing.
+The columns are also checked for plausibility with warnings if outside range.
 
 sID is a string for the site ID.
 

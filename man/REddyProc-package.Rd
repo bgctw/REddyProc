@@ -5,11 +5,13 @@
 \description{
 R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
 
-The online tool: \url{http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb} is based on this package.
+The official R-Forge site of this package is here: url{http://r-forge.r-project.org/projects/reddyproc/}.
+
+A general description and an online tool based on this package can be found here: \url{http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb}.
 }
 \details{
+A first overview of the REddyProc functions:
 
-In the following is a first overview of the REddyProc functions.
 A \bold{detailed example} of the processing can be found under \code{\link{sEddyProc.example}}. 
 
 These functions help with the preparation of your data for the analysis: 

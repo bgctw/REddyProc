@@ -87,13 +87,13 @@ file.copy(paste('R', RFiles.V.s, sep='/'), paste('inst/scripts', RFiles.V.s, sep
 if( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generating the package
   Dir.s <- getwd()
   
-  # Reinstall package, set for local libraries of AMM with build binary in gzp-file
+  # Reinstall package, set for local libraries of AMM with built binary in gzp-file
   # Without library path, it gets installed to library ‘/Applications/RStudio.app/Contents/Resources/R/library’!
   # Check library paths with .libPaths()
   # For RStudio specific information see here http://www.rstudio.com/ide/docs/server/configuration
   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   
-  # Windows compatible zip-file (for users withour R tools)
+  # Windows compatible zip-archive (use Rtools for building packages for R under Windows)
   setwd('/Library/Frameworks/R.framework/Versions/current/Resources/library')
   system('zip -rq REddyProc_0.5-1.zip REddyProc')
   system(paste('mv REddyProc_0.5-1.zip ', Dir.s, '/.', sep=''))
@@ -101,9 +101,9 @@ if( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generating
   setwd(Dir.s)
   
   # To update to newest version on cluster:
-  #   Update repository
-  #   On pc026: R CMD INSTALL --build --html REddyProc
-  #   Email TW since REddyProcWeb is based on this
+  #   1. Update repository
+  #   2. On pc026: R CMD INSTALL --build --html REddyProc
+  #   3. Email TW since REddyProcWeb is based on this
   
   if( Develop.b ) {
     #Check package

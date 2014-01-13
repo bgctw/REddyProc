@@ -103,7 +103,7 @@ sEddyProc$methods(
     ## sEddyProc$sFillLUT - Gap filling with Look-Up Table (LUT)
     ##description<<
     ## Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size
-    WinDays.i             ##<< window size for filling in days
+    WinDays.i             ##<< Window size for filling in days
     ,V1.s='none'          ##<< Condition variable 1
     ,T1.n=NA_real_        ##<< Tolerance interval 1
     ,V2.s='none'          ##<< Condition variable 2

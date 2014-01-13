@@ -28,7 +28,7 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 
   #+++ Initalize R5 reference class sEddyProc for processing of eddy data
   #+++ with all variables needed for processing later
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
+  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD'))
   
   #+++ Generate plots of all data in directory \plots (of current R working dir)
   EddyProc.C$sPlotHHFluxes('NEE')
@@ -39,8 +39,8 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
   EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
   
   #+++ Fill gaps in variables with MDS gap filling algorithm
-  EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE)
-  EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
+  EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
+  EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only gaps of meteo condition
   
   #+++ Generate plots of filled data in directory \plots (of current R working dir)
   EddyProc.C$sPlotHHFluxes('NEE_f')
@@ -66,7 +66,7 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   #+++ Add some (non-sense) example vectors:
   #+++ Quality flag vector (e.g. from applying ustar filter)
-  EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10))
+  EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=rep(c(1,0,1,0,1,0,0,0,0,0), nrow(EddyData.F)/10))
   #+++ Step function vector to simulate e.g. high/low water table
   EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, Step=ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1))
 

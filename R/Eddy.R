@@ -106,7 +106,7 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sGetData = function ()
+  sGetData = function( )
   ##title<<
   ## sEddyProc$sGetData - Get internal sDATA data frame
   ##description<<
@@ -123,7 +123,7 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sExportData = function ()
+  sExportData = function( )
     ##title<<
     ## sEddyProc$sExportData - Export internal sDATA data frame
     ##description<<
@@ -144,7 +144,7 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sExportResults = function ()
+  sExportResults = function( )
     ##title<<
     ## sEddyProc$sExportData - Export internal sTEMP data frame with result columns
     ##description<<
@@ -162,25 +162,27 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sPrintFrames = function ()
+  sPrintFrames = function(
     ##title<<
     ## sEddyProc$sPrintFrames - Print internal sDATA and sTEMP data frame
     ##description<<
     ## Print class internal sDATA and sTEMP data frame
+    NumRows.i=100         ##<< Number of rows to print
+)
     ##author<<
     ## AMM
   {
     'Print class internal sDATA data frame'
-    NumRows.n <- min(nrow(sDATA),nrow(sTEMP),100)
+    NumRows.i <- min(nrow(sDATA),nrow(sTEMP),NumRows.i)
 
-    print(c(sDATA,sTEMP[,-1])[1:NumRows.n,])
+    print(cbind(sDATA,sTEMP[,-1])[1:NumRows.i,])
     ##value<< 
-    ## Print first 100 rows of data frame sDATA.
+    ## Print the first rows of class internal sDATA and sTEMP data frame.
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc.example <- function() {
+sEddyProc.example <- function( ) {
   ##title<<
   ## sEddyProc - Example code
   ##description<<
@@ -189,7 +191,7 @@ sEddyProc.example <- function() {
   ## AMM
   # Empty function jsut to write attribute with example code for documenation
 } 
-attr(sEddyProc.example,'ex') <- function(){
+attr(sEddyProc.example,'ex') <- function( ){
   #+++ Simple example code for using the sEddyProc reference class +++
   
   if( FALSE ) { #Do not always execute example code (e.g. on package installation)
@@ -205,7 +207,7 @@ attr(sEddyProc.example,'ex') <- function(){
 
     #+++ Initalize R5 reference class sEddyProc for processing of eddy data
     #+++ with all variables needed for processing later
-    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD'))
     
     #+++ Generate plots of all data in directory \plots (of current R working dir)
     EddyProc.C$sPlotHHFluxes('NEE')
@@ -216,8 +218,8 @@ attr(sEddyProc.example,'ex') <- function(){
     EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
     
     #+++ Fill gaps in variables with MDS gap filling algorithm
-    EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE)
-    EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
+    EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
+    EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only gaps of meteo condition
     
     #+++ Generate plots of filled data in directory \plots (of current R working dir)
     EddyProc.C$sPlotHHFluxes('NEE_f')
@@ -243,7 +245,7 @@ attr(sEddyProc.example,'ex') <- function(){
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     #+++ Add some (non-sense) example vectors:
     #+++ Quality flag vector (e.g. from applying ustar filter)
-    EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10))
+    EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=rep(c(1,0,1,0,1,0,0,0,0,0), nrow(EddyData.F)/10))
     #+++ Step function vector to simulate e.g. high/low water table
     EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, Step=ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1))
 

@@ -12,7 +12,7 @@
   \item{T_0.n}{Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)}
 }
 
-\value{Data vector of respiration rate}
+\value{Data vector of soil respiration rate (R, umol CO2 m-2 s-1)}
 
 \author{AMM
 reference<<

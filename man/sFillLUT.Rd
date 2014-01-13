@@ -6,7 +6,7 @@
     T2.n = NA_real_, V3.s = "none", T3.n = NA_real_, V4.s = "none", 
     T4.n = NA_real_, V5.s = "none", T5.n = NA_real_, Verbose.b = TRUE)}
 \arguments{
-  \item{WinDays.i}{window size for filling in days}
+  \item{WinDays.i}{Window size for filling in days}
   \item{V1.s}{Condition variable 1}
   \item{T1.n}{Tolerance interval 1}
   \item{V2.s}{Condition variable 2}
