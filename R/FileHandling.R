@@ -14,13 +14,13 @@ fLoadTXTIntoDataframe <- function(
   ## If gaps with the flag -9999.0 exist, these are set to NA.
   FileName.s            ##<< File name
   ,Dir.s=''             ##<< Directory
-  ) 
+) 
   ##author<<
   ## AMM
   # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'inst/examples'
 {
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')  
-
+  
   # Read in header
   Header.V.s <- as.character(read.csv(InputFile.s, header=F, sep='', dec='.', nrows=1, stringsAsFactors=F))
   Units.V.s <- as.character(read.csv(InputFile.s, header=F, sep='', dec='.', skip=1, nrows=1, stringsAsFactors=F))
@@ -69,7 +69,7 @@ fLoadFluxNCIntoDataframe <- function(
   ,FileName.s           ##<< File name             
   ,Dir.s=''             ##<< Directory
   ,NcPackage.s='ncdf4'  ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
-  ) 
+) 
   ##author<<
   ## AMM, KS
   # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples';
@@ -77,10 +77,9 @@ fLoadFluxNCIntoDataframe <- function(
 {
   # Check for R NetCDF packages
   if( !(( NcPackage.s=='ncdf4' && suppressWarnings(require(ncdf4)) )
-      || ( NcPackage.s=='RNetCDF' && suppressWarnings(require(RNetCDF)) )) )
+        || ( NcPackage.s=='RNetCDF' && suppressWarnings(require(RNetCDF)) )) )
     stop('fLoadFluxNCIntoDataframe::: Required package \'', NcPackage.s, '\' could not be loaded!')
   
-
   # Read in time variables
   Data.F <- fAddNCFVar(NULL, 'year', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
   Data.F <- fAddNCFVar(Data.F, 'month', FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe')
@@ -118,9 +117,9 @@ fAddNCFVar <- function(
   ,Var.s                ##<< Variable name
   ,FileName.s           ##<< NetCDF file name
   ,Dir.s                ##<< Directory
-  ,NcPackage.s          ##<< Name of R NetCDF package
+  ,NcPackage.s          ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
   ,CallFunction.s=''    ##<< Name of function called from
-  )
+)
   ##author<<
   ## AMM, KS
   #TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples'
@@ -154,13 +153,81 @@ fAddNCFVar <- function(
              finally = nc_close(NCFile.C)
     )
   } else {
-    stop(CallFunction.s, ':::fAddNCFVar::: NC files could not be opened!')
+    stop(CallFunction.s, ':::fAddNCFVar::: NC file ', InputNCF.s, ' could not be opened!')
   }
   
   Data.F
   ##value<<
   ## Data frame with new nc variable added.
 }
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+fLoadFluxNCInfo <- function(
+  ##title<<
+  ## Get site information from BGI NetCDF files
+  ##description<<
+  ## Load site information attributes such as latitude, longitude and others from BGI NetCDF files
+  FileName.s            ##<< NetCDF file name
+  ,Dir.s                ##<< Directory
+  ,NcPackage.s='ncdf4'  ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
+  ,CallFunction.s=''    ##<< Name of function called from
+)
+  ##author<<
+  ## AMM
+  #TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples'
+  #TEST: NcPackage.s <- 'ncdf4'
+  #TEST: fLoadFluxNCInfo('Example_DE-Tha.1996.1998.hourly.nc','inst/examples','ncdf4')
+{
+  # Check for R NetCDF packages
+  if( !(( NcPackage.s=='ncdf4' && suppressWarnings(require(ncdf4)) )
+        || ( NcPackage.s=='RNetCDF' && suppressWarnings(require(RNetCDF)) )) )
+    stop('fLoadFluxNCIntoDataframe::: Required package \'', NcPackage.s, '\' could not be loaded!')
+  
+  InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
+  
+  if( NcPackage.s=='RNetCDF' ) {
+    NCFile.C <- open.nc(InputNCF.s)
+    tryCatch({
+      ##details<<
+      ## Description of attribute list:
+      ##describe<<
+      SiteInfo.L <- list( 
+        ID    = att.get.nc(NCFile.C,'NC_GLOBAL','Site_ID')                 ##<< SiteID
+        ,DIMS = dim.inq.nc(NCFile.C,'time')$length                        ##<< Number of data rows
+        ,LON  = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','Longitude'))  ##<< Longitude
+        ,LAT  = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','Latitude'))   ##<< Latitude
+        ,TZ   = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','TimeZone'))   ##<< Time zone
+        ,ELEV = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','Elevation')) ##<< Elevation
+        ,IGBP = att.get.nc(NCFile.C,'NC_GLOBAL','IGBP_class')            ##<< IGBP class
+      )
+    }, 
+             finally = close.nc(NCFile.C)
+    )
+  } else if( NcPackage.s=='ncdf4' ) {
+    NCFile.C <- nc_open(InputNCF.s, write=FALSE, readunlim=TRUE, verbose=FALSE)
+    tryCatch({
+      SiteInfo.L <- list( 
+        ID    = ncatt_get(NCFile.C,0,'Site_ID')$value
+        ,DIMS = NCFile.C$dim$time$len
+        ,LON  = as.numeric(ncatt_get(NCFile.C,0,'Longitude')$value)
+        ,LAT  = as.numeric(ncatt_get(NCFile.C,0,'Latitude')$value)
+        ,TZ   = as.numeric(ncatt_get(NCFile.C,0,'TimeZone')$value)
+        ,ELEV = as.numeric(ncatt_get(NCFile.C,0,'Elevation')$value)
+        ,IGBP = ncatt_get(NCFile.C,0,'IGBP_class')$value
+      )
+    }, 
+             finally = nc_close(NCFile.C)
+    )
+  } else {
+    stop(CallFunction.s, ':::fLoadFluxNCInfo::: NC file ', InputNCF.s, ' could not be opened!')
+  }
+  
+  SiteInfo.L
+  ##value<<
+  ## Attibute list
+}
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Write data to file
@@ -188,10 +255,10 @@ fWriteDataframeToFile <- function(
   # Write tab delimited file
   Lines.V.s <- vector(mode='character', length = 2)
   Lines.V.s[1] <- paste(colnames(Data.F), collapse='\t')
-  Lines.V.s[1] <- gsub('DateTime', 'Date Time', Lines.V.s[1]) #POSIX column
+  Lines.V.s[1] <- gsub('DateTime', 'Date Time', Lines.V.s[1]) #If POSIX column replace name
   Lines.V.s[2] <- paste(as.character(lapply(Data.F, attr, which='units')), collapse='\t')
   Lines.V.s[2] <- gsub('NULL', '-', Lines.V.s[2])
-  Lines.V.s[2] <- gsub('DateTime', 'Date Time', Lines.V.s[2])  #POSIX column
+  Lines.V.s[2] <- gsub('DateTime', 'Date Time', Lines.V.s[2])  #if POSIX column replace unit
   write(Lines.V.s, file=OutputFile.s, append=F)
   write.table(format(Data.F, digits=5, drop0trailing=T, trim=T), file=OutputFile.s, col.names=F, row.names=F, sep='\t', quote=F, append=T)
   message('Wrote tab separated textfile: ', OutputFile.s)
@@ -273,7 +340,7 @@ fSetFile <- function(
 {
   # Check if string for directory provided
   Dir.b <- fCheckValString(Dir.s)
-
+  
   # Check if directory exists
   if ( IO.b && Dir.b && (file.access(Dir.s, mode=4) != 0))
     stop(CallFunction.s, ':::fSetFile::: Directory does not exist: ', Dir.s)
