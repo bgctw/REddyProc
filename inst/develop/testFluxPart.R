@@ -20,7 +20,7 @@ source("R/GeoFunctions.R")
 
 # Generate output data from PV-Wave webtool: http://www.bgc-jena.mpg.de/~MDIwork/eddyproc/
 # Setting: partitioning with ustar filter and temperature 'Tair'
-# Differences to new tool: single years only, 'Day' -> 'DoY'
+# Differences to new tool: single years only, (no year column), 'Day' -> 'DoY'
 # Load output data
 if( sum(grepl('TestData.F', ls(all=TRUE))) == 0 ) # Load only TestData.F, if not yet loaded
   TestData.F <- fLoadTXTIntoDataframe('Example_DETha98_PVWave_DataSetafterFluxpart.txt', 'inst/examples') #takes a minute or two

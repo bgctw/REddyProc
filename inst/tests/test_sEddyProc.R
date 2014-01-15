@@ -111,6 +111,7 @@ test_that("Test sMDSGapFill",{
   EddyProc.C$sMDSGapFill('NEE', Verbose.b=F)
   EddyProc.C$sMDSGapFill('Tair','QF', 0, Verbose.b=F)
   Results.F <- EddyProc.C$sExportResults()
+  # Regression test of results
   expect_that(Results.F[1,'NEE_fnum'], equals(54)) #Equal to 53 with old MR PV-Wave congruent settings
   expect_that(Results.F[1,'Tair_fnum'], equals(173)) #Equal to 96 with old MR PV-Wave congruent settings
   # Shorter version for hourly  
