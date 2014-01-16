@@ -1,9 +1,9 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Developers' R script +++
-#+++ Generate input data for the old online tool (based on pv-wave) from BGI fluxnet data
+#+++ Generate input data for the old webtool (based on pv-wave) from BGI Fluxnet nc files
 #+++ to be used in comparison compOldNewTool.R
 #+++ (Main formatting differences old to new tool: single years only, (no year column), 'Day' -> 'DoY')
-#+++ --> run from parent directory
+#+++ --> run from package parent directory
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: AMM
 
@@ -12,7 +12,6 @@
 source('inst/develop/setREnvir.R') 
 require('REddyProc')
 
-#!!!
 DirFluxnet.s <- paste('~/Data/Fluxnet/level5_new_nc') #!!! Quick fix to work from home, comment out later...
 
 #List of site and years to compare
@@ -29,7 +28,8 @@ CompName.V.s <- fStripFileExtension(CompList.V.s)
 FluxFile.V.s <- fInitFilesDir(DirFluxnet.s, 'hourly.nc')
 FluxName.V.s <- fStripFileExtension(FluxFile.V.s)
 
-for (CompSite.i in 1:length(CompName.V.s)) {
+for (CompSite.i in 11) {
+#for (CompSite.i in 1:length(CompName.V.s)) {
   #CompSite.i=11
   FluxSite.i <- which(FluxName.V.s == CompName.V.s[CompSite.i])
   Year.i <- as.numeric(sub('.*[.]','',CompList.V.s[CompSite.i]))
@@ -37,12 +37,12 @@ for (CompSite.i in 1:length(CompName.V.s)) {
   
   #Load data from NetCDF
   # Variables needed for running pv-wave tool
-  VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday') #Attention: Rh and rH for different version of BGI processing
-  VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'Rh', 'Tair', 'Tsoil_f', 'julday') #!!!delete
+  VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil_f', 'rH', 'VPD', 'ustar', 'julday') #Attention: Rh and rH for different version of BGI processing
+  VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil_f', 'Rh', 'VPD', 'ustar', 'julday') #!!!Old Rh --> delete
   # Variables needed to also compare to Fluxnet (FX) version
   VarFX.V.s <- c('Tair_f', 'Tair_fqcOK', 'NEE_f', 'NEE_fqc', 'Rg_pot', 'Reco', 'GPP_f')
-  VarFX_new.V.s <- NULL
-  #VarFX_new.V.s <- c('FX_Tair_f', 'FX_Tair_fqcOK', 'FX_NEE_f', 'FX_NEE_fqc', 'FX_Rg_pot', 'FX_Reco', 'FX_GPP_f')
+  #VarFX.V.s <- NULL
+  VarFX_new.V.s <- c('FX_Tair_f', 'FX_Tair_fqcOK', 'FX_NEE_f', 'FX_NEE_fqc', 'FX_Rg_pot', 'FX_Reco', 'FX_GPP_f')
   EddyNCData.F <- NULL #Reset
   EddyNCData.F <- fLoadFluxNCIntoDataframe(c(VarPV.V.s,VarFX.V.s), FluxFile.V.s[FluxSite.i], DirFluxnet.s) #takes longer...
   
@@ -58,12 +58,14 @@ for (CompSite.i in 1:length(CompName.V.s)) {
   # Rename Tsoil_f to pretend it is unfilled (no fqc available)
   names(SiteData.F)[names(SiteData.F)=='Tsoil_f'] <- 'Tsoil'
   # Set PV-Wave time stamp at front
-  SiteData.F <- cbind(qcNEE=c(1), SiteData.F) #Just a dummy
+  SiteData.F <- cbind(qcNEE=ifelse(is.na(SiteData.F$NEE), 2, 1), SiteData.F) # Quality flag according to PV-Webtool
   SiteData.F <- cbind(Hour=as.numeric(format(SiteData.F$DateTime, '%H')) + as.numeric(format(SiteData.F$DateTime, '%M'))/60, SiteData.F)
   SiteData.F <- cbind(Day=SiteData.F$julday, SiteData.F) #With funny uncorrect formatting...
   #Otherwise it would be: cbind(Day=as.numeric(format(SiteData.F$DateTime, '%j')), SiteData.F) #Attention: Called day but is actually DoY
   # Remove DateTime stamp and Fluxnet time columns
   SiteData.F <- SiteData.F[,!names(SiteData.F) %in% c('DateTime','year','month','day','hour','julday')]
+  
+  #PV-Webtool: Variable naming NOT case sensitive oder can be slightly changed (not of time variables)
   
   FileName.s <- paste(CompList.V.s[CompSite.i], '.txt', sep='')
   fWriteDataframeToFile(SiteData.F, FileName.s,'out')
