@@ -24,8 +24,8 @@ sEddyProc$methods(
     'Initializes data frame sTEMP for newly generated gap filled data and qualifiers.'
     
     # Check variable to fill and apply quality flag
-    fCheckColNames(sDATA, c(Var.s, QFVar.s), 'sFillInit')
-    Var.V.n <- fSetQF(sDATA, Var.s, QFVar.s, QFValue.n, 'sFillInit')
+    fCheckColNames(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), 'sFillInit')
+    Var.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sFillInit')
     
     # Abort if variable to be filled contains no data
     if( sum(!is.na(Var.V.n)) == 0 ) {
@@ -364,7 +364,7 @@ sEddyProc$methods(
     
     # Check column names (with 'none' as dummy)
     # (Numeric type and plausibility have been checked on initialization of sEddyProc)
-    fCheckColNames(sDATA, c(V1.s, V2.s, V3.s), 'sMDSGapFill')
+    fCheckColNames(cbind(sDATA,sTEMP), c(V1.s, V2.s, V3.s), 'sMDSGapFill')
     
     # Check tolerance entries (if condition variable is not 'none')
     NoneCols.b <- c(V1.s, V2.s, V3.s) %in% 'none'

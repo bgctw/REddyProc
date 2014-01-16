@@ -1,7 +1,7 @@
 \name{sMRFluxPartition}
 \alias{sMRFluxPartition}
 \title{sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)}
-\description{Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)}
+\description{Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)}
 \usage{sMRFluxPartition(FluxVar.s = "NEE_f", QFFluxVar.s = "NEE_fqc", 
     QFFluxValue.n = 0, TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
     QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, Long_deg.n, 
@@ -19,7 +19,6 @@
   \item{TimeZone_h.n}{Time zone (in hours)}
 }
 \details{Description of newly generated variables with partitioning results: \cr
-
 PotRad - Potential radiation \cr
 FP_NEEnight - Good (original) NEE nighttime fluxes  used for flux partitioning \cr
 FP_Temp - Good (original) temperature measurements used for flux partitioning \cr

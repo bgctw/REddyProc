@@ -6,7 +6,7 @@
 # Author: AMM
 
 Develop.b <- F #True if in development mode: Load individual scripts, if false test REddyProc as package
-ShortTest.b <- T #Short test only
+ShortTest.b <- F #Short test only
 LongTest.b <- F #True if in intensive test mode including NC files, all plots and ...
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -27,6 +27,8 @@ if (Develop.b) {
   source('R/EddyGapfilling.R')
   source('R/EddyPlotting.R')
   source('R/EddyPartitioning.R')
+  # sEddyProc method still in development
+  source('inst/develop/EddyFiltering.R')
 
 } else {
   # Source settings for R environment and standard functions
@@ -77,6 +79,20 @@ if (Develop.b) {
   test_dir('inst/tests') # works only if R scripts are sourced
 } else {
   test_package('REddyProc') # works only if package is installed (not necessarily loaded)
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Testing of ustar filtering
+
+if( FALSE ) { #Short example from above with ustar filtering
+  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+  EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+  EPTha.C$sUstarMM() # Apply filter
+  EPTha.C$sMDSGapFill('NEE','UstarMM_fqc',0) #Use ustar flag
+  EPTha.C$sMDSGapFill('Tair',FillAll.b=F)
+  EPTha.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1.0)
+  View(EPTha.C$sTEMP)
+  stop('No error but short test only.')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

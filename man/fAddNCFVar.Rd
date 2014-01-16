@@ -8,7 +8,7 @@
   \item{Var.s}{Variable name}
   \item{FileName.s}{NetCDF file name}
   \item{Dir.s}{Directory}
-  \item{NcPackage.s}{Name of R NetCDF package}
+  \item{NcPackage.s}{Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
   \item{CallFunction.s}{Name of function called from}
 }
 

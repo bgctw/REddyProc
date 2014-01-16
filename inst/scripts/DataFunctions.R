@@ -612,6 +612,8 @@ fSetQF <- function(
   fCheckColNames(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
   fCheckColNum(Data.F, c(Var.s, QFVar.s), SubCallFunc.s)
       
+  ##details<<
+  ## Quality flag will be applied to variable - unless quality flag variables is called 'none' (dummy).
   if (QFVar.s != 'none') {
     # Check quality flag value
     if( fCheckValNum(QFValue.n) != T )
