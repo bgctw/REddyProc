@@ -31,7 +31,7 @@ ResultsName.V.s <- fStripFileExtension(ResultsFile.V.s) #!!! Programm to be only
 FluxFile.V.s <- fInitFilesDir(DirFluxnet.s, 'hourly.nc')
 FluxName.V.s <- fStripFileExtension(FluxFile.V.s)
 
-DirFluxnet.s <- paste('~/Data/Fluxnet/level5_new_nc') #!!! Quick fix to work from home, comment out later...
+#DirFluxnet.s <- paste('~/Data/Fluxnet/level5_new_nc') #!!! Quick fix to work from home, comment out later...
 
 for (Result.i in 1:length(ResultName.V.s)) {
   #Result.i <- 1
@@ -50,7 +50,7 @@ for (Result.i in 1:length(ResultName.V.s)) {
   PVData.F$E_0 <- PVData.F$E0_2_from_Tair
   
   #Load site information from BGC nc files (used to generate old tool input data)
-  Info.L <- fLoadFluxNCInfo(FluxFile.V.s[FluxSite.i], DirFluxnet.s)
+  Info.L <- fLoadFluxNCInfo(FluxFile.V.s[FluxSite.i], DirFluxnet.s, 'RNetCDF')
   
   # Run new flux partitioning algorithm 
   # Automatically uses the NEE_f, NEE_fqc, Tair_f, Tair_fqc, and Rg from the pv-wave output files

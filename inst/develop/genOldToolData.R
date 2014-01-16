@@ -12,7 +12,7 @@
 source('inst/develop/setREnvir.R') 
 require('REddyProc')
 
-DirFluxnet.s <- paste('~/Data/Fluxnet/level5_new_nc') #!!! Quick fix to work from home, comment out later...
+# DirFluxnet.s <- paste('~/Data/Fluxnet/level5_new_nc') #!!! Quick fix to work from home, comment out later...
 
 #List of site and years to compare
 CompList.V.s <- c('AT-Neu.2004','BR-Ma2.2005','BR-Sa1.2003','CA-Let.2000','CA-NS7.2004','CA-TP3.2005',
@@ -33,18 +33,21 @@ for (CompSite.i in 11) {
   #CompSite.i=11
   FluxSite.i <- which(FluxName.V.s == CompName.V.s[CompSite.i])
   Year.i <- as.numeric(sub('.*[.]','',CompList.V.s[CompSite.i]))
-  message(paste('Handling site file \"', FluxFile.V.s[FluxSite.i],'\" for the year ', Year.i, sep=''))
+  #Load site information from BGC nc files (used to generate old tool input data)
+  Info.L <- fLoadFluxNCInfo(FluxFile.V.s[FluxSite.i], DirFluxnet.s, 'RNetCDF')
+  message(paste('Handling site file \"', FluxFile.V.s[FluxSite.i],'\" for the year: ', Year.i,
+                ', Longitude: ', Info.L$LON, sep=''))
   
   #Load data from NetCDF
   # Variables needed for running pv-wave tool
   VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil_f', 'rH', 'VPD', 'ustar', 'julday') #Attention: Rh and rH for different version of BGI processing
-  VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil_f', 'Rh', 'VPD', 'ustar', 'julday') #!!!Old Rh --> delete
+  # VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil_f', 'Rh', 'VPD', 'ustar', 'julday') #!!!Old Rh --> delete
   # Variables needed to also compare to Fluxnet (FX) version
   VarFX.V.s <- c('Tair_f', 'Tair_fqcOK', 'NEE_f', 'NEE_fqc', 'Rg_pot', 'Reco', 'GPP_f')
   #VarFX.V.s <- NULL
   VarFX_new.V.s <- c('FX_Tair_f', 'FX_Tair_fqcOK', 'FX_NEE_f', 'FX_NEE_fqc', 'FX_Rg_pot', 'FX_Reco', 'FX_GPP_f')
   EddyNCData.F <- NULL #Reset
-  EddyNCData.F <- fLoadFluxNCIntoDataframe(c(VarPV.V.s,VarFX.V.s), FluxFile.V.s[FluxSite.i], DirFluxnet.s) #takes longer...
+  EddyNCData.F <- fLoadFluxNCIntoDataframe(c(VarPV.V.s,VarFX.V.s), FluxFile.V.s[FluxSite.i], DirFluxnet.s, 'RNetCDF') #takes longer...
   
   # Set to single year
   SiteData.F <- EddyNCData.F
