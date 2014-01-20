@@ -28,16 +28,18 @@ CompName.V.s <- fStripFileExtension(CompList.V.s)
 FluxFile.V.s <- fInitFilesDir(DirFluxnet.s, 'hourly.nc')
 FluxName.V.s <- fStripFileExtension(FluxFile.V.s)
 
-for (CompSite.i in 11) {
-#for (CompSite.i in 1:length(CompName.V.s)) {
+#for (CompSite.i in 11) {
+for (CompSite.i in 1:length(CompName.V.s)) {
   #CompSite.i=11
   FluxSite.i <- which(FluxName.V.s == CompName.V.s[CompSite.i])
   Year.i <- as.numeric(sub('.*[.]','',CompList.V.s[CompSite.i]))
   #Load site information from BGC nc files (used to generate old tool input data)
   Info.L <- fLoadFluxNCInfo(FluxFile.V.s[FluxSite.i], DirFluxnet.s, 'RNetCDF')
   message(paste('Handling site file \"', FluxFile.V.s[FluxSite.i],'\" for the year: ', Year.i,
-                ', Longitude: ', Info.L$LON, sep=''))
-  
+                ', Latitude: ', Info.L$LAT, sep=''))
+#  message(paste('Site \"', FluxFile.V.s[FluxSite.i],'\" Year: ', Year.i,
+#                ', LAT: ', Info.L$LAT, sep=''))
+#}  
   #Load data from NetCDF
   # Variables needed for running pv-wave tool
   VarPV.V.s <- c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil_f', 'rH', 'VPD', 'ustar', 'julday') #Attention: Rh and rH for different version of BGI processing
