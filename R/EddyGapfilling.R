@@ -221,7 +221,7 @@ sEddyProc$methods(
         lGF.M[,c('mean','fnum','fsd','fmeth','fwin','fqc')]
       # Only fill gaps in VAR_f and VAR_fqc
       Gaps.b <- is.na(sTEMP[lGF.M[,'index'],'VAR_f'])
-      sTEMP[lGF.M[,'index'],c('VAR_f','VAR_fqc')][Gaps.b,] <<- as.data.frame(lGF.M[,c('mean','fqc')])[Gaps.b,] 
+      sTEMP[lGF.M[,'index'],c('VAR_f','VAR_fqc')][Gaps.b,] <<- as.data.frame(lGF.M[,c('mean','fqc') ,drop=FALSE])[Gaps.b,] 
     }
     
     return(invisible(sTEMP[,c('VAR_orig','VAR_f','VAR_fall','VAR_fnum','VAR_fsd','VAR_fwin')])) #Other columns are specific for full MR MDS algorithm 
@@ -246,7 +246,8 @@ sEddyProc$methods(
   {
     'Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days'
     
-    #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
+    #! Attention: For performance reasons, gap filled values and properties are first written to single 
+    #! variables and local matrix lGF.M
     #! (rather than changing single values in sTEMP which copies the data frame each time!)
     #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
     lGF.M <- matrix(NA_real_, nrow=0, ncol=7, dimnames=list(NULL,c('index','mean','fnum','fsd','fmeth','fwin','fqc')))
@@ -310,7 +311,8 @@ sEddyProc$methods(
         lGF.M[,c('mean','fnum','fsd','fmeth','fwin','fqc')]
       # Only fill gaps in VAR_f and VAR_fqc
       Gaps.b <- is.na(sTEMP[lGF.M[,'index'],'VAR_f'])
-      sTEMP[lGF.M[,'index'],c('VAR_f','VAR_fqc')][Gaps.b,] <<- as.data.frame(lGF.M[,c('mean','fqc')])[Gaps.b,] 
+      # twutz: inserted drop=FALSE, otherwise one-row matrix was not converted to data.frame correctly
+      sTEMP[lGF.M[,'index'],c('VAR_f','VAR_fqc')][Gaps.b,] <<- as.data.frame(lGF.M[,c('mean','fqc') ,drop=FALSE])[Gaps.b,] 
     }
     
     return(invisible(sTEMP[,c('VAR_orig','VAR_f','VAR_fall','VAR_fnum','VAR_fsd','VAR_fwin')])) #Other columns are specific for full MR MDS algorithm
