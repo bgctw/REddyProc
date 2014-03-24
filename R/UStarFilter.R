@@ -1,7 +1,16 @@
 controlUStarEst <- function(
+		plateau = 5
 ){
   list(  
+		plateau = plateau		  
   )			
+}
+
+controlUStarSubsetting <- function(
+){
+	list(
+	)
+	
 }
 
 estUStarThresholdSingle <- function(
@@ -12,27 +21,34 @@ estUStarThresholdSingle <- function(
 ){
 	##references<< inspired by Papale 2006
 	
-	
 }
 
 estUStarThreshold <- function(
 		### estimate the UStar threshold for by aggregating estimates for singe seasonal and temperature classes
-		ds=NULL					    ##<< data.frame with columns
-		,uStar.v = ds[,"uStar"]		##<< ustar
-		,NEE.v = ds[,"NEE"]
-		,temp.v = ds[,"airTemp"]
+		ds						    ##<< data.frame with columns
+		,uStarColName = "uStar"		##<< ustar
+		,NEEColName = "NEE"
+		,tempColName = "airTemp"
 		,seasonFactor.v = ds[,"season"]	##<< TODO calculate seasons by default to month
 		,ctrlUStarEst.l = controlUStarEst()
 ){
 	##references<< inspired by Papale 2006
 	
-	
+	dsi <- subset(ds, seasonFactor == 1)
+	estUStarThresholdSingle( dsi[,NEEColname], dsi[,uStarColName], ctrlUStarEst.l = ctrlUStarEst.l)
 }
 
 estUStarThresholdDistribution <- function(
 		### Estimating the UStarTrhesholdDistribution by bootstrapping over data
+		ds						    ##<< data.frame with columns
+		,uStarColName = "uStar"		##<< ustar
+		,NEEColName = "NEE"
+		,tempColName = "airTemp"
+		,seasonFactor.v = ds[,"season"]	##<< TODO calculate seasons by default to month
+		,ctrlUStarEst.l = controlUStarEst()
+		,nSample = 100
 ){
-	
+		uStar.l <- boot( ds, estUStarThreshold, nSample)
 }
 
 
