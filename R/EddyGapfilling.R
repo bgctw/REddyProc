@@ -449,7 +449,7 @@ sEddyProc$methods(
           Var.s                 ##<< Variable to be filled
           ,ustar.v = quantile( sDATA[,UstarVar.s], probs=0.25, na.rm=T)       ##<< Numeric vector of ustar thresholds to apply before gap filling
                 ### Defaults to single value at the 25% quantile of UStar column
-          ,suffix.v = "_25"     ##<< String vector of length of ustar.v of column suffixes to distinguish results for different ustar.v
+          ,suffix.v = ""        ##<< String vector of length of ustar.v of column suffixes to distinguish results for different ustar.v
           ,UstarVar.s='Ustar'   ##<< Friction velocity ustar (ms-1)
           ,...                  ##<< other arguments to sMDSGapFill
   )
@@ -475,7 +475,8 @@ sEddyProc$methods(
       EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
       probs <- c(0.1,0.25)
       ustar.v <- quantile( EddyProc.C$sDATA[,"Ustar"], probs=probs, na.rm=T)
-      EddyProc.C$sMDSGapFillUStar('NEE', FillAll.b=TRUE, ustar.v = ustar.v, suffix=paste0("_",probs*100)) 
+      EddyProc.C$sMDSGapFillUStar('NEE', FillAll.b=TRUE, ustar.v = ustar.v[1] )        # just one ustar, no result column suffix 
+      #EddyProc.C$sMDSGapFillUStar('NEE', FillAll.b=TRUE, ustar.v = ustar.v, suffix=paste0("_",probs*100)) 
       dsf <- EddyProc.C$sExportResults()
       colnames(dsf)
       #plot( NEE_25_f ~ NEE_10_f, dsf)
