@@ -47,8 +47,29 @@ estUStarThresholdDistribution <- function(
 		,seasonFactor.v = ds[,"season"]	##<< TODO calculate seasons by default to month
 		,ctrlUStarEst.l = controlUStarEst()
 		,nSample = 100
+        ,probs = c(0.01,0.05,0.5,0.95,0.99)
 ){
 		uStar.l <- boot( ds, estUStarThreshold, nSample)
+        
+        ##value<< a list with entries
+        list(
+                ustar = 3                           ##<< the estimate based on the original data              
+                ,ustarQuantiles = probs*2           ##<< the quantiles of ustar for given probabilities \code{probs}
+                ,probs = probs                      ##<< argument \code{probs}
+        )
+}
+
+getUStarQuantile <- function(
+        ds
+        ,UstarVar.s='Ustar'    ##<< Friction velocity ustar (ms-1)
+){
+    NEE.V.n <- ds[,FluxVar.s]
+    Ustar.V.n <- ds[,UstarVar.s]
+    time.V <- ds[,timeVar.s]
+    Year.V.h <- as.numeric(format(time, '%Y'))
+    Month.V.h <- as.numeric(format(time, '%m'))
+    
+    
 }
 
 

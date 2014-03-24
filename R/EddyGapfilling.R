@@ -17,6 +17,7 @@ sEddyProc$methods(
     ,QFVar.s='none'       ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ (original) data, other data is set to missing
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
+    ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
   )
     ##author<<
     ## AMM
@@ -26,6 +27,7 @@ sEddyProc$methods(
     # Check variable to fill and apply quality flag
     fCheckColNames(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), 'sFillInit')
     Var.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sFillInit')
+    Var.V.n[QF.V.b == FALSE] <- NA_real_
     
     # Abort if variable to be filled contains no data
     if( sum(!is.na(Var.V.n)) == 0 ) {
@@ -339,7 +341,9 @@ sEddyProc$methods(
     ,T3.n=2.5             ##<< Tolerance interval 3 (default: 2.5 degC)
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
     ,Verbose.b=TRUE       ##<< Print status information to screen
-  )
+    ,suffix=""	          ##<< Scalar string scalar to be appended to Var.s before the qualifiers  
+    ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
+)
   ##author<<
   ## AMM
   ##references<<
@@ -351,7 +355,7 @@ sEddyProc$methods(
     TimeStart.p <- Sys.time()
     ##details<<
     ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
-    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b)) )
+    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b, QF.V.b = QF.V.b)) )
       return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
     
     #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
@@ -428,9 +432,52 @@ sEddyProc$methods(
             ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
     
     # Rename new columns generated during gap filling
-    colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, '_', sep=''), colnames(sTEMP))
+    colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, suffix, '_', sep=''), colnames(sTEMP))
     
     return(invisible(NULL))
     ##value<< 
     ## Gap filling results in sTEMP data frame (with renamed columns).
   })
+  
+  
+  sEddyProc$methods(
+  sMDSGapFillUStar = structure(function(
+          ##title<< 
+          ## sEddyProc$sMDSGapFillUStar - calling sMDSGapFill for several filters of friction velocity Ustar
+          ##description<<
+          ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
+          Var.s                 ##<< Variable to be filled
+          ,ustar.v = quantile( sDATA[,UstarVar.s], probs=0.25, na.rm=T)       ##<< Numeric vector of ustar thresholds to apply before gap filling
+                ### Defaults to single value at the 25% quantile of UStar column
+          ,suffix.v = "_25"     ##<< String vector of length of ustar.v of column suffixes to distinguish results for different ustar.v
+          ,UstarVar.s='Ustar'   ##<< Friction velocity ustar (ms-1)
+          ,...                  ##<< other arguments to sMDSGapFill
+  )
+  ##author<<
+  ## TW
+  {
+      nUStar <- length(ustar.v)
+      if( length(suffix.v) != nUStar ) error("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
+      # possibly parallelize, but difficult with R5 Classes
+      lapply( seq(1:nUStar), function(i){
+                  QF.V.b <- rep( TRUE, nrow(sDATA) )
+                  QF.V.b[ sDATA[,UstarVar.s] < ustar.v[i] ] <- FALSE
+                  .self$sMDSGapFill( Var.s, ..., QF.V.b=QF.V.b, suffix = suffix.v[i] )
+              })
+      return(invisible(NULL))
+      ##value<< 
+      ## Gap filling results in sTEMP data frame (with renamed columns).
+  }, ex=function(){
+      Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+      EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+      ds <- subset(EddyData.F, DoY >= 150 & DoY <= 250)
+      EddyDataWithPosix.F <- fConvertTimeToPosix(ds, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+      EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
+      probs <- c(0.1,0.25)
+      ustar.v <- quantile( EddyProc.C$sDATA[,"Ustar"], probs=probs, na.rm=T)
+      EddyProc.C$sMDSGapFillUStar('NEE', FillAll.b=TRUE, ustar.v = ustar.v, suffix=paste0("_",probs*100)) 
+      dsf <- EddyProc.C$sExportResults()
+      colnames(dsf)
+      #plot( NEE_25_f ~ NEE_10_f, dsf)
+  }))
+  
