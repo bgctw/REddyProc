@@ -447,22 +447,41 @@ sEddyProc$methods(
           ##description<<
           ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
           Var.s                 ##<< Variable to be filled
-          ,ustar.v = quantile( sDATA[,UstarVar.s], probs=0.25, na.rm=T)       ##<< Numeric vector of ustar thresholds to apply before gap filling
+          ,ustar.m = quantile( sDATA[,UstarVar.s], probs=0.9, na.rm=T)       ##<< Numeric matrix: each row is a vector of ustar thresholds to apply before gap filling for each year
+				### If only one row is given it is used for each year
                 ### Defaults to single value at the 25% quantile of UStar column
           ,suffix.v = ""        ##<< String vector of length of ustar.v of column suffixes to distinguish results for different ustar.v
           ,UstarVar.s='Ustar'   ##<< Friction velocity ustar (ms-1)
+		  ,isFlagEntryAfterLowTurbulence=TRUE  ##<< set to FALSE to avoid flagging the first entry after low turbulance as bad condition
           ,...                  ##<< other arguments to sMDSGapFill
   )
   ##author<<
   ## TW
   {
-      nUStar <- length(ustar.v)
+	  year.v <- as.POSIXlt(sDATA$sDateTime)$year
+	  uYear.v <- unique(year.v)
+	  if( !is.matrix(ustar.m) )
+		  ustar.m <- matrix( ustar.m, nrow=length(uYear.v), dimnames=list(uYear.v,suffix.v))
+      nUStar <- ncol(ustar.m)
       if( length(suffix.v) != nUStar ) error("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
       # possibly parallelize, but difficult with R5 Classes
-      lapply( seq(1:nUStar), function(i){
+	  # iCol <- 1
+      lapply( seq(1:nUStar), function(iCol){
                   QF.V.b <- rep( TRUE, nrow(sDATA) )
-                  QF.V.b[ sDATA[,UstarVar.s] < ustar.v[i] ] <- FALSE
-                  .self$sMDSGapFill( Var.s, ..., QF.V.b=QF.V.b, suffix = suffix.v[i] )
+				  #iYear <- 1
+				  for( iYear in seq_along(uYear.v) ){
+					  QF.V.b[ year.v==uYear.v[iYear] & sDATA[,UstarVar.s] < ustar.m[iYear, iCol] ] <- FALSE  
+				  }
+				  if( isTRUE(isFlagEntryAfterLowTurbulence) ){
+					  	##details<< 
+					  	## With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
+   						## to the data acquired when u* is below the threshold,
+						## the first half hour measured with good turbulence conditions
+						## after a period with low turbulence is also removed (Papaple et al. 2006).
+						#QF.V.b <- c( TRUE, TRUE, FALSE, TRUE)
+						QF.V.b[ which(diff(QF.V.b) == 1)+1 ] <- FALSE
+				  }
+                  #.self$sMDSGapFill( Var.s, ..., QF.V.b=QF.V.b, suffix = suffix.v[i] )
               })
       return(invisible(NULL))
       ##value<< 
@@ -470,8 +489,9 @@ sEddyProc$methods(
   }, ex=function(){
       Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
       EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-      ds <- subset(EddyData.F, DoY >= 150 & DoY <= 250)
-      EddyDataWithPosix.F <- fConvertTimeToPosix(ds, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	  dss <- EddyData.F #subset(EddyData.F, DoY >= 150 & DoY <= 250)
+	  dss2 <- dss; dss2$Year <- 1999
+	  EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(rbind(dss,dss2), 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
       EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
       probs <- c(0.1,0.25)
       ustar.v <- quantile( EddyProc.C$sDATA[,"Ustar"], probs=probs, na.rm=T)
