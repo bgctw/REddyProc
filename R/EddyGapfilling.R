@@ -447,7 +447,8 @@ sEddyProc$methods(
           ##description<<
           ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
           Var.s                 ##<< Variable to be filled
-          ,ustar.m = quantile( sDATA[,UstarVar.s], probs=0.9, na.rm=T)       ##<< Numeric matrix: each row is a vector of ustar thresholds to apply before gap filling for each year
+          ,ustar.m = quantile( sDATA[,UstarVar.s], probs=0.9, na.rm=T)       
+          ### Numeric matrix: each row is a vector of ustar thresholds to apply before gap filling for one years
 				### If only one row is given it is used for each year
                 ### Defaults to single value at the 25% quantile of UStar column
           ,suffix.v = ""        ##<< String vector of length of ustar.v of column suffixes to distinguish results for different ustar.v
