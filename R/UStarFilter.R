@@ -33,15 +33,13 @@ controlUstarEst <- function(
     ustPlateauFwd = ustPlateauFwd #number of subsequent thresholds to compare to in fwd mode
     ,ustPlateauBack = ustPlateauBack #number of subsequent thresholds to compare to in back mode  
     ,plateauCrit = plateauCrit #significant differences between a u* value and the mean of a "plateau"
-    ,swThr = swThr  # nighttime data threshold [Wm-2]
     ,corrCheck = corrCheck #threshold value for correlation between Tair and u* data
-    ,seasons = seasons # switch for three different seasonal modes 
+    #,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
     ,bt = bt #flag for bootstrapping
     ,btTimes = btTimes #number of bootstrap samples
   )
   #display warning message for the following variables that we advise not to be changed
-  if (swThr != 10) warning("WARNING: parameter swThr set to non default value!")
   if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
   ctrl
 }
@@ -67,25 +65,66 @@ controlUstarSubsetting <- function(
   ctrl <- list(
     taClasses=taClasses
 	,UstarClasses= UstarClasses
-  #,seasons
-  ,swThr = swThr
+  	#,seasons
+  	,swThr = swThr
   )	
-  if (taClasses != 7) warning("WARNING: parameter taClasses set to non default value!")	
-  if (UstarClasses != 20) warning("WARNING: parameter UstarClasses set to non default value!")
+  if (ctrl$swThr != 10) warning("WARNING: parameter swThr set to non default value!")
+  if (ctrl$taClasses != 7) warning("WARNING: parameter taClasses set to non default value!")	
+  if (ctrl$UstarClasses != 20) warning("WARNING: parameter UstarClasses set to non default value!")
   ctrl
 }
 attr(controlUstarSubsetting,"ex") <- function(){
 	controlUstarSubsetting()
 }
 
-createSeasonFactorMonth <- function(ds, startMonth=c(12,3,6,9)){
+createSeasonFactorMonth <- function(
+	### calculate factors to denote the season for uStar-Filtering by specifying starting months
+  	dates							##<< POSIXct vector of length of the data set to be filled				
+  	, month=as.POSIXlt(dates)$mon  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record  
+	, startMonth=c(12,3,6,9)-1		##<< integer vector specifying the starting month for each season
+){
+  startMonth <- sort(unique(startMonth))
+  boLastPeriod <- month < startMonth[1] 		# translate month before the first specified beginning month to be after last specified mongth 
+  month[ boLastPeriod ] <- month[ boLastPeriod] +12
+  startMonthAdd <- c(startMonth, startMonth[1]+12)
+  seasonFac <- rep(as.integer(1), length(month) )
+  # i <- 2
+  for( i in 2:length(startMonth) ){
+	  seasonFac[ month >= startMonthAdd[i] & month < startMonthAdd[i+1] ] <- i
+  }
+  #plot( seasonFac ~ months )
+  seasonFac 	
   ##value<<
-  ## Integer vector of nrow ds, each unique class representing one season
+  ## Integer vector of nrow ds, with each unique value representing one season
 }
-createSeasonFactorDoy <- function(ds, startDoy=c(12,3,6,9)){
-  ##value<<
-  ## Integer vector of nrow ds, each unique class representing one season
-  
+attr(createSeasonFactorMonth,"ex") <- function(){
+	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	(res <- createSeasonFactorMonth(ds$DateTime))
+	(res2 <- createSeasonFactorYday(ds$DateTime)) # default days are chosen to correspond to start of Febr, June, Sept, and Dec
+}
+
+
+createSeasonFactorYday <- function(
+	### calculate factors to denote the season for uStar-Filtering by specifying starting day of years
+	dates							##<< POSIXct vector of length of the data set to be filled				
+	, yday=as.POSIXlt(dates)$yday  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record  
+	, startYday=c(335,60,152,244)-1	##<< integer vector (0-366) specifying the starting month for each season
+){
+	startYday <- sort(unique(startYday))
+	boLastPeriod <- (yday < startYday[1])	# days before the first starting day will be in last period 
+	yday[ boLastPeriod ] <- yday[ boLastPeriod] +366  # translate day to be after last specified startday 
+	startYdayAdd <- c(startYday, startYday[1]+366)  # 
+	seasonFac <- rep(as.integer(1), length(yday) )
+	# i <- 2
+	for( i in 2:length(startYday) ){
+		seasonFac[ yday >= startYdayAdd[i] & yday < startYdayAdd[i+1] ] <- i
+	}
+	#plot( monthsFac ~ months )
+	seasonFac 	
+	##value<<
+	## Integer vector of nrow ds, each unique class representing one season
 }
 
 
@@ -201,86 +240,84 @@ estUstarThresholdSingleFw2Binned <- function(
 }
 
 .estUstarThresholdYear <- function(
-  ### estimate the Ustar threshold by aggregating estimates for singe seasonal and temperature classes
-  ds						    ##<< data.frame with columns
-  ,UstarColName = "Ustar"	
-  ,NEEColName = "NEE"
-  ,TempColName = "Tair"
-#  ,seasonFactor.v = createSeasonFactorMonth(ds)
-,seasonFactor.v = (as.POSIXlt(ds$DateTime)$mon-1) %/% 3	##<< factor of seasons so split dsYear
-,ctrlUstarEst.l = controlUstarEst()
-  ,ctrlUstarSub.l = controlUstarSubsetting()
-  ,fEstimateUStarBinned = estUstarThresholdSingleFw1Binned
+		### estimate the Ustar threshold by aggregating estimates for singe seasonal and temperature classes
+		ds						    ##<< data.frame with columns
+		,UstarColName = "Ustar"	
+		,NEEColName = "NEE"
+		,TempColName = "Tair"
+		,seasonColName = "seasonFactor"
+		,seasonFactor.v = (as.POSIXlt(ds$DateTime)$mon-1) %/% 3	##<< factor of seasons so split dsYear
+		,ctrlUstarEst.l = controlUstarEst()
+		,ctrlUstarSub.l = controlUstarSubsetting()
+		,fEstimateUStarBinned = estUstarThresholdSingleFw2Binned
 ){
-  ##references<< Ustar filtering following the idea in Papale 2006	
-  # subset for first season
-  # TODO: implement seasonal functionality
-  #dsi <- subset(ds, seasonFactor.v == 1)
-  ds$seasonFactor <- seasonFactor.v
-  
-  uStarSeasons <- daply(ds, .(seasonFactor), function(dsi){
-    dsiSort <- arrange(dsi, dsi[,TempColName]) #sort values in a season by air temperature
-    N <- length(dsi[,NEEColName]) #number of observations (rows) total, probably can get from elsewhere..
-    T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
-    
-    #set up vector that contains Ustar values for temperature classes
-    UstarTh.v = vector(length=ctrlUstarSub.l$taClasses)
-    
-    for (k in 1:ctrlUstarSub.l$taClasses){
-      #original Dario's C version...
-      #ta_class_start = 0;
-      #ta_class_end = season_start_index;
-      #/* set start & end indexes */
-      #  ta_class_start = ta_class_end;
-      #ta_class_end = season_start_index + (ta_samples_count*(i+1)-1);
-      
-      #/om:this part only implemented for checking C code compatibility...
-      #ta_class_start = ta_class_end
-      #ta_class_end = ta_class_start + T_bin_size-1
-      #/eom
-      
-      #subset into Ta classes
-      if (k==ctrlUstarSub.l$taClasses){ # use end index of vector for slightly smaller last bin (due to rounding) 
-        dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):N,]
-      }
-      else {
-        dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
-      }
-      
-      #constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
-      Cor1 = abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName]))
-      # TODO: check more correlations here? [check C code]
-      #      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
-      #      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
-      if (Cor1 < ctrlUstarEst.l$corrCheck){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
-        dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses) 
-        UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
-      }
-      else { #correlation between T and u* too high
-        #fill respective cell with NA
-        UstarTh.v[k] = NA
-        #TODO: should a message be printed here to the user??
-      }
-    }
-    #OUTPUT:
-    # This function returns one single Ustar threshold value
-    # i.e., the median over taClasses
-    UstarTh.v # uStar for temperature classes
-    #return(median(UstarTh.v))
-  }) # daply over seasons  matrix (nTmep x nSeason)
-  uStarAggr <- max( apply( uStarSeasons, 1, median, na.rm=TRUE), na.rm=TRUE)
-  list(
-    UstarAggr=uStarAggr
-    ,UstarTempSeasons=uStarSeasons
-    )
+	##references<< Ustar filtering following the idea in Papale 2006	
+	# subset for first season
+	# TODO: implement seasonal functionality
+	#dsi <- subset(ds, seasonFactor.v == 1)
+	uStarSeasons <- daply(ds, .(seasonFactor), function(dsi){
+				dsiSort <- arrange(dsi, dsi[,TempColName]) #sort values in a season by air temperature
+				N <- length(dsi[,NEEColName]) #number of observations (rows) total, probably can get from elsewhere..
+				T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
+				
+				#set up vector that contains Ustar values for temperature classes
+				UstarTh.v = vector(length=ctrlUstarSub.l$taClasses)
+				
+				for (k in 1:ctrlUstarSub.l$taClasses){
+					#original Dario's C version...
+					#ta_class_start = 0;
+					#ta_class_end = season_start_index;
+					#/* set start & end indexes */
+					#  ta_class_start = ta_class_end;
+					#ta_class_end = season_start_index + (ta_samples_count*(i+1)-1);
+					
+					#/om:this part only implemented for checking C code compatibility...
+					#ta_class_start = ta_class_end
+					#ta_class_end = ta_class_start + T_bin_size-1
+					#/eom
+					
+					#subset into Ta classes
+					if (k==ctrlUstarSub.l$taClasses){ # use end index of vector for slightly smaller last bin (due to rounding) 
+						dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):N,]
+					}
+					else {
+						dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
+					}
+					
+					#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
+					Cor1 = abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName]))
+					# TODO: check more correlations here? [check C code]
+					#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
+					#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
+					if (Cor1 < ctrlUstarEst.l$corrCheck){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
+						dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses) 
+						UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
+					}
+					else { #correlation between T and u* too high
+						#fill respective cell with NA
+						UstarTh.v[k] = NA
+						#TODO: should a message be printed here to the user??
+					}
+				}
+				#OUTPUT:
+				# This function returns one single Ustar threshold value
+				# i.e., the median over taClasses
+				UstarTh.v # uStar for temperature classes
+				#return(median(UstarTh.v))
+			}) # daply over seasons  matrix (nTmep x nSeason)
+	uStarAggr <- max( apply( uStarSeasons, 1, median, na.rm=TRUE), na.rm=TRUE)
+	list(
+			UstarAggr=uStarAggr
+			,UstarTempSeasons=uStarSeasons
+	)
 }
 
 estUstarThreshold <- function(
 		### apply estUstarThresold for each year in ds
 		ds						    ##<< data.frame with columns
 		,...						##<< further arguments to \code{\link{estUstarThresholdYear}}
-		,seasonFactor.v = (as.POSIXlt(ds$DateTime)$mon-1) %/% 3  ##<< factor of seasons so split dsYear
-    ,yearFactor.v = as.POSIXlt(ds$DateTime)$year+1900	##<< factor vector (nrow(dsYear) of seasons so split dsYear 
+		,seasonFactor.v = createSeasonFactorMonth(ds$DateTime)  ##<< factor of seasons to split
+    	,yearFactor.v = as.POSIXlt(ds$DateTime)$year+1900	   ##<< factor vector (nrow(dsYear) of seasons so split dsYear 
 		,UstarColName = "Ustar"  
 		,NEEColName = "NEE"
 		,TempColName = "Tair"
@@ -288,28 +325,27 @@ estUstarThreshold <- function(
     ,ctrlUstarSub.l = controlUstarSubsetting()
 ){
 	##references<< inspired by Papale 2006
-  ds$seasonFactor <- seasonFactor.v
-  
-  #remove any no data records for NEE, Tair, Ustar, and Rg
+	ds$seasonFactor <- seasonFactor.v
+	
+	#remove any no data records for NEE, Tair, Ustar, and Rg
 	ds <- subset(ds, is.finite(ds[,NEEColName]) & is.finite(ds[,TempColName]) & is.finite(ds[,UstarColName]) & is.finite(ds[,RgColName]) ) 
 	#night time data selection
-  ds <- ds[ ds[,RgColName] < ctrlUstarSub.l $swThr, ]
+	ds <- ds[ ds[,RgColName] < ctrlUstarSub.l$swThr, ]
 	if( !length( yearFactor.v) ){
-		c( '0' = estUstarThresholdYear(ds,...,ctrlUstarSub.l =ctrlUstarSub.l ) )
+		c( '0' = estUstarThresholdYear(ds,...,ctrlUstarSub.l =ctrlUstarSub.l )$UstarAggr )
 	}else{
 		ds$yearFac <- yearFactor.v
 		daply( ds, .(yearFactor.v), function(dsYear){ 
-      uStar.l <- estUstarThresholdYear(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l  )
-      uStar.l$UstarAggr
-		})
+					uStar.l <- .estUstarThresholdYear(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l  )
+					uStar.l$UstarAggr
+				})
 	}
-	
 	##value<< a vector with Ustar Threshold estimates. Names correspond to the year of the estimate 
 }
 attr(estUstarThreshold ,"ex") <- function(){
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 	EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-  dss <- subset(EddyData.F, DoY >= 150 & DoY <= 250)
+  	dss <- subset(EddyData.F, DoY >= 150 & DoY <= 250)
 	dss2 <- dss; dss2$Year <- 1999
 	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(rbind(dss,dss2), 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 	(res <- estUstarThreshold(ds))
