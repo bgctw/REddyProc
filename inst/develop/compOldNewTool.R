@@ -33,13 +33,14 @@ FluxName.V.s <- fStripFileExtension(FluxFile.V.s)
 
 #DirFluxnet.s <- paste('~/Data/Fluxnet/level5_new_nc') #!!! Quick fix to work from home, comment out later...
 
-for (Result.i in 1:length(ResultName.V.s)) {
-  #Result.i <- 1
+for (Result.i in 1 :length(ResultsName.V.s)) {
+  #Result.i <- 33
   message(paste('Handling site \'', ResultsName.V.s[Result.i],'\'', sep=''))
   FluxSite.i <- which(FluxName.V.s == ResultsName.V.s[Result.i])
   
   # Load PV-Webtool output data
-  if( sum(grepl('PVWebtoolData.F', ls(all=TRUE))) == 0 ) # Load only PVWebtoolData.F, if not yet loaded
+#  if( sum(grepl('PVWebtoolData.F', ls(all=TRUE))) == 0 ) # Load only PVWebtoolData.F, if not yet loaded
+   
     PVWebtoolData.F <- fLoadTXTIntoDataframe(ResultsFile.V.s[Result.i], 'out') #takes a minute or two
   
   # Convert data frame to comply with REddyProc format
@@ -53,11 +54,21 @@ for (Result.i in 1:length(ResultName.V.s)) {
   Info.L <- fLoadFluxNCInfo(FluxFile.V.s[FluxSite.i], DirFluxnet.s, 'RNetCDF')
   
   # Run new flux partitioning algorithm 
+  rm(EPSite.C)
   # Automatically uses the NEE_f, NEE_fqc, Tair_f, Tair_fqc, and Rg from the pv-wave output files
   # This ensures that the algorithms are based on the SAME subset of (filtered) NEE data
   EPSite.C <- sEddyProc$new(ResultsName.V.s[Result.i], PVData.F, c('NEE_f', 'NEE_fqc', 'Tair_f', 'Tair_fqc', 'Rg'))
   EPSite.C$sMRFluxPartition(Lat_deg.n=Info.L$LAT, Long_deg.n=Info.L$LON, TimeZone_h.n=Info.L$TZ)
+  rm(NewFPResults.F)
   NewFPResults.F <- EPSite.C$sExportResults()
+ 
+  PVData1.F <- PVData.F[,-1:-8]
+  
+  CombinedData.F <- cbind(PVData1.F, NewFPResults.F)
+  Filename.s <- paste(ResultsName.V.s[Result.i],'.', PVData.F$Year[1], '.txt', sep='')
+  fWriteDataframeToFile(CombinedData.F, Filename.s, 'out2')
+  
+}
   
   # Very basic example plot of differences between new algorithm to PV Webtool and to BGI fluxnet version
   # Plot 1998 ...
