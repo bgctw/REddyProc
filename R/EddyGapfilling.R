@@ -483,7 +483,7 @@ sEddyProc$methods(
 						QF.V.b[ which(diff(QF.V.b) == 1)+1 ] <- FALSE
 				  }
                   #.self$sMDSGapFill( Var.s, ..., QF.V.b=QF.V.b, suffix = suffix.v[i] )
-              })
+              } )
       return(invisible(NULL))
       ##value<< 
       ## Gap filling results in sTEMP data frame (with renamed columns).

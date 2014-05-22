@@ -19,12 +19,8 @@ These functions help with the preparation of your data for the analysis:
 \item{ Loading text files into dataframes: \code{\link{fLoadTXTIntoDataframe}} }
 \item{ Preparing a proper time stamp: \code{\link{fConvertTimeToPosix}} }
 \item{ Calculating latent variables, e.g. VPD: \code{\link{fCalcVPDfromRHandTair}} }
-}%itemize
-
-Estimating the turbulence criterion, UStar threshold, for omitting data of low turbulence periods
-\itemize{
-\item{Estimate UStar for one year\code{\link{.estUstarThresholdYear}}  }
-\item{Estimate based on a single binned time series: \code{\link{estUstarThresholdSingleFw2Binned}} }
+\item{ Estimating the turbulence criterion, Ustar threshold, for omitting data from periods of low turbulence: 
+Functions \code{\link{estUstarThreshold}} and \code{\link{estUstarThresholdDistribution}} }.
 }%itemize
 
 Then the data can be processed in an R5 reference class framework:
@@ -32,7 +28,6 @@ Then the data can be processed in an R5 reference class framework:
 \item{ Initalizing the R5 reference class: \code{\link{sEddyProc.new}} }
 \item{ Gap filling: \code{\link{sMDSGapFill}}  }
 \item{ Flux partitioning: \emph{in preparation} }
-\item{ Ustar filtering: \emph{in preparation} }
 }%itemize
 
 Before or after processing, the data can be plotted:

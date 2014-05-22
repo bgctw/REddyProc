@@ -23,10 +23,11 @@ These functions help with the preparation of your data for the analysis:
 
 Then the data can be processed in an R5 reference class framework:
 \itemize{
+\item{ Estimating the turbulence criterion, UStar threshold, for omitting data of low turbulence periods: 
+Function \code{\link{estUstarThreshold}} and \code{\link{estUstarThresholdDistribution}} }.
 \item{ Initalizing the R5 reference class: \code{\link{sEddyProc.new}} }
 \item{ Gap filling: \code{\link{sMDSGapFill}}  }
 \item{ Flux partitioning: \emph{in preparation} }
-\item{ Ustar filtering: \emph{in preparation} }
 }%itemize
 
 Before or after processing, the data can be plotted:
