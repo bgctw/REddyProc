@@ -21,6 +21,12 @@ These functions help with the preparation of your data for the analysis:
 \item{ Calculating latent variables, e.g. VPD: \code{\link{fCalcVPDfromRHandTair}} }
 }%itemize
 
+Estimating the turbulence criterion, UStar threshold, for omitting data of low turbulence periods
+\itemize{
+\item{Estimate UStar for one year\code{\link{.estUstarThresholdYear}}  }
+\item{Estimate based on a single binned time series: \code{\link{estUstarThresholdSingleFw2Binned}} }
+}%itemize
+
 Then the data can be processed in an R5 reference class framework:
 \itemize{
 \item{ Initalizing the R5 reference class: \code{\link{sEddyProc.new}} }

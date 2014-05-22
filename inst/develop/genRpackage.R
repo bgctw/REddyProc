@@ -18,7 +18,7 @@ source('R/FileHandling.R')
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Parse R5 methods to generate documentation with inlinedocs
-CodeIn.V.s <- fInitFilesDir('R','Eddy')
+CodeIn.V.s <- fInitFilesDir('R','Eddy.*\\.R$')		# omit dir name REddyProc
 CodeOut.V.s <- gsub('Eddy','Dummy', CodeIn.V.s)
 # File.i <- 1
 for (File.i in 1:length(CodeIn.V.s)) {

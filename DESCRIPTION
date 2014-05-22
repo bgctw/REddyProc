@@ -9,7 +9,8 @@ Authors@R: c( person("Markus", "Reichstein", role=c("aut"), email="mreichstein@b
 Description: R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
 URL: http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb, http://r-forge.r-project.org/projects/reddyproc/
 Depends: R (>= 3.0.0), methods
-Suggests: ncdf4, RNetCDF, testthat, inlinedocs, boot, plyr
+Imports: plyr, boot
+Suggests: ncdf4, RNetCDF, testthat, inlinedocs
 License: GPL (>= 2)
 LazyLoad: yes
 

@@ -4,3 +4,6 @@ exportPattern("^[^\\.]")	#exports all variables that do not start with a period.
 
 #useDynLib(ProjectsDllBaseName)	# only required when supplying C or FORTRAN code 
 
+
+importFrom(plyr, arrange, ddply)
+importFrom(boot, boot)
