@@ -386,7 +386,7 @@ estUstarThresholdYears <- function(
 		,TempColName = "Tair"
 		,RgColName = "Rg"
 		,ctrlUstarSub.l = controlUstarSubsetting()
-		,isCleaned=FALSE			##<< set to TRUE to avoid call to \code{\link{cleanUStarSearies}}.
+		,isCleaned=FALSE			##<< set to TRUE to avoid call to \code{\link{cleanUStarSeries}}.
 ){
 	##references<< inspired by Papale 2006
 	ds$seasonFactor <- seasonFactor.v
