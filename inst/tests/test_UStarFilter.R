@@ -18,7 +18,7 @@ dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
 test_that("binUstar classes are correct",{
 	res <- binUstar(dss$NEE, dss$Ustar)
 	UstarClasses <- controlUstarSubsetting()$UstarClasses
-	Ust_bin_size <- round(nrow(ds.f)/UstarClasses)
+	Ust_bin_size <- round(nrow(dss)/UstarClasses)
 	# create df of NEE and UStar ordered by Ustar
 	ds.f <- data.frame(NEE=dss$NEE,Ustar=dss$Ustar)
 	ds.f <- arrange(ds.f,ds.f[,2])

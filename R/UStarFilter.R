@@ -127,8 +127,8 @@ controlUstarEst <- function(
   ,ustPlateauBack = 6	##<< number of subsequent thresholds to compare to in back mode  
   ,plateauCrit = 0.95	##<< significant differences between a u* value and the mean of a "plateau"
   ,corrCheck = 0.5 		##<< threshold value for correlation between Tair and u* data
-  ,bt = FALSE 			##<< flag for bootstrapping
-  ,btTimes = 100 		##<< number of bootstrap samples
+  #,bt = FALSE 			##<< flag for bootstrapping
+  #,btTimes = 100 		##<< number of bootstrap samples
   
   #,method.v = function... #fw2 by default..
   
@@ -143,14 +143,14 @@ controlUstarEst <- function(
     #,UstarClasses=UstarClasses  
     #percentile = percentile
     #percentile_check = percentile_check #enable percentile check\n ... double check!
-    ustPlateauFwd = ustPlateauFwd #number of subsequent thresholds to compare to in fwd mode
+    ustPlateauFwd = ustPlateauFwd    #number of subsequent thresholds to compare to in fwd mode
     ,ustPlateauBack = ustPlateauBack #number of subsequent thresholds to compare to in back mode  
     ,plateauCrit = plateauCrit #significant differences between a u* value and the mean of a "plateau"
     ,corrCheck = corrCheck #threshold value for correlation between Tair and u* data
     #,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
-    ,bt = bt #flag for bootstrapping
-    ,btTimes = btTimes #number of bootstrap samples
+    #,bt = bt #flag for bootstrapping
+    #,btTimes = btTimes #number of bootstrap samples
   )
   #display warning message for the following variables that we advise not to be changed
   if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
