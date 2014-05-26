@@ -235,16 +235,17 @@ sEddyProc$methods(
     ## sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)
     ##description<<
     ## Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
-    FluxVar.s='NEE_f'      ##<< Variable of net ecosystem fluxes
-    ,QFFluxVar.s='NEE_fqc' ##<< Quality flag of variable
-    ,QFFluxValue.n=0       ##<< Value of quality flag for _good_ (original) data
-    ,TempVar.s='Tair_f'    ##<< Filled air or soil temperature variable (degC)
-    ,QFTempVar.s='Tair_fqc'##<< Quality flag of filled temperature variable
+    FluxVar.s=paste0('NEE',suffix.s,'_f')       ##<< Variable of net ecosystem fluxes
+    ,QFFluxVar.s=paste0('NEE',suffix.s,'_fqc')  ##<< Quality flag of variable
+    ,QFFluxValue.n=0       						##<< Value of quality flag for _good_ (original) data
+    ,TempVar.s=paste0('Tair',suffix.s,'_f')     ##<< Filled air or soil temperature variable (degC)
+    ,QFTempVar.s=paste0('Tair',suffix.s,'_fqc') ##<< Quality flag of filled temperature variable
     ,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
     ,RadVar.s='Rg'         ##<< Unfilled (original) radiation variable
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
+	,suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}). 
   )
   ##author<<
   ## AMM
@@ -253,7 +254,6 @@ sEddyProc$methods(
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
 {
     'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)'
-    
     # Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
     fCheckColNames(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
     fCheckColNum(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
@@ -304,6 +304,8 @@ sEddyProc$methods(
     colnames(sTEMP) <<- gsub('_VAR', '_NEE', colnames(sTEMP))
     colnames(sTEMP) <<- gsub('NEW_', '', colnames(sTEMP))
     
+	# TODO: Adjust all output columns to account for suffix
+	
     ##details<<
     ## Description of newly generated variables with partitioning results: \cr
     ## PotRad - Potential radiation \cr
