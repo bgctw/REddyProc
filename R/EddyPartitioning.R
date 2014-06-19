@@ -22,6 +22,7 @@ sEddyProc$methods(
     ,NumE_0.n=3           ##<< Number of best E_0's to average over
     ,Trim.n=5             ##<< Percentile to trim residual (%)
     ,CallFunction.s=''    ##<< Name of function called from
+    ,debug.l = list(fixedE0=NA) ##<< list with controls for debugging, see details
   )
   ##author<<
   ## AMM
@@ -127,6 +128,15 @@ sEddyProc$methods(
     }
     
     message('Estimate of the temperature sensitivity E_0 from short term data: ', format(E_0_trim.n, digits=5), '.')
+    
+    ##details<< \describe{ \item{Debugging control}{
+    ## When supplying a finite scalar value \code{debug.l$fixedE0}, then this value is used instead of the temperature sensitivity E_0 from short term data.
+    ## In order to test, whether differences between approaches are due to determination of E0.
+    ## }}
+    if( length(debug.l$fixedE0) && is.finite(debug.l$fixedE0) ){
+        E_0_trim.n <- debug.l$fixedE0
+        message('Using prescribed temperature sensitivity E_0 of: ', format(E_0_trim.n, digits=5), '.')
+    }
     
     # Add constant value of E_0 as column vector to sTEMP
     E_0.V.n <- rep(E_0_trim.n, nrow(sTEMP))
@@ -245,7 +255,8 @@ sEddyProc$methods(
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
-	,suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}). 
+	,suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}).
+    ,debug.l=list()        ##<< list with debuggin control, see \code{\link{sRegrE0fromShortTerm}}.
   )
   ##author<<
   ## AMM
@@ -280,7 +291,7 @@ sEddyProc$methods(
     sTEMP$NEW_FP_Temp <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
-    sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sMRFluxPartition')
+    sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
     if( sum(sTEMP$NEW_E_0==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
     
@@ -299,12 +310,16 @@ sEddyProc$methods(
     #           (since not known within this pure partitioning function)
     attr(sTEMP$NEW_GPP_f, 'varnames') <<- 'GPP_f'
     attr(sTEMP$NEW_GPP_f, 'units') <<- attr(Var.V.n, 'units')
+
+    # TODO: Adjust all output columns to account for suffix?
     
     # Rename new columns generated during flux partitioning
     colnames(sTEMP) <<- gsub('_VAR', '_NEE', colnames(sTEMP))
     colnames(sTEMP) <<- gsub('NEW_', '', colnames(sTEMP))
+    # may have introduced duplicate columns, delete first one, side effect: triple column names will be renamed .<nr>
+    duplColNames <- names(which(table(colnames(sTEMP)) > 1))
+    if( length(duplColNames) ) sTEMP <<- sTEMP[, -match( duplColNames, colnames(sTEMP) )]
     
-	# TODO: Adjust all output columns to account for suffix
 	
     ##details<<
     ## Description of newly generated variables with partitioning results: \cr
