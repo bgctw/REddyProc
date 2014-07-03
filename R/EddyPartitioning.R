@@ -256,7 +256,12 @@ sEddyProc$methods(
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
 	,suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}).
-    ,debug.l=list()        ##<< list with debuggin control, see \code{\link{sRegrE0fromShortTerm}}.
+    ,debug.l=list(		   ##<< list with debugging control, see \code{\link{sRegrE0fromShortTerm}}.
+			##describe<< 
+			useLocaltime.b=FALSE	##<< by default corrects hour (given in local winter time) for latitude to solar time
+			##<< where noon is exactly at 12:00. Set this to TRUE to compare to code that uses local winter time
+			##end<< 
+			)        
   )
   ##author<<
   ## AMM
@@ -277,7 +282,8 @@ sEddyProc$methods(
     #! New code: Local time and equation of time accounted for in potential radiation calculation
     DoY.V.n <- as.numeric(format(sDATA$sDateTime, '%j'))
     Hour.V.n <- as.numeric(format(sDATA$sDateTime, '%H')) + as.numeric(format(sDATA$sDateTime, '%M'))/60
-    sTEMP$NEW_PotRad <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n)
+    sTEMP$NEW_PotRad <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
+					, useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )
     
     # Filter night time values only
     #! Note: Rg <= 10 congruent with MR PV-Wave, in paper Rg <= 20

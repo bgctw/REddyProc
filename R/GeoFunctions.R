@@ -200,6 +200,8 @@ fCalcSunPosition <- function(
   ,Lat_deg.n            ##<< Latitude in (decimal) degrees
   ,Long_deg.n           ##<< Longitude in (decimal) degrees
   ,TimeZone_h.n         ##<< Time zone (in hours)
+  ,useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
+	##<< where noon is exactly at 12:00. Set this to FALSE to compare to code that uses local winter time
   ##author<<
   ## AMM
   #TEST: data('Example_DETha98', package='REddyProc'); DoY.V.n <- EddyData.F$DoY; Hour.V.n <- EddyData.F$Hour; 
@@ -218,10 +220,16 @@ fCalcSunPosition <- function(
   # Local time in hours
   LocTime_h.V.n <- (Long_deg.n/15 - TimeZone_h.n)
   
+  ##details<< 
+  ## This code assumes that Hour is given in local winter time zone, and corrects it by longitude to 
+  ## solar time (where noon is exactly at 12:00).
+  ## Note: This is different form reference PVWave-code, 
+  ## that does not account for solar time and uses winter time zone. 
+  ## Set argument \code{useSolartime.b} to FALSE to use the local winter time instead.
+  
   # Solar time
   # Correction for local time and equation of time
-  FLUXNET.b <- FALSE 
-  SolTime_h.V.n <- if( !FLUXNET.b ) { 
+  SolTime_h.V.n <- if( useSolartime.b ) { 
     # Correction for local time and equation of time
     Hour.V.n + LocTime_h.V.n + EqTime_h.V.n
   } else {
@@ -309,13 +317,15 @@ fCalcPotRadiation <- function(
   ,Lat_deg.n          ##<< Latitude in (decimal) degrees
   ,Long_deg.n         ##<< Longitude in (decimal) degrees
   ,TimeZone_h.n       ##<< Time zone (in hours)
+  ,useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
+	##<< where noon is exactly at 12:00. Set this to FALSE to compare to code that uses local winter time
   ##author<<
   ## AMM
   #For testing PotRadiation(julday,hour)
 )
 {
   # Calculate potential radiation from solar elevation and extraterrestrial solar radiation
-  SolElev_rad.V.n <- fCalcSunPosition(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n)$SolElev
+  SolElev_rad.V.n <- fCalcSunPosition(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n, useSolartime.b=useSolartime.b)$SolElev
   ExtRadiation.V.n <- fCalcExtRadiation(DoY.V.n)
   PotRadiation.V.n <- ifelse(SolElev_rad.V.n <= 0, 0, ExtRadiation.V.n * sin(SolElev_rad.V.n) )
   
@@ -324,4 +334,14 @@ fCalcPotRadiation <- function(
   PotRadiation.V.n
   ##value<<
   ## Data vector of potential radiation (PotRad, W_m-2)
+}
+attr(fCalcPotRadiation,"ex") <- function(){
+	hour <- seq(8,16, by=0.1)
+	potRadSolar <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone=+1)
+	potRadLocal <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone=+1, useSolartime.b = FALSE)
+	plot( potRadSolar ~ hour, type='l' )
+	abline(v=13)
+	lines( potRadLocal ~  hour, col="blue" )
+	abline(v=12, col="blue" )
+	legend("bottomright", legend=c("solar time","local winter time"), col=c("black","blue"), inset=0.05, lty=1)
 }
