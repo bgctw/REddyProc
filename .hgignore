@@ -1,14 +1,40 @@
-syntax: regexp^\R_InWork$syntax: regexp^\plots$syntax: regexp^\out$syntax: regexp^\tmp$syntax: regexp^\web$syntax: regexp^\REddyProc\.Rcheck$syntax: regexp^\.project$syntax: regexp^\REddyProc_.*\.tgz$syntax: regexp^\REddyProc_.*\.zip$syntax: regexp^\.project$syntax: regexp^\.Rproj.user$syntax: regexp^\.RData$syntax: regexp^\REddyProc.Rprojsyntax: regexp^\.Rbuildignoresyntax: regexp.Rhistory$prep_txt4pvwave\.docxR_InWork/testEddyProc_0207\.R
-R_InWork/prep_fluxpart\.R
-R_InWork/prep_txt4pvwave\.docx
-R_InWork/tests\.R
-R_InWork/testFluxPart_1207\.R
-R_InWork/testEddyResults\.R
-R_InWork/testEddyProc_KS\.R
-R_InWork/testEddyProc_2506\.R
-out/DE-Tha-Results\.nc
-web/REddyResults_DE-Tha_198154850
-web/REddyResults_DE-Tha_447322777
-REddyProc\.Rproj
-R_InWork/testEddyProc_1607\.R
-\.Rproj\.user
+
+syntax: regexp
+^tmp$
+
+syntax: regexp
+^\R_InWork$
+
+syntax: regexp
+^\.RData$
+syntax: regexp
+^\.project$
+
+syntax: regexp
+^\out$
+syntax: regexp
+^\web$
+syntax: regexp
+^\.project$
+syntax: regexp
+^\REddyProc_.*\.tgz$
+syntax: regexp
+^\REddyProc_.*\.zip$
+syntax: regexp
+^\.project$
+syntax: regexp
+^\.Rproj.user$
+syntax: regexp
+^\.RData$
+syntax: regexp
+^\REddyProc.Rproj$
+syntax: regexp
+^\.Rbuildignore
+syntax: regexp
+^\.Rhistory$
+
+
+syntax: regexp
+^\R_InWork$
+syntax: regexp
+^\plots$
