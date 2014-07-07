@@ -117,7 +117,7 @@ fCalcSVPfromTair <- function(
   attr(SVP.V.n, 'units') <- 'mbar'
   return(SVP.V.n)
   ##value<<
-  ## Data vector of saturation VP (SVP, mbar)
+  ## Data vector of saturation vapor pressure (SVP, mbar)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

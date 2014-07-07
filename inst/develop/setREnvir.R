@@ -18,7 +18,8 @@ gc() #garbage collect
 if ( Sys.getenv('HOME') == '/Users/amoffat' ) { 
   setwd('/Users/amoffat/Projects/REddy/REddyProc')
   DirFluxnet.s <- paste('/Volumes/BGI/data/DataStructureMDI/DATA/site/Fluxnet/halfhourly/level5_new_v2/Data/single_sites/')
-# KS
+  DirFluxnet.s <- paste('/Users/amoffat/Data/Fluxnet/level5_new_nc')
+  # KS
 } else if ( Sys.getenv('HOME') == '/Users/ksickel' ) { 
   setwd('/Users/ksickel/REddyProc')
   DirFluxnet.s <- paste('/Volumes/BGI/data/DataStructureMDI/DATA/site/Fluxnet/halfhourly/level5_new_v2/Data/single_sites/')
