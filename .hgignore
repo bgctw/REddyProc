@@ -29,9 +29,11 @@ syntax: regexp
 syntax: regexp
 ^\REddyProc.Rproj$
 syntax: regexp
+^\REddyProc.Rcheck$
+syntax: regexp
 ^\.Rbuildignore
 syntax: regexp
-^\.Rhistory$
+\.Rhistory$
 
 
 syntax: regexp
