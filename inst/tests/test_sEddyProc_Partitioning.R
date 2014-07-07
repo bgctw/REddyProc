@@ -26,6 +26,50 @@ EddyHour.C$sMDSGapFill('Tair', Verbose.b=F)
 EddyHour.C$sMDSGapFill('NEE', Verbose.b=F)
 
 
+test_that("sRegrE0fromShortTerm simple test",{
+			#EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )
+			Temp_degK.V.n <- structure(c(279.45, 279.25, 278.95, 278.35, 278.35, 278.55, 279.15, 
+							279.55, 279.95, 279.25, 278.85, 278.65, 277.75, 277.75, 277.35, 
+							277.55, 276.35, 275.15, 274.65, 276.45, 276.25, 276.25, 276.35, 
+							276.15, 275.15, 275.35, 275.25, 275.05, 275.15, 275.65, 276.45, 
+							276.65, 277.25, 277.75, 282.55, 282.05, 282.05, 282.15, 277.25, 
+							277.85, 278.45, 278.65, 279.15, 279.45, 279.95, 279.45, 279.55, 
+							280.05, 280.15, 281.15, 281.15, 280.95, 280.95, 281.15, 281.35, 
+							281.45, 281.15, 281.45, 281.55, 281.55, 281.35, 281.25, 281.35, 
+							281.55, 282.25, 282.45, 282.55, 282.25, 282.25, 282.25, 282.15, 
+							281.95, 281.75, 281.55, 281.45, 281.15, 280.65, 280.95, 280.55, 
+							280.95, 280.55, 280.45, 280.75, 280.85, 280.25, 283.55, 283.25, 
+							283.55, 283.25, 283.55, 284.45, 284.75, 285.65, 285.05, 284.15, 
+							282.55, 281.85, 278.05, 280.15, 280.95, 278.95, 278.95, 279.05, 
+							279.35, 279.25, 278.95, 279.05, 279.35, 278.95, 278.25, 277.55, 
+							276.85, 276.65, 277.15, 277.15, 277.25, 276.95, 276.85, 276.95, 
+							277.15, 277.15, 277.05, 276.85, 277.75, 277.75, 277.95, 277.85, 
+							279.25, 279.35, 279.05, 278.25, 278.35), varnames = "Temp_K", units = "degK")
+			NEEnight.V.n <- c(-0.6, 4.21, 0.09, 0.01, 2.24, 3.61, 2.56, 4.06, 1.32, 5.91, 
+					3, -0.43, 2.82, 0.12, 3.01, -0.27, 1.45, 2.14, -0.99, -0.93, 
+					1.49, 0.33, -7.02, 4.25, 1.95, 0.6, 2.36, -0.01, 0.74, 0.03, 
+					1.53, 0.18, 0.11, 3.08, 1.41, 1.29, 1.04, -9.18, -0.14, -15.24, 
+					1.43, 2.62, -1.14, 1.6, 0.55, -2.15, 1.61, 0.44, 1.96, 0.76, 
+					1.05, 1.4, 0.88, 2.35, -0.84, 2.45, 0.67, 0.52, 1.07, 2.8, 1.25, 
+					0.45, -1.91, 2.64, 2.7, 1.39, 2.68, 3.11, 0.29, 1.86, 2.42, 0.44, 
+					0.94, 2.08, 2.56, 2.95, 0.75, 1.16, 2.86, 1.562, 1.73, -0.13, 
+					3.76, 1.22, 1.432, 1.09, -3.14, -0.84, 1.97, 2.59, -0.47, -0.85, 
+					1.3, 1.52, 3.23, 1.01, 0.99, 0.66, 0.16, 0.15, 1.08, 1.09, 0.45, 
+					0.32, 0.8, 1.01, -0.41, 2.52, 0.36, 0.33, 0.57, -0.06, 0.82, 
+					8.82, -0.04, -3.96, -0.53, 2.75, 1.45, -0.39, -2.06, 0.03, 0.18, 
+					-1.21, 2.44, 0.49, 0.05, -0.17, 2.93, 4.77, 1.85, -0.35)
+			res <- sOptimSingleE0( NEEnight.V.n, Temp_degK.V.n, recoverOnError=TRUE)
+			expect_true( is.numeric(res) )
+			expect_true( length(res)> 1 )
+			expect_true( all(is.finite(res) ))
+			
+			resL <- sOptimSingleE0_Lev( NEEnight.V.n, Temp_degK.V.n, recoverOnError=TRUE)
+			expect_true( is.numeric(res) )
+			expect_true( length(res)> 1 )
+			expect_true( all(is.finite(res) ))
+		})
+
+
 
 test_that("sMRFluxPartition Standard",{
             EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )   
@@ -43,46 +87,4 @@ test_that("Using fixed E0",{
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-test_that("Test sMDSGapFillUStar",{
-            # single value
-            EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-            EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=0.42)
-            Results.F <- EddyProc.C$sExportResults()
-            expect_true( "NEE_f" %in% colnames(Results.F) ) # unchanged column name
-            #
-            # several values 
-            EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-            suffix.v <-  c("05","95")
-            EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=c(0.38,0.42), suffix.v =suffix.v )
-            Results.F <- EddyProc.C$sExportResults()
-            expect_true( all(c("NEE05_f","NEE95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-            EddyProc.C$sMDSGapFillUStar('Tair', Verbose.b=F, ustar.m=c(0.38,0.42), suffix.v =suffix.v )
-            Results.F <- EddyProc.C$sExportResults()
-            expect_true( all(c("Tair05_f","Tair95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-            # test whether sMRFluxPartition can use changed column names
-            #suffix.s <- suffix.v[1]
-            for( suffix.s in suffix.v ){
-                EddyProc.C$sMRFluxPartition(
-                        , Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1
-                        , suffix.s=suffix.s
-                )
-            }
-            Results.F <- EddyProc.C$sExportResults()
-            # TODO: Test still fails
-            # expect_true( all(c("GPP05_f","GPP95_f","Reco05","Reco95") %in% colnames(Results.F)) ) # unchanged column name
-            #with(Results.F,  plot( NEE05_f ~ NEE95_f))
-            #
-            # several values for several years
-            EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-            ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") ))
-            EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=ustar.m, suffix.v = colnames(ustar.m) )
-            Results.F <- EddyProc.C$sExportResults()
-            expect_true( all(c("NEE05_f","NEE95_f") %in% colnames(Results.F)) ) # unchanged column name
-            # NA case
-            EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-            ustar.m = matrix(c(NA, NA, 0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") ))
-            EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=ustar.m, suffix.v = colnames(ustar.m) )
-            Results.F <- EddyProc.C$sExportResults()
-            expect_true( all(c("NEE05_f","NEE95_f") %in% colnames(Results.F)) ) # unchanged column name
-        })
 

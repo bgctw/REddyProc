@@ -8,6 +8,119 @@
 #TEST: NightFlux.s='FP_VARnight';  TempVar.s='NEW_FP_Temp'; WinDays.i=7; DayStep.i=5; TempRange.n=5; NumE_0.n=3; Trim.n=5
 #TEST: NightFlux.s='FP_VARnight';  TempVar.s='NEW_FP_Temp'; E_0.s='NEW_E_0'; WinDays.i=4; DayStep.i=4;
 
+
+sOptimSingleE0 <- function(
+		##title<<
+		## sEddyProc$sOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series
+		##description<<
+		## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor()}} for short periods.
+		## Original implementation by AMM
+		NEEnight.V.n	##<< numeric vector of nighttime respiration) 
+		,Temp_degK.V.n	##<<  Temperature in K
+		,Trim.n=5       ##<< Percentile to trim residual (%)
+		,recoverOnError=FALSE	##<< set to TRUE to debug errors instead of catching them
+)
+##author<<
+## AMM, TW
+{
+	res <- tryCatch({
+				# Non-linear regression
+				NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+						data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200))        
+				# Remove points with residuals outside Trim.n quantiles
+				Residuals.V.n <- resid(NLS.L)
+				#Residuals.V.n <- fLloydTaylor(R_ref=coef(summary(NLS.L))['R_ref',1], E_0=coef(summary(NLS.L))['E_0',1],
+				#		Temp_degK.V.n, T_ref.n=273.15+15) - NEEnight.V.n
+				t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
+				# Trimmed non-linear regression
+				NLS_trim.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+						data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b])), start=list(R_ref=2,E_0=200))
+				##value<< numeric vector with components
+				res <- c(
+						R_ref=coef(summary(NLS.L))['R_ref',1]		##<< estimated Respiration rate at reference temperature
+						, R_ref_SD=coef(summary(NLS.L))['R_ref',2] 	##<< standard deviation of R_ref
+						, E_0=coef(summary(NLS.L))['E_0',1]			##<< estimate of temperature sensitivity ("activation energy") in Kelvin (degK) for untrimmed dataset
+						, E_0_SD=coef(summary(NLS.L))['E_0',2]		##<< standard deviation of E_0
+						, E_0_trim=coef(summary(NLS_trim.L))['E_0',1]		##<< estimate of temperature sensitivity ("activation energy") in Kelvin (degK) for trimmed dataset
+						, E_0_trim_SD=coef(summary(NLS_trim.L))['E_0',2]	##<< standard deviation of E_0_trim
+				##end<<
+				)
+				# Note on other tested algorithms:
+				# Standard require(stats) nls with PORT algorithm and lower and upper bounds
+				# require(FME) for modFit and modCost, has PORT algorithm included (and other algorithms like MCMC)
+				# require(robustbase) for ltsReg but only linear regression
+				# require(nlme) for heteroscedastic and mixed NLR but no port algo with upper and lower bounds
+				# require(nlstools) for bootstrapping with nlsBoot(nls...)      
+			}, error = function(e) {
+				if( isTRUE(recoverOnError) ) recover()
+				res <- c(R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA, E_0_trim=NA, E_0_trim_SD=NA)
+			}   ) #Spaces between brackets required to avoid replacement on documentation generation
+	if( F ) { # Plots for testing
+		plot(NEEnight.V.n ~ Temp.V.n)
+		curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(x), T_ref.n=273.15+15), add=T, col='red')
+	}
+	res
+}
+
+sOptimSingleE0_Lev <- function(
+		##title<<
+		## sEddyProc$sOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series
+		##description<<
+		## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor()}} for short periods.
+		## Using Levenberg-Marquard
+		NEEnight.V.n	##<< numeric vector of nighttime respiration) 
+		,Temp_degK.V.n	##<<  Temperature in K
+		,Trim.n=5       ##<< Percentile to trim residual (%)
+		,recoverOnError=FALSE	##<< set to TRUE to debug errors instead of catching them
+)
+##author<<
+## TW
+{
+	res <- tryCatch({
+				# Non-linear regression
+				NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+						data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
+						,control=nls.lm.control(maxiter = 20)
+						)        
+				# Remove points with residuals outside Trim.n quantiles
+				Residuals.V.n <- resid(NLS.L)
+				#plot( Residuals.V.n ~ Temp_degK.V.n )
+				t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
+				#points( Residuals.V.n[!t.b] ~ Temp_degK.V.n[!t.b], col="red")				
+				# Trimmed non-linear regression
+				NLS_trim.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+						data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b]))
+						, start=coef(NLS.L)
+						#, start=list(R_ref=2,E_0=200)
+				)
+				##value<< numeric vector with components
+				res <- c(
+						R_ref=coef(summary(NLS.L))['R_ref',1]		##<< estimated Respiration rate at reference temperature
+						, R_ref_SD=coef(summary(NLS.L))['R_ref',2] 	##<< standard deviation of R_ref
+						,E_0=coef(summary(NLS.L))['E_0',1]			##<< estimate of temperature sensitivity ("activation energy") in Kelvin (degK) for untrimmed dataset
+						, E_0_SD=coef(summary(NLS.L))['E_0',2]		##<< standard deviation of E_0
+						,E_0_trim=coef(summary(NLS_trim.L))['E_0',1]		##<< estimate of temperature sensitivity ("activation energy") in Kelvin (degK) for trimmed dataset
+						, E_0_trim_SD=coef(summary(NLS_trim.L))['E_0',2]	##<< standard deviation of E_0_trim
+				##end<<
+				)
+				# Note on other tested algorithms:
+				# Standard require(stats) nls with PORT algorithm and lower and upper bounds
+				# require(FME) for modFit and modCost, has PORT algorithm included (and other algorithms like MCMC)
+				# require(robustbase) for ltsReg but only linear regression
+				# require(nlme) for heteroscedastic and mixed NLR but no port algo with upper and lower bounds
+				# require(nlstools) for bootstrapping with nlsBoot(nls...)      
+			}, error = function(e) {
+				if( isTRUE(recoverOnError) ) recover()
+				res <- c(R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA, E_0_trim=NA, E_0_trim_SD=NA)
+			}   ) #Spaces between brackets required to avoid replacement on documentation generation
+	if( F ) { # Plots for testing
+		plot(NEEnight.V.n ~ Temp.V.n)
+		curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(x), T_ref.n=273.15+15), add=T, col='red')
+	}
+	res
+}
+
+
 sEddyProc$methods(
   sRegrE0fromShortTerm = function(
     ##title<<
@@ -35,8 +148,8 @@ sEddyProc$methods(
     fCheckColNum(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
     
     # Regression settings
-    NLSRes.F <- data.frame(NULL) #Results of non-linear regression
-    NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
+    #NLSRes.F <- data.frame(NULL) #Results of non-linear regression
+    #NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
     MinData.n <- 6 # Minimum number of data points
     
     # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
@@ -46,7 +159,9 @@ sEddyProc$methods(
     # Loop regression periods
     DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
     CountRegr.i <- 0
-    for (DayMiddle.i in seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i)) {
+	
+	#tw: better use rbind with a list instead of costly repeated extending a data.frame
+	NLSRes.F <- as.data.frame(do.call( rbind, lapply( seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i) ,function(DayMiddle.i){
       #TEST: DayMiddle.i <- 8
       DayStart.i <- DayMiddle.i-WinDays.i
       DayEnd.i <- DayMiddle.i+WinDays.i
@@ -60,42 +175,11 @@ sEddyProc$methods(
       
       if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
         CountRegr.i <- CountRegr.i+1
-        tryCatch({
-          # Non-linear regression
-          NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-                       data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200))        
-          # Remove points with residuals outside Trim.n quantiles
-          Residuals.V.n <- fLloydTaylor(R_ref=coef(summary(NLS.L))['R_ref',1], E_0=coef(summary(NLS.L))['E_0',1],
-                                        Temp_degK.V.n, T_ref.n=273.15+15) - NEEnight.V.n
-          t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
-          # Trimmed non-linear regression
-          NLS_trim.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-                            data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b])), start=list(R_ref=2,E_0=200))
-          
-          NLSRes.F <- rbind(NLSRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
-                                            R_ref=coef(summary(NLS.L))['R_ref',1], R_ref_SD=coef(summary(NLS.L))['R_ref',2], 
-                                            E_0=coef(summary(NLS.L))['E_0',1], E_0_SD=coef(summary(NLS.L))['E_0',2], 
-                                            E_0_trim=coef(summary(NLS_trim.L))['E_0',1], E_0_trim_SD=coef(summary(NLS_trim.L))['E_0',2]))
-          #! PV-Wave code has NLR with trimming: calculation of cost function and iterative trimming of the 10% highest absolute residuals.
-          #! New code: Implemented as trimming of residuals outside 5% percentiles. Generally trimming questionable for non-linear regression.
-          
-          # Note on other tested algorithms:
-          # Standard require(stats) nls with PORT algorithm and lower and upper bounds
-          # require(FME) for modFit and modCost, has PORT algorithm included (and other algorithms like MCMC)
-          # require(robustbase) for ltsReg but only linear regression
-          # require(nlme) for heteroscedastic and mixed NLR but no port algo with upper and lower bounds
-          # require(nlstools) for bootstrapping with nlsBoot(nls...)      
-        }, error = function(e) {
-          NLSRes.F <- rbind(NLSRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
-                                            R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA, E_0_trim=NA, E_0_trim_SD=NA))
-        }   ) #Spaces between brackets required to avoid replacement on documentation generation
-        
-        if( F ) { # Plots for testing
-          plot(NEEnight.V.n ~ Temp.V.n)
-          curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(x), T_ref.n=273.15+15), add=T, col='red')
-        }      
-      }
-    }
+		resOptim <- sOptimSingleE0( NEEnight.V.n, Temp_degK.V.n)
+		NLSRes.F <- c(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
+						resOptim)
+      } else NULL
+    } ) ))
     
     # Check for validity of E_0 regression results
     if( grepl('Tair', TempVar.s) ) {
@@ -146,7 +230,7 @@ sEddyProc$methods(
     E_0.V.n
     ##value<< 
     ## Data vector with (constant) temperature sensitivity (E_0, degK)
-  })
+ })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -235,7 +319,7 @@ sEddyProc$methods(
     Rref.V.n
     ##value<< 
     ## Data vector with reference respiration (R_ref, flux units)
-  })
+})
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -245,11 +329,11 @@ sEddyProc$methods(
     ## sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)
     ##description<<
     ## Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
-    FluxVar.s=paste0('NEE',suffix.s,'_f')       ##<< Variable of net ecosystem fluxes
-    ,QFFluxVar.s=paste0('NEE',suffix.s,'_fqc')  ##<< Quality flag of variable
-    ,QFFluxValue.n=0       						##<< Value of quality flag for _good_ (original) data
-    ,TempVar.s=paste0('Tair',suffix.s,'_f')     ##<< Filled air or soil temperature variable (degC)
-    ,QFTempVar.s=paste0('Tair',suffix.s,'_fqc') ##<< Quality flag of filled temperature variable
+    FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Variable of net ecosystem fluxes
+    ,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of variable
+    ,QFFluxValue.n=0       							##<< Value of quality flag for _good_ (original) data
+    ,TempVar.s=paste0('Tair',suffixDash.s,'_f')     ##<< Filled air or soil temperature variable (degC)
+    ,QFTempVar.s=paste0('Tair',suffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
     ,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
     ,RadVar.s='Rg'         ##<< Unfilled (original) radiation variable
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
@@ -269,7 +353,8 @@ sEddyProc$methods(
   ## Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
 {
-    'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)'
+	suffixDash.s <- paste( (if(fCheckValString(suffix.s)) "_" else ""), suffix.s, sep="")
+	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)'
     # Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
     fCheckColNames(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
     fCheckColNum(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
@@ -297,7 +382,8 @@ sEddyProc$methods(
     sTEMP$NEW_FP_Temp <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
-    sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
+	sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp')
+	sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
     if( sum(sTEMP$NEW_E_0==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
     
@@ -341,4 +427,4 @@ sEddyProc$methods(
     return(invisible(NULL))
     ##value<< 
     ## Flux partitioning results in sTEMP data frame (with renamed columns).
-  })
+})

@@ -3,6 +3,7 @@
 #+++ MDS gap filling algorithm, adapted after the PV-Wave code and paper by Markus Reichstein +++
 #+++ Dependencies: Eddy.R, DataFunctions.R
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# TEST: create a suitable instance EPTha.C and then copy the class variables into global variables for debugging
 # TEST: sDATA <- EPTha.C$sDATA; sINFO <- EPTha.C$sINFO; sTEMP <- EPTha.C$sTEMP; Var.s <- 'NEE'; QFVar.s <- 'none'; QFValue.n <- NA_real_;
 # TEST: V1.s <- 'Rg'; T1.n <- 50; V2.s <- 'VPD'; T2.n <- 5; V3.s <- 'Tair'; T3.n <- 2.5; FillAll.b <- TRUE; Verbose.b <- TRUE
 # TEST: V4.s='none'; T4.n=NA_real_; V5.s='none'; T5.n=NA_real_; sTEMP <- NULL
@@ -341,7 +342,7 @@ sEddyProc$methods(
     ,T3.n=2.5             ##<< Tolerance interval 3 (default: 2.5 degC)
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
     ,Verbose.b=TRUE       ##<< Print status information to screen
-    ,suffix.s=""	      ##<< Scalar string scalar to be appended to Var.s before the qualifiers  
+    ,suffix.s=""	      ##<< Scalar string scalar to be appended to Var.s before the qualifiers for different gapfilling setups on the same dataset 
     ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
 )
   ##author<<
@@ -431,8 +432,12 @@ sEddyProc$methods(
             ', real gaps filled: ', sum(is.na(sTEMP$VAR_orig)), 
             ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
     
+	##details<< 
+	## Make sure to not call this function twice with the same suffix. Better initialize a new instance of REddyProc class.
+	## This ensures consistency of one gapfilling sequence with one dataset.
     # Rename new columns generated during gap filling
-    colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, suffix.s, '_', sep=''), colnames(sTEMP))
+	# Take care: if one collumn already exists, a second column with the same name is created
+    colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, (if(fCheckValString(suffix.s)) "_" else ""), suffix.s, '_', sep=''), colnames(sTEMP))
     
     return(invisible(NULL))
     ##value<< 
@@ -443,26 +448,34 @@ sEddyProc$methods(
   sEddyProc$methods(
   sMDSGapFillUStar = structure(function(
           ##title<< 
-          ## sEddyProc$sMDSGapFillUStar - calling sMDSGapFill for several filters of friction velocity Ustar
+          ## GapFilling for several filters of friction velocity Ustar
           ##description<<
           ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
+		  ##
+		  ## sEddyProc$sMDSGapFillUStar - calling sMDSGapFill for several filters of friction velocity Ustar
+		  
           Var.s                 ##<< Variable to be filled
-          ,ustar.m = quantile( sDATA[,UstarVar.s], probs=0.9, na.rm=T)       
-          ### Numeric matrix( nYear x nUStar): each row is a vector of ustar thresholds to apply before gap filling for one years.
+          ,ustar.m 	= .self$sEstUstarThresholdDistribution() # quantile( sDATA[,UstarVar.s], probs=c(0.9,0.7,0.95), na.rm=T)       
+          ### Numeric matrix( nYear x nUStar): output of \code{\link{sEstUstarThresholdDistribution}}: each row is a vector of ustar thresholds to apply before gap filling for one years.
 		  		### Make sure that one row is given for each year in the dataset to gap-Fill.
 				### If only one row, i.e. a vector is given, then it is used for each year.
-                ### Defaults to single value at the 90% quantile of UStar column.
-          ,suffix.v = ""        ##<< String vector of length of ustar.v of column suffixes to distinguish results for different ustar.v
-          ,UstarVar.s='Ustar'   ##<< Friction velocity ustar (ms-1)
+          ,suffix.v = c("Ustar","U05","U50","U95")  ##<< String vector of length of ustar.v of column suffixes. 
+				## to distinguish results for different ustar.v.
+				## Length must correspond to column numbers in ustar.m
+				## Defaults correspond to return default return value function \code{\link{sEstUstarThresholdDistribution}} 
+				## (estimate on original series, 5% of bootstrap, median of bootstrap, 95% of bootstrap) 
+				,...                  ##<< other arguments to \code{\link{sMDSGapFill}}
+		   ,UstarVar.s='Ustar'   		 ##<< Friction velocity ustar (ms-1)
 		  ,isFlagEntryAfterLowTurbulence=TRUE  ##<< set to FALSE to avoid flagging the first entry after low turbulance as bad condition
-          ,...                  ##<< other arguments to sMDSGapFill
   )
   ##author<< TW
   {
 	  year.v <- as.POSIXlt(sDATA$sDateTime)$year + 1900
 	  uYear.v <- unique(year.v)
-	  if( !is.matrix(ustar.m) )
+	  if( !is.matrix(ustar.m) ){
+		  if( length(suffix.v) != length(ustar.m)) stop("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
 		  ustar.m <- matrix( ustar.m, nrow=length(uYear.v), dimnames=list(uYear.v,suffix.v))
+	  }
       nUStar <- ncol(ustar.m)
       if( length(suffix.v) != nUStar ) stop("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
       # possibly parallelize, but difficult with R5 Classes
@@ -491,21 +504,39 @@ sEddyProc$methods(
       ## Gap filling results in sTEMP data frame (with renamed columns).
   }, ex=function(){
 	  if( FALSE ){  # takes long, do not execute on every install
-		  # load the data from text file
-		  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-		  EddyData.F <- ds <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-		  # create TimeStamp column
-		  EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-		  # estimate 5% and 95% cf interval
-		  # ustar.m <- estUstarThresholdDistribution(ds)[,c(2,4)]
-		  # ustar.m <- c(0.38, 0.44)
-		  ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") ))
-	      EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
-	      EddyProc.C$sMDSGapFillUStar('NEE', FillAll.b=TRUE, ustar.m = ustar.m, suffix.v = c("05","95") )     
-	      #EddyProc.C$sMDSGapFillUStar('NEE', FillAll.b=TRUE, ustar.v = ustar.v, suffix=paste0("_",probs*100)) 
-	      dsf <- EddyProc.C$sExportResults()
-	      colnames(dsf)
-	      #plot( NEE_25_f ~ NEE_10_f, dsf)
+			# load the data from text file
+		  	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+		  	EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+		  	# create TimeStamp column
+		  	EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+		  
+			#------------- default use case
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
+		    EddyProc.C$sMDSGapFillUStar('NEE' )     # calls sEstUstarThresholdDistribution 
+		    dsf <- EddyProc.C$sExportResults()
+		    colnames(dsf)		# note the different output columns corresponding to different Ustar estimates, best estimate with suffix "Ustar"
+		    #plot( NEE_U05_f ~ NEE_U95_f, dsf)	# differences between gapFilling using differing Ustar thresholds
+	
+			#------------- only using one Ustar estimate (omitting output columns for range of Ustar estimates)
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+			Ustar <- EddyProc.C$sEstUstarThreshold()$UstarAggr
+			EddyProc.C$sMDSGapFillUStar('NEE', ustar.m=Ustar, suffix.v="Ustar")      
+			colnames(EddyProc.C$sExportResults())
+			
+			#--------------- the advanced user can specify his own estimates of Ustar 
+			# modifying arguements to sEstUstarThresholdDistribution, e.g quantiles to inspect
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
+			ustar.m <- EddyProc.C$sEstUstarThresholdDistribution(EddyProc.C$sExportData(), nSample=10, probs=c(0.25,0.5,0.75))
+			ustar.m		# note that the first entry corresponds to the non-bootstrapped Ustar estimate 
+			EddyProc.C$sMDSGapFillUStar('NEE', ustar.m=ustar.m, suffix.v=c("Ustar","U25","U50","U75") )
+			colnames(EddyProc.C$sExportResults())
+			#
+			# specify estimates directly
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+			ustar.m <- c(0.38, 0.44)
+			ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") )) # possible different thresholds for different years  
+			EddyProc.C$sMDSGapFillUStar('NEE', ustar.m=ustar.m, suffix.v=c("U38","U44") )
+			colnames(EddyProc.C$sExportResults())
 	}
   }))
   

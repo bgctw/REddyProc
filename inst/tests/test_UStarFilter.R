@@ -30,5 +30,12 @@ test_that("binUstar classes are correct",{
 	expect_that( res, equals(tmp1[,-1]))
 })
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+test_that("multiyear matrix",{
+	EddyData.F99 <- EddyData.F		
+	EddyData.F99$Year <- EddyData.F$Year +1
+	EddyDataWithPosix.F99 <- ds <- fConvertTimeToPosix(rbind(EddyData.F, EddyData.F99), 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F99, c('NEE','Rg','Tair','VPD','Ustar'))
+	(res <- EddyProc.C$sEstUstarThresholdDistribution(nSample=3))
+})
+
 

@@ -1,0 +1,41 @@
+\name{sMDSGapFill}
+\alias{sMDSGapFill}
+\title{sEddyProc$sMDSGapFill - MDS gap filling algorithm}
+\description{MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.}
+\usage{sMDSGapFill(Var.s, QFVar.s = "none", QFValue.n = NA_real_, V1.s = "Rg", 
+    T1.n = 50, V2.s = "VPD", T2.n = 5, V3.s = "Tair", T3.n = 2.5, 
+    FillAll.b = TRUE, Verbose.b = TRUE, suffix.s = "", QF.V.b = TRUE)}
+\arguments{
+  \item{Var.s}{Variable to be filled}
+  \item{QFVar.s}{Quality flag of variable to be filled}
+  \item{QFValue.n}{Value of quality flag for _good_ (original) data, other data is set to missing}
+  \item{V1.s}{Condition variable 1 (default: Global radiation 'Rg' in  W m-2)}
+  \item{T1.n}{Tolerance interval 1 (default: 50 W m-2)}
+  \item{V2.s}{Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)}
+  \item{T2.n}{Tolerance interval 2 (default: 5 hPa)}
+  \item{V3.s}{Condition variable 3 (default: Air temperature in degC)}
+  \item{T3.n}{Tolerance interval 3 (default: 2.5 degC)}
+  \item{FillAll.b}{Fill all values to estimate uncertainties}
+  \item{Verbose.b}{Print status information to screen}
+  \item{suffix.s}{Scalar string scalar to be appended to Var.s before the qualifiers for different gapfilling setups on the same dataset}
+  \item{QF.V.b}{boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)}
+}
+\details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
+
+MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
+and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+
+To run dataset only with MDC algorithm \code{\link{sFillMDC}}, set condition variable V1.s to 'none'.
+
+Make sure to not call this function twice with the same suffix. Better initialize a new instance of REddyProc class.
+This ensures consistency of one gapfilling sequence with one dataset.}
+\value{Gap filling results in sTEMP data frame (with renamed columns).}
+\references{Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
+into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.}
+\author{AMM, TW
+(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
+
+
+
+
+
