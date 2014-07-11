@@ -457,7 +457,7 @@ sEddyProc$methods(
 
 sEddyProc$methods(
 		sEstUstarThresholdDistribution = structure(function(
-		### Estimating the distribution of u* trheshold by bootstrapping over data
+		### Estimating the distribution of u* threshold by bootstrapping over data
 		#ds					    ##<< data.frame with columns see \code{\link{sEstUstarThresholdYears}}
 		ctrlUstarEst.l = controlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{controlUstarEst}}
 		,ctrlUstarSub.l = controlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}} 
@@ -492,7 +492,7 @@ sEddyProc$methods(
         ##value<< 
 		## a matrix (nYear x (1+nProbs): first two column is the original estimate 
 		## the other columns correponsing to the quantiles of Ustar estimate 
-		## for given probabilities (arguement \code{probs})
+		## for given probabilities (argument \code{probs} ).
 		## Rownames hold the corresonding years.
 },ex = function(){
 	if( FALSE ){	# takes long, so do not execute on each install or check

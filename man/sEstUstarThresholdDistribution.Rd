@@ -1,7 +1,7 @@
 \name{sEstUstarThresholdDistribution}
 \alias{sEstUstarThresholdDistribution}
 \title{sEstUstarThresholdDistribution}
-\description{Estimating the distribution of u* trheshold by bootstrapping over data}
+\description{Estimating the distribution of u* threshold by bootstrapping over data}
 \usage{sEstUstarThresholdDistribution(ctrlUstarEst.l = controlUstarEst(), 
     ctrlUstarSub.l = controlUstarSubsetting(), ..., seasonFactor.v = as.factor(createSeasonFactorMonth(sDATA$sDateTime)), 
     yearFactor.v = as.factor(as.POSIXlt(sDATA$sDateTime)$year + 
@@ -24,7 +24,7 @@ By default it returns the 90\% confidence interval (arguement \code{probs}.
 For larger intervals the sample number need to be increased (arguement \code{probs}. }
 \value{a matrix (nYear x (1+nProbs): first two column is the original estimate 
 the other columns correponsing to the quantiles of Ustar estimate 
-for given probabilities (arguement \code{probs}
+for given probabilities (argument \code{probs} ).
 Rownames hold the corresonding years.}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

@@ -1,9 +1,7 @@
 \name{sMDSGapFillUStar}
 \alias{sMDSGapFillUStar}
 \title{GapFilling for several filters of friction velocity Ustar}
-\description{MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
-
-sEddyProc$sMDSGapFillUStar - calling sMDSGapFill for several filters of friction velocity Ustar}
+\description{sEddyProc$sMDSGapFillUStar - calling \code{\link{sMDSGapFill}} for several filters of friction velocity Ustar}
 \usage{sMDSGapFillUStar(Var.s, ustar.m = .self$sEstUstarThresholdDistribution(), 
     suffix.v = c("Ustar", "U05", "U50", "U95"), ..., UstarVar.s = "Ustar", 
     isFlagEntryAfterLowTurbulence = TRUE)}
@@ -71,9 +69,9 @@ are returned in columns NEE_U05_f and NEE_U95_f respectively.}
 		EddyProc.C$sMDSGapFillUStar('NEE', ustar.m=ustar.m, suffix.v=c("Ustar","U25","U50","U75") )
 		colnames(EddyProc.C$sExportResults())
 		#
-		# specify estimates directly
+		# specify thresholds directly
 		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		ustar.m <- c(0.38, 0.44)
+		ustar.m <- c(0.38, 0.44)	# used for all years
 		ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") )) # possible different thresholds for different years  
 		EddyProc.C$sMDSGapFillUStar('NEE', ustar.m=ustar.m, suffix.v=c("U38","U44") )
 		colnames(EddyProc.C$sExportResults())

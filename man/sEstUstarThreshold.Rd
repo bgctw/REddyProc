@@ -1,7 +1,7 @@
 \name{sEstUstarThreshold}
 \alias{sEstUstarThreshold}
 \title{sEstUstarThreshold}
-\description{estimate the Ustar threshold by aggregating the estimates for seasonal and temperature subsets }
+\description{Estimate the Ustar threshold by aggregating the estimates for seasonal and temperature subsets. }
 \usage{sEstUstarThreshold(ds = sDATA, UstarColName = "Ustar", NEEColName = "NEE", 
     TempColName = "Tair", RgColName = "Rg", seasonFactor.v = createSeasonFactorMonth(ds$sDateTime), 
     ctrlUstarEst.l = controlUstarEst(), ctrlUstarSub.l = controlUstarSubsetting(), 

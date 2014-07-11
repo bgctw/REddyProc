@@ -65,6 +65,8 @@ file.rename(paste('tmp',CodeIn.V.s,sep='/'), paste('R',CodeIn.V.s,sep='/') )
 # Overwrite generated documentation by (self-written) version from inst/develop/genData
 DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','*.Rd')
 file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
+# If package twDev from TW is used for documenation generation
+#genRd(execInlinedocs = FALSE)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -81,8 +83,6 @@ file.copy(paste('R', RFiles.V.s, sep='/'), paste('inst/scripts', RFiles.V.s, sep
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# If package twDev from TW is used for documenation generation
-###   genRd(execInlinedocs = FALSE)
 
 # Install, build and reload package
 if( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generating the package
