@@ -1,7 +1,7 @@
 \name{fCheckValString}
 \alias{fCheckValString}
-\title{Check if variable is a non-empty character string}
-
+\title{fCheckValString}
+\description{Check if variable is a non-empty character string}
 \usage{fCheckValString(Value.s)}
 \arguments{
   \item{Value.s}{Value to be checked if string}

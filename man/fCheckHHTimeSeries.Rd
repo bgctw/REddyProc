@@ -1,7 +1,7 @@
 \name{fCheckHHTimeSeries}
 \alias{fCheckHHTimeSeries}
-\title{Check half-hourly time series data}
-
+\title{fCheckHHTimeSeries}
+\description{Check half-hourly time series data}
 \usage{fCheckHHTimeSeries(Time.V.p, DTS.n, CallFunction.s = "")}
 \arguments{
   \item{Time.V.p}{Time vector in POSIX format}

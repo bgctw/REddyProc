@@ -136,7 +136,7 @@ attr(fConvertTimeToPosix, 'ex') <- function() {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckHHTimeSeries <- function(
-  ##title<<
+  ##description<<
   ## Check half-hourly time series data
   Time.V.p              ##<< Time vector in POSIX format
   ,DTS.n                ##<< Number of daily time steps (24 or 48)
@@ -185,7 +185,7 @@ fCheckHHTimeSeries <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fFullYearTimeSteps <- function(
-  ##title<<
+  ##description<<
   ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
   Year.i                ##<< Data frame to be converted
   ,DTS.n                ##<< Daily time steps
@@ -216,7 +216,7 @@ fFullYearTimeSteps <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fExpandToFullYear <- function(
-  ##title<<
+  ##description<<
   ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
   Time.V.p                    ##<< Time stamp in POSIX time format
   ,Data.V.n                   ##<< Data vector to be expanded
@@ -262,7 +262,7 @@ fExpandToFullYear <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fConvertGapsToNA <- function(
-  ##title<<
+  ##description<<
   ## Converts all gap flags to NA
   Data.F                ##<< Data frame to be converted
   ,GapFlag.n=-9999.0    ##<< Flag value used for gaps, defaults to -9999.0 
@@ -283,7 +283,7 @@ fConvertGapsToNA <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fConvertNAsToGap <- function(
-  ##title<<
+  ##description<<
   ## Converts all NAs to gap flag
   Data.F ##<< Data frame to be converted
   ,GapFlag.n=-9999.0 ##<< Flag value used for gaps, defaults to -9999.0 
@@ -304,7 +304,7 @@ fConvertNAsToGap <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcLengthOfGaps <- function(
-  ##title<<
+  ##description<<
   ## Calculate length of gaps (with flag NA) in specified vector
   Data.V.n              ##<< Numeric vector with gaps (missing values, NAs)
   )
@@ -324,7 +324,7 @@ fCalcLengthOfGaps <- function(
 }
 
 fInterpolateGaps <- function(
-  ##title<<
+  ##description<<
   ## Interpolate linearly between gaps, with constant values at beginning/end
   Data.V.n              ##<< Numeric vector with gaps (missing values, NAs)
 )
@@ -355,7 +355,7 @@ fInterpolateGaps <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckValString <- function(
-  ##title<<
+  ##description<<
   ## Check if variable is a non-empty character string
   Value.s               ##<< Value to be checked if string
   )
@@ -378,7 +378,7 @@ fCheckValString <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckValNum <- function(
-  ##title<<
+  ##description<<
   ## Check if variable is a numeric
   Value.n               ##<< Value to be checked if numeric (but can also be NA of any type)
 )
@@ -401,7 +401,7 @@ fCheckValNum <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckColNames <- function(
-  ##title<<
+  ##description<<
   ## Check if specified columns exists in data frame
   Data.F                ##<< Data frame
   ,ColNames.V.s         ##<< Vector of variables to be checked
@@ -427,7 +427,7 @@ fCheckColNames <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckColNum <- function(
-  ##title<<
+  ##description<<
   ## Check if specified columns are numeric
   Data.F                ##<< Data frame
   ,ColNames.V.s         ##<< Vector of variables to be checked, with 'none' as dummy
@@ -453,7 +453,7 @@ fCheckColNum <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckOutsideRange <- function(
-  ##title<<
+  ##description<<
   ## Check if specified variable is outside of provided boundaries
   Data.F                ##<< Data frame
   ,VarName.s            ##<< Variable (column) name
@@ -498,7 +498,7 @@ fCheckOutsideRange <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckColPlausibility <- function(
-  ##title<<
+  ##description<<
   ## Check plausibility of common (eddy) variables
   Data.F                ##<< Data frame
   ,VarName.V.s          ##<< Variable (column) names

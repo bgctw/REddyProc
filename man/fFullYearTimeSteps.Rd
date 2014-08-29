@@ -1,7 +1,7 @@
 \name{fFullYearTimeSteps}
 \alias{fFullYearTimeSteps}
-\title{Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit}
-
+\title{fFullYearTimeSteps}
+\description{Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit}
 \usage{fFullYearTimeSteps(Year.i, DTS.n, CallFunction.s = "")}
 \arguments{
   \item{Year.i}{Data frame to be converted}

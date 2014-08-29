@@ -1,7 +1,7 @@
 \name{fCheckColPlausibility}
 \alias{fCheckColPlausibility}
-\title{Check plausibility of common (eddy) variables}
-
+\title{fCheckColPlausibility}
+\description{Check plausibility of common (eddy) variables}
 \usage{fCheckColPlausibility(Data.F, VarName.V.s, CallFunction.s = "")}
 \arguments{
   \item{Data.F}{Data frame}

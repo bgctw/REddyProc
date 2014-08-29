@@ -1,7 +1,7 @@
 \name{fExpandToFullYear}
 \alias{fExpandToFullYear}
-\title{Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit}
-
+\title{fExpandToFullYear}
+\description{Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit}
 \usage{fExpandToFullYear(Time.V.p, Data.V.n, Year.i, DTS.n, CallFunction.s = "")}
 \arguments{
   \item{Time.V.p}{Time stamp in POSIX time format}
