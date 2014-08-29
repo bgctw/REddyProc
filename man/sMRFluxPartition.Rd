@@ -8,31 +8,56 @@
         suffixDash.s, "_fqc"), QFTempValue.n = 0, RadVar.s = "Rg", 
     Lat_deg.n, Long_deg.n, TimeZone_h.n, suffix.s = "", debug.l = list(useLocaltime.b = FALSE))}
 \arguments{
-  \item{FluxVar.s}{Variable of net ecosystem fluxes}
-  \item{QFFluxVar.s}{Quality flag of variable}
+  \item{FluxVar.s}{Net ecosystem fluxes (NEE) Variable, i.e. column name}
+  \item{QFFluxVar.s}{Quality flag of NEE variable}
   \item{QFFluxValue.n}{Value of quality flag for _good_ (original) data}
-  \item{TempVar.s}{Filled air or soil temperature variable (degC)}
-  \item{QFTempVar.s}{Quality flag of filled temperature variable}
+  \item{TempVar.s}{filled air- or soil temperature variable (degC)}
+  \item{QFTempVar.s}{quality flag of filled temperature variable}
   \item{QFTempValue.n}{Value of temperature quality flag for _good_ (original) data}
   \item{RadVar.s}{Unfilled (original) radiation variable}
   \item{Lat_deg.n}{Latitude in (decimal) degrees}
   \item{Long_deg.n}{Longitude in (decimal) degrees}
   \item{TimeZone_h.n}{Time zone (in hours)}
-  \item{suffix.s}{string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}.}
-  \item{debug.l}{list with debugging control, see \code{\link{sRegrE0fromShortTerm}}.\describe{
-\item{useLocaltime.b}{by default corrects hour (given in local winter time) for latitude to solar time
-<< where noon is exactly at 12:00. Set this to TRUE to compare to code that uses local winter time}
+  \item{suffix.s}{string inserted into input column names before identifier.}
+  \item{debug.l}{list with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}.\describe{
+\item{useLocaltime.b}{see details on solar vs local time}
 }}
 }
-\details{Description of newly generated variables with partitioning results: \cr
-PotRad - Potential radiation \cr
-FP_NEEnight - Good (original) NEE nighttime fluxes  used for flux partitioning \cr
-FP_Temp - Good (original) temperature measurements used for flux partitioning \cr
-E_0 - Estimated temperature sensitivity \cr
-R_ref - Estimated reference respiration \cr
-Reco - Estimated ecosystem respiration \cr
-GPP_f - Estimated gross primary production \cr}
-\value{Flux partitioning results in sTEMP data frame (with renamed columns).}
+\details{\describe{\item{Description of newly generated variables with partitioning results:}{
+\itemize{
+\item PotRad - Potential radiation \cr
+\item FP_NEEnight - Good (original) NEE nighttime fluxes  used for flux partitioning \cr
+\item FP_Temp - Good (original) temperature measurements used for flux partitioning \cr
+\item E_0 - Estimated temperature sensitivity \cr
+\item R_ref - Estimated reference respiration \cr
+\item Reco - Estimated ecosystem respiration \cr
+\item GPP_f - Estimated gross primary production \cr
+}
+}}
+
+\describe{\item{Background}{
+The partitioning depends on a regression of respiration with temperature during night time. The regression 
+coefficients are estimated during different time windows 
+(see \code{\link{sRegrE0fromShortTerm}} and \code{\link{sRegrRref}} ).
+This relationship is then used to generate daytime respiration and calculate GPP.
+}}
+
+\describe{\item{\code{suffix.s}}{
+For uncertainty analysis it is practical to use different versions of gap-filling before partitioning.
+In order to support easy selection of input collumns with the default, the \code{suffix.s} 
+is appended to all the input collumns.
+Used e.g. by \code{\link{sMDSGapFillUStar}}.
+}}
+
+\describe{\item{Selection of daytime data - solar vs local time}{
+The respiration-temperature regression is very
+sensitive to the selection of night- and daytime data.
+Nighttime is selected by a combined threshold of current solar radiation and potential radiation. 
+The current implementation calculates potential radiation based on exact solar time, based on latitude and longitude.
+(see \code{\link{fCalcPotRadiation}}
+Therefore it might differ from implementations that use local winter clock time instead.
+}}}
+\value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).}
 \references{Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
 into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.}
 \author{AMM

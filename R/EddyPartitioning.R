@@ -9,12 +9,12 @@
 #TEST: NightFlux.s='FP_VARnight';  TempVar.s='NEW_FP_Temp'; E_0.s='NEW_E_0'; WinDays.i=4; DayStep.i=4;
 
 
-sOptimSingleE0 <- function(
+fOptimSingleE0 <- function(
 		##title<<
-		## sEddyProc$sOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series
+		## fOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series
 		##description<<
-		## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor()}} for short periods.
-		## Original implementation by AMM
+		## Estimate temperature sensitivity E_0 of \code{\link{fLloydTaylor}} for a single time series
+		## using a Newton type optimization.
 		NEEnight.V.n	##<< numeric vector of nighttime respiration) 
 		,Temp_degK.V.n	##<<  Temperature in K
 		,Trim.n=5       ##<< Percentile to trim residual (%)
@@ -23,6 +23,7 @@ sOptimSingleE0 <- function(
 ##author<<
 ## AMM, TW
 {
+	# Original implementation by AMM
 	res <- tryCatch({
 				# Non-linear regression
 				NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
@@ -62,12 +63,12 @@ sOptimSingleE0 <- function(
 	res
 }
 
-sOptimSingleE0_Lev <- function(
+fOptimSingleE0_Lev <- function(
 		##title<<
-		## sEddyProc$sOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series
+		## fOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series
 		##description<<
-		## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor()}} for short periods.
-		## Using Levenberg-Marquard
+		## Estimate temperature sensitivity E_0 of \code{\link{fLloydTaylor}} for a single time series
+		## using Levenberg-Marquard optimization.
 		NEEnight.V.n	##<< numeric vector of nighttime respiration) 
 		,Temp_degK.V.n	##<<  Temperature in K
 		,Trim.n=5       ##<< Percentile to trim residual (%)
@@ -120,108 +121,134 @@ sOptimSingleE0_Lev <- function(
 	res
 }
 
+fRegrE0fromShortTerm = function(
+		##title<<
+		## sEddyProc$sRegrE0fromShortTerm - Estimation of the temperature sensitivity E_0
+		##description<<
+		## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor}} for short periods
+		NightFlux.V.n		  ##<< (original) nighttime ecosystem carbon flux, i.e. respiration vector		
+		,TempVar.V.n          ##<< (original) air or soil temperature (degC) vector
+		,DayCounter.V.i 	  ##<< integer specifying the day of each record
+		,WinDays.i=7          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
+		,DayStep.i=5          ##<< Window step for \code{\link{fLloydTaylor}} regression in days
+		,TempRange.n=5        ##<< Threshold temperature range to start regression (#! Could be larger for Tair)
+		,NumE_0.n=3           ##<< Number of best E_0's to average over
+		,Trim.n=5             ##<< Percentile to trim residual (%)
+		,CallFunction.s=''    ##<< Name of function called from
+		,MinE_0.n = 30		  ##<< minimum E0 for validity check
+		,MaxE_0.n = 450		  ##<< maximum E0 for validity check
+)
+##author<<
+## AMM
+{
+	##details<< 
+	## For aech window of length of days \code{WinDays.i}, being shifted by \code{DayStep.i} days to the previous one, 
+	## coefficient E0 is estimated.
+	## Only for those windows with a sufficient number or records and with a sufficient temperature range, \code{TempRange.n}
+	## E0 is estimated by \code{\link{fOptimSingleE0}}.
+	## Unreasonable estimates are discarded (95% confidence interval inside \code{MinE_0.n} and \code{MaxE_0.n}).
+	## Then the mean across the three best \code{NumE_0.n} estimates (ordered by uncertainty) is reported.
+	
+	# Regression settings
+	#NLSRes.F <- data.frame(NULL) #Results of non-linear regression
+	#NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
+	MinData.n <- 6 # Minimum number of data points
+	
+	#tw: better use rbind with a list instead of costly repeated extending a data.frame
+	NLSRes.F <- as.data.frame(do.call( rbind, NLSRes.l <- lapply( seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i) ,function(DayMiddle.i){
+								#TEST: DayMiddle.i <- 8
+								DayStart.i <- DayMiddle.i-WinDays.i
+								DayEnd.i <- DayMiddle.i+WinDays.i
+								#! Window size of 7 days corresponds to full window length of 15 days as in paper, non-congruent with PV-Wave code of 14 days
+								#! New code: Last window has minimum width of WinDays.i
+								
+								Subset.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i & !is.na(NightFlux.V.n) & !is.na(TempVar.V.n)
+								NEEnight.V.n <- subset(NightFlux.V.n, Subset.b)
+								Temp.V.n <- subset(TempVar.V.n, Subset.b)
+								Temp_degK.V.n <- fConvertCtoK(Temp.V.n)
+								
+								if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
+									#CountRegr.i <- CountRegr.i+1
+									resOptim <- fOptimSingleE0( NEEnight.V.n, Temp_degK.V.n)
+									NLSRes.F <- c(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
+											resOptim)
+								} else NULL
+							} ) ))
+	Limits.b <- ( NLSRes.F$E_0_trim - NLSRes.F$E_0_trim_SD > MinE_0.n & NLSRes.F$E_0_trim + NLSRes.F$E_0_trim_SD < MaxE_0.n )
+	#! New code: Check validity with SD (standard deviation) limits, in PV-Wave without SD, in paper if E_0_SD < (E_0 * 50%)
+	NLSRes.F$E_0_trim_ok <- ifelse( Limits.b, NLSRes.F$E_0_trim, NA)
+	NLSRes.F$E_0_trim_SD_ok <- ifelse( Limits.b, NLSRes.F$E_0_trim_SD, NA)
+	#
+	# Sort data frame for smallest standard deviation
+	NLSsort.F <- NLSRes.F[order(NLSRes.F$E_0_trim_SD_ok),] # ordered data.frame  
+	##details<< 
+	## Take average of the three E_0 with lowest standard deviation
+	E_0_trim.n <- round(mean(NLSsort.F$E_0_trim_ok[1:NumE_0.n]), digits=2)
+	#
+	# Abort flux partitioning if regression of E_0 failed
+	if( is.na(E_0_trim.n) ) {
+		warning(CallFunction.s, ':::fRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ', 
+				nrow(NLSRes.F), ' periods!')
+		return(-111)
+	}
+	E_0_trim.n
+	##value<< 
+	## Estimated scalar temperature sensitivity (E_0, degK)
+}
+
 
 sEddyProc$methods(
   sRegrE0fromShortTerm = function(
     ##title<<
     ## sEddyProc$sRegrE0fromShortTerm - Estimation of the temperature sensitivity E_0
     ##description<<
-    ## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor()}} for short periods
-    NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
-    ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-    ,WinDays.i=7          ##<< Window size for \code{\link{fLloydTaylor()}} regression in days
-    ,DayStep.i=5          ##<< Window step for \code{\link{fLloydTaylor()}} regression in days
-    ,TempRange.n=5        ##<< Threshold temperature range to start regression (#! Could be larger for Tair)
-    ,NumE_0.n=3           ##<< Number of best E_0's to average over
-    ,Trim.n=5             ##<< Percentile to trim residual (%)
-    ,CallFunction.s=''    ##<< Name of function called from
-    ,debug.l = list(fixedE0=NA) ##<< list with controls for debugging, see details
-  )
+    ## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor}} for short periods
+    NightFlux.s           ##<< (original) nighttime ecosystem carbon flux, i.e. respiration variable
+    ,TempVar.s            ##<< (original) air or soil temperature (degC) variable
+	,...				  ##<< parameters passed to \code{\link{fRegrE0fromShortTerm}}
+	,CallFunction.s=''    ##<< Name of function called from
+	,debug.l = list(fixedE0=NA) ##<< list with controls for debugging, see details
+)
   ##author<<
   ## AMM
 {
-    'Estimation of the temperature sensitivity E_0 from regression of fLloydTaylor() for short periods'
-    
+	'Estimation of the temperature sensitivity E_0 from regression of fLloydTaylor() for short periods'
+	#
     # Check if specified columns are numeric
     SubCallFunc.s <- paste(CallFunction.s,'sRegrE0fromShortTerm', sep=':::')
     fCheckColNames(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
     fCheckColNum(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
-    
-    # Regression settings
-    #NLSRes.F <- data.frame(NULL) #Results of non-linear regression
-    #NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
-    MinData.n <- 6 # Minimum number of data points
-    
-    # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
-    NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
-    TempVar.V.n <- cbind(sDATA,sTEMP)[,TempVar.s]
-    
-    # Loop regression periods
-    DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
-    CountRegr.i <- 0
+    #
+	##details<< \describe{ \item{Debugging control}{
+	## When supplying a finite scalar value \code{debug.l$fixedE0}, then this value 
+	## is used instead of the temperature sensitivity E_0 from short term data.
+	## }}
+	if( length(debug.l$fixedE0) && is.finite(debug.l$fixedE0) ){
+		E_0_trim.n <- debug.l$fixedE0
+		message('Using prescribed temperature sensitivity E_0 of: ', format(E_0_trim.n, digits=5), '.')
+	}else{
+		# Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
+		NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
+		TempVar.V.n <- cbind(sDATA,sTEMP)[,TempVar.s]
+		DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
+		#
+		# Check for validity of E_0 regression results
+		if( grepl('Tair', TempVar.s) ) {
+			#Limits in PV-Wave code for Tair
+			MinE_0.n <- 30; MaxE_0.n <- 350
+		} else if( grepl('Tsoil', TempVar.s) ) {
+			#Limits in PV-Wave code for Tsoil
+			MinE_0.n <- 30; MaxE_0.n <- 550 # Higher values due to potentially high Q10 values
+		} else {
+			#Default limits taken from paper
+			MinE_0.n <- 30; MaxE_0.n <- 450
+		}
+		#
+		E_0_trim.n <- fRegrE0fromShortTerm( NightFlux.V.n, TempVar.V.n, DayCounter.V.i,..., CallFunction.s=SubCallFunc.s
+			, MinE_0.n=MinE_0.n, MaxE_0.n=MaxE_0.n) 
+		message('Estimate of the temperature sensitivity E_0 from short term data: ', format(E_0_trim.n, digits=5), '.')
+	}
 	
-	#tw: better use rbind with a list instead of costly repeated extending a data.frame
-	NLSRes.F <- as.data.frame(do.call( rbind, lapply( seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i) ,function(DayMiddle.i){
-      #TEST: DayMiddle.i <- 8
-      DayStart.i <- DayMiddle.i-WinDays.i
-      DayEnd.i <- DayMiddle.i+WinDays.i
-      #! Window size of 7 days corresponds to full window length of 15 days as in paper, non-congruent with PV-Wave code of 14 days
-      #! New code: Last window has minimum width of WinDays.i
-      
-      Subset.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i & !is.na(NightFlux.V.n) & !is.na(TempVar.V.n)
-      NEEnight.V.n <- subset(NightFlux.V.n, Subset.b)
-      Temp.V.n <- subset(TempVar.V.n, Subset.b)
-      Temp_degK.V.n <- fConvertCtoK(Temp.V.n)
-      
-      if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
-        CountRegr.i <- CountRegr.i+1
-		resOptim <- sOptimSingleE0( NEEnight.V.n, Temp_degK.V.n)
-		NLSRes.F <- c(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
-						resOptim)
-      } else NULL
-    } ) ))
-    
-    # Check for validity of E_0 regression results
-    if( grepl('Tair', TempVar.s) ) {
-      #Limits in PV-Wave code for Tair
-      MinE_0.n <- 30; MaxE_0.n <- 350
-    } else if( grepl('Tsoil', TempVar.s) ) {
-      #Limits in PV-Wave code for Tsoil
-      MinE_0.n <- 30; MaxE_0.n <- 550 # Higher values due to potentially high Q10 values
-    } else {
-      #Default limits taken from paper
-      MinE_0.n <- 30; MaxE_0.n <- 450
-    }
-    Limits.b <- ( NLSRes.F$E_0_trim - NLSRes.F$E_0_trim_SD > MinE_0.n & NLSRes.F$E_0_trim + NLSRes.F$E_0_trim_SD < MaxE_0.n )
-    #! New code: Check validity with SD (standard deviation) limits, in PV-Wave without SD, in paper if E_0_SD < (E_0 * 50%)
-    NLSRes.F$E_0_trim_ok <- ifelse( Limits.b, NLSRes.F$E_0_trim, NA)
-    NLSRes.F$E_0_trim_SD_ok <- ifelse( Limits.b, NLSRes.F$E_0_trim_SD, NA)
-    
-    # Sort data frame for smallest standard deviation
-    NLSsort.F <- NLSRes.F[order(NLSRes.F$E_0_trim_SD_ok),] # ordered data.frame  
-    
-    ##details<< 
-    ## Take average of the three E_0 with lowest standard deviation
-    E_0_trim.n <- round(mean(NLSsort.F$E_0_trim_ok[1:NumE_0.n]), digits=2) 
-    
-    # Abort flux partitioning if regression of E_0 failed
-    if( is.na(E_0_trim.n) ) {
-      warning(CallFunction.s, ':::sRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ', 
-              CountRegr.i, ' periods!')
-      return(-111)
-    }
-    
-    message('Estimate of the temperature sensitivity E_0 from short term data: ', format(E_0_trim.n, digits=5), '.')
-    
-    ##details<< \describe{ \item{Debugging control}{
-    ## When supplying a finite scalar value \code{debug.l$fixedE0}, then this value is used instead of the temperature sensitivity E_0 from short term data.
-    ## In order to test, whether differences between approaches are due to determination of E0.
-    ## }}
-    if( length(debug.l$fixedE0) && is.finite(debug.l$fixedE0) ){
-        E_0_trim.n <- debug.l$fixedE0
-        message('Using prescribed temperature sensitivity E_0 of: ', format(E_0_trim.n, digits=5), '.')
-    }
-    
     # Add constant value of E_0 as column vector to sTEMP
     E_0.V.n <- rep(E_0_trim.n, nrow(sTEMP))
     attr(E_0.V.n, 'varnames') <- 'E_0'
@@ -239,16 +266,18 @@ sEddyProc$methods(
     ##title<<
     ## sEddyProc$sRegrRref - Estimation of the reference respiration Rref
     ##description<<
-    ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor()}} for successive periods
+    ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
     ,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sRegrE0fromShortTerm}}
-    ,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor()}} regression in days
-    ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor()}} regression in days
+    ,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
+    ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor}} regression in days
     ,CallFunction.s=''    ##<< Name of function called from
   )
   ##author<<
   ## AMM
+  ##details<<
+  ## Estimates a 
 {
     'Estimation of the reference respiration Rref of fLloydTaylor() for successive periods'
     
@@ -329,21 +358,20 @@ sEddyProc$methods(
     ## sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)
     ##description<<
     ## Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
-    FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Variable of net ecosystem fluxes
-    ,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of variable
+    FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Net ecosystem fluxes (NEE) Variable, i.e. column name 
+    ,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of NEE variable
     ,QFFluxValue.n=0       							##<< Value of quality flag for _good_ (original) data
-    ,TempVar.s=paste0('Tair',suffixDash.s,'_f')     ##<< Filled air or soil temperature variable (degC)
-    ,QFTempVar.s=paste0('Tair',suffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
+    ,TempVar.s=paste0('Tair',suffixDash.s,'_f')     ##<< filled air- or soil temperature variable (degC)
+    ,QFTempVar.s=paste0('Tair',suffixDash.s,'_fqc') ##<< quality flag of filled temperature variable
     ,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
     ,RadVar.s='Rg'         ##<< Unfilled (original) radiation variable
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
-	,suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}).
-    ,debug.l=list(		   ##<< list with debugging control, see \code{\link{sRegrE0fromShortTerm}}.
+	,suffix.s = ""		   ##<< string inserted into input column names before identifier.
+    ,debug.l=list(		   ##<< list with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}).
 			##describe<< 
-			useLocaltime.b=FALSE	##<< by default corrects hour (given in local winter time) for latitude to solar time
-			##<< where noon is exactly at 12:00. Set this to TRUE to compare to code that uses local winter time
+			useLocaltime.b=FALSE	##<< see details on solar vs local time	
 			##end<< 
 			)        
   )
@@ -353,6 +381,31 @@ sEddyProc$methods(
   ## Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
 {
+	##details<< \describe{\item{Description of newly generated variables with partitioning results:}{
+	## \itemize{
+	## \item PotRad - Potential radiation \cr
+	## \item FP_NEEnight - Good (original) NEE nighttime fluxes  used for flux partitioning \cr
+	## \item FP_Temp - Good (original) temperature measurements used for flux partitioning \cr
+	## \item E_0 - Estimated temperature sensitivity \cr
+	## \item R_ref - Estimated reference respiration \cr
+	## \item Reco - Estimated ecosystem respiration \cr
+	## \item GPP_f - Estimated gross primary production \cr
+	## }
+	## }}
+	
+	##details<< \describe{\item{Background}{
+	## The partitioning depends on a regression of respiration with temperature during night time. The regression 
+	## coefficients are estimated during different time windows 
+	## (see \code{\link{sRegrE0fromShortTerm}} and \code{\link{sRegrRref}} ).
+	## This relationship is then used to generate daytime respiration and calculate GPP.
+	## }}
+	
+	##details<< \describe{\item{\code{suffix.s}}{
+	## For uncertainty analysis it is practical to use different versions of gap-filling before partitioning.
+	## In order to support easy selection of input collumns with the default, the \code{suffix.s} 
+	## is appended to all the input collumns.
+	## Used e.g. by \code{\link{sMDSGapFillUStar}} ).
+	## }}
 	suffixDash.s <- paste( (if(fCheckValString(suffix.s)) "_" else ""), suffix.s, sep="")
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)'
     # Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
@@ -363,7 +416,15 @@ sEddyProc$methods(
     
     message('Start flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
     
-    # Calculate potential radiation
+	##details<< \describe{\item{Selection of daytime data - solar vs local time}{
+	## The respiration-temperature regression is very
+	## sensitive to the selection of night- and daytime data.
+	## Nighttime is selected by a combined threshold of current solar radiation and potential radiation. 
+	## The current implementation calculates potential radiation based on exact solar time, based on latitude and longitude.
+	## (see \code{\link{fCalcPotRadiation}} )
+	## Therefore it might differ from implementations that use local winter clock time instead.
+	## }}
+	# Calculate potential radiation
     #! New code: Local time and equation of time accounted for in potential radiation calculation
     DoY.V.n <- as.numeric(format(sDATA$sDateTime, '%j'))
     Hour.V.n <- as.numeric(format(sDATA$sDateTime, '%H')) + as.numeric(format(sDATA$sDateTime, '%M'))/60
@@ -382,7 +443,6 @@ sEddyProc$methods(
     sTEMP$NEW_FP_Temp <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
-	sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp')
 	sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
     if( sum(sTEMP$NEW_E_0==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
@@ -403,8 +463,6 @@ sEddyProc$methods(
     attr(sTEMP$NEW_GPP_f, 'varnames') <<- 'GPP_f'
     attr(sTEMP$NEW_GPP_f, 'units') <<- attr(Var.V.n, 'units')
 
-    # TODO: Adjust all output columns to account for suffix?
-    
     # Rename new columns generated during flux partitioning
     colnames(sTEMP) <<- gsub('_VAR', '_NEE', colnames(sTEMP))
     colnames(sTEMP) <<- gsub('NEW_', '', colnames(sTEMP))
@@ -413,18 +471,8 @@ sEddyProc$methods(
     if( length(duplColNames) ) sTEMP <<- sTEMP[, -match( duplColNames, colnames(sTEMP) )]
     
 	
-    ##details<<
-    ## Description of newly generated variables with partitioning results: \cr
-    ## PotRad - Potential radiation \cr
-    ## FP_NEEnight - Good (original) NEE nighttime fluxes  used for flux partitioning \cr
-    ## FP_Temp - Good (original) temperature measurements used for flux partitioning \cr
-    ## E_0 - Estimated temperature sensitivity \cr
-    ## R_ref - Estimated reference respiration \cr
-    ## Reco - Estimated ecosystem respiration \cr
-    ## GPP_f - Estimated gross primary production \cr
-    
     
     return(invisible(NULL))
     ##value<< 
-    ## Flux partitioning results in sTEMP data frame (with renamed columns).
+    ## Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
 })

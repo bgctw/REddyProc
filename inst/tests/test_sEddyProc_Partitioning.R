@@ -26,7 +26,7 @@ EddyHour.C$sMDSGapFill('Tair', Verbose.b=F)
 EddyHour.C$sMDSGapFill('NEE', Verbose.b=F)
 
 
-test_that("sRegrE0fromShortTerm simple test",{
+test_that("sOptimSingleE0",{
 			#EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )
 			Temp_degK.V.n <- structure(c(279.45, 279.25, 278.95, 278.35, 278.35, 278.55, 279.15, 
 							279.55, 279.95, 279.25, 278.85, 278.65, 277.75, 277.75, 277.35, 
@@ -69,8 +69,35 @@ test_that("sRegrE0fromShortTerm simple test",{
 			expect_true( all(is.finite(res) ))
 		})
 
-
-
+test_that("fRegrE0fromShortTerm",{
+			TempVar.V.n <- c(4.4, 4.7, 4.2, 4.8, 4.6, 4.1, 4.3, 4.8, 4.2, 4.9, 5, 4.9, 4.7, 
+					4.8, 5.2, 5.2, 5.4, 6, 6.4, 6.8, 6.1, 5.7, 5.5, 4.6, 4.6, 4.2, 
+					4.4, 3.2, 2, 1.5, 1.4, 1, 1.1, 2.1, 2.8, 3.3, 3.3, 3.3, 3.3, 
+					3.1, 3.1, 3.2, 3, 2, 2.2, 2.1, 1.9, 2, 2.5, 3.3, 3.5, 4.1, 4.6, 
+					5.1, 6.3, 7.8, 8.3, 8.6, 9.7, 9.8, 9.7, 10, 9.4, 8.9, 8.9, 9, 
+					4.1, 4.7, 5.3, 5.5, 6, 6.3, 6.8, 6.3, 6.4, 6.9, 7, 7.1, 7.5, 
+					7.8, 8.2, 8.5, 8, 8.1, 7.7, 8, 8, 8, 7.8, 7.8, 8, 8.2, 8.3, 8, 
+					8.3, 8.4, 8.4, 8.2, 8.1, 8.2, 8.4, 8.4, 8.5, 8.9, 9.2, 9.2, 9.2, 
+					9.2, 9.2, 9.2, 9.1, 9.3, 9.4, 9.1, 9.1, 9.1, 9, 8.8, 8.6, 8.4, 
+					8.3, 8, 7.5, 7.8, 7.4, 7.6, 8.3, 8.9, 9.8, 10.4, 11, 11.3, 11, 
+					9.7, 7.8, 7.3, 7.4, 7.3, 7.6, 7.7, 7.7, 6.9, 7.1, 7.5, 7.1, 7.2, 
+					8.2, 7.6, 7.6, 7.9, 9.4, 11.4, 13.4, 14.3, 15, 15.1, 13.4, 11.6, 
+					10.4, 10.1, 10.4, 10.1, 9.8, 10.4, 11.3, 11.6, 12.5, 11.9, 11, 
+					10.1, 9.4, 8.7, 8.8, 8.7, 10.1, 12.1, 13.6, 14.7, 11.9, 11.4, 
+					9.8)
+			set.seed(0815)			
+			NightFlux.V.n <- do.call(c, lapply( c(238,320,296), function(E0){ fLloydTaylor(10, E0, TempVar.V.n+273.15)+rnorm(length(TempVar.V.n ))}))
+			#plot(NightFlux.V.n ~ 	rep(TempVar.V.n,3) )		
+			DayCounter.V.i <- rep(1:300, each=5) [ 1:length(NightFlux.V.n)]
+			#trace(fRegrE0fromShortTerm,recover)		#untrace(fRegrE0fromShortTerm)
+			E0 <- fRegrE0fromShortTerm( NightFlux.V.n, rep(TempVar.V.n,3), DayCounter.V.i )
+			expect_equal( E0, 300, tolerance=15, scale=1 )
+			#
+			#EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )   
+		})
+		
+		
+		
 test_that("sMRFluxPartition Standard",{
             EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )   
             expect_that( EddyHour.C$sTEMP$E_0[1], equals(133.7, tolerance = .1))

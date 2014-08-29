@@ -1,9 +1,9 @@
-\name{sOptimSingleE0_Lev}
-\alias{sOptimSingleE0_Lev}
-\title{sEddyProc$sOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series}
-\description{Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor()}} for short periods.
-Using Levenberg-Marquard}
-\usage{sOptimSingleE0_Lev(NEEnight.V.n, Temp_degK.V.n, Trim.n = 5, recoverOnError = FALSE)}
+\name{fOptimSingleE0}
+\alias{fOptimSingleE0}
+\title{fOptimSingleE0 - Estimate temperature sensitivity E_0 for a single time series}
+\description{Estimate temperature sensitivity E_0 of \code{\link{fLloydTaylor}} for a single time series
+using a Newton type optimization.}
+\usage{fOptimSingleE0(NEEnight.V.n, Temp_degK.V.n, Trim.n = 5, recoverOnError = FALSE)}
 \arguments{
   \item{NEEnight.V.n}{numeric vector of nighttime respiration)}
   \item{Temp_degK.V.n}{Temperature in K}
@@ -19,7 +19,7 @@ Using Levenberg-Marquard}
 \item{E_0_trim}{estimate of temperature sensitivity ("activation energy") in Kelvin (degK) for trimmed dataset}
 \item{E_0_trim_SD}{standard deviation of E_0_trim}}
 
-\author{TW
+\author{AMM, TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
 
