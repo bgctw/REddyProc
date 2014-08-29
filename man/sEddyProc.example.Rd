@@ -39,9 +39,9 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
   EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
   
   #+++ Fill gaps in variables with MDS gap filling algorithm
-  EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
   EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only gaps of meteo condition
-  
+  EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
+
   #+++ Generate plots of filled data in directory \plots (of current R working dir)
   EddyProc.C$sPlotHHFluxes('NEE_f')
   EddyProc.C$sPlotFingerprint('NEE_f')
@@ -53,8 +53,14 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
   EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
   EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998)
   EddyProc.C$sPlotDiurnalCycleM('NEE_f', Month.i=1)
+	
+  #+++ Partition NEE into GPP and respiration
+  EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)		# gap-filled Tair and NEE is needed for partitioning 
+  EddyProc.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )  # location of DE-Tharandt
+  EddyProc.C$sPlotDiurnalCycleM('GPP_f', Month.i=6)	# plot calculated GPP and respiration 
+  EddyProc.C$sPlotDiurnalCycleM('Reco', Month.i=6)	
   
-  #+++ Export gap filled data to standard data frame
+  #+++ Export gap filled and partitioned data to standard data frame
   FilledEddyData.F <- EddyProc.C$sExportResults()
   
   #+++ Save results into (tab-delimited) text file in directory \out
