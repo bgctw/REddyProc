@@ -1,7 +1,7 @@
 \name{fCalcVPDfromRHandTair}
 \alias{fCalcVPDfromRHandTair}
-\title{Calculate VPD from rH and Tair}
-
+\title{fCalcVPDfromRHandTair}
+\description{Calculate VPD from rH and Tair}
 \usage{fCalcVPDfromRHandTair(RH.V.n, Tair.V.n)}
 \arguments{
   \item{RH.V.n}{Data vector of relative humidity (rH, \%)}

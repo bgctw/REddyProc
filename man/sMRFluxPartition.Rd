@@ -46,7 +46,7 @@ This relationship is then used to generate daytime respiration and calculate GPP
 For uncertainty analysis it is practical to use different versions of gap-filling before partitioning.
 In order to support easy selection of input collumns with the default, the \code{suffix.s} 
 is appended to all the input collumns.
-Used e.g. by \code{\link{sMDSGapFillUStar}}.
+Used e.g. by \code{\link{sMDSGapFillUStar}} ).
 }}
 
 \describe{\item{Selection of daytime data - solar vs local time}{
@@ -54,7 +54,7 @@ The respiration-temperature regression is very
 sensitive to the selection of night- and daytime data.
 Nighttime is selected by a combined threshold of current solar radiation and potential radiation. 
 The current implementation calculates potential radiation based on exact solar time, based on latitude and longitude.
-(see \code{\link{fCalcPotRadiation}}
+(see \code{\link{fCalcPotRadiation}} )
 Therefore it might differ from implementations that use local winter clock time instead.
 }}}
 \value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).}

@@ -1,7 +1,7 @@
 \name{fInitFilesDir}
 \alias{fInitFilesDir}
-\title{Get all available files with specific file extension in directory}
-
+\title{fInitFilesDir}
+\description{Get all available files with specific file extension in directory}
 \usage{fInitFilesDir(Dir.s, lFileExt.s)}
 \arguments{
   \item{Dir.s}{Directory to be searched for files}

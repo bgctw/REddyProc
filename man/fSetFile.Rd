@@ -1,7 +1,7 @@
 \name{fSetFile}
 \alias{fSetFile}
-\title{Set file name with path and check if directory and/or file exists}
-
+\title{fSetFile}
+\description{Set file name with path and check if directory and/or file exists}
 \usage{fSetFile(FileName.s, Dir.s, IO.b, CallFunction.s = "")}
 \arguments{
   \item{FileName.s}{File name}

@@ -1,7 +1,7 @@
 \name{fConvertCtoK}
 \alias{fConvertCtoK}
-\title{Convert degree Celsius to degree Kelvin}
-
+\title{fConvertCtoK}
+\description{Convert degree Celsius to degree Kelvin}
 \usage{fConvertCtoK(Celsius.V.n)}
 \arguments{
   \item{Celsius.V.n}{Data vector in Celsius (degC)}

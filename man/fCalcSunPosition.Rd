@@ -1,7 +1,7 @@
 \name{fCalcSunPosition}
 \alias{fCalcSunPosition}
-\title{Calculate the position of the sun}
-
+\title{fCalcSunPosition}
+\description{Calculate the position of the sun}
 \usage{fCalcSunPosition(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n, 
     useSolartime.b = TRUE)}
 \arguments{

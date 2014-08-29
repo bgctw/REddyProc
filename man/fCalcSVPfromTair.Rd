@@ -1,7 +1,7 @@
 \name{fCalcSVPfromTair}
 \alias{fCalcSVPfromTair}
-\title{Calculate SVP (of water) from Tair}
-
+\title{fCalcSVPfromTair}
+\description{Calculate SVP (of water) from Tair}
 \usage{fCalcSVPfromTair(Tair.V.n)}
 \arguments{
   \item{Tair.V.n}{Data vector of air temperature (Tair, degC)}

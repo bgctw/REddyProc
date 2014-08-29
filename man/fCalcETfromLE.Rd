@@ -1,7 +1,7 @@
 \name{fCalcETfromLE}
 \alias{fCalcETfromLE}
-\title{Calculate ET from LE and Tair}
-
+\title{fCalcETfromLE}
+\description{Calculate ET from LE and Tair}
 \usage{fCalcETfromLE(LE.V.n, Tair.V.n)}
 \arguments{
   \item{LE.V.n}{Data vector of latent heat (LE, W m-2)}

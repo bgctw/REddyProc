@@ -1,7 +1,7 @@
 \name{fConvertGlobalToVisible}
 \alias{fConvertGlobalToVisible}
-\title{Partition global (solar) radiation into only visible (the rest is UV and infrared)}
-
+\title{fConvertGlobalToVisible}
+\description{Partition global (solar) radiation into only visible (the rest is UV and infrared)}
 \usage{fConvertGlobalToVisible(Global.V.n)}
 \arguments{
   \item{Global.V.n}{Data vector of global radiation (W m-2)}

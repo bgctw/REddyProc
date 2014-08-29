@@ -1,7 +1,7 @@
 \name{fWriteDataframeToFile}
 \alias{fWriteDataframeToFile}
-\title{Write data frame to ASCII tab-separated text file}
-
+\title{fWriteDataframeToFile}
+\description{Write data frame to ASCII tab-separated text file}
 \usage{fWriteDataframeToFile(Data.F, FileName.s, Dir.s = "")}
 \arguments{
   \item{Data.F}{Data frame}
