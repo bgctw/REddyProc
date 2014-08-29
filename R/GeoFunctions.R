@@ -9,7 +9,7 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fConvertCtoK <- function(
-  ##title<<
+  ##description<<
   ## Convert degree Celsius to degree Kelvin
   Celsius.V.n           ##<< Data vector in Celsius (degC)
   ##author<<
@@ -26,7 +26,7 @@ fConvertCtoK <- function(
 }
 
 fConvertKtoC <- function(
-  ##title<<
+  ##description<<
   ## Convert degree Kelvin to degree Celsius
   Kelvin.V.n            ##<< Data vector in Kelvin (degK)
   ##author<<
@@ -45,7 +45,7 @@ fConvertKtoC <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fConvertVisibleWm2toPhotons <- function(
-  ##title<<
+  ##description<<
   ## Convert units of visible radiation from irradiance to photons flux
   Wm2.V.n               ##<< Data vector in units of irradiance (W m-2) 
   )
@@ -60,7 +60,7 @@ fConvertVisibleWm2toPhotons <- function(
 }
 
 fConvertGlobalToVisible <- function(
-  ##title<<
+  ##description<<
   ## Partition global (solar) radiation into only visible (the rest is UV and infrared)
   Global.V.n            ##<< Data vector of global radiation (W m-2)
   ##author<<
@@ -82,7 +82,7 @@ fConvertGlobalToVisible <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcVPDfromRHandTair <- function(
-  ##title<<
+  ##description<<
   ## Calculate VPD from rH and Tair
   RH.V.n                ##<< Data vector of relative humidity (rH, %)
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
@@ -104,7 +104,7 @@ fCalcVPDfromRHandTair <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcSVPfromTair <- function(
-  ##title<<
+  ##description<<
   ## Calculate SVP (of water) from Tair
   Tair.V.n              ##<< Data vector of air temperature (Tair, degC)
   ##author<<
@@ -123,7 +123,7 @@ fCalcSVPfromTair <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcRHfromAVPandTair <- function(
-  ##title<<
+  ##description<<
   ## Calculate relative humidity from actual vapour pressure and air tempature
   AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, mbar)
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
@@ -144,7 +144,7 @@ fCalcRHfromAVPandTair <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcETfromLE <- function(
-  ##title<<
+  ##description<<
   ## Calculate ET from LE and Tair
   LE.V.n                ##<< Data vector of latent heat (LE, W m-2)
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
@@ -198,7 +198,7 @@ attr(fLloydTaylor,"ex") <- function(){
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcSunPosition <- function(
-  ##title<<
+  ##description<<
   ## Calculate the position of the sun
   DoY.V.n               ##<< Data vector with day of year (DoY)
   ,Hour.V.n             ##<< Data vector with time as decimal hour
@@ -288,7 +288,7 @@ fCalcSunPosition <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcExtRadiation <- function(
-  ##title<<
+  ##description<<
   ## Calculate the extraterrestrial solar radiation with the eccentricity correction 
   DoY.V.n           ##<< Data vector with day of year (DoY)
   ##author<<
