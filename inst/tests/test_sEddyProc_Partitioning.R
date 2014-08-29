@@ -26,7 +26,7 @@ EddyHour.C$sMDSGapFill('Tair', Verbose.b=F)
 EddyHour.C$sMDSGapFill('NEE', Verbose.b=F)
 
 
-test_that("sOptimSingleE0",{
+test_that("fOptimSingleE0",{
 			#EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )
 			Temp_degK.V.n <- structure(c(279.45, 279.25, 278.95, 278.35, 278.35, 278.55, 279.15, 
 							279.55, 279.95, 279.25, 278.85, 278.65, 277.75, 277.75, 277.35, 
@@ -58,12 +58,12 @@ test_that("sOptimSingleE0",{
 					0.32, 0.8, 1.01, -0.41, 2.52, 0.36, 0.33, 0.57, -0.06, 0.82, 
 					8.82, -0.04, -3.96, -0.53, 2.75, 1.45, -0.39, -2.06, 0.03, 0.18, 
 					-1.21, 2.44, 0.49, 0.05, -0.17, 2.93, 4.77, 1.85, -0.35)
-			res <- sOptimSingleE0( NEEnight.V.n, Temp_degK.V.n, recoverOnError=TRUE)
+			res <- fOptimSingleE0( NEEnight.V.n, Temp_degK.V.n, recoverOnError=TRUE)
 			expect_true( is.numeric(res) )
 			expect_true( length(res)> 1 )
 			expect_true( all(is.finite(res) ))
 			
-			resL <- sOptimSingleE0_Lev( NEEnight.V.n, Temp_degK.V.n, recoverOnError=TRUE)
+			resL <- fOptimSingleE0_Lev( NEEnight.V.n, Temp_degK.V.n, recoverOnError=TRUE)
 			expect_true( is.numeric(res) )
 			expect_true( length(res)> 1 )
 			expect_true( all(is.finite(res) ))
