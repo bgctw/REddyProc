@@ -56,10 +56,6 @@ fOptimSingleE0 <- function(
 				if( isTRUE(recoverOnError) ) recover()
 				res <- c(R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA, E_0_trim=NA, E_0_trim_SD=NA)
 			}   ) #Spaces between brackets required to avoid replacement on documentation generation
-	if( F ) { # Plots for testing
-		plot(NEEnight.V.n ~ Temp.V.n)
-		curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(x), T_ref.n=273.15+15), add=T, col='red')
-	}
 	res
 }
 
@@ -114,11 +110,12 @@ fOptimSingleE0_Lev <- function(
 				if( isTRUE(recoverOnError) ) recover()
 				res <- c(R_ref=NA, R_ref_SD=NA, E_0=NA, E_0_SD=NA, E_0_trim=NA, E_0_trim_SD=NA)
 			}   ) #Spaces between brackets required to avoid replacement on documentation generation
-	if( F ) { # Plots for testing
-		plot(NEEnight.V.n ~ Temp.V.n)
-		curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(x), T_ref.n=273.15+15), add=T, col='red')
-	}
 	res
+}
+
+.tmp.f <- function(){
+	plot(NEEnight.V.n ~ Temp.V.n)
+	curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(Temp.V.n), T_ref.n=273.15+15), add=T, col='red')
 }
 
 fRegrE0fromShortTerm = function(
