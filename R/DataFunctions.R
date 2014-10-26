@@ -155,21 +155,26 @@ fCheckHHTimeSeries <- function(
   ## The time stamp needs to be provided in POSIX time format,
   if( !inherits(Time.V.p, 'POSIXt') )
     stop(CallFunction.s, ':::fCheckHHTimeSeries::: Provided time stamp data not in POSIX time format!')
+  ##details<<
   ## equidistant half-hours,
   NotDistHH.i <- sum(as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != (24/DTS.n * 60 * 60))
   if( NotDistHH.i > 0 )
     stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in ', NotDistHH.i , ' cases!')
+  ##details<<
   ## and stamped on the half hour.
   NotOnHH.i <- sum(as.numeric(Time.V.p) %% (24/DTS.n * 60 * 60) != 0)
   if( NotOnHH.i > 0 )
     stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time step is not stamped at half-hours in ', NotOnHH.i , ' cases!')
+  ##details<<
   ## The sEddyProc procedures require at least three months of data.
   if( length(Time.V.p) < (3 * 30 * DTS.n) )
     stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time series is shorter than 90 days (three months) of data: ', 3 * 30 - length(Time.V.p) / DTS.n, ' days missing!' )
+  ##details<<
   ## Full days of data are preferred: the total amount of data rows should be a multiple of the daily time step, and
   Residual.i <- length(Time.V.p) %% DTS.n
   if( Residual.i != 0 )
     warning(CallFunction.s, ':::fCheckHHTimeSeries::: Data not provided in full days (multiple of daily time step). One day only has ', Residual.i , ' (half-)hours!')
+  ##details<<
   ## in accordance with FLUXNET standards, the dataset is spanning from the end of the first (half-)hour (0:30 or 1:00, respectively) and to midnight (0:00).
   if( DTS.n==48 && !(as.POSIXlt(Time.V.p[1])$hour == 0 && as.POSIXlt(Time.V.p)$min == 30) ) 
     warning(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp of first data row is not at the end of the first half-hour: ', format(Time.V.p[1], '%H:%M'), ' instead of 00:30!')
