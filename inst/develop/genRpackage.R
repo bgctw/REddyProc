@@ -44,9 +44,12 @@ for (File.i in 1:length(CodeIn.V.s)) {
   if( Develop.b==T && File.i != 1) eval(parse(text=Code.s)) 
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++ Exclude not yet fully develop ustar code from documentation for now
 
-# Generate new inlinedocs documentation
+if(Develop.b == F) { system('rm -f R/DummyUstarFilterDP.R') }
+
+#+++ Generate new inlinedocs documentation
+
 require(inlinedocs)
 system('rm -f man/*')		# Comment TW: depends on rm, maybe base on R unlink instead
 
@@ -62,17 +65,23 @@ package.skeleton.dx('.') 	# produces *.Rd files in ./man directory
 system('rm -f R/Dummy*')
 file.rename(paste('tmp',CodeIn.V.s,sep='/'), paste('R',CodeIn.V.s,sep='/') )
 
-# Overwrite generated documentation by (self-written) version from inst/develop/genData
+# Overwrite automatically generated documentation with (self-written) versions
+# from inst/develop/genDocu
 DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','*.Rd')
 file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
 # If package twDev from TW is used for documenation generation
-genRd(execInlinedocs = FALSE)
+if ( Sys.getenv('HOME') != '/Users/amoffat' ) { 
+  genRd(execInlinedocs = FALSE)
+}
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# Provide (update) example data for package from txt file
-EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
-save('EddyData.F', file='data/Example_DETha98.Rdata')
+# Update example file
+if (T==F) { #Only needs to be executed if example files changed...
+  # Provide (update) example data for package from txt file
+  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
+  save('EddyData.F', file='data/Example_DETha98.Rdata')
+}
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -96,8 +105,8 @@ if( Sys.getenv('HOME') == '/Users/amoffat' ) { #AMM's local setup for generating
   
   # Windows compatible zip-archive (use Rtools for building packages for R under Windows)
   setwd('/Library/Frameworks/R.framework/Versions/current/Resources/library')
-  system('zip -rq REddyProc_0.5-1.zip REddyProc')
-  system(paste('mv REddyProc_0.5-1.zip ', Dir.s, '/.', sep=''))
+  system('zip -rq REddyProc_0.6-0.zip REddyProc')
+  system(paste('mv REddyProc_0.6-0.zip ', Dir.s, '/.', sep=''))
   #Reset working directory
   setwd(Dir.s)
   
