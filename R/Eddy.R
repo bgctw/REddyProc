@@ -218,8 +218,8 @@ attr(sEddyProc.example,'ex') <- function( ){
     EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
     
     #+++ Fill gaps in variables with MDS gap filling algorithm
-    EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only gaps of meteo condition
     EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
+    EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only the gaps for the meteo condition, e.g. 'Rg'
 
     #+++ Generate plots of filled data in directory \plots (of current R working dir)
     EddyProc.C$sPlotHHFluxes('NEE_f')
@@ -234,9 +234,9 @@ attr(sEddyProc.example,'ex') <- function( ){
     EddyProc.C$sPlotDiurnalCycleM('NEE_f', Month.i=1)
 	
     #+++ Partition NEE into GPP and respiration
-    EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)		# gap-filled Tair and NEE is needed for partitioning 
+    EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)		# Gap-filled Tair and NEE needed for partitioning 
     EddyProc.C$sMRFluxPartition( Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1 )  # location of DE-Tharandt
-    EddyProc.C$sPlotDiurnalCycleM('GPP_f', Month.i=6)	# plot calculated GPP and respiration 
+    EddyProc.C$sPlotDiurnalCycleM('GPP_f', Month.i=6)	# Plot of calculated GPP and respiration 
     EddyProc.C$sPlotDiurnalCycleM('Reco', Month.i=6)	
     
     #+++ Export gap filled and partitioned data to standard data frame
@@ -249,7 +249,7 @@ attr(sEddyProc.example,'ex') <- function( ){
     #+++ Ustar filtering is still in the works but if the ustar threshold is known,
     #the gap filling can be applied with filtering
     EddyProcUstar.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-    EddyProcUstar.C <- EddyProc.C$sMDSGapFillAfterUstar(UstarThresh.n=0.35)
+    EddyProcUstar.C$sMDSGapFillAfterUstar(UstarThres.n=0.35)
     
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Extra: Examples of extended usage for advanced users

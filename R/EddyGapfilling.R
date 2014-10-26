@@ -7,7 +7,7 @@
 # TEST: sDATA <- EPTha.C$sDATA; sINFO <- EPTha.C$sINFO; sTEMP <- EPTha.C$sTEMP; Var.s <- 'NEE'; QFVar.s <- 'none'; QFValue.n <- NA_real_;
 # TEST: V1.s <- 'Rg'; T1.n <- 50; V2.s <- 'VPD'; T2.n <- 5; V3.s <- 'Tair'; T3.n <- 2.5; FillAll.b <- TRUE; Verbose.b <- TRUE
 # TEST: V4.s='none'; T4.n=NA_real_; V5.s='none'; T5.n=NA_real_; sTEMP <- NULL;
-# TEST: FluxVar.s='NEE'; UstarVar.s='Ustar'; UstarThres.n <- 0.35; Suffix.s <- 'test'
+# TEST: FluxVar.s='NEE'; UstarVar.s='Ustar'; UstarThres.n <- 0.35; UstarSuffix.s <- 'test'
 
 sEddyProc$methods(
   sFillInit = function(
@@ -403,7 +403,7 @@ sEddyProc$methods(
       } else {
         #No meteo condition available (use MDC only)
         message('Restriced MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f,'varnames'), '\' with no meteo conditions available and hence only MDC.')
-        warning('sMDSGapFill::: Either \'Rg\' itself being filled or no meteo available for MDS gap filling!')
+        if (Var.s != 'Rg') warning('sMDSGapFill::: No meteo available for MDS gap filling!')
         0
       } 
     
@@ -466,7 +466,7 @@ sEddyProc$methods(
   ##author<<
   ## AMM
 {
-    'Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*'
+    'Calling sMDSGapFill after filtering for (provided) friction velocity u*'
 
     ##details<< 
     ## The u* threshold(s) are provided for filtering the conditions of low turbulence.
@@ -482,13 +482,13 @@ sEddyProc$methods(
     QFustar.V.n <- ifelse(Ustar.V.n > UstarThres.n, 0, 1)
     
     # Add filtering step to (temporal) results data frame
-    attr(UstarThres.V.n, 'varnames') <- paste('Ustar',(if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, '_Thres', sep='')
+    attr(UstarThres.V.n, 'varnames') <- paste('Ustar',(if(fCheckValString(UstarSuffix.s)) "_" else ""), UstarSuffix.s, '_Thres', sep='')
     attr(UstarThres.V.n, 'units') <- 'ms-1'
-    attr(QFustar.V.n, 'varnames') <- paste('Ustar',(if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, '_fqc', sep='')
+    attr(QFustar.V.n, 'varnames') <- paste('Ustar',(if(fCheckValString(UstarSuffix.s)) "_" else ""), UstarSuffix.s, '_fqc', sep='')
     attr(QFustar.V.n, 'units') <- '-'
     sTEMP$USTAR_Thres <<- UstarThres.V.n
     sTEMP$USTAR_fqc <<- QFustar.V.n
-    colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar', (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, '_', sep=''), colnames(sTEMP))
+    colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar', (if(fCheckValString(UstarSuffix.s)) "_" else ""), UstarSuffix.s, '_', sep=''), colnames(sTEMP))
     
     # Gap filled the data with ustar filter
     sMDSGapFill(FluxVar.s, attr(QFustar.V.n, 'varnames'), QFValue.n=0)
