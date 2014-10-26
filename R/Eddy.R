@@ -235,7 +235,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 	
     #+++ Partition NEE into GPP and respiration
     EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)		# gap-filled Tair and NEE is needed for partitioning 
-    EddyProc.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )  # location of DE-Tharandt
+    EddyProc.C$sMRFluxPartition( Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1 )  # location of DE-Tharandt
     EddyProc.C$sPlotDiurnalCycleM('GPP_f', Month.i=6)	# plot calculated GPP and respiration 
     EddyProc.C$sPlotDiurnalCycleM('Reco', Month.i=6)	
     
@@ -246,27 +246,60 @@ attr(sEddyProc.example,'ex') <- function( ){
     CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
     fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
     
+    #+++ Ustar filtering is still in the works but if the ustar threshold is known,
+    #the gap filling can be applied with filtering
+    EddyProcUstar.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+    EddyProcUstar.C <- EddyProc.C$sMDSGapFillAfterUstar(UstarThresh.n=0.35)
+    
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Extra: Examples of extended usage for advanced users
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     #+++ Add some (non-sense) example vectors:
     #+++ Quality flag vector (e.g. from applying ustar filter)
-    EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=rep(c(1,0,1,0,1,0,0,0,0,0), nrow(EddyData.F)/10))
-    #+++ Step function vector to simulate e.g. high/low water table
-    EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, Step=ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1))
+    QF.V.n <- rep(c(1,0,1,0,1,0,0,0,0,0), nrow(EddyData.F)/10)
+    #+++ Dummy step function vector to simulate e.g. high/low water table
+    Step.V.n <- ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1)
 
     #+++ Initialize eddy processing class with more columns
-    EddyTest.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+    EddyTest.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F, Step=Step.V.n, QF=QF.V.n), 
                                 c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
 
-    #+++ Gap fill variable with (non-default) variables and limits including preselection with quality flag QF 
+    #+++ Gap fill variable with (non-default) variables and limits including preselection of data with quality flag QF==0 
     EddyTest.C$sMDSGapFill('LE', QFVar.s='QF', QFValue.n=0, V1.s='Rg', T1.n=30, V2.s='Tsoil', T2.n=2, 'Step', 0.1)
 
     #+++ Use individual gap filling subroutines with different window sizes and up to five variables and limits
-    EddyTest.C$sFillInit('NEE') #Initalize 'NEE' as variable to fill
+    EddyTest.C$sFillInit('NEE') #Initialize 'NEE' as variable to fill
     Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'rH',30, 'Tair',2.5, 'Tsoil',2, 'Step',0.5)
     Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair',2.5, 'VPD',3, 'Step',0.5)
     Result_Step3.F <- EddyTest.C$sFillMDC(3)
     EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i=1998) #Individual fill result columns are called 'VAR_...'
+
+    #+++ Explicit demonstration of MDS gap filling algorithm for filling NEE
+    EddyTestMDS.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD'))
+    #Initialize 'NEE' as variable to fill
+    EddyTestMDS.C$sFillInit('NEE')
+    # Set variables and tolerance intervals
+    V1.s='Rg'; T1.n=50 # Global radiation 'Rg' within ±50 W m-2
+    V2.s='VPD'; T2.n=5 # Vapour pressure deficit 'VPD' within 5 hPa
+    V3.s='Tair'; T3.n=2.5 # Air temperature 'Tair' within ±2.5 degC
+    # Step 1: Look-up table with window size ±7 days
+    Result_Step1.F <- EddyTestMDS.C$sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+    # Step 2: Look-up table with window size ±14 days
+    Result_Step2.F <- EddyTestMDS.C$sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+    # Step 3: Look-up table with window size ±7 days, Rg only
+    Result_Step3.F <- EddyTestMDS.C$sFillLUT(7, V1.s, T1.n)
+    # Step 4: Mean diurnal course with window size 0 (same day) 
+    Result_Step4.F <- EddyTestMDS.C$sFillMDC(0)
+    # Step 5: Mean diurnal course with window size ±1, ±2 days 
+    Result_Step5a.F <- EddyTestMDS.C$sFillMDC(1)
+    Result_Step5b.F <- EddyTestMDS.C$sFillMDC(2) 
+    # Step 6: Look-up table with window size ±21, ±28, ..., ±70 
+    for( WinDays.i in seq(21,70,7) ) Result_Step6.F <- EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+    # Step 7: Look-up table with window size ±14, ±21, ..., ±70, Rg only
+    for( WinDays.i in seq(14,70,7) ) Result_Step7.F <- EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n)
+    # Step 8: Mean diurnal course with window size ±7, ±14, ..., ±210 days  
+    for( WinDays.i in seq(7,210,7) ) Result_Step8.F <- EddyTestMDS.C$sFillMDC(WinDays.i)
+    # Export results, columns are named 'VAR_'
+    FilledEddyData.F <- EddyTestMDS.C$sExportResults()
   }
 }
