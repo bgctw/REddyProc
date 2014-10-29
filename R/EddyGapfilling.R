@@ -455,7 +455,7 @@ sEddyProc$methods(
     ## sEddyProc$sMDSAfterFiltering- MDS gap filling algorithm after u* filtering
     ##description<<
     ## Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*
-    FluxVar.s='NEE'       ##<< Variable of net ecosystem fluxes, default 'NEE'
+    FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
     ,UstarThres.n         ##<< u* threshold (ms-1)
 #TODO Replace with:  ,UstarThres.V.n       ##<< u* thresholds as single number or vector with values for each year

@@ -107,11 +107,6 @@ fOptimSingleE0_Lev <- function(
   res
 }
 
-.tmp.f <- function(){
-  plot(NEEnight.V.n ~ Temp.V.n)
-  curve(fLloydTaylor(coef(NLS.L)['R_ref'], coef(NLS.L)['E_0_trim'], fConvertCtoK(Temp.V.n), T_ref.n=273.15+15), add=T, col='red')
-}
-
 fRegrE0fromShortTerm = function(
   ##title<<
   ## Estimation of the temperature sensitivity E_0
@@ -259,7 +254,7 @@ sEddyProc$methods(
 sEddyProc$methods(
   sRegrRref = function(
     ##title<<
-    ## sEddyProc$sRegrRref - Estimation of the reference respiration Rref
+    ## sEddyProc$sRegrRref - Estimation of the time series of reference respiration Rref 
     ##description<<
     ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
@@ -272,7 +267,13 @@ sEddyProc$methods(
   ##author<<
   ## AMM
   ##details<<
-  ## Estimates a ...
+  ## While parameter E0 in the in the Temperature-Respiration relationship (\code{\link{fLloydTaylor}}) is kept konstant,
+  ## parameter Rref is allowed to change with time. 
+  ## This method estimates Rref for a series of time windows of length 2*\code{WinDays.i}+1 days 
+  ## shifted by \code{DayStep.i} days.
+  ##
+  ## For some of the windows, it maybe not be possible to estimate Rref. These missing values are filled by linear
+  ## interpolation by function \code{\link{fInterpolateGaps}}.
 {
     'Estimation of the reference respiration Rref of fLloydTaylor() for successive periods'
     
@@ -342,7 +343,7 @@ sEddyProc$methods(
     
     Rref.V.n
     ##value<< 
-    ## Data vector with reference respiration (R_ref, flux units)
+    ## Data vector (length number of windows) with reference respiration (R_ref, flux units)
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -353,9 +354,9 @@ sEddyProc$methods(
     ## sEddyProc$sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)
     ##description<<
     ## Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
-    FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Net ecosystem fluxes (NEE) variable, i.e. column name 
-    ,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of NEE variable
-    ,QFFluxValue.n=0       							            ##<< Value of quality flag for _good_ (original) data
+    FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Net ecosystem fluxes (NEE) variable, i.e. column name, defaults to NEE_f,
+    ,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of NEE variable, defaults to NEE_fqc
+    ,QFFluxValue.n=0       							##<< Value of quality flag for _good_ (original) data
     ,TempVar.s=paste0('Tair',suffixDash.s,'_f')     ##<< Filled air- or soil temperature variable (degC)
     ,QFTempVar.s=paste0('Tair',suffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
     ,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
@@ -363,7 +364,7 @@ sEddyProc$methods(
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
-    ,suffix.s = ""		     ##<< String inserted into input column names before identifier.
+    ,suffix.s = ""		     ##<< String inserted into input column names before identifier, see details.
     ,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}).
       ##describe<< 
       useLocaltime.b=FALSE	##<< see details on solar vs local time	
