@@ -20,7 +20,11 @@ if( sum(grepl('EddyData.F',ls())) == 0 ) {
 }
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
-
+# construct multiyear dataset
+EddyData99.F <- EddyData.F
+EddyData99.F$Year <- 1999
+EddyDataWithPosix2yr.F <- suppressMessages(fConvertTimeToPosix(rbind(EddyData.F, EddyData99.F), 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
+rm( EddyData99.F )
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Check sEddyProc initialization: POSIX time stamp
@@ -121,20 +125,20 @@ test_that("Test sMDSGapFill",{
   expect_that(Results.F[1,'Tair_fnum'], equals(124)) #Equal to 68 with old MR PV-Wave congruent settings
 })
 
-test_that("Test sMDSGapFillUStar",{
+test_that("Test sMDSGapFillAfterUStarDistr",{
 			# single value
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=0.42 , suffix.v="Ustar")
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=0.42 , UstarSuffix.V.s="Ustar")
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( "NEE_Ustar_f" %in% colnames(Results.F) ) # unchanged column name
 			#
 			# several values 
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			suffix.v <-  c("U05","U95")
-			EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=c(0.38,0.42), suffix.v =suffix.v )
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =suffix.v )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-			EddyProc.C$sMDSGapFillUStar('Tair', Verbose.b=F, ustar.m=c(0.38,0.42), suffix.v =suffix.v )
+			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =suffix.v )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("Tair_U05_f","Tair_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
 			# test whether sMRFluxPartition can use changed column names
@@ -150,15 +154,15 @@ test_that("Test sMDSGapFillUStar",{
 			}
 			#
 			# several values for several years
-			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("U05","U95") ))
-			EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=ustar.m, suffix.v = colnames(ustar.m) )
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=ustar.m, UstarSuffix.V.s = colnames(ustar.m) )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
 			# NA case - introducting 0% gaps in single year 1998
-			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			ustar.m = matrix(c(NA, NA, 0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("U05","U95") ))
-			EddyProc.C$sMDSGapFillUStar('NEE', Verbose.b=F, ustar.m=ustar.m, suffix.v = colnames(ustar.m) )
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=ustar.m, UstarSuffix.V.s = colnames(ustar.m) )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
 		})
