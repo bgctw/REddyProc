@@ -9,7 +9,7 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fConvertCtoK <- function(
-  ##title<<
+  ##description<<
   ## Convert degree Celsius to degree Kelvin
   Celsius.V.n           ##<< Data vector in Celsius (degC)
   ##author<<
@@ -26,7 +26,7 @@ fConvertCtoK <- function(
 }
 
 fConvertKtoC <- function(
-  ##title<<
+  ##description<<
   ## Convert degree Kelvin to degree Celsius
   Kelvin.V.n            ##<< Data vector in Kelvin (degK)
   ##author<<
@@ -45,7 +45,7 @@ fConvertKtoC <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fConvertVisibleWm2toPhotons <- function(
-  ##title<<
+  ##description<<
   ## Convert units of visible radiation from irradiance to photons flux
   Wm2.V.n               ##<< Data vector in units of irradiance (W m-2) 
   )
@@ -60,7 +60,7 @@ fConvertVisibleWm2toPhotons <- function(
 }
 
 fConvertGlobalToVisible <- function(
-  ##title<<
+  ##description<<
   ## Partition global (solar) radiation into only visible (the rest is UV and infrared)
   Global.V.n            ##<< Data vector of global radiation (W m-2)
   ##author<<
@@ -82,7 +82,7 @@ fConvertGlobalToVisible <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcVPDfromRHandTair <- function(
-  ##title<<
+  ##description<<
   ## Calculate VPD from rH and Tair
   RH.V.n                ##<< Data vector of relative humidity (rH, %)
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
@@ -104,7 +104,7 @@ fCalcVPDfromRHandTair <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcSVPfromTair <- function(
-  ##title<<
+  ##description<<
   ## Calculate SVP (of water) from Tair
   Tair.V.n              ##<< Data vector of air temperature (Tair, degC)
   ##author<<
@@ -123,7 +123,7 @@ fCalcSVPfromTair <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcRHfromAVPandTair <- function(
-  ##title<<
+  ##description<<
   ## Calculate relative humidity from actual vapour pressure and air tempature
   AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, mbar)
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
@@ -144,7 +144,7 @@ fCalcRHfromAVPandTair <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcETfromLE <- function(
-  ##title<<
+  ##description<<
   ## Calculate ET from LE and Tair
   LE.V.n                ##<< Data vector of latent heat (LE, W m-2)
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
@@ -186,6 +186,11 @@ fLloydTaylor <- function(
   ##value<<
   ## Data vector of soil respiration rate (R, umol CO2 m-2 s-1)
 }
+attr(fLloydTaylor,"ex") <- function(){
+  	T <- c(-10:30)
+	resp <- fLloydTaylor( 10, 330, T+273.15)
+	plot( resp ~ T)
+}
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,7 +198,7 @@ fLloydTaylor <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcSunPosition <- function(
-  ##title<<
+  ##description<<
   ## Calculate the position of the sun
   DoY.V.n               ##<< Data vector with day of year (DoY)
   ,Hour.V.n             ##<< Data vector with time as decimal hour
@@ -283,7 +288,7 @@ fCalcSunPosition <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcExtRadiation <- function(
-  ##title<<
+  ##description<<
   ## Calculate the extraterrestrial solar radiation with the eccentricity correction 
   DoY.V.n           ##<< Data vector with day of year (DoY)
   ##author<<
@@ -310,15 +315,15 @@ fCalcExtRadiation <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCalcPotRadiation <- function(
-  ##title<<
+  ##description<<
   ## Calculate the potential radiation 
-  DoY.V.n             ##<< Data vector with day of year (DoY)
+  DoY.V.n             ##<< Data vector with day of year (DoY), same length as Hour or length 1
   ,Hour.V.n           ##<< Data vector with time as decimal hour
   ,Lat_deg.n          ##<< Latitude in (decimal) degrees
   ,Long_deg.n         ##<< Longitude in (decimal) degrees
   ,TimeZone_h.n       ##<< Time zone (in hours)
   ,useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
-	##<< where noon is exactly at 12:00. Set this to FALSE to compare to code that uses local winter time
+	##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
   ##author<<
   ## AMM
   #For testing PotRadiation(julday,hour)
@@ -340,8 +345,8 @@ attr(fCalcPotRadiation,"ex") <- function(){
 	potRadSolar <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone=+1)
 	potRadLocal <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone=+1, useSolartime.b = FALSE)
 	plot( potRadSolar ~ hour, type='l' )
-	abline(v=13)
+	abline(v=13, lty="dotted")
 	lines( potRadLocal ~  hour, col="blue" )
-	abline(v=12, col="blue" )
+	abline(v=12, col="blue", lty="dotted" )
 	legend("bottomright", legend=c("solar time","local winter time"), col=c("black","blue"), inset=0.05, lty=1)
 }

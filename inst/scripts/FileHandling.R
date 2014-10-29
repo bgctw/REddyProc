@@ -111,7 +111,7 @@ attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fAddNCFVar <- function(
-  ##title<<
+  ##description<<
   ## Add variable from NetCDF file to data frame
   Data.F                ##<< Data frame
   ,Var.s                ##<< Variable name
@@ -234,7 +234,7 @@ fLoadFluxNCInfo <- function(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fWriteDataframeToFile <- function(
-  ##title<<
+  ##description<<
   ## Write data frame to ASCII tab-separated text file
   Data.F                ##<< Data frame     
   ,FileName.s           ##<< File base name
@@ -280,7 +280,7 @@ attr(fWriteDataframeToFile, 'ex') <- function() {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fInitFilesDir <- function(
-  ##title<<
+  ##description<<
   ## Get all available files with specific file extension in directory
   Dir.s           ##<< Directory to be searched for files
   ,lFileExt.s     ##<< File extension specification
@@ -304,7 +304,7 @@ attr(fInitFilesDir, 'ex') <- function()   {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fStripFileExtension <- function(
-  ##title<<
+  ##description<<
   ## Strip file extension 
   lFiles.V.s     ##<< Vector with names of all available site files
 )
@@ -327,7 +327,7 @@ attr(fStripFileExtension, 'ex') <- function()  {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fSetFile <- function(
-  ##title<<
+  ##description<<
   ## Set file name with path and check if directory and/or file exists
   FileName.s            ##<< File name
   ,Dir.s                ##<< Directory
