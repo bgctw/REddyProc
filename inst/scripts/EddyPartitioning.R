@@ -390,13 +390,13 @@ sEddyProc$methods(
     ## }}
     
     ##details<< \describe{\item{Background}{
-    ## This partitioning depends on a regression of mighttime respiration with temperature 
+    ## This partitioning is based on the regression of nighttime respiration with temperature 
     ## using the Lloyd-Taylor-Function \code{\link{fLloydTaylor}}.
     ## First the temperature sensitivity E_0 is estimated from short term data, see \code{\link{sRegrE0fromShortTerm}}.
-    ## Then the reference temperature R_ref is estimated for successive periods through the whole dataset (see \code{\link{sRegrRref}} ).
-    ## This relationship is then used to generate daytime respiration and calculate GPP.
+    ## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{\link{sRegrRref}}).
+    ## These estimates are then used to calculate the respiration during daytime and nighttime and with this GPP.
     ## Attention: Gap filling of the net ecosystem fluxes (NEE) and temperature measurements (Tair or Tsoil) is required
-    ## prior to the partitioning.
+    ## prior to the partitioning!
     ## }}
     
     ##details<< \describe{\item{\code{suffix.s}}{
@@ -415,7 +415,7 @@ sEddyProc$methods(
     
     message('Start flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
     
-    ##details<< \describe{\item{Selection of daytime data - solar vs local time}{
+    ##details<< \describe{\item{Selection of daytime data based on solar time}{
     ## The respiration-temperature regression is very
     ## sensitive to the selection of night- and daytime data.
     ## Nighttime is selected by a combined threshold of current solar radiation and potential radiation. 
