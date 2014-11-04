@@ -213,54 +213,38 @@ attr(sEddyProc.example,'ex') <- function( ){
     EddyProc.C$sPlotHHFluxes('NEE')
     EddyProc.C$sPlotFingerprint('Rg')
     EddyProc.C$sPlotDiurnalCycle('Tair')
-    #+++ Plot individual years to screen (of current R graphics device)
+    #+++ Plot individual months/years to screen (of current R graphics device)
     EddyProc.C$sPlotHHFluxesY('NEE', Year.i=1998)
     EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
+    EddyProc.C$sPlotDiurnalCycleM('NEE', Month.i=1)
     
     #+++ Fill gaps in variables with MDS gap filling algorithm (without prior ustar filtering)
     EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
     EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only the gaps for the meteo condition, e.g. 'Rg'
 
-    #+++ Generate plots of filled data in directory \plots (of current R working dir)
-    EddyProc.C$sPlotHHFluxes('NEE_f')
-    EddyProc.C$sPlotFingerprint('NEE_f')
-    EddyProc.C$sPlotDailySums('NEE_f','NEE_fsd')
-    EddyProc.C$sPlotDiurnalCycle('NEE_f')
-    
-    #+++ Plot individual years/months to screen (of current R graphics device)
-    EddyProc.C$sPlotHHFluxesY('NEE_f', Year.i=1998)
+    #+++ Example plots of filled data to screen or to directory \plots
     EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
-    EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998)
-    EddyProc.C$sPlotDiurnalCycleM('NEE_f', Month.i=1)
+    EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998) #Plot of sums with uncertainties
+    EddyProc.C$sPlotDailySums('NEE_f','NEE_fsd')
+    
+    #+++ Partition NEE into GPP and respiration
+    EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning 
+    EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
+    
+    #+++ Example plots of calculated GPP and respiration 
+    EddyProc.C$sPlotFingerprintY('GPP_f', Year.i=1998)
+    EddyProc.C$sPlotFingerprint('GPP_f')
+    EddyProc.C$sPlotHHFluxesY('Reco', Year.i=1998)
+    EddyProc.C$sPlotHHFluxes('Reco')
 	
-    #+++ Fill gaps in variables with MDS gap filling algorithm with ustar threshold provided  
+    #+++ Processing with ustar threshold provided  
     #+++ Provide ustar value(s) as a single value or a vector with an entry for each year
-    Ustar.V.n <- 0.43 #For a dataset of three years this could be: Ustar.V.n <- c(0.41, 0.43, 0.42)
+    Ustar.V.n <- 0.43 #For a dataset with three years of data, this could also be a vector, e.g. Ustar.V.n <- c(0.41, 0.43, 0.42)
+    #+++ Gap filling and partitioning after ustar filtering
     EddyProc.C$sMDSGapFillAfterUstar(FluxVar.s='NEE', UstarThres.V.n=Ustar.V.n)
-    colnames(EddyProc.C$sExportResults())    
+    EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar')  # Note suffix
     
     #+++ ! Coming soon: The Ustar filtering algorithm after Papale et al. (2006) ! +++
-    
-    #+++ Partition NEE into GPP and respiration with and without ustar filtering
-    EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)		# Gap-filled Tair and NEE needed for partitioning 
-    EddyProc.C$sMRFluxPartition('NEE_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1 )  # location of DE-Tharandt
-    EddyProc.C$sMRFluxPartition('NEE_f_WithUstar', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar' )
-    
-    #+++ Plot of calculated GPP and respiration 
-    EddyProc.C$sPlotFingerprintY('GPP_f', Year.i=1998)
-    EddyProc.C$sPlotHHFluxesY('Reco', Year.i=1998)
-    
-    #+++ When running several processing setup, please provide suffix
-    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-    #+++ Example for two setups: Gap filling with and without ustar threshold
-    EddyProc.C$sMDSGapFill('NEE', Suffix.s='NoUstar')
-    EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=0.3, UstarSuffix.s='Thresh1')
-    EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=0.4, UstarSuffix.s='Thresh2')
-    colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
-    EddyProc.C$sMRFluxPartition('NEE_NoUstar_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='NoUstar' )
-    EddyProc.C$sMRFluxPartition('NEE_Thresh1_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thresh1' )
-    EddyProc.C$sMRFluxPartition('NEE_Thresh2_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thresh2' )
-    colnames(EddyProc.C$sExportResults())	# Note the suffix in output columns
     
     #+++ Export gap filled and partitioned data to standard data frame
     FilledEddyData.F <- EddyProc.C$sExportResults()
@@ -268,16 +252,40 @@ attr(sEddyProc.example,'ex') <- function( ){
     CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
     fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
     
+    
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    # Extra: Examples of extended usage for advanced users
+    #+++ Example 1 for advanced users: Processing different setups on the same site data
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
+    #+++ Initialize new sEddyProc processing class
+    EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+    
+    #+++ When running several processing setup, a string suffix declaration is needed
+    #+++ Here: Gap filling with and without ustar threshold
+    EddySetups.C$sMDSGapFill('NEE', Suffix.s='NoUstar')
+    EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=0.3, UstarSuffix.s='Thres1')
+    EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=0.4, UstarSuffix.s='Thres2')
+    EddySetups.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
+    colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
+    
+    #+++ Flux partitioning of the different gap filling setups
+    EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='NoUstar')
+    EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres1')
+    EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres2')
+    colnames(EddySetups.C$sExportResults())	# Note the suffix in output columns
+    
+    
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Example 2 for advanced users: Extended usage of the gap filling algorithm
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
     #+++ Add some (non-sense) example vectors:
     #+++ Quality flag vector (e.g. from applying ustar filter)
     QF.V.n <- rep(c(1,0,1,0,1,0,0,0,0,0), nrow(EddyData.F)/10)
     #+++ Dummy step function vector to simulate e.g. high/low water table
     Step.V.n <- ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1)
 
-    #+++ Initialize eddy processing class with more columns
+    #+++ Initialize new sEddyProc processing class with more columns
     EddyTest.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F, Step=Step.V.n, QF=QF.V.n), 
                                 c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
 
@@ -291,7 +299,12 @@ attr(sEddyProc.example,'ex') <- function( ){
     Result_Step3.F <- EddyTest.C$sFillMDC(3)
     EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i=1998) #Individual fill result columns are called 'VAR_...'
 
-    #+++ Explicit demonstration of MDS gap filling algorithm for filling NEE
+    
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Example 3 for advanced users: Explicit demonstration of MDS gap filling algorithm for filling NEE
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    #+++ Initialize new sEddyProc processing class
     EddyTestMDS.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD'))
     #Initialize 'NEE' as variable to fill
     EddyTestMDS.C$sFillInit('NEE')

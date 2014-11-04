@@ -268,7 +268,7 @@ sEddyProc$methods(
   ##author<<
   ## AMM
   ##details<<
-  ## While parameter E0 in the in the Temperature-Respiration relationship (\code{\link{fLloydTaylor}}) is kept konstant,
+  ## While parameter E0 in the Temperature-Respiration relationship (\code{\link{fLloydTaylor}}) is kept konstant,
   ## parameter Rref is allowed to change with time. 
   ## This method estimates Rref for a series of time windows of length 2*\code{WinDays.i}+1 days 
   ## shifted by \code{DayStep.i} days.
@@ -401,6 +401,12 @@ sEddyProc$methods(
     ## prior to the partitioning!
     ## }}
 
+    # If the default variable names are used and a Suffix.s is provided, then the suffix is added to the variable name (see also comment below)
+    if( FluxVar.s=='NEE_f' && QFFluxVar.s=='NEE_fqc' && fCheckValString(Suffix.s) ) {
+      FluxVar.s <- paste('NEE_', Suffix.s, '_f', sep='')
+      QFFluxVar.s <- paste('NEE_', Suffix.s, '_fqc', sep='')
+    }
+    
     # Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
     fCheckColNames(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
     fCheckColNum(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
@@ -460,6 +466,8 @@ sEddyProc$methods(
     ## Attention: When processing the same site data set with different setups for the gap filling or flux partitioning 
     ## (e.g. due to different ustar filters),
     ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
+    ## If a Suffix.s is provided and the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names 
+    ## (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s='WithUstar').
     ## }}
     # Rename new columns generated during flux partitioning:
     # For nighttime NEE (FP_NEEnight or FP_NEEnight_Suffix)
@@ -468,7 +476,7 @@ sEddyProc$methods(
     colnames(sTEMP) <<- gsub('_NEW', paste((if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
     # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
     if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
-      warning('sMRFluxPartition::: Duplicated columns found! Please specify Suffix.s when processing different setups on the same dataset!')
+      warning('sMRFluxPartition::: Duplicated columns found! Please different Suffix.s when processing different setups on the same dataset!')
     }
     
     return(invisible(NULL))

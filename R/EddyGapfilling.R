@@ -441,10 +441,10 @@ sEddyProc$methods(
     ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
     ## }}
     # Rename new columns generated during gap filling
-    colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, '_', sep=''), colnames(sTEMP))
+    colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, (if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, '_', sep=''), colnames(sTEMP))
     # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
     if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
-      warning('sMDSGapFill::: Duplicated columns found! Please specify Suffix.s when processing different setups on the same dataset!')
+      warning('sMDSGapFill::: Duplicated columns found! Please specify different Suffix.s when processing different setups on the same dataset!')
     }
     
     return(invisible(NULL))
@@ -485,7 +485,7 @@ sEddyProc$methods(
     year.v <- as.POSIXlt(sDATA$sDateTime)$year + 1900
     uYear.v <- unique(year.v)
     if( length(UstarThres.V.n) == 1) UstarThres.V.n <- rep(UstarThres.V.n, length(uYear.v) )
-    if( length(UstarThres.V.n) != length(uYear.v)) stop("sMDSGapFillAfterUstar: number uStar thresholds must correspond to number of years in the dataset: ", length(uYear.v))
+    if( length(UstarThres.V.n) != length(uYear.v)) stop('sMDSGapFillAfterUstar: number uStar thresholds must correspond to number of years in the dataset: ', length(uYear.v))
     
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
@@ -501,7 +501,7 @@ sEddyProc$methods(
       ## after a period with low turbulence is also removed (Papaple et al. 2006).
       QFustar.V.b[ which(diff(QFustar.V.b) == 1)+1 ] <- FALSE
     }
-    message('Using Ustar threshold of ',paste(signif(UstarThres.V.n,2), collapse=","),
+    message('Using Ustar threshold of ',paste(signif(UstarThres.V.n,2), collapse=','),
             ' introduced ',(1-signif(sum(QFustar.V.b)/length(QFustar.V.b),2))*100,'% gaps'  )
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       message('(also removing the first half-hour after a period of low turbulence).')
@@ -513,7 +513,7 @@ sEddyProc$methods(
       #!!! In the description above: Sometime 1 is the good data or medium quality!!!
       #!!! TODO: TW Would be good to have the FlagEntryAfterLowTurbulence.b included in the suffix (if used)
       QFustar.V.n <- ifelse( QFustar.V.b, 0, 1)	# bad data (FALSE) -> 1 (filtered) #!!! ??? Please explain switch.
-      suffixDash.s <- paste( (if(fCheckValString(UstarSuffix.s)) "_" else ""), UstarSuffix.s, sep="")
+      suffixDash.s <- paste( (if(fCheckValString(UstarSuffix.s)) '_' else ''), UstarSuffix.s, sep='')
       attr(UstarThres.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_Thres', sep='')
       attr(UstarThres.V.n, 'units') <- 'ms-1'
       attr(QFustar.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_fqc', sep='')
@@ -523,7 +523,7 @@ sEddyProc$methods(
       colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar', suffixDash.s, '_', sep=''), colnames(sTEMP))
       # Check for duplicate columns (to detect if different processing setups were executed without different suffix)
       if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
-        warning('sMDSGapFillAfterUstar::: Duplicated columns found! Please specify Suffix.s when processing different setups on the same dataset!')
+        warning('sMDSGapFillAfterUstar::: Duplicated columns found! Please specify different Suffix.s when processing different setups on the same dataset!')
       }
     }
     
@@ -555,7 +555,7 @@ sEddyProc$methods(
 # 
 #       #+++ When running several processing setup, please provide suffix
 #       EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-#       EddyProc.C$sMDSGapFillAfterUstar('NEE',  UstarThres.V.n = Ustar.n, UstarSuffix.s="Setup1")
+#       EddyProc.C$sMDSGapFillAfterUstar('NEE',  UstarThres.V.n = Ustar.n, UstarSuffix.s='Setup1')
 #       colnames(EddyProc.C$sExportResults())	# Note the suffix in output columns
 #     }
   }))
