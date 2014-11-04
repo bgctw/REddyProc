@@ -239,6 +239,7 @@ fWriteDataframeToFile <- function(
   Data.F                ##<< Data frame     
   ,FileName.s           ##<< File base name
   ,Dir.s=''             ##<< Directory
+  ,digits.n=8			##<< number of digits, i.e. precision, for numeric values  
 )
   ##author<<
   ## AMM, KS
@@ -260,7 +261,7 @@ fWriteDataframeToFile <- function(
   Lines.V.s[2] <- gsub('NULL', '-', Lines.V.s[2])
   Lines.V.s[2] <- gsub('DateTime', 'Date Time', Lines.V.s[2])  #if POSIX column replace unit
   write(Lines.V.s, file=OutputFile.s, append=F)
-  write.table(format(Data.F, digits=5, drop0trailing=T, trim=T), file=OutputFile.s, col.names=F, row.names=F, sep='\t', quote=F, append=T)
+  write.table(format(Data.F, digits=digits.n, drop0trailing=T, trim=T), file=OutputFile.s, col.names=F, row.names=F, sep='\t', quote=F, append=T)
   message('Wrote tab separated textfile: ', OutputFile.s)
   
   ##value<<
