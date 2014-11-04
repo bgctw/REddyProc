@@ -5,8 +5,9 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #TEST: FluxVar.s <- 'NEE_f'; QFFluxVar.s <- 'NEE_fqc'; QFFluxValue.n <- 0; TempVar.s <- 'Tair_f'; QFTempVar.s <- 'Tair_fqc'; QFTempValue.n <- 0
 #TEST: RadVar.s <- 'Rg'; Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0; CallFunction.s='test'
-#TEST: NightFlux.s='FP_VARnight';  TempVar.s='NEW_FP_Temp'; WinDays.i=7; DayStep.i=5; TempRange.n=5; NumE_0.n=3; Trim.n=5
-#TEST: NightFlux.s='FP_VARnight';  TempVar.s='NEW_FP_Temp'; E_0.s='NEW_E_0'; WinDays.i=4; DayStep.i=4;
+#TEST: NightFlux.s='FP_VARnight';  TempVar.s='FP_Temp_NEW'; WinDays.i=7; DayStep.i=5; TempRange.n=5; NumE_0.n=3; Trim.n=5
+#TEST: NightFlux.s='FP_VARnight';  TempVar.s='FP_Temp_NEW'; E_0.s='E_0_NEW'; WinDays.i=4; DayStep.i=4;
+#TEST: sDATA <- EddyProc.C$sDATA; sTEMP <- EddyProc.C$sTEMP
 
 
 fOptimSingleE0 <- function(
@@ -354,17 +355,17 @@ sEddyProc$methods(
     ## sEddyProc$sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)
     ##description<<
     ## Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
-    FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Net ecosystem fluxes (NEE) variable, i.e. column name, defaults to NEE_f,
-    ,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of NEE variable, defaults to NEE_fqc
-    ,QFFluxValue.n=0       							##<< Value of quality flag for _good_ (original) data
-    ,TempVar.s=paste0('Tair',suffixDash.s,'_f')     ##<< Filled air- or soil temperature variable (degC)
-    ,QFTempVar.s=paste0('Tair',suffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
+    FluxVar.s='NEE_f'      ##<< Variable name of column with original and filled net ecosystem fluxes (NEE)
+    ,QFFluxVar.s='NEE_fqc' ##<< Quality flag of NEE variable
+    ,QFFluxValue.n=0       ##<< Value of quality flag for _good_ (original) data
+    ,TempVar.s='Tair_f'    ##<< Filled air- or soil temperature variable (degC)
+    ,QFTempVar.s='Tair_fqc'##<< Quality flag of filled temperature variable
     ,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
     ,RadVar.s='Rg'         ##<< Unfilled (original) radiation variable
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
-    ,suffix.s = ""		     ##<< String inserted into input column names before identifier, see details.
+    ,Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
     ,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}).
       ##describe<< 
       useLocaltime.b=FALSE	##<< see details on solar vs local time	
@@ -399,14 +400,6 @@ sEddyProc$methods(
     ## Attention: Gap filling of the net ecosystem fluxes (NEE) and temperature measurements (Tair or Tsoil) is required
     ## prior to the partitioning!
     ## }}
-    
-    ##details<< \describe{\item{\code{suffix.s}}{
-    ## For uncertainty analysis it is practical to use different versions of gap-filling before partitioning.
-    ## In order to support easy selection of input collumns with the default, the \code{suffix.s} 
-    ## is appended to all the input collumns.
-    ## Used e.g. by \code{\link{sMDSGapFillUStar}} ).
-    ## }}
-    suffixDash.s <- paste( (if(fCheckValString(suffix.s)) "_" else ""), suffix.s, sep="")
 
     # Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
     fCheckColNames(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
@@ -428,47 +421,55 @@ sEddyProc$methods(
     #! New code: Local time and equation of time accounted for in potential radiation calculation
     DoY.V.n <- as.numeric(format(sDATA$sDateTime, '%j'))
     Hour.V.n <- as.numeric(format(sDATA$sDateTime, '%H')) + as.numeric(format(sDATA$sDateTime, '%M'))/60
-    sTEMP$NEW_PotRad <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
+    sTEMP$PotRad_NEW <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
                                            , useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )
     
     # Filter night time values only
     #! Note: Rg <= 10 congruent with MR PV-Wave, in paper Rg <= 20
     # Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-    sTEMP$FP_VARnight <<- ifelse(sDATA[,RadVar.s] > 10 | sTEMP$NEW_PotRad > 0, NA,  Var.V.n)
+    sTEMP$FP_VARnight <<- ifelse(sDATA[,RadVar.s] > 10 | sTEMP$PotRad_NEW > 0, NA,  Var.V.n)
     attr(sTEMP$FP_VARnight, 'varnames') <<- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
     attr(sTEMP$FP_VARnight, 'units') <<- attr(Var.V.n, 'units')
     #! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
     
     # Apply quality flag for temperature
-    sTEMP$NEW_FP_Temp <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
+    sTEMP$FP_Temp_NEW <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
-    sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
-    if( sum(sTEMP$NEW_E_0==-111) != 0 )
+    sTEMP$E_0_NEW <<- sRegrE0fromShortTerm('FP_VARnight', 'FP_Temp_NEW', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
+    if( sum(sTEMP$E_0_NEW==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
     
     # Reanalyse R_ref with E_0 fixed
-    sTEMP$NEW_R_ref <<- sRegrRref('FP_VARnight', 'NEW_FP_Temp', 'NEW_E_0', CallFunction.s='sMRFluxPartition')
+    sTEMP$R_ref_NEW <<- sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', CallFunction.s='sMRFluxPartition')
     
     # Calculate the ecosystem respiration Reco
-    sTEMP$NEW_Reco <<- fLloydTaylor(sTEMP$NEW_R_ref, sTEMP$NEW_E_0, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=273.15+15)
-    attr(sTEMP$NEW_Reco, 'varnames') <<- 'Reco'
-    attr(sTEMP$NEW_Reco, 'units') <<- attr(Var.V.n, 'units')
+    sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=273.15+15)
+    attr(sTEMP$Reco_NEW, 'varnames') <<- 'Reco'
+    attr(sTEMP$Reco_NEW, 'units') <<- attr(Var.V.n, 'units')
     
     # Calculate the gross primary production GPP_f
-    sTEMP$NEW_GPP_f <<- -cbind(sDATA,sTEMP)[,FluxVar.s] + sTEMP$NEW_Reco
-    sTEMP$NEW_GPP_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
+    sTEMP$GPP_NEW_f <<- -cbind(sDATA,sTEMP)[,FluxVar.s] + sTEMP$Reco_NEW
+    sTEMP$GPP_NEW_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
     #! New code: MDS gap filling information are not copied from NEE_fmet and NEE_fwin to GPP_fmet and GPP_fwin
     #           (since not known within this pure partitioning function)
-    attr(sTEMP$NEW_GPP_f, 'varnames') <<- 'GPP_f'
-    attr(sTEMP$NEW_GPP_f, 'units') <<- attr(Var.V.n, 'units')
+    attr(sTEMP$GPP_NEW_f, 'varnames') <<- 'GPP_f'
+    attr(sTEMP$GPP_NEW_f, 'units') <<- attr(Var.V.n, 'units')
     
-    # Rename new columns generated during flux partitioning
-    colnames(sTEMP) <<- gsub('_VAR', '_NEE', colnames(sTEMP))
-    colnames(sTEMP) <<- gsub('NEW_', '', colnames(sTEMP))
-    # may have introduced duplicate columns, delete first one, side effect: triple column names will be renamed .<nr>
-    duplColNames <- names(which(table(colnames(sTEMP)) > 1))
-    if( length(duplColNames) ) sTEMP <<- sTEMP[, -match( duplColNames, colnames(sTEMP) )]
+    ##details<< \describe{\item{Different processing setups on the same dataset}{
+    ## Attention: When processing the same site data set with different setups for the gap filling or flux partitioning 
+    ## (e.g. due to different ustar filters),
+    ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
+    ## }}
+    # Rename new columns generated during flux partitioning:
+    # For nighttime NEE (FP_NEEnight or FP_NEEnight_Suffix)
+    colnames(sTEMP) <<- gsub('_VARnight', paste('_NEEnight', (if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
+    # For the results columns, the _NEW is dropped and the suffix added
+    colnames(sTEMP) <<- gsub('_NEW', paste((if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
+    # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
+    if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
+      warning('sMRFluxPartition::: Duplicated columns found! Please specify Suffix.s when processing different setups on the same dataset!')
+    }
     
     return(invisible(NULL))
     ##value<< 
