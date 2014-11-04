@@ -207,7 +207,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 
     #+++ Initalize R5 reference class sEddyProc for processing of eddy data
     #+++ with all variables needed for processing later
-    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD'))
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
     
     #+++ Generate plots of all data in directory \plots (of current R working dir)
     EddyProc.C$sPlotHHFluxes('NEE')
@@ -217,7 +217,7 @@ attr(sEddyProc.example,'ex') <- function( ){
     EddyProc.C$sPlotHHFluxesY('NEE', Year.i=1998)
     EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
     
-    #+++ Fill gaps in variables with MDS gap filling algorithm
+    #+++ Fill gaps in variables with MDS gap filling algorithm (without prior ustar filtering)
     EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
     EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only the gaps for the meteo condition, e.g. 'Rg'
 
@@ -233,23 +233,40 @@ attr(sEddyProc.example,'ex') <- function( ){
     EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998)
     EddyProc.C$sPlotDiurnalCycleM('NEE_f', Month.i=1)
 	
-    #+++ Partition NEE into GPP and respiration
+    #+++ Fill gaps in variables with MDS gap filling algorithm with ustar threshold provided  
+    #+++ Provide ustar value(s) as a single value or a vector with an entry for each year
+    Ustar.V.n <- 0.43 #For a dataset of three years this could be: Ustar.V.n <- c(0.41, 0.43, 0.42)
+    EddyProc.C$sMDSGapFillAfterUstar(FluxVar.s='NEE', UstarThres.V.n=Ustar.V.n)
+    colnames(EddyProc.C$sExportResults())    
+    
+    #+++ ! Coming soon: The Ustar filtering algorithm after Papale et al. (2006) ! +++
+    
+    #+++ Partition NEE into GPP and respiration with and without ustar filtering
     EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)		# Gap-filled Tair and NEE needed for partitioning 
-    EddyProc.C$sMRFluxPartition( Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1 )  # location of DE-Tharandt
-    EddyProc.C$sPlotDiurnalCycleM('GPP_f', Month.i=6)	# Plot of calculated GPP and respiration 
-    EddyProc.C$sPlotDiurnalCycleM('Reco', Month.i=6)	
+    EddyProc.C$sMRFluxPartition('NEE_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1 )  # location of DE-Tharandt
+    EddyProc.C$sMRFluxPartition('NEE_f_WithUstar', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar' )
+    
+    #+++ Plot of calculated GPP and respiration 
+    EddyProc.C$sPlotFingerprintY('GPP_f', Year.i=1998)
+    EddyProc.C$sPlotHHFluxesY('Reco', Year.i=1998)
+    
+    #+++ When running several processing setup, please provide suffix
+    EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+    #+++ Example for two setups: Gap filling with and without ustar threshold
+    EddyProc.C$sMDSGapFill('NEE', Suffix.s='NoUstar')
+    EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=0.3, UstarSuffix.s='Thresh1')
+    EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=0.4, UstarSuffix.s='Thresh2')
+    colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
+    EddyProc.C$sMRFluxPartition('NEE_NoUstar_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='NoUstar' )
+    EddyProc.C$sMRFluxPartition('NEE_Thresh1_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thresh1' )
+    EddyProc.C$sMRFluxPartition('NEE_Thresh2_f', Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thresh2' )
+    colnames(EddyProc.C$sExportResults())	# Note the suffix in output columns
     
     #+++ Export gap filled and partitioned data to standard data frame
     FilledEddyData.F <- EddyProc.C$sExportResults()
-    
     #+++ Save results into (tab-delimited) text file in directory \out
     CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
     fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
-    
-    #+++ Ustar filtering is still in the works but if the ustar threshold is known,
-    #the gap filling can be applied with filtering
-    EddyProcUstar.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-    EddyProcUstar.C$sMDSGapFillAfterUstar(UstarThres.n=0.35)
     
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Extra: Examples of extended usage for advanced users
