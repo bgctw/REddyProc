@@ -141,6 +141,7 @@ test_that("Test sMDSGapFillAfterUStarDistr",{
 			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =suffix.v )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("Tair_U05_f","Tair_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
+			#
 			# test whether sMRFluxPartition can use changed column names
 			#suffix.s <- suffix.v[1]
 			.tmp.f <- function(){

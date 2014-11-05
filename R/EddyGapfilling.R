@@ -344,7 +344,7 @@ sEddyProc$methods(
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
     ,Verbose.b=TRUE       ##<< Print status information to screen
     ,Suffix.s = ''	      ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
-    ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
+    #,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
   )
   ##author<<
   ## AMM
@@ -357,7 +357,7 @@ sEddyProc$methods(
     TimeStart.p <- Sys.time()
     ##details<<
     ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
-    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b, QF.V.b = QF.V.b)) )
+    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b )) ) #, QF.V.b = QF.V.b)) )
       return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
     
     #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
@@ -465,7 +465,6 @@ sEddyProc$methods(
     ,UstarThres.V.n       ##<< u* thresholds (ms-1) as single number or vector with values for each year
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
     ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Default FALSE for flagging the first entry after low turbulance as bad condition.
-    ,addThresholdCols.b=TRUE	##<< Default TRUE for adding the threshold and the flag (1 bad data) as output columns
     ,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
   )
   ##author<<
@@ -489,7 +488,7 @@ sEddyProc$methods(
     
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
-    QFustar.V.b <- rep( TRUE, nrow(sDATA) )
+    QFustar.V.b <- rep( TRUE, nrow(sDATA) )		# TRUE: no gap, good data
     for( iYear in seq_along(uYear.v) ){
       QFustar.V.b[ (year.v==uYear.v[iYear]) & is.finite(UstarThres.V.n[iYear]) & (sDATA[,UstarVar.s] < UstarThres.V.n[iYear]) ] <- FALSE  
     }
@@ -508,7 +507,6 @@ sEddyProc$methods(
     }
     
     # Add filtering step to (temporal) results data frame
-    if( isTRUE(addThresholdCols.b) ){ 
       #!!! TW: Why an option??? Shouldn't these columns always be added for tracability. (Might be different for DP ustar code.) ???
       #!!! In the description above: Sometime 1 is the good data or medium quality!!!
       #!!! TODO: TW Would be good to have the FlagEntryAfterLowTurbulence.b included in the suffix (if used)
@@ -525,10 +523,15 @@ sEddyProc$methods(
       if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
         warning('sMDSGapFillAfterUstar::: Duplicated columns found! Please specify different Suffix.s when processing different setups on the same dataset!')
       }
-    }
     
+	# orig from Antje:
+	#QFustar.V.n <- ifelse(Ustar.V.n > UstarThres.n, 0, 1)
+	# Gap filled the data with ustar filter
+	#sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0)
+	
     # Gap filled the data with ustar filter
-    .self$sMDSGapFill(FluxVar.s, ... , QF.V.b=QFustar.V.b, Suffix = UstarSuffix.s)
+	#.self$sMDSGapFill(FluxVar.s, ... , QF.V.b=QFustar.V.b, Suffix = UstarSuffix.s)
+	sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0, ..., Suffix.s = UstarSuffix.s)
     
     ##value<< 
     ## Vector with quality flag from filtering (bad data are FALSE)

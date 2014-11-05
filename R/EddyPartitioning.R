@@ -466,7 +466,7 @@ sEddyProc$methods(
     ## Attention: When processing the same site data set with different setups for the gap filling or flux partitioning 
     ## (e.g. due to different ustar filters),
     ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
-    ## If a Suffix.s is provided and the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names 
+    ## If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names 
     ## (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s='WithUstar').
     ## }}
     # Rename new columns generated during flux partitioning:
@@ -476,7 +476,7 @@ sEddyProc$methods(
     colnames(sTEMP) <<- gsub('_NEW', paste((if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
     # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
     if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
-      warning('sMRFluxPartition::: Duplicated columns found! Please different Suffix.s when processing different setups on the same dataset!')
+      warning('sMRFluxPartition::: Duplicated columns found! Please use different Suffix.s when processing different setups on the same dataset!')
     }
     
     return(invisible(NULL))
