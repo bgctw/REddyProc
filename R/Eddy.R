@@ -273,7 +273,30 @@ attr(sEddyProc.example,'ex') <- function( ){
     EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres1')
     EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres2')
     colnames(EddySetups.C$sExportResults())	# Note the suffix in output columns
+
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Example 1b for advanced users: Automated processing of different UStar-Threshold setups
+    #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
+    #+++ Initialize new sEddyProc processing class
+    EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+    
+    #+++ estimate different u* thresholds from the data (see also function sEstUstarThresholdDistribution)
+    UstarThres_year98.V.n <- quantile( subset(EddyDataWithPosix.F,Year==1998)$Ustar, probs=c(0.05,0.3,0.5), na.rm=T)
+    # here we have only one year, it is possible to specify the series of thresholds per year by providing rows for each year
+    UstarThres.V.m <- matrix( UstarThres_year98.V.n, nrow=1, byrow=TRUE )
+    # suffixes to distringuish different Ustar setups
+    UstarSuffix.V.s <- c("Up05","Up30","Up50")    
+    EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.m.n=UstarThres.V.m, UstarSuffix.V.s=UstarSuffix.V.s )
+    colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
+    # inspect the mean across NEE estimates and uncertainty introduced by different uStar thresholds
+    resCols <- paste("NEE", UstarSuffix.V.s, "f", sep="_" )
+    cumNEE <- colSums( EddySetups.C$sExportResults()[,resCols])
+    
+    #+++ Flux partitioning of one of the different gap filling setups, Note the Suffix.s
+    EddySetups.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
+    EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Up05')
+    colnames(EddySetups.C$sExportResults())    # Note the suffix R and GPP output columns
     
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Example 2 for advanced users: Extended usage of the gap filling algorithm

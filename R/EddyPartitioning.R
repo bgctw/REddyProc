@@ -214,8 +214,8 @@ sEddyProc$methods(
     ## When supplying a finite scalar value \code{debug.l$fixedE0}, then this value 
     ## is used instead of the temperature sensitivity E_0 from short term data.
     ## }}
-    if( length(debug.l$fixedE0) && is.finite(debug.l$fixedE0) ){
-      E_0_trim.n <- debug.l$fixedE0
+    if( (length(debug.l$fixedE0) != 0) && is.finite(debug.l$fixedE0) ){
+      E_0_trim.n <- debug.l$fixedE0[1]
       message('Using prescribed temperature sensitivity E_0 of: ', format(E_0_trim.n, digits=5), '.')
     }else{
       # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
@@ -475,8 +475,12 @@ sEddyProc$methods(
     # For the results columns, the _NEW is dropped and the suffix added
     colnames(sTEMP) <<- gsub('_NEW', paste((if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
     # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
-    if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
-      warning('sMRFluxPartition::: Duplicated columns found! Please use different Suffix.s when processing different setups on the same dataset!')
+    if( length(names(iDupl <- which(table(colnames(sTEMP)) > 1))) )  {
+      warning(paste0('sMRFluxPartition::: Duplicated columns found! (',
+					  paste(names(iDupl),collapse=",")
+					  ,')  Deleting each first of duplicate columns.'
+					  ,' Please use different Suffix.s when processing different setups on the same dataset!'))
+	  for( cname in names(iDupl) ) sTEMP[cname] <<- NULL	# need to remove columns else some tests fail
     }
     
     return(invisible(NULL))

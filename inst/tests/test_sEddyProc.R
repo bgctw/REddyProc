@@ -138,7 +138,8 @@ test_that("Test sMDSGapFillAfterUStarDistr",{
 			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =suffix.v )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =suffix.v )
+			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =paste0(suffix.v))
+			# introduced duplicate columns (gapFill-Flag)
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("Tair_U05_f","Tair_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
 			#
@@ -160,6 +161,7 @@ test_that("Test sMDSGapFillAfterUStarDistr",{
 			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=ustar.m, UstarSuffix.V.s = colnames(ustar.m) )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
+			#
 			# NA case - introducting 0% gaps in single year 1998
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			ustar.m = matrix(c(NA, NA, 0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("U05","U95") ))

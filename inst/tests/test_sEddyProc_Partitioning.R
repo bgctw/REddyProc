@@ -107,8 +107,9 @@ test_that("sMRFluxPartition Standard",{
 test_that("Using fixed E0",{
             E0 <- 120
             #EddyHour.C$trace("sMRFluxPartition", recover )            # EddyHour.C$untrace("sMRFluxPartition")
+			EddyHour.C$sTEMP$E_0 <- NULL
             EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1, debug.l=list(fixedE0=E0) )   # calling sRegrE0fromShortTerm
-            expect_that( EddyHour.C$sTEMP$E_0[1], equals(E0))
+            expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance=1e-6)
             #colnames(EddyHour.C$sTEMP)
         })
 

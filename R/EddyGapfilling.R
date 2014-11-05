@@ -464,7 +464,7 @@ sEddyProc$methods(
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
     ,UstarThres.V.n       ##<< u* thresholds (ms-1) as single number or vector with values for each year
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
-    ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Default FALSE for flagging the first entry after low turbulance as bad condition.
+    ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).
     ,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
   )
   ##author<<
@@ -475,7 +475,10 @@ sEddyProc$methods(
     ##details<< 
     ## The u* threshold(s) are provided for filtering the conditions of low turbulence.
     ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
-    
+
+	##seealso<<
+	## \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
+	
     # Check column names (with 'none' as dummy)
     # (Numeric type and plausibility have been checked on initialization of sEddyProc)
     fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
@@ -488,9 +491,13 @@ sEddyProc$methods(
     
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
-    QFustar.V.b <- rep( TRUE, nrow(sDATA) )		# TRUE: no gap, good data
+    QFustar.V.n <- rep( 0, nrow(sDATA) )		
     for( iYear in seq_along(uYear.v) ){
-      QFustar.V.b[ (year.v==uYear.v[iYear]) & is.finite(UstarThres.V.n[iYear]) & (sDATA[,UstarVar.s] < UstarThres.V.n[iYear]) ] <- FALSE  
+	  # mark low turbulence with value 1
+      QFustar.V.n[ (year.v==uYear.v[iYear]) & 
+					  is.finite(UstarThres.V.n[iYear]) & 
+					  (sDATA[,UstarVar.s] < UstarThres.V.n[iYear]) 
+	  				] <- 1  
     }
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       ##details<< 
@@ -498,19 +505,15 @@ sEddyProc$methods(
       ## to the data acquired when u* is below the threshold,
       ## the first half hour measured with good turbulence conditions
       ## after a period with low turbulence is also removed (Papaple et al. 2006).
-      QFustar.V.b[ which(diff(QFustar.V.b) == 1)+1 ] <- FALSE
+      QFustar.V.n[ which(diff(QFustar.V.n) == 1)+1 ] <- 2
     }
     message('Using Ustar threshold of ',paste(signif(UstarThres.V.n,2), collapse=','),
-            ' introduced ',(1-signif(sum(QFustar.V.b)/length(QFustar.V.b),2))*100,'% gaps'  )
+            ' introduced ',(1-signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% gaps'  )
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
-      message('(also removing the first half-hour after a period of low turbulence).')
+      message('(including removal of the first half-hour after a period of low turbulence).')
     }
     
     # Add filtering step to (temporal) results data frame
-      #!!! TW: Why an option??? Shouldn't these columns always be added for tracability. (Might be different for DP ustar code.) ???
-      #!!! In the description above: Sometime 1 is the good data or medium quality!!!
-      #!!! TODO: TW Would be good to have the FlagEntryAfterLowTurbulence.b included in the suffix (if used)
-      QFustar.V.n <- ifelse( QFustar.V.b, 0, 1)	# bad data (FALSE) -> 1 (filtered) #!!! ??? Please explain switch.
       suffixDash.s <- paste( (if(fCheckValString(UstarSuffix.s)) '_' else ''), UstarSuffix.s, sep='')
       attr(UstarThres.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_Thres', sep='')
       attr(UstarThres.V.n, 'units') <- 'ms-1'
@@ -534,53 +537,31 @@ sEddyProc$methods(
 	sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0, ..., Suffix.s = UstarSuffix.s)
     
     ##value<< 
-    ## Vector with quality flag from filtering (bad data are FALSE)
+    ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence)
     ## Gap filling results are in sTEMP data frame (with renamed columns) that can be retrieved by \code{\link{sExportResults}}.
-    return(invisible(QFustar.V.b))
-#   }, ex=function(){
-#     if( FALSE ) { #Do not always execute example code (e.g. on package installation)
-#       #+++ Load data with one header and one unit row from (tab-delimited) text file
-#       Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-#       EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-#       #+++ Add time stamp in POSIX time format
-#       EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-#       #+++ Initalize R5 reference class sEddyProc for processing of eddy data
-#       #+++ with all variables needed for processing later
-#       EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-#       
-#       #+++ Provide ustar values (single value or a vector with an entry for each year)
-#       Ustar.n <- 0.43 
-#       #+++ Fill gaps in variables with MDS gap filling algorithm
-#       EddyProc.C$sMDSGapFillAfterUstar('NEE',  UstarThres.V.n = Ustar.n)
-#       #+++ Export gap filled and partitioned data to standard data frame
-#       FilledEddyData.F <- EddyProc.C$sExportResults()
-#       colnames(EddyProc.C$sExportResults())		
-# 
-#       #+++ When running several processing setup, please provide suffix
-#       EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-#       EddyProc.C$sMDSGapFillAfterUstar('NEE',  UstarThres.V.n = Ustar.n, UstarSuffix.s='Setup1')
-#       colnames(EddyProc.C$sExportResults())	# Note the suffix in output columns
-#     }
+    return(invisible(QFustar.V.n))
+	
+	# example in Eddy.R sEddyProc.example
   }))
 
 sEddyProc$methods(
 		sMDSGapFillAfterUStarDistr = structure(function(
 						##title<< 
-						## GapFilling for several filters of friction velocity Ustar
+						## GapFilling for several filters of estimated friction velocity Ustar thresholds.
 						##description<<
-						## sEddyProc$sMDSGapFillUStar - calling \code{\link{sMDSGapFill}} for several filters of friction velocity Ustar
+						## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
 						FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
 						,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-						,UstarThres.m.n 	= .self$sEstUstarThresholdDistribution() # quantile( sDATA[,UstarVar.s], probs=c(0.9,0.7,0.95), na.rm=T)       
-						### Numeric matrix( nYear x nUStar): output of \code{\link{sEstUstarThresholdDistribution}}: each row is a vector of ustar thresholds to apply before gap filling for one years.
-						### Make sure that one row is given for each year in the dataset to gap-Fill.
-						### If only one row, i.e. a vector is given, then it is used for each year.
-						,UstarSuffix.V.s = c("Ustar","U05","U50","U95")  ##<< String vector of column suffixes of length of collumns of UstarThres.V.n. 
+						,UstarThres.m.n		##<< Numeric matrix( nYear x nUStar): 
+							## Each row is a vector of different ustar thresholds to apply before gap filling.
+							## Make sure that one row is given for each year in the dataset to gap-Fill.
+							## If only one row, i.e. a vector is given, then it is used for each year.
+						,UstarSuffix.V.s = c("Ustar","U05","U50","U95")  ##<< String vector 
 						## to distinguish results for different ustar values.
-						## Length must correspond to column numbers in UstarThres.m.n
+						## Its length must correspond to column numbers in \code{UstarThres.m.n}.
 						## Defaults correspond to return default return value function \code{\link{sEstUstarThresholdDistribution}} 
 						## (estimate on original series, 5% of bootstrap, median of bootstrap, 95% of bootstrap) 
-						,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUStar}} and \code{\link{sMDSGapFill}}
+						,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
 				)
 				##author<< TW
 				{
@@ -623,28 +604,5 @@ sEddyProc$methods(
 					## By default NEE for best UStar estimate is given in column NEE_UStar_f, 
 					## and NEE based on lower and upper 90% confidence interval estimates of Ustar threshold 
 					## are returned in columns NEE_U05_f and NEE_U95_f respectively.
-				}, ex=function(){
-					if( FALSE ){  # takes long, do not execute on every install
-						# load the data from text file
-						Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-						EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-						# create TimeStamp column
-						EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-						
-						#------------- default use case, based on sEstUstarThresholdDistribution()
-						EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
-						EddyProc.C$sMDSGapFillAfterUStarDistr('NEE' )     # calls sEstUstarThresholdDistribution 
-						dsf <- EddyProc.C$sExportResults()
-						colnames(dsf)		# note the different output columns corresponding to different Ustar estimates, best estimate with suffix "Ustar"
-						#plot( NEE_U05_f ~ NEE_U95_f, dsf)	# differences between gapFilling using differing Ustar thresholds
-						
-						#------------- specifying two uStarThresholds directly
-						EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-						ustar.m <- c(0.38, 0.44)	# used for all years
-						tmp <- EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.m.n=ustar.m, UstarSuffix.V.s=c("Ustar38","Ustar44") )
-						dsf <- EddyProc.C$sExportResults()
-						colnames(dsf)		# note the different output columns corresponding to different Ustar estimates, best estimate with suffix "Ustar"
-						#plot( NEE_Ustar44_f ~ NEE_Ustar38_f, dsf)	# differences between gapFilling using differing Ustar thresholds
-					}
-				}))
+	}))
 
