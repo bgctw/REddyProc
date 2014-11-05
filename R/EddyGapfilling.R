@@ -19,7 +19,7 @@ sEddyProc$methods(
     ,QFVar.s='none'       ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_   ##<< Value of quality flag for _good_ (original) data, other data is set to missing
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
-    ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
+    #! ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
   )
     ##author<<
     ## AMM
@@ -29,7 +29,7 @@ sEddyProc$methods(
     # Check variable to fill and apply quality flag
     fCheckColNames(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), 'sFillInit')
     Var.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sFillInit')
-    Var.V.n[QF.V.b == FALSE]   <-   NA_real_ #!!! TODO TW: Please remove the functionality of QF.V.b...
+    #! Var.V.n[QF.V.b == FALSE]   <-   NA_real_
     
     # Abort if variable to be filled contains no data
     if( sum(!is.na(Var.V.n)) == 0 ) {
@@ -344,7 +344,7 @@ sEddyProc$methods(
     ,FillAll.b=TRUE       ##<< Fill all values to estimate uncertainties
     ,Verbose.b=TRUE       ##<< Print status information to screen
     ,Suffix.s = ''	      ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
-    #,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
+    #! ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
   )
   ##author<<
   ## AMM
@@ -357,7 +357,7 @@ sEddyProc$methods(
     TimeStart.p <- Sys.time()
     ##details<<
     ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
-    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b )) ) #, QF.V.b = QF.V.b)) )
+    if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b )) ) #! , QF.V.b = QF.V.b)) )
       return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
     
     #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
@@ -475,10 +475,10 @@ sEddyProc$methods(
     ##details<< 
     ## The u* threshold(s) are provided for filtering the conditions of low turbulence.
     ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
-
-	##seealso<<
-	## \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
-	
+    
+    ##seealso<<
+    ## \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
+    
     # Check column names (with 'none' as dummy)
     # (Numeric type and plausibility have been checked on initialization of sEddyProc)
     fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
@@ -493,11 +493,11 @@ sEddyProc$methods(
     Ustar.V.n <- sDATA[,UstarVar.s]
     QFustar.V.n <- rep( 0, nrow(sDATA) )		
     for( iYear in seq_along(uYear.v) ){
-	  # mark low turbulence with value 1
+      # mark low turbulence with value 1
       QFustar.V.n[ (year.v==uYear.v[iYear]) & 
-					  is.finite(UstarThres.V.n[iYear]) & 
-					  (sDATA[,UstarVar.s] < UstarThres.V.n[iYear]) 
-	  				] <- 1  
+                     is.finite(UstarThres.V.n[iYear]) & 
+                     (sDATA[,UstarVar.s] < UstarThres.V.n[iYear]) 
+                   ] <- 1  
     }
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       ##details<< 
@@ -514,95 +514,90 @@ sEddyProc$methods(
     }
     
     # Add filtering step to (temporal) results data frame
-      suffixDash.s <- paste( (if(fCheckValString(UstarSuffix.s)) '_' else ''), UstarSuffix.s, sep='')
-      attr(UstarThres.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_Thres', sep='')
-      attr(UstarThres.V.n, 'units') <- 'ms-1'
-      attr(QFustar.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_fqc', sep='')
-      attr(QFustar.V.n, 'units') <- '-'
-      sTEMP$USTAR_Thres <<- UstarThres.V.n
-      sTEMP$USTAR_fqc <<- QFustar.V.n
-      colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar', suffixDash.s, '_', sep=''), colnames(sTEMP))
-      # Check for duplicate columns (to detect if different processing setups were executed without different suffix)
-      if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
-        warning('sMDSGapFillAfterUstar::: Duplicated columns found! Please specify different Suffix.s when processing different setups on the same dataset!')
-      }
+    suffixDash.s <- paste( (if(fCheckValString(UstarSuffix.s)) '_' else ''), UstarSuffix.s, sep='')
+    attr(UstarThres.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_Thres', sep='')
+    attr(UstarThres.V.n, 'units') <- 'ms-1'
+    attr(QFustar.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_fqc', sep='')
+    attr(QFustar.V.n, 'units') <- '-'
+    sTEMP$USTAR_Thres <<- UstarThres.V.n
+    sTEMP$USTAR_fqc <<- QFustar.V.n
+    colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar', suffixDash.s, '_', sep=''), colnames(sTEMP))
+    # Check for duplicate columns (to detect if different processing setups were executed without different suffix)
+    if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
+      warning('sMDSGapFillAfterUstar::: Duplicated columns found! Please specify different Suffix.s when processing different setups on the same dataset!')
+    }
     
-	# orig from Antje:
-	#QFustar.V.n <- ifelse(Ustar.V.n > UstarThres.n, 0, 1)
-	# Gap filled the data with ustar filter
-	#sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0)
-	
-    # Gap filled the data with ustar filter
-	#.self$sMDSGapFill(FluxVar.s, ... , QF.V.b=QFustar.V.b, Suffix = UstarSuffix.s)
-	sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0, ..., Suffix.s = UstarSuffix.s)
+    
+    # Gap fill data after applying ustar filtering
+    sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0, ..., Suffix.s = UstarSuffix.s)
     
     ##value<< 
     ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence)
     ## Gap filling results are in sTEMP data frame (with renamed columns) that can be retrieved by \code{\link{sExportResults}}.
     return(invisible(QFustar.V.n))
-	
-	# example in Eddy.R sEddyProc.example
+    
+    # example in Eddy.R sEddyProc.example
   }))
 
 sEddyProc$methods(
-		sMDSGapFillAfterUStarDistr = structure(function(
-						##title<< 
-						## GapFilling for several filters of estimated friction velocity Ustar thresholds.
-						##description<<
-						## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
-						FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
-						,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-						,UstarThres.m.n		##<< Numeric matrix( nYear x nUStar): 
-							## Each row is a vector of different ustar thresholds to apply before gap filling.
-							## Make sure that one row is given for each year in the dataset to gap-Fill.
-							## If only one row, i.e. a vector is given, then it is used for each year.
-						,UstarSuffix.V.s = c("Ustar","U05","U50","U95")  ##<< String vector 
-						## to distinguish results for different ustar values.
-						## Its length must correspond to column numbers in \code{UstarThres.m.n}.
-						## Defaults correspond to return default return value function \code{\link{sEstUstarThresholdDistribution}} 
-						## (estimate on original series, 5% of bootstrap, median of bootstrap, 95% of bootstrap) 
-						,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
-				)
-				##author<< TW
-				{
-					##details<< 
-					## The eddy covariance method does not work with low turbulence conditions. Hence the periods with low turbulence
-					## indicated by a low friction velocity u* needs to be filtered out and gapfilled.
-					## The threshold value of a sufficient u* causes one of the largest uncertainty components within the gap-filled data. 
-					## Hence, it is good practice to compare derived quantities based on gap-filled data using different u* threshold values.
-					
-					##seealso<< 
-					## \code{\link{sEstUstarThresholdDistribution}}
-					
-					##details<< 
-					## The u* threshold(s) are provided for filtering the conditions of low turbulence.
-					## After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
-					
-					year.v <- as.POSIXlt(sDATA$sDateTime)$year + 1900
-					uYear.v <- unique(year.v)
-					if( !is.matrix(UstarThres.m.n) ){
-						if( length(UstarSuffix.V.s) != length(UstarThres.m.n)) stop("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
-						UstarThres.m.n <- matrix( UstarThres.m.n, nrow=length(uYear.v), dimnames=list(uYear.v,UstarSuffix.V.s))
-					}
-					nUStar <- ncol(UstarThres.m.n)
-					if( length(UstarSuffix.V.s) != nUStar ) stop("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
-					# possibly parallelize, but difficult with R5 Classes
-					# iCol <- 1
-					filterCols <- lapply( seq(1:nUStar), function(iCol){
-								.self$sMDSGapFillAfterUstar( FluxVar.s=FluxVar.s, UstarVar.s=UstarVar.s
-									,UstarThres.V.n = UstarThres.m.n[,iCol]
-									,UstarSuffix.s = UstarSuffix.V.s[iCol]
-								)
-							} )
-					filterMat <- do.call(cbind, filterCols )
-					return(invisible(filterMat))
-					##value<< 
-					## Matrix (columns correspond to u*Scenarios) with quality flag from filtering ustar (0 - good data, 1 - filtered data)
-					##
-					## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sExportResults}}.
-					## Each of the columns is calculated for several u*r-estimates and distinguished by a suffix after the variable. 
-					## By default NEE for best UStar estimate is given in column NEE_UStar_f, 
-					## and NEE based on lower and upper 90% confidence interval estimates of Ustar threshold 
-					## are returned in columns NEE_U05_f and NEE_U95_f respectively.
-	}))
+  sMDSGapFillAfterUStarDistr = structure(function(
+    ##title<< 
+    ## GapFilling for several filters of estimated friction velocity Ustar thresholds.
+    ##description<<
+    ## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
+    FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
+    ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
+    ,UstarThres.m.n		##<< Numeric matrix( nYear x nUStar): 
+    ## Each row is a vector of different ustar thresholds to apply before gap filling.
+    ## Make sure that one row is given for each year in the dataset to gap-Fill.
+    ## If only one row, i.e. a vector is given, then it is used for each year.
+    ,UstarSuffix.V.s = c("Ustar","U05","U50","U95")  ##<< String vector 
+    ## to distinguish results for different ustar values.
+    ## Its length must correspond to column numbers in \code{UstarThres.m.n}.
+    ## Defaults correspond to return default return value function \code{\link{sEstUstarThresholdDistribution}} 
+    ## (estimate on original series, 5% of bootstrap, median of bootstrap, 95% of bootstrap) 
+    ,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
+  )
+  ##author<< TW
+{
+    ##details<< 
+    ## The eddy covariance method does not work with low turbulence conditions. Hence the periods with low turbulence
+    ## indicated by a low friction velocity u* needs to be filtered out and gapfilled.
+    ## The threshold value of a sufficient u* causes one of the largest uncertainty components within the gap-filled data. 
+    ## Hence, it is good practice to compare derived quantities based on gap-filled data using different u* threshold values.
+    
+    ##seealso<< 
+    ## \code{\link{sEstUstarThresholdDistribution}}
+    
+    ##details<< 
+    ## The u* threshold(s) are provided for filtering the conditions of low turbulence.
+    ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
+    
+    year.v <- as.POSIXlt(sDATA$sDateTime)$year + 1900
+    uYear.v <- unique(year.v)
+    if( !is.matrix(UstarThres.m.n) ){
+      if( length(UstarSuffix.V.s) != length(UstarThres.m.n)) stop("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
+      UstarThres.m.n <- matrix( UstarThres.m.n, nrow=length(uYear.v), dimnames=list(uYear.v,UstarSuffix.V.s))
+    }
+    nUStar <- ncol(UstarThres.m.n)
+    if( length(UstarSuffix.V.s) != nUStar ) stop("sMDSGapFillUStar: number of suffixes must correspond to number of uStar-thresholds")
+    # possibly parallelize, but difficult with R5 Classes
+    # iCol <- 1
+    filterCols <- lapply( seq(1:nUStar), function(iCol){
+      .self$sMDSGapFillAfterUstar( FluxVar.s=FluxVar.s, UstarVar.s=UstarVar.s
+                                   ,UstarThres.V.n = UstarThres.m.n[,iCol]
+                                   ,UstarSuffix.s = UstarSuffix.V.s[iCol]
+      )
+    } )
+    filterMat <- do.call(cbind, filterCols )
+    return(invisible(filterMat))
+    ##value<< 
+    ## Matrix (columns correspond to u*Scenarios) with quality flag from filtering ustar (0 - good data, 1 - filtered data)
+    ##
+    ## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sExportResults}}.
+    ## Each of the columns is calculated for several u*r-estimates and distinguished by a suffix after the variable. 
+    ## By default NEE for best UStar estimate is given in column NEE_UStar_f, 
+    ## and NEE based on lower and upper 90% confidence interval estimates of Ustar threshold 
+    ## are returned in columns NEE_U05_f and NEE_U95_f respectively.
+  }))
 
