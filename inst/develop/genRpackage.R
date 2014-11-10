@@ -70,7 +70,7 @@ file.rename(paste('tmp',CodeIn.V.s,sep='/'), paste('R',CodeIn.V.s,sep='/') )
 DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','*.Rd')
 file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
 # If package twDev from TW is used for documenation generation
-if ( grep( "twutz", Sys.getenv('HOME')) ) { 
+if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) { 
   genRd(execInlinedocs = FALSE)
 }
 

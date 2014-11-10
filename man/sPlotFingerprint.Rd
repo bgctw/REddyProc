@@ -1,24 +1,24 @@
-\name{sPlotFingerprint}
-\alias{sPlotFingerprint}
-\title{sEddyProc$sPlotFingerprint - Image with fingerprints of each year}
-\description{Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
-with fingerprint, see also \code{\link{sPlotFingerprintY}}.}
-\usage{sPlotFingerprint(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    Format.s = "pdf", Dir.s = "plots")}
-\arguments{
-  \item{Var.s}{Variable to plot}
-  \item{QFVar.s}{Quality flag of variable to be filled}
-  \item{QFValue.n}{Value of quality flag for data to plot}
-  \item{Format.s}{Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}}
-  \item{Dir.s}{Directory for plotting}
-}
-
-
-
-\author{KS, AMM
-(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
-
-
-
-
-
+\name{sPlotFingerprint}
+\alias{sPlotFingerprint}
+\title{sEddyProc$sPlotFingerprint - Image with fingerprints of each year}
+\description{Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
+with fingerprint, see also \code{\link{sPlotFingerprintY}}.}
+\usage{sPlotFingerprint(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
+    Format.s = "pdf", Dir.s = "plots")}
+\arguments{
+  \item{Var.s}{Variable to plot}
+  \item{QFVar.s}{Quality flag of variable to be filled}
+  \item{QFValue.n}{Value of quality flag for data to plot}
+  \item{Format.s}{Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}}
+  \item{Dir.s}{Directory for plotting}
+}
+
+
+
+\author{KS, AMM
+(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
+
+
+
+
+
