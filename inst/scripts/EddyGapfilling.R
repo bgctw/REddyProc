@@ -554,8 +554,9 @@ sEddyProc$methods(
     ,UstarSuffix.V.s = c("Ustar","U05","U50","U95")  ##<< String vector 
     ## to distinguish results for different ustar values.
     ## Its length must correspond to column numbers in \code{UstarThres.m.n}.
-    ## Defaults correspond to return default return value function \code{\link{sEstUstarThresholdDistribution}} 
-    ## (estimate on original series, 5% of bootstrap, median of bootstrap, 95% of bootstrap) 
+    ## Default suffixes correspond to Ustar thresholds as 
+	## Ustar: estimate on original series, U05: 5% of bootstrap, U50: median of bootstrap, U95: 95% of bootstrap) 
+	# return value function \code{\link{sEstUstarThresholdDistribution}} 
     ,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
   )
   ##author<< TW
@@ -566,8 +567,8 @@ sEddyProc$methods(
     ## The threshold value of a sufficient u* causes one of the largest uncertainty components within the gap-filled data. 
     ## Hence, it is good practice to compare derived quantities based on gap-filled data using different u* threshold values.
     
-    ##seealso<< 
-    ## \code{\link{sEstUstarThresholdDistribution}}
+    # #seealso<< 
+    # # \code{\link{sEstUstarThresholdDistribution}}
     
     ##details<< 
     ## The u* threshold(s) are provided for filtering the conditions of low turbulence.
@@ -596,7 +597,8 @@ sEddyProc$methods(
     ##
     ## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sExportResults}}.
     ## Each of the columns is calculated for several u*r-estimates and distinguished by a suffix after the variable. 
-    ## By default NEE for best UStar estimate is given in column NEE_UStar_f, 
+    ## E.g. with using a \code{UstarThres.m.n} corresponding to the default  \code{UstarSuffix.V.s}, 
+	## NEE for best UStar estimate is given in column NEE_UStar_f, 
     ## and NEE based on lower and upper 90% confidence interval estimates of Ustar threshold 
     ## are returned in columns NEE_U05_f and NEE_U95_f respectively.
   }))

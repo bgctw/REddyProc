@@ -4,8 +4,7 @@
 \description{Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*}
 \usage{sMDSGapFillAfterUstar(FluxVar.s, UstarVar.s = "Ustar", UstarThres.V.n, 
     UstarSuffix.s = "WithUstar", FlagEntryAfterLowTurbulence.b = FALSE, 
-    ...)}
-\arguments{
+    ...)}\arguments{
   \item{FluxVar.s}{Flux variable to gap fill after ustar filtering}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}
   \item{UstarThres.V.n}{u* thresholds (ms-1) as single number or vector with values for each year}

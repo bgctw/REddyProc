@@ -2,8 +2,7 @@
 \alias{fCalcLengthOfGaps}
 \title{fCalcLengthOfGaps}
 \description{Calculate length of gaps (with flag NA) in specified vector}
-\usage{fCalcLengthOfGaps(Data.V.n)}
-\arguments{
+\usage{fCalcLengthOfGaps(Data.V.n)}\arguments{
   \item{Data.V.n}{Numeric vector with gaps (missing values, NAs)}
 }
 
