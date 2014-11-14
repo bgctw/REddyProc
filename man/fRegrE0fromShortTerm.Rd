@@ -4,7 +4,8 @@
 \description{Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor}} for short periods}
 \usage{fRegrE0fromShortTerm(NightFlux.V.n, TempVar.V.n, DayCounter.V.i, 
     WinDays.i = 7, DayStep.i = 5, TempRange.n = 5, Trim.n = 5, 
-    NumE_0.n = 3, MinE_0.n = 30, MaxE_0.n = 450, CallFunction.s = "")}\arguments{
+    NumE_0.n = 3, MinE_0.n = 30, MaxE_0.n = 450, CallFunction.s = "")}
+\arguments{
   \item{NightFlux.V.n}{(Original) nighttime ecosystem carbon flux, i.e. respiration vector}
   \item{TempVar.V.n}{(Original) air or soil temperature vector (degC)}
   \item{DayCounter.V.i}{Integer specifying the day of each record}

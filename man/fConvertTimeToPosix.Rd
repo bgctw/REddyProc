@@ -3,7 +3,8 @@
 \title{Convert different time formats to POSIX}
 \description{The different time formats are converted to POSIX (GMT) and a 'TimeDate' column is prefixed to the data frame}
 \usage{fConvertTimeToPosix(Data.F, TFormat.s, Year.s = "none", Month.s = "none", 
-    Day.s = "none", Hour.s = "none", Min.s = "none", TName.s = "DateTime")}\arguments{
+    Day.s = "none", Hour.s = "none", Min.s = "none", TName.s = "DateTime")}
+\arguments{
   \item{Data.F}{Data frame with time columns to be converted}
   \item{TFormat.s}{Abbreviation for implemented time formats}
   \item{Year.s}{Column name of year}

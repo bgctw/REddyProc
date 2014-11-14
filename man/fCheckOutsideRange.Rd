@@ -2,7 +2,8 @@
 \alias{fCheckOutsideRange}
 \title{fCheckOutsideRange}
 \description{Check if specified variable is outside of provided boundaries}
-\usage{fCheckOutsideRange(Data.F, VarName.s, Condition.V.s, CallFunction.s = "")}\arguments{
+\usage{fCheckOutsideRange(Data.F, VarName.s, Condition.V.s, CallFunction.s = "")}
+\arguments{
   \item{Data.F}{Data frame}
   \item{VarName.s}{Variable (column) name}
   \item{Condition.V.s}{Logical condition for outside values}

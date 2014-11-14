@@ -2,7 +2,8 @@
 \alias{sxClosePlot}
 \title{sEddyProc - Internal function}
 \description{Close screens and save graphics device to file.}
-\usage{sxClosePlot(PlotFile.s)}\arguments{
+\usage{sxClosePlot(PlotFile.s)}
+\arguments{
   \item{PlotFile.s}{Name of opened graphics device}
 }
 
