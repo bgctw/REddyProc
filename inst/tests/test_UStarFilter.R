@@ -71,6 +71,20 @@ test_that("sEstUstarThreshold: changing to FW1",{
 							,controlUstarSubsetting()$taClasses ))
 		})
 
+test_that("sEstUstarThreshold: One-big-season",{
+			dsFew <- EddyDataWithPosix.F
+			dsFew$NEE[ -(1:controlUstarSubsetting()$minRecordsWithinYear+1L) ] <- NA
+			EddyProc.C <- sEddyProc$new('DE-Tha', dsFew, c('NEE','Rg','Tair','VPD','Ustar'))
+			(res <- EddyProc.C$sEstUstarThreshold())
+			sEstUstarThresholdYears
+			expect_equal( res$UstarAggr, 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
+			expect_equal( dim(res$UstarSeasonTemp)
+					, c( 1L #length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime)))
+							,controlUstarSubsetting()$taClasses ))
+		})
+
+
+
 test_that("distribution multiyear matrix",{
 	EddyData.F99 <- EddyData.F		
 	EddyData.F99$Year <- EddyData.F$Year +1

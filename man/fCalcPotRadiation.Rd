@@ -3,8 +3,7 @@
 \title{fCalcPotRadiation}
 \description{Calculate the potential radiation }
 \usage{fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n, 
-    useSolartime.b = TRUE)}
-\arguments{
+    useSolartime.b = TRUE)}\arguments{
   \item{DoY.V.n}{Data vector with day of year (DoY), same length as Hour or length 1}
   \item{Hour.V.n}{Data vector with time as decimal hour}
   \item{Lat_deg.n}{Latitude in (decimal) degrees}

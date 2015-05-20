@@ -165,18 +165,31 @@ sEddyProc$methods(
 	## \item{ \code{\link{sEstUstarThresholdYears}} that applies this function to subsets of each year. }
 	## \item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data.}
 	## } 
-	
+	#
 	dsF <- cbind(ds,season=seasonFactor.v)
 	dsc <- if( isCleaned) dsF else cleanUStarSeries( dsF, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr)
-	## TODO check number of records
+	#
+	##details<< \describe{\item{One-big-season fallback}{
+	## If there are too few records within one year, there is  fallback to assemble the data from 
+	## the different seasons to one big season.
+	## By default, a warning is issued. The user can suppress the fallback by provinding option
+	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
+	## }}
 	if( nrow(dsc) < ctrlUstarSub.l$minRecordsWithinYear){
-		stop("sEstUstarThreshold: too few finite records within one year " 
-				,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
-				,"(n=",nrow(dsc)
-				,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
-		)
+		if( ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords == FALSE ){
+			stop("sEstUstarThreshold: too few finite records within one year " 
+					,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
+					,"(n=",nrow(dsc)
+					,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
+					," Or set ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords to TRUE."
+			)
+		} else {
+			warning("sEstUstarThreshold: too few finite records within one year. Aggregating all data to one big season.") 
+			dsc$season <- 0L
+		}
 	}
-	dsi <- subset(dsc, season == 5)
+	#
+	#dsi <- subset(dsc, season == 5)
 	UstarSeasons <- daply(dsc, .(season), function(dsi){
 		if( nrow(dsi) < ctrlUstarSub.l$minRecordsWithinSeason){
 			warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),"). Need at least n=",ctrlUstarSub.l$minRecordsWithinSeason,". Returning NA for this Season." )
@@ -224,7 +237,6 @@ sEddyProc$methods(
 			if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
 				dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
 				if( any(!is.finite(dsiBinnedUstar[,2])) ){
-					recover()
 					stop("Encountered non-finite average NEE for a UStar bin.",
 							"You need to provide data with non-finite collumns uStar and NEE for UStar Threshold detection.")
 				}
@@ -317,6 +329,7 @@ controlUstarSubsetting <- function(
 	,minRecordsWithinTemp = 100		##<< integer scalar: the minimum number of Records within one Temperature-class
 	,minRecordsWithinSeason = 160	##<< integer scalar: the minimum number of Records within one season
 	,minRecordsWithinYear	= 3000	##<< integer scalar: the minimum number of Records within one year
+	,isUsingOneBigSeasonOnFewRecords = TRUE ##<< boolean scalar: set to FALSE to avoid aggregating all seasons on too few records
 	# 1.) ,selection parameter for which fwd and back modes? fwd2 as default... 
 	# 2.) ,MIN_VALUE_PERIOD <<- 3000 # per whole data set... double check C code
 	# 3.) ,MIN_VALUE_SEASON <<- 160 #if #number of data points in one any season are smaller than that, merge to one big season
@@ -333,6 +346,7 @@ controlUstarSubsetting <- function(
 		,minRecordsWithinTemp = minRecordsWithinTemp
 		,minRecordsWithinSeason = minRecordsWithinSeason
 		,minRecordsWithinYear = minRecordsWithinYear
+		,isUsingOneBigSeasonOnFewRecords = isUsingOneBigSeasonOnFewRecords
 )	
   if (ctrl$swThr != 10) warning("WARNING: parameter swThr set to non default value!")
   if (ctrl$taClasses != 7) warning("WARNING: parameter taClasses set to non default value!")	
@@ -382,6 +396,9 @@ createSeasonFactorYday <- function(
 	, yday=as.POSIXlt(dates)$yday  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record  
 	, startYday=c(335,60,152,244)-1	##<< integer vector (0-366) specifying the starting month for each season
 ){
+	##details<<
+	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
+	## If working with dates that denote the end of the period, use \code(yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday
 	startYday <- sort(unique(startYday))
 	boLastPeriod <- (yday < startYday[1])	# days before the first starting day will be in last period 
 	yday[ boLastPeriod ] <- yday[ boLastPeriod] +366  # translate day to be after last specified startday 
@@ -521,7 +538,12 @@ cleanUStarSeries <- function(
 	,RgColName = "Rg"
 	,swThr = controlUstarSubsetting()$swThr
 ){
-	ds <- subset(ds, is.finite(ds[,NEEColName]) & is.finite(ds[,TempColName]) & is.finite(ds[,UstarColName]) & is.finite(ds[,RgColName]) ) 
+	ds <- subset(ds, 
+			is.finite(ds[,NEEColName]) & 
+			is.finite(ds[,TempColName]) & 
+			is.finite(ds[,UstarColName]) & 
+			is.finite(ds[,RgColName]) 
+	) 
 	#night time data selection
 	ds <- ds[ ds[,RgColName] < swThr, ]
 	##value<< ds with non-finite cases and cases with radiation < swThr removed.
@@ -605,7 +627,7 @@ sEddyProc$methods(
 		ds <- sDATA
 		Ustar.l <- suppressMessages( 
 				boot( ds, .self$sEstUstarThresholdYears, nSample, seasonFactor.v=seasonFactor.v, yearFactor.v=yearFactor.v
-					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l
+					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l, ...
 				) # only evaluate once
 		)
         res <- cbind(  Ustar=Ustar.l$t0, t(apply( Ustar.l$t, 2, quantile, probs=probs, na.rm=TRUE )))

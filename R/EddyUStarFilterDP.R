@@ -165,79 +165,42 @@ sEddyProc$methods(
 	## \item{ \code{\link{sEstUstarThresholdYears}} that applies this function to subsets of each year. }
 	## \item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data.}
 	## } 
-	
+	#
 	dsF <- cbind(ds,season=seasonFactor.v)
 	dsc <- if( isCleaned) dsF else cleanUStarSeries( dsF, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr)
-	## TODO check number of records
+	#
+	##details<< \describe{\item{One-big-season fallback}{
+	## If there are too few records within one year, there is  fallback to assemble the data from 
+	## the different seasons to one big season.
+	## By default, a warning is issued. The user can suppress the fallback by provinding option
+	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
+	## }}
 	if( nrow(dsc) < ctrlUstarSub.l$minRecordsWithinYear){
-		stop("sEstUstarThreshold: too few finite records within one year " 
-				,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
-				,"(n=",nrow(dsc)
-				,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
-		)
+		if( ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords == FALSE ){
+			stop("sEstUstarThreshold: too few finite records within one year " 
+					,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
+					,"(n=",nrow(dsc)
+					,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
+					," Or set ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords to TRUE."
+			)
+		} else {
+			warning("sEstUstarThreshold: too few finite records within one year. Aggregating all data to one big season.") 
+			dsc$season <- 0L
+		}
 	}
-	dsi <- subset(dsc, season == 5)
-	UstarSeasons <- daply(dsc, .(season), function(dsi){
-		if( nrow(dsi) < ctrlUstarSub.l$minRecordsWithinSeason){
-			warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),"). Need at least n=",ctrlUstarSub.l$minRecordsWithinSeason,". Returning NA for this Season." )
-			return( rep(NA_real_, ctrlUstarSub.l$taClasses))
-		}
-		if( nrow(dsi)/ctrlUstarSub.l$taClasses < ctrlUstarSub.l$minRecordsWithinTemp ){
-			warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),") for ",ctrlUstarSub.l$taClasses
-					," temperature classes. Need at least n=",ctrlUstarSub.l$minRecordsWithinTemp*ctrlUstarSub.l$taClasses
-					,". Returning NA for this Season." )
-		}
-		#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")
-		dsiSort <- arrange(dsi, dsi[,TempColName]) 	#sort values in a season by air temperature and then by UStar
-		N <- nrow(dsi ) #number of observations (rows) total, probably can get from elsewhere..
-		T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
-		#set up vector that contains Ustar values for temperature classes
-		UstarTh.v = vector(length=ctrlUstarSub.l$taClasses)
-		#k<-1
-		for (k in 1:ctrlUstarSub.l$taClasses){
-			# minimum number of records within temp checked above					
-			#print(k)
-			#if( k == 4 ) recover()
-			#original Dario's C version...
-			#ta_class_start = 0;
-			#ta_class_end = season_start_index;
-			#/* set start & end indexes */
-			#  ta_class_start = ta_class_end;
-			#ta_class_end = season_start_index + (ta_samples_count*(i+1)-1);
-			
-			#/om:this part only implemented for checking C code compatibility...
-			#ta_class_start = ta_class_end
-			#ta_class_end = ta_class_start + T_bin_size-1
-			#/eom
-			
-			#subset into Ta classes
-			if (k==ctrlUstarSub.l$taClasses){ # use end index of vector for slightly smaller last bin (due to rounding) 
-				dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):N,]
-			} else {
-				dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
-			}
-			#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
-			Cor1 = suppressWarnings( abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName])) ) # maybe too few or degenerate cases
-			# TODO: check more correlations here? [check C code]
-			#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
-			#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
-			if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
-				dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
-				if( any(!is.finite(dsiBinnedUstar[,2])) ){
-					recover()
-					stop("Encountered non-finite average NEE for a UStar bin.",
-							"You need to provide data with non-finite collumns uStar and NEE for UStar Threshold detection.")
-				}
-				UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
-			} else { #correlation between T and u* too high
-				#fill respective cell with NA
-				UstarTh.v[k] = NA
-				#TODO: should a message be printed here to the user??
-			}
-		}
-		UstarTh.v # vector of uStar for temperature classes
-	},.drop_o = FALSE) # daply over seasons  matrix (nTemp x nSeason)
-	uStarAggr <- max( apply( UstarSeasons, 1, median, na.rm=TRUE), na.rm=TRUE)
+	#
+	#dsi <- subset(dsc, season == 4)
+	UstarSeasons <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
+		,ctrlUstarSub.l = ctrlUstarSub.l
+		,ctrlUstarEst.l = ctrlUstarEst.l
+		,fEstimateUStarBinned = fEstimateUStarBinned
+		,UstarColName = UstarColName
+		,NEEColName = NEEColName
+		,TempColName = TempColName
+		,RgColName = RgColName
+	) # daply over seasons  matrix (nTemp x nSeason)
+	uStarSeasons <- apply( UstarSeasons, 1, median, na.rm=TRUE)
+	uStarAggr <- max( uStarSeasons, na.rm=TRUE)
 	message(paste("Estimated UStar threshold of: ", signif(uStarAggr,2)
 					,"by using controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
 			))
@@ -245,6 +208,8 @@ sEddyProc$methods(
 	list(
 			UstarAggr=uStarAggr				##<< numeric scalar: Ustar threshold estimate:  max_Seasons( median_TempClasses )
 			,UstarSeasonTemp=UstarSeasons	##<< numeric matrix (nSeason x nTemp): estimates for each subset
+			,UstarSeason=uStarSeasons		##<< numeric vector (nSeason): estimate for the season
+			,countRecordsSeason=table(dsc$season)	##<< numeric vector (nSeason): number of valid input data records for each season
 	)
 },ex = function(){
   if( FALSE ) { #Do not always execute example code (e.g. on package installation)
@@ -256,6 +221,73 @@ sEddyProc$methods(
     (Result.L <- EddyProc.C$sEstUstarThreshold())
   }
 }))
+
+.estimateUStarSeason <- function(dsi, ctrlUstarSub.l, ctrlUstarEst.l, fEstimateUStarBinned
+		,UstarColName 		##<< collumn name for UStar
+		,NEEColName 		##<< collumn name for NEE
+		,TempColName 		##<< collumn name for air temperature
+		,RgColName 			##<< collumn name for solar radiation for omitting night time data
+){
+	if( nrow(dsi) < ctrlUstarSub.l$minRecordsWithinSeason){
+		warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),"). Need at least n=",ctrlUstarSub.l$minRecordsWithinSeason,". Returning NA for this Season." )
+		return( rep(NA_real_, ctrlUstarSub.l$taClasses))
+	}
+	if( nrow(dsi)/ctrlUstarSub.l$taClasses < ctrlUstarSub.l$minRecordsWithinTemp ){
+		warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),") for ",ctrlUstarSub.l$taClasses
+				," temperature classes. Need at least n=",ctrlUstarSub.l$minRecordsWithinTemp*ctrlUstarSub.l$taClasses
+				,". Returning NA for this Season." )
+		return( rep(NA_real_, ctrlUstarSub.l$taClasses))
+	}
+	#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")
+	dsiSort <- arrange(dsi, dsi[,TempColName]) 	#sort values in a season by air temperature (later in class by ustar)
+	N <- nrow(dsi ) #number of observations (rows) total, probably can get from elsewhere..
+	T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
+	#set up vector that contains Ustar values for temperature classes
+	UstarTh.v = vector(length=ctrlUstarSub.l$taClasses)
+	#k<-1
+	for (k in 1:ctrlUstarSub.l$taClasses){	# k temperature class
+		# minimum number of records within temp checked above					
+		#print(k)
+		#if( k == 4 ) recover()
+		#original Dario's C version...
+		#ta_class_start = 0;
+		#ta_class_end = season_start_index;
+		#/* set start & end indexes */
+		#  ta_class_start = ta_class_end;
+		#ta_class_end = season_start_index + (ta_samples_count*(i+1)-1);
+		
+		#/om:this part only implemented for checking C code compatibility...
+		#ta_class_start = ta_class_end
+		#ta_class_end = ta_class_start + T_bin_size-1
+		#/eom
+		
+		#subset into Ta classes
+		if (k==ctrlUstarSub.l$taClasses){ # use end index of vector for slightly smaller last bin (due to rounding) 
+			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):N,]
+		} else {
+			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
+		}
+		#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
+		Cor1 = suppressWarnings( abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName])) ) # maybe too few or degenerate cases
+		# TODO: check more correlations here? [check C code]
+		#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
+		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
+		if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
+			dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
+			#plot( NEE_avg ~ Ust_avg, dsiBinnedUstar)
+			if( any(!is.finite(dsiBinnedUstar[,2])) ){
+				stop("Encountered non-finite average NEE for a UStar bin.",
+						"You need to provide data with non-finite collumns uStar and NEE for UStar Threshold detection.")
+			}
+			UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
+		} else { #correlation between T and u* too high
+			#fill respective cell with NA
+			UstarTh.v[k] = NA
+			#TODO: should a message be printed here to the user??
+		}
+	}
+	UstarTh.v # vector of uStar for temperature classes
+}
 
 
 controlUstarEst <- function(
@@ -317,6 +349,7 @@ controlUstarSubsetting <- function(
 	,minRecordsWithinTemp = 100		##<< integer scalar: the minimum number of Records within one Temperature-class
 	,minRecordsWithinSeason = 160	##<< integer scalar: the minimum number of Records within one season
 	,minRecordsWithinYear	= 3000	##<< integer scalar: the minimum number of Records within one year
+	,isUsingOneBigSeasonOnFewRecords = TRUE ##<< boolean scalar: set to FALSE to avoid aggregating all seasons on too few records
 	# 1.) ,selection parameter for which fwd and back modes? fwd2 as default... 
 	# 2.) ,MIN_VALUE_PERIOD <<- 3000 # per whole data set... double check C code
 	# 3.) ,MIN_VALUE_SEASON <<- 160 #if #number of data points in one any season are smaller than that, merge to one big season
@@ -333,6 +366,7 @@ controlUstarSubsetting <- function(
 		,minRecordsWithinTemp = minRecordsWithinTemp
 		,minRecordsWithinSeason = minRecordsWithinSeason
 		,minRecordsWithinYear = minRecordsWithinYear
+		,isUsingOneBigSeasonOnFewRecords = isUsingOneBigSeasonOnFewRecords
 )	
   if (ctrl$swThr != 10) warning("WARNING: parameter swThr set to non default value!")
   if (ctrl$taClasses != 7) warning("WARNING: parameter taClasses set to non default value!")	
@@ -382,6 +416,9 @@ createSeasonFactorYday <- function(
 	, yday=as.POSIXlt(dates)$yday  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record  
 	, startYday=c(335,60,152,244)-1	##<< integer vector (0-366) specifying the starting month for each season
 ){
+	##details<<
+	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
+	## If working with dates that denote the end of the period, use \code(yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday
 	startYday <- sort(unique(startYday))
 	boLastPeriod <- (yday < startYday[1])	# days before the first starting day will be in last period 
 	yday[ boLastPeriod ] <- yday[ boLastPeriod] +366  # translate day to be after last specified startday 
@@ -407,40 +444,14 @@ binUstar <- function(
 
 ){
 	ds.f <- data.frame(NEE=NEE.v,Ustar=Ustar.v)
-	
 	#within data frame sort values by Ustar
 	if( !isTRUE(isUStarSorted))	ds.f <- arrange(ds.f,ds.f[,2])
-	
-	N_T <- length(NEE.v) #number of observations(rows) 
-	Ust_bin_size <- round(N_T/UstarClasses)
-	
-	#set up data frame for bin averages (by Ustar)
-	Ust_bins.m <- matrix(NA,UstarClasses,2)
-	Ust_bins.f <- data.frame(Ust_bins.m)
-	names(Ust_bins.f)[1]="Ust_avg"; names(Ust_bins.f)[2]="NEE_avg";
-	#names(Ust_bins.f)[3]="N";
-	
-	#calculate u* bin averages
-	for (u in 1:UstarClasses){
-		#/om:this part only implemented for checking C code compatibility...
-		#ust_class_start = ust_class_end
-		#ust_class_end = ust_class_start + Ust_bin_size-1
-		#dataUstclass <- dataTclass[ust_class_start:ust_class_end,]
-		#/eom    
-		if (u==UstarClasses){ 
-			# use end index of vector for slightly smaller last bin (due to rounding) 
-			dsUstClass.f <- ds.f[((u-1)*Ust_bin_size+1):N_T,]
-		}
-		else {
-			dsUstClass.f <- ds.f[((u-1)*Ust_bin_size+1):((u)*Ust_bin_size),]
-		}
-		#TODO: merge two following lines to one
-		Ust_bins.f$NEE_avg[u] <- mean(dsUstClass.f[,1], na.rm=T) #mean of NEE over Ustar bins
-		Ust_bins.f$Ust_avg[u] <- mean(dsUstClass.f[,2], na.rm=T) #mean of Ustar bins
-		#Ust_bins.f$N[u] <- sum(!is.na(dataUstclass$nee))
-	}
-	#Ust_bins.f[,2][ !is.finite(Ust_bins.f[,2]) ] <- NA	# only allow finite values (no NaN)
-	Ust_bins.f
+	#
+	# twutz 1505: changed binning to take care of equal values in uStar column 
+	# when assigning uStar classes, only start a new class when uStar value changes
+	ds.f$uClass <- .binWithEqualValues(ds.f$Ustar, nBin=UstarClasses, tol = 1e-8)
+	#
+	ddply( ds.f, .(uClass), summarise, Ust_avg=mean(Ustar), NEE_avg=mean(NEE), nRec=length(NEE))[,-1]
 }
 attr(binUstar,"ex") <- function(){
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
@@ -451,6 +462,26 @@ attr(binUstar,"ex") <- function(){
 	(resFW1 <- estUstarThresholdSingleFw1Binned(res))
 	(resFW2 <- estUstarThresholdSingleFw2Binned(res))
 }
+
+.binWithEqualValues <- function(
+	### createg a binning factor so that equal values of x end up in the same bin
+	x				##<< sorted numeric vector to sort into bins
+	,tol = 1e-8		##<< distance between successive values of x that are treated to be equal
+	,nBin			##<< intended number of bins
+){
+	binSize <- as.integer(round( length(x) / nBin ))
+	breaksX <- which(diff(x) > tol)+1
+	binId <- rep(1L,length(x))
+	#iClass <- 2L
+	for( iClass in 2:nBin){
+		start0 <- (iClass-1)*binSize + 1
+		start1 <- breaksX[breaksX >= start0][1]	# find next uStar change at or after position start0 
+		binId[start1:length(x)] <- iClass
+	}
+	##value<< integer vector of same length as x, with unique value for each bin
+	binId
+}
+	
 
 
 estUstarThresholdSingleFw1Binned <- function(
@@ -521,7 +552,12 @@ cleanUStarSeries <- function(
 	,RgColName = "Rg"
 	,swThr = controlUstarSubsetting()$swThr
 ){
-	ds <- subset(ds, is.finite(ds[,NEEColName]) & is.finite(ds[,TempColName]) & is.finite(ds[,UstarColName]) & is.finite(ds[,RgColName]) ) 
+	ds <- subset(ds, 
+			is.finite(ds[,NEEColName]) & 
+			is.finite(ds[,TempColName]) & 
+			is.finite(ds[,UstarColName]) & 
+			is.finite(ds[,RgColName]) 
+	) 
 	#night time data selection
 	ds <- ds[ ds[,RgColName] < swThr, ]
 	##value<< ds with non-finite cases and cases with radiation < swThr removed.
@@ -561,16 +597,17 @@ sEddyProc$methods(
 	}else{
 		#dsYear <- subset(dsc, yearFactor == dsc$yearFactor[1] )
 		res <- daply( dsc, .(yearFactor), function(dsYear){
-					if( nrow(dsYear) < ctrlUstarSub.l$minRecordsWithinYear){
-						warning("sEstUstarThreshold: too few finite records within one year " 
-							,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
-							,"(n=",nrow(dsYear)
-							,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
-							,". Returning NA and continueing with next year."
-							)
-							return( NA )
-						}
-					uStar.l <- .self$sEstUstarThreshold(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l, isCleaned=TRUE  )
+#					if( nrow(dsYear) < ctrlUstarSub.l$minRecordsWithinYear){
+#						warning("sEstUstarThreshold: too few finite records within one year " 
+#							,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
+#							,"(n=",nrow(dsYear)
+#							,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
+#							,". Returning NA and continueing with next year."
+#							)
+#							return( NA )
+#						}
+					uStar.l <- try( .self$sEstUstarThreshold(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l, isCleaned=TRUE  ))
+					if( inherits(uStar.l,"try-error")){ return(NA) }
 					uStar.l$UstarAggr
 				}, .inform = TRUE, .drop_o = FALSE)
 				#}, .inform = FALSE)
@@ -605,7 +642,7 @@ sEddyProc$methods(
 		ds <- sDATA
 		Ustar.l <- suppressMessages( 
 				boot( ds, .self$sEstUstarThresholdYears, nSample, seasonFactor.v=seasonFactor.v, yearFactor.v=yearFactor.v
-					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l
+					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l, ...
 				) # only evaluate once
 		)
         res <- cbind(  Ustar=Ustar.l$t0, t(apply( Ustar.l$t, 2, quantile, probs=probs, na.rm=TRUE )))
