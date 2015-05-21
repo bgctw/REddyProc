@@ -241,6 +241,7 @@ sEddyProc$methods(
 							"You need to provide data with non-finite collumns uStar and NEE for UStar Threshold detection.")
 				}
 				UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
+recover()				
 			} else { #correlation between T and u* too high
 				#fill respective cell with NA
 				UstarTh.v[k] = NA

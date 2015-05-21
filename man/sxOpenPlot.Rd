@@ -3,8 +3,7 @@
 \title{sEddyProc - Internal function}
 \description{Open graphics device.}
 \usage{sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, 
-    Format.s, Dir.s, CallFunction.s = "", DotsPerInc.n = 72)}
-\arguments{
+    Format.s, Dir.s, CallFunction.s = "", DotsPerInc.n = 72)}\arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}
   \item{QFValue.n}{Value of quality flag for data to plot}

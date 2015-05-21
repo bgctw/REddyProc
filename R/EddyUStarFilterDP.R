@@ -240,11 +240,13 @@ sEddyProc$methods(
 	}
 	#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")
 	dsiSort <- arrange(dsi, dsi[,TempColName]) 	#sort values in a season by air temperature (later in class by ustar)
-	N <- nrow(dsi ) #number of observations (rows) total, probably can get from elsewhere..
-	T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
+	#N <- nrow(dsi ) #number of observations (rows) total, probably can get from elsewhere..
+	#T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
 	#set up vector that contains Ustar values for temperature classes
 	UstarTh.v = vector(length=ctrlUstarSub.l$taClasses)
-	#k<-1
+	# twutz 1505: changed temperature binning of records to put equals temperatures into the same bin (compatibility with C code)
+	TId <- .binWithEqualValues(dsiSort[,TempColName], ctrlUstarSub.l$taClasses)
+	#k<-1L
 	for (k in 1:ctrlUstarSub.l$taClasses){	# k temperature class
 		# minimum number of records within temp checked above					
 		#print(k)
@@ -262,11 +264,12 @@ sEddyProc$methods(
 		#/eom
 		
 		#subset into Ta classes
-		if (k==ctrlUstarSub.l$taClasses){ # use end index of vector for slightly smaller last bin (due to rounding) 
-			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):N,]
-		} else {
-			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
-		}
+#		if (k==ctrlUstarSub.l$taClasses){ # use end index of vector for slightly smaller last bin (due to rounding) 
+#			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):N,]
+#		} else {
+#			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
+#		}
+		dsiSortTclass <- dsiSort[TId == k,]
 		#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
 		Cor1 = suppressWarnings( abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName])) ) # maybe too few or degenerate cases
 		# TODO: check more correlations here? [check C code]
@@ -305,6 +308,7 @@ controlUstarEst <- function(
   ,ustPlateauBack = 6	##<< number of subsequent thresholds to compare to in back mode  
   ,plateauCrit = 0.95	##<< significant differences between a u* value and the mean of a "plateau"
   ,corrCheck = 0.5 		##<< threshold value for correlation between Tair and u* data
+  ,ustNotFoundValue = 10	##<< threshold value used for a bin, if none was found, set to Inf to use maximum of the bin
   #,bt = FALSE 			##<< flag for bootstrapping
   #,btTimes = 100 		##<< number of bootstrap samples
   
@@ -325,6 +329,7 @@ controlUstarEst <- function(
     ,ustPlateauBack = ustPlateauBack #number of subsequent thresholds to compare to in back mode  
     ,plateauCrit = plateauCrit #significant differences between a u* value and the mean of a "plateau"
     ,corrCheck = corrCheck #threshold value for correlation between Tair and u* data
+	,ustNotFoundValue = ustNotFoundValue
     #,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
     #,bt = bt #flag for bootstrapping
@@ -449,9 +454,9 @@ binUstar <- function(
 	#
 	# twutz 1505: changed binning to take care of equal values in uStar column 
 	# when assigning uStar classes, only start a new class when uStar value changes
-	ds.f$uClass <- .binWithEqualValues(ds.f$Ustar, nBin=UstarClasses, tol = 1e-8)
+	ds.f$uClass <- .binWithEqualValues(ds.f$Ustar, nBin=UstarClasses, tol = 1e-14)
 	#
-	ddply( ds.f, .(uClass), summarise, Ust_avg=mean(Ustar), NEE_avg=mean(NEE), nRec=length(NEE))[,-1]
+	ddply( ds.f, .(uClass), summarise, Ust_avg=mean(Ustar,na.rm=TRUE), NEE_avg=mean(NEE, na.rm=TRUE), nRec=length(NEE))[,-1]
 }
 attr(binUstar,"ex") <- function(){
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
@@ -466,23 +471,41 @@ attr(binUstar,"ex") <- function(){
 .binWithEqualValues <- function(
 	### createg a binning factor so that equal values of x end up in the same bin
 	x				##<< sorted numeric vector to sort into bins
-	,tol = 1e-8		##<< distance between successive values of x that are treated to be equal
 	,nBin			##<< intended number of bins
+	,tol = 1e-8		##<< distance between successive values of x that are treated to be equal
+	,isBinSizeFloorUsed=TRUE	##<< set to FALSE to postpone rounding on start and end values
 ){
-	binSize <- as.integer(round( length(x) / nBin ))
+	binSize <- length(x) / nBin
+	##details<< 
+	## By not taking the floor, a better distribution of samples across bins is achieved.
+	## But here keep it due to compatibility to C-Code.
+	if( isBinSizeFloorUsed ) binSize <- floor(binSize)
 	breaksX <- which(diff(x) > tol)+1
 	binId <- rep(1L,length(x))
+	iBreak <- 1L	# index from which to seek next break
 	#iClass <- 2L
 	for( iClass in 2:nBin){
-		start0 <- (iClass-1)*binSize + 1
-		start1 <- breaksX[breaksX >= start0][1]	# find next uStar change at or after position start0 
+		start0 <- round((iClass-1)*binSize)+1
+		iBreak <- .whichValueGreaterEqual(breaksX, start0, iStart=iBreak)
+		start1 <- breaksX[iBreak]
+		#start1Slow <- breaksX[breaksX >= start0][1]	# find next uStar change at or after position start0 
 		binId[start1:length(x)] <- iClass
 	}
 	##value<< integer vector of same length as x, with unique value for each bin
 	binId
 }
-	
 
+.whichValueGreaterEqual <- whichValueGreaterEqualR <- function(
+	### 
+	x			##<< increasingly sorted numeric vector to search 
+	, threshold	##<< threshold: to find position of value 
+	, iStart=1L	##<< index to start search
+){
+	#which(x >= threshold)[1]
+	#iStart-1 + which(x[iStart:length(x)] >= threshold)[1]
+	# for performance reasons call a c++ function that loops across the vector
+	.whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
+}
 
 estUstarThresholdSingleFw1Binned <- function(
 		### estimate the Ustar threshold for single subset, using FW1 algorithm, relying on binned NEE and Ustar
@@ -522,20 +545,22 @@ estUstarThresholdSingleFw2Binned <- function(
   Ust_bins.f							##<< data.frame with column s NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{binUstar}}
   ,ctrlUstarEst.l = controlUstarEst()	##<< parameter list, see \code{\link{controlUstarEst}} for defaults and description 
 ){  
-  # algorithm to check when plateau is reached
+	# algorithm to check when plateau is reached
   flag <- FALSE
   #for every u* bin compare to avg of subsequent UST_PLATEAU, until found
   u <- 1
   while (!flag){ #only stop if threshold is found
-    if (!flag & (Ust_bins.f$NEE_avg[u] >= (ctrlUstarEst.l$plateauCrit*mean(Ust_bins.f$NEE_avg[(u+1):(u+ctrlUstarEst.l$ustPlateauFwd)],na.rm=T))) 
-        & (Ust_bins.f$NEE_avg[u+1] >= (ctrlUstarEst.l$plateauCrit*mean(Ust_bins.f$NEE_avg[(u+1+1):(u+ctrlUstarEst.l$ustPlateauFwd+1)],na.rm=T)))){ 
+    if (
+		!flag &
+		(Ust_bins.f$NEE_avg[u] >= (ctrlUstarEst.l$plateauCrit*mean(Ust_bins.f$NEE_avg[(u+1):(u+ctrlUstarEst.l$ustPlateauFwd)],na.rm=T))) & 
+		(Ust_bins.f$NEE_avg[u+1] >= (ctrlUstarEst.l$plateauCrit*mean(Ust_bins.f$NEE_avg[(u+1+1):(u+ctrlUstarEst.l$ustPlateauFwd+1)],na.rm=T)))
+	){ 
       UstarThSingle <- Ust_bins.f$Ust_avg[u]        
       flag <- TRUE #set flag for threshold found in this mode
-
     }    
     #case that no threshold could be found by plateau method, use maximum u* in that T_class...
-    if (u==(nrow(Ust_bins.f)-2)){ #FW1: -1 ; FW2: 
-      UstarThSingle <- Ust_bins.f$Ust_avg[u+1]        
+    if (u==(nrow(Ust_bins.f)-2)){ #FW1: -1 ; FW2:
+      UstarThSingle <- if(!is.null(ctrlUstarEst.l$ustNotFoundValue) && is.finite(ctrlUstarEst.l$ustNotFoundValue)) NA_real_ else Ust_bins.f$Ust_avg[u+1]        
       break;      
     }
     u <- u+1 #increase index by 1

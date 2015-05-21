@@ -6,5 +6,6 @@ exportPattern("^[^\\.]")	#exports all variables that do not start with a period.
 
 import( plyr )
 import( minpack.lm )
+import( inline )		# c++ code
 #importFrom(plyr, arrange, ddply)	# problems with function "." ...
 importFrom(boot, boot)
