@@ -4,6 +4,7 @@
 # Author: TW
 #require(testthat)
 context("UStarFilter")
+require(plyr)
 # Furher context: fCheckColNames, fCheckColNumeric, fCheckOutsideRange
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

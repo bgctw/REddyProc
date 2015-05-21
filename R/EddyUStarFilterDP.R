@@ -504,7 +504,7 @@ attr(binUstar,"ex") <- function(){
 	#which(x >= threshold)[1]
 	#iStart-1 + which(x[iStart:length(x)] >= threshold)[1]
 	# for performance reasons call a c++ function that loops across the vector
-	.whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
+	whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
 }
 
 estUstarThresholdSingleFw1Binned <- function(
@@ -665,11 +665,23 @@ sEddyProc$methods(
 		
 		##seealso<< \code{\link{sEstUstarThreshold}}, \code{\link{sEstUstarThresholdYears}}, \code{\link{sMDSwithUStarDP}}
 		ds <- sDATA
+		fWrapper <- function(...){
+			cat(".")
+			res <- .self$sEstUstarThresholdYears(  ...	)
+			gc()
+			res
+		}
 		Ustar.l <- suppressMessages( 
-				boot( ds, .self$sEstUstarThresholdYears, nSample, seasonFactor.v=seasonFactor.v, yearFactor.v=yearFactor.v
-					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l, ...
+				boot( ds
+					#, .self$sEstUstarThresholdYears
+					,fWrapper
+					, nSample, simple = TRUE
+					, seasonFactor.v=seasonFactor.v, yearFactor.v=yearFactor.v
+					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l
+					, ...
 				) # only evaluate once
 		)
+		cat("\n")
         res <- cbind(  Ustar=Ustar.l$t0, t(apply( Ustar.l$t, 2, quantile, probs=probs, na.rm=TRUE )))
 		rownames(res) <- as.numeric(rownames(Ustar.l$t0)) # years
 		message(paste("Estimated UStar distribution of:\n", paste(capture.output(res),collapse="\n")
