@@ -305,11 +305,11 @@ controlUstarEst <- function(
   #
   #,percentile = 90 #percentile value... double check!
   #,percentile_check = TRUE #enable percentile check\n ... double check!
-  ustPlateauFwd = 10 	##<< number of subsequent thresholds to compare to in fwd mode
-  ,ustPlateauBack = 6	##<< number of subsequent thresholds to compare to in back mode  
+  ustPlateauFwd = 10 	##<< number of subsequent uStar bin values to compare to in fwd mode
+  ,ustPlateauBack = 6	##<< number of subsequent uStar bin values to compare to in back mode  
   ,plateauCrit = 0.95	##<< significant differences between a u* value and the mean of a "plateau"
   ,corrCheck = 0.5 		##<< threshold value for correlation between Tair and u* data
-  ,ustNotFoundValue = 10	##<< threshold value used for a bin, if none was found, set to Inf to use maximum of the bin
+  ,isOmitNoThresholdBins = TRUE	##<< if TRUE, bins where no threshold was found are ignored. Set to FALSE to report highest uStar bin for these cases
   #,bt = FALSE 			##<< flag for bootstrapping
   #,btTimes = 100 		##<< number of bootstrap samples
   
@@ -330,7 +330,7 @@ controlUstarEst <- function(
     ,ustPlateauBack = ustPlateauBack #number of subsequent thresholds to compare to in back mode  
     ,plateauCrit = plateauCrit #significant differences between a u* value and the mean of a "plateau"
     ,corrCheck = corrCheck #threshold value for correlation between Tair and u* data
-	,ustNotFoundValue = ustNotFoundValue
+	,isOmitNoThresholdBins = isOmitNoThresholdBins
     #,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
     #,bt = bt #flag for bootstrapping
@@ -539,8 +539,6 @@ estUstarThresholdSingleFw1Binned <- function(
 	return(UstarThSingle)
 }
 
-# TODO: restructure? may not be the most efficient cause Ustar bin averages have to be computed twice (or more depending on how many methods).
-# TODO: wrap rest of Ustar code from fw1 around the while loop... (if necessary, depending on structure)
 estUstarThresholdSingleFw2Binned <- function(
   ### estimate the Ustar threshold for single subset, using FW2 algorithm  	
   Ust_bins.f							##<< data.frame with column s NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{binUstar}}
@@ -560,8 +558,9 @@ estUstarThresholdSingleFw2Binned <- function(
       flag <- TRUE #set flag for threshold found in this mode
     }    
     #case that no threshold could be found by plateau method, use maximum u* in that T_class...
+	# twutz: 1505: implemented option to return NA, to omit from median over bins (C-compatibility)
     if (u==(nrow(Ust_bins.f)-2)){ #FW1: -1 ; FW2:
-      UstarThSingle <- if(!is.null(ctrlUstarEst.l$ustNotFoundValue) && is.finite(ctrlUstarEst.l$ustNotFoundValue)) NA_real_ else Ust_bins.f$Ust_avg[u+1]        
+      UstarThSingle <- if(isTRUE(ctrlUstarEst.l$isOmitNoThresholdBins)) NA_real_ else Ust_bins.f$Ust_avg[u+1]        
       break;      
     }
     u <- u+1 #increase index by 1
