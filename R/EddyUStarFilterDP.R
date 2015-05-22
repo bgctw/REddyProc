@@ -175,6 +175,7 @@ sEddyProc$methods(
 	## By default, a warning is issued. The user can suppress the fallback by provinding option
 	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
 	## }}
+	if( nrow(dsc)==0L ) stop("sEstUstarThreshold: no finite records in dataset")
 	if( nrow(dsc) < ctrlUstarSub.l$minRecordsWithinYear){
 		if( ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords == FALSE ){
 			stop("sEstUstarThreshold: too few finite records within one year " 
