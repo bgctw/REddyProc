@@ -40,3 +40,6 @@ syntax: regexp
 ^\R_InWork$
 syntax: regexp
 ^\plots$
+
+syntax: regexp
+^src-x64$

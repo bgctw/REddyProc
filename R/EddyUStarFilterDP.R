@@ -239,6 +239,7 @@ sEddyProc$methods(
 				,". Returning NA for this Season." )
 		return( rep(NA_real_, ctrlUstarSub.l$taClasses))
 	}
+	# if( as.POSIXlt(dsi$sDateTime[1])$year+1900==2002 & dsi$season[1]==2L ) recover()	
 	#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")
 	dsiSort <- arrange(dsi, dsi[,TempColName]) 	#sort values in a season by air temperature (later in class by ustar)
 	#N <- nrow(dsi ) #number of observations (rows) total, probably can get from elsewhere..
@@ -277,13 +278,18 @@ sEddyProc$methods(
 		#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
 		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
 		if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
-			dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
-			#plot( NEE_avg ~ Ust_avg, dsiBinnedUstar)
-			if( any(!is.finite(dsiBinnedUstar[,2])) ){
-				stop("Encountered non-finite average NEE for a UStar bin.",
-						"You need to provide data with non-finite collumns uStar and NEE for UStar Threshold detection.")
+			if( isTRUE(ctrlUstarEst.l$islibUsingCPT) ){
+				resCPT <- try( fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName]), silent=TRUE )
+				UstarTh.v[k] <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) NA else resCPT["cp"]
+			} else {
+				dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
+				#plot( NEE_avg ~ Ust_avg, dsiBinnedUstar)
+				if( any(!is.finite(dsiBinnedUstar[,2])) ){
+					stop("Encountered non-finite average NEE for a UStar bin.",
+							"You need to provide data with non-finite collumns uStar and NEE for UStar Threshold detection.")
+				}
+				UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
 			}
-			UstarTh.v[k]=fEstimateUStarBinned(  dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
 		} else { #correlation between T and u* too high
 			#fill respective cell with NA
 			UstarTh.v[k] = NA
@@ -310,6 +316,7 @@ controlUstarEst <- function(
   ,plateauCrit = 0.95	##<< significant differences between a u* value and the mean of a "plateau"
   ,corrCheck = 0.5 		##<< threshold value for correlation between Tair and u* data
   ,isOmitNoThresholdBins = TRUE	##<< if TRUE, bins where no threshold was found are ignored. Set to FALSE to report highest uStar bin for these cases
+  ,isUsingCPT=FALSE		##<< set to TRUE to use changePointDetection without binning uStar before
   #,bt = FALSE 			##<< flag for bootstrapping
   #,btTimes = 100 		##<< number of bootstrap samples
   
@@ -331,7 +338,8 @@ controlUstarEst <- function(
     ,plateauCrit = plateauCrit #significant differences between a u* value and the mean of a "plateau"
     ,corrCheck = corrCheck #threshold value for correlation between Tair and u* data
 	,isOmitNoThresholdBins = isOmitNoThresholdBins
-    #,seasons = seasons # switch for three different seasonal modes 
+	,isUsingCPT = isUsingCPT
+	#,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
     #,bt = bt #flag for bootstrapping
     #,btTimes = btTimes #number of bootstrap samples

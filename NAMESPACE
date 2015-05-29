@@ -12,3 +12,4 @@ import( minpack.lm )
 import( inline )		# c++ code
 #importFrom(plyr, arrange, ddply)	# problems with function "." ...,  just do import(plyr)
 importFrom(boot, boot)
+importFrom(segmented, segmented)
