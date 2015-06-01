@@ -191,24 +191,53 @@ sEddyProc$methods(
 	}
 	#
 	#dsi <- subset(dsc, season == 4)
-	UstarSeasons <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
-		,ctrlUstarSub.l = ctrlUstarSub.l
-		,ctrlUstarEst.l = ctrlUstarEst.l
-		,fEstimateUStarBinned = fEstimateUStarBinned
-		,UstarColName = UstarColName
-		,NEEColName = NEEColName
-		,TempColName = TempColName
-		,RgColName = RgColName
-	) # daply over seasons  matrix (nTemp x nSeason)
-	uStarSeasons <- apply( UstarSeasons, 1, median, na.rm=TRUE)
-	uStarAggr <- max( uStarSeasons, na.rm=TRUE)
+	if( isTRUE(ctrlUstarEst.l$isUsingCPTSeveralT)){
+		##details<< 
+		## When using changePoint detection (CPT) method, unreasonable or non-significant breakpoints are already
+		## excluded by F-test to linear model.
+		## Hence, here the median over temperature classes is taken instead of the median.
+		## In addition, with CPT seasons are excluded where a threshold was detected in only less 
+		## than ctrlUstarEst.l$minValidUStarTempClassesProp (default 20% ) of the 
+		## temperature classes
+		UstarAndSdSeasonsTemp <- ddply(dsc, .(season), .estimateUStarSeasonCPTSeveralT
+				#, .drop_o = FALSE, .inform = TRUE
+				,ctrlUstarSub.l = ctrlUstarSub.l
+				,ctrlUstarEst.l = ctrlUstarEst.l
+				,fEstimateUStarBinned = fEstimateUStarBinned
+				,UstarColName = UstarColName
+				,NEEColName = NEEColName
+				,TempColName = TempColName
+				,RgColName = RgColName
+		) # daply over seasons  matrix (nTemp x nSeason)
+		#dss <- subset(UstarAndSdSeasonsTemp, season==2L)
+		UstarSeasonsTemp <- daply( UstarAndSdSeasonsTemp, .(season), function(dss){ dss$UstarTh.v}) 
+		nTaMin <- as.integer(ceiling(ctrlUstarEst.l$minValidUStarTempClassesProp * (3L*ctrlUstarSub.l$taClasses-3L)))
+	    uStarSeasons <- daply(UstarAndSdSeasonsTemp, .(season), function(dss){
+					nTaFinite <- sum(is.finite(dss$UstarTh.v)) 
+					uStarSeason <- if( nTaFinite > nTaMin )	median(dss$UstarTh.v, na.rm=TRUE) else NA
+					#weighted.mean(dss$UstarTh.v, dss$sdUstarTh.v, na.rm = TRUE)
+				})
+		uStarAggr <- max( uStarSeasons, na.rm=TRUE)
+	} else {
+		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
+				,ctrlUstarSub.l = ctrlUstarSub.l
+				,ctrlUstarEst.l = ctrlUstarEst.l
+				,fEstimateUStarBinned = fEstimateUStarBinned
+				,UstarColName = UstarColName
+				,NEEColName = NEEColName
+				,TempColName = TempColName
+				,RgColName = RgColName
+		) # daply over seasons  matrix (nTemp x nSeason)
+		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
+		uStarAggr <- max( uStarSeasons, na.rm=TRUE)
+	}
 	message(paste("Estimated UStar threshold of: ", signif(uStarAggr,2)
 					,"by using controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
 			))
 	##value<< A list with entries
 	list(
 			UstarAggr=uStarAggr				##<< numeric scalar: Ustar threshold estimate:  max_Seasons( median_TempClasses )
-			,UstarSeasonTemp=UstarSeasons	##<< numeric matrix (nSeason x nTemp): estimates for each subset
+			,UstarSeasonTemp=t(UstarSeasonsTemp)	##<< numeric matrix (nTemp x nSeason): estimates for each subset
 			,UstarSeason=uStarSeasons		##<< numeric vector (nSeason): estimate for the season
 			,countRecordsSeason=table(dsc$season)	##<< numeric vector (nSeason): number of valid input data records for each season
 	)
@@ -278,7 +307,7 @@ sEddyProc$methods(
 		#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
 		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
 		if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
-			if( isTRUE(ctrlUstarEst.l$islibUsingCPT) ){
+			if( isTRUE(ctrlUstarEst.l$isUsingCPT) ){
 				resCPT <- try( fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName]), silent=TRUE )
 				UstarTh.v[k] <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) NA else resCPT["cp"]
 			} else {
@@ -317,6 +346,8 @@ controlUstarEst <- function(
   ,corrCheck = 0.5 		##<< threshold value for correlation between Tair and u* data
   ,isOmitNoThresholdBins = TRUE	##<< if TRUE, bins where no threshold was found are ignored. Set to FALSE to report highest uStar bin for these cases
   ,isUsingCPT=FALSE		##<< set to TRUE to use changePointDetection without binning uStar before
+  ,isUsingCPTSeveralT=FALSE	##<< set to TRUE to use changePointDetection without binning uStar for several temperature classifications
+  ,minValidUStarTempClassesProp=0.2 ##<< seasons in only less than this proportion of temperature classes, a threshold was detected are excluded
   #,bt = FALSE 			##<< flag for bootstrapping
   #,btTimes = 100 		##<< number of bootstrap samples
   
@@ -339,6 +370,8 @@ controlUstarEst <- function(
     ,corrCheck = corrCheck #threshold value for correlation between Tair and u* data
 	,isOmitNoThresholdBins = isOmitNoThresholdBins
 	,isUsingCPT = isUsingCPT
+	,isUsingCPTSeveralT = isUsingCPTSeveralT
+	,minValidUStarTempClassesProp = minValidUStarTempClassesProp
 	#,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
     #,bt = bt #flag for bootstrapping
