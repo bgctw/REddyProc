@@ -188,14 +188,17 @@ attr(fitSeg2,"ex") <- function(){
 					#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
 					if( (!is.finite(Cor1)) || (Cor1 > ctrlUstarEst.l$corrCheck)) return(NA_real_)
 					resCPT <- try( suppressWarnings(fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName])), silent=TRUE )
-					threshold <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) c(NA_real_,NA_real_) else resCPT[c("cp","sdCp")]
+					threshold <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) 
+								#c(NA_real_,NA_real_) else resCPT[c("cp","sdCp")]	# testing weighted mean, no improment, simplify again 
+								c(NA_real_) else resCPT[c("cp")]
 					return(threshold)
-				}, FUN.VALUE=numeric(2L), USE.NAMES = FALSE)
+				}, FUN.VALUE=numeric(1L), USE.NAMES = FALSE)
 	})
-	UstarTh.l <- data.frame(
-		UstarTh.v  = do.call( c, lapply(thresholdsTList,"[",1,TRUE)) # vector of uStar for temperature classes
-		,sdUstarTh.v = do.call( c, lapply(thresholdsTList,"[",2,TRUE)) # vector of uStar for temperature classes
-	)				
+#	UstarTh.l <- data.frame(
+#		UstarTh.v  = do.call( c, lapply(thresholdsTList,"[",1,TRUE)) # vector of uStar for temperature classes
+#		,sdUstarTh.v = do.call( c, lapply(thresholdsTList,"[",2,TRUE)) # vector of uStar for temperature classes
+#	)	
+	UstarTh.v  = do.call( c, thresholdsTList )
 }
 
 .tmp.f <- function(){

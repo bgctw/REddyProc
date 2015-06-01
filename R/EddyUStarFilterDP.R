@@ -199,7 +199,7 @@ sEddyProc$methods(
 		## In addition, with CPT seasons are excluded where a threshold was detected in only less 
 		## than ctrlUstarEst.l$minValidUStarTempClassesProp (default 20% ) of the 
 		## temperature classes
-		UstarAndSdSeasonsTemp <- ddply(dsc, .(season), .estimateUStarSeasonCPTSeveralT
+		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeasonCPTSeveralT, .drop_o = FALSE, .inform = TRUE
 				#, .drop_o = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
 				,ctrlUstarEst.l = ctrlUstarEst.l
@@ -208,15 +208,8 @@ sEddyProc$methods(
 				,NEEColName = NEEColName
 				,TempColName = TempColName
 				,RgColName = RgColName
-		) # daply over seasons  matrix (nTemp x nSeason)
-		#dss <- subset(UstarAndSdSeasonsTemp, season==2L)
-		UstarSeasonsTemp <- daply( UstarAndSdSeasonsTemp, .(season), function(dss){ dss$UstarTh.v}) 
-		nTaMin <- as.integer(ceiling(ctrlUstarEst.l$minValidUStarTempClassesProp * (3L*ctrlUstarSub.l$taClasses-3L)))
-	    uStarSeasons <- daply(UstarAndSdSeasonsTemp, .(season), function(dss){
-					nTaFinite <- sum(is.finite(dss$UstarTh.v)) 
-					uStarSeason <- if( nTaFinite > nTaMin )	median(dss$UstarTh.v, na.rm=TRUE) else NA
-					#weighted.mean(dss$UstarTh.v, dss$sdUstarTh.v, na.rm = TRUE)
-				})
+		) # daply over seasons  matrix (nSeason x nTemp)
+		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
 		uStarAggr <- max( uStarSeasons, na.rm=TRUE)
 	} else {
 		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
@@ -672,7 +665,9 @@ sEddyProc$methods(
 #							)
 #							return( NA )
 #						}
-					uStar.l <- try( .self$sEstUstarThreshold(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l, isCleaned=TRUE  ))
+					uStar.l <- #try( 
+							.self$sEstUstarThreshold(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l, isCleaned=TRUE  )
+					#)
 					if( inherits(uStar.l,"try-error")){ return(NA) }
 					uStar.l$UstarAggr
 				}, .inform = TRUE, .drop_o = FALSE)
