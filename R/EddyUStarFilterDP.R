@@ -191,6 +191,7 @@ sEddyProc$methods(
 	}
 	#
 	#dsi <- subset(dsc, season == 4)
+	#dsi <- subset(dsc, season == 0)
 	if( isTRUE(ctrlUstarEst.l$isUsingCPTSeveralT)){
 		##details<< 
 		## When using changePoint detection (CPT) method, unreasonable or non-significant breakpoints are already
@@ -210,7 +211,8 @@ sEddyProc$methods(
 				,RgColName = RgColName
 		) # daply over seasons  matrix (nSeason x nTemp)
 		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
-		uStarAggr <- max( uStarSeasons, na.rm=TRUE)
+		# need check to avoid -Inf in max function
+		uStarAggr <- if( all(!is.finite(uStarSeasons))  ) NA_real_ else max( uStarSeasons, na.rm=TRUE)
 	} else {
 		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
@@ -341,6 +343,7 @@ controlUstarEst <- function(
   ,isUsingCPT=FALSE		##<< set to TRUE to use changePointDetection without binning uStar before
   ,isUsingCPTSeveralT=FALSE	##<< set to TRUE to use changePointDetection without binning uStar for several temperature classifications
   ,minValidUStarTempClassesProp=0.2 ##<< seasons in only less than this proportion of temperature classes, a threshold was detected are excluded
+  ,minValidBootProp=0.4	##<< minimum proportion of bootstrap samples for which a threshold was detected. Below this proportion NA quantiles are reported.
   #,bt = FALSE 			##<< flag for bootstrapping
   #,btTimes = 100 		##<< number of bootstrap samples
   
@@ -365,6 +368,7 @@ controlUstarEst <- function(
 	,isUsingCPT = isUsingCPT
 	,isUsingCPTSeveralT = isUsingCPTSeveralT
 	,minValidUStarTempClassesProp = minValidUStarTempClassesProp
+	,minValidBootProp=minValidBootProp
 	#,seasons = seasons # switch for three different seasonal modes 
     #(seasons or "groupby" may easily extended to an input vector or matrix)
     #,bt = bt #flag for bootstrapping
@@ -718,7 +722,10 @@ sEddyProc$methods(
 				) # only evaluate once
 		)
 		cat("\n")
-        res <- cbind(  Ustar=Ustar.l$t0, t(apply( Ustar.l$t, 2, quantile, probs=probs, na.rm=TRUE )))
+		# if too many bootstrap samples did not detect a treshold, do not report quantiles
+		resQuantiles <-	t(apply( Ustar.l$t, 2, quantile, probs=probs, na.rm=TRUE ))
+		if( 1 - sum(is.na(Ustar.l$t))/length(Ustar.l$t) < ctrlUstarEst.l$minValidBootProp ) resQuantiles[] <- NA
+        res <- cbind(  Ustar=Ustar.l$t0, resQuantiles)
 		rownames(res) <- as.numeric(rownames(Ustar.l$t0)) # years
 		message(paste("Estimated UStar distribution of:\n", paste(capture.output(res),collapse="\n")
 			,"\nby using ",nSample,"bootstrap samples and controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")

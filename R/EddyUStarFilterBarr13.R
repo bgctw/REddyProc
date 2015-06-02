@@ -18,7 +18,7 @@ fitSeg1 <- function(
 			, b1=-cf[2]		##<< first slope (second slope is fixed to zero)
 			, cp=-seg1$psi[2]	##<< estimated breakpoint
 			, sdCp=seg1$psi[3]	##<< estimated standard error of cp
-			, p=anova(lm(y~xr), seg1)[[6]][2]	##<< probability of F test that segmented model is better than a linear model
+			, p=anova(lm(y~xr), seg1, test="LRT")[[5]][2]	##<< probability of F test that segmented model is better than a linear model
 	)
 }
 
