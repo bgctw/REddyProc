@@ -61,7 +61,7 @@ test_that("sEstUstarThreshold: standard case",{
 			(res <- EddyProc.C$sEstUstarThreshold())
 			expect_equal( res$UstarAggr, 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$UstarSeasonTemp)
-				, c( length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime)))
+				, c( length(unique(createSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime)))
 				     ,controlUstarSubsetting()$taClasses ))
 		})
 
@@ -70,7 +70,7 @@ test_that("sEstUstarThreshold: changing to FW1",{
 			(res <- EddyProc.C$sEstUstarThreshold(fEstimateUStarBinned=estUstarThresholdSingleFw1Binned))
 			expect_equal( res$UstarAggr, 0.36, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$UstarSeasonTemp)
-					, c( length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime)))
+					, c( length(unique(createSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime)))
 							,controlUstarSubsetting()$taClasses ))
 		})
 
@@ -81,7 +81,7 @@ test_that("sEstUstarThreshold: One-big-season",{
 			(res <- EddyProc.C$sEstUstarThreshold())
 			expect_equal( res$UstarAggr, 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$UstarSeasonTemp)
-					, c( 1L #length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime)))
+					, c( 1L #length(unique(createSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime)))
 							,controlUstarSubsetting()$taClasses ))
 		})
 

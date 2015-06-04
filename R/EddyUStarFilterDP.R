@@ -5,112 +5,6 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sMDSwithUStarDP = structure(function(
-    ##title<< 
-    ## sEddyProc$sMDSwithUStarDP - MDS gap filling with u* filtering
-    ##description<<
-    ## Calling \code{\link{sMDSGapFill}} for several filters of friction velocity u*
-    Var.s                    ##<< Variable to be filled
-    ,ustar.m   = .self$sEstUstarThresholdDistribution() # quantile( sDATA[,UstarVar.s], probs=c(0.9,0.7,0.95), na.rm=T)       
-    ### Numeric matrix(nYear x nUStar): Each row is a vector of ustar thresholds to apply before gap filling for one year.
-    ### Default is output of \code{\link{sEstUstarThresholdDistribution}}.
-    ### Otherwise provide matrix with one row given for each year in the dataset to gap-fill.
-    ### If only one row is provided, i.e. a vector, then this is used for each year.
-    ,suffix.v = c("Ustar","U05","U50","U95")  ##<< String vector of suffixes for each ustar.m column  
-    ## to distinguish result columns for different ustar values.
-    ## Hence length must correspond to column numbers in ustar.m.
-    ## Default corresponds to returned default columns of function \code{\link{sEstUstarThresholdDistribution}} 
-    ## with estimates on original series, 5% of bootstrap, median of bootstrap, 95% of bootstrap. 
-    ,...                  	 ##<< Other arguments passed to \code{\link{sMDSGapFill}}
-    ,UstarVar.s='Ustar'   	 ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,isFlagEntryAfterLowTurbulence=TRUE  ##<< Default TRUE for flagging the first entry after low turbulance as bad condition.
-  )
-  ##author<< TW
-{
-    ##details<< 
-    ## The u* threshold for filtering the conditions of low turbulence are by default
-    ## estimated with the algorithm \code{\link{sEstUstarThresholdDistribution}}
-    ## or can be provided by the user as matrix ustar.m with column suffixes in suffix.v.
-    ## The data is then filtered for u* and gapfilled.
-    
-    ##seealso<< 
-    ## \code{\link{sEstUstarThresholdDistribution}}
-    
-    year.v <- as.POSIXlt(sDATA$sDateTime)$year + 1900
-    uYear.v <- unique(year.v)
-    if( !is.matrix(ustar.m) ){
-      if( length(suffix.v) != length(ustar.m)) stop("sMDSwithUStarDP: number of suffixes must correspond to number of uStar-thresholds")
-      ustar.m <- matrix( ustar.m, nrow=length(uYear.v), dimnames=list(uYear.v,suffix.v))
-    }
-    nUStar <- ncol(ustar.m)
-    if( length(suffix.v) != nUStar ) stop("sMDSwithUStarDP: number of suffixes must correspond to number of uStar-thresholds")
-    # possibly parallelize, but difficult with R5 Classes
-    # iCol <- 1
-    lapply( seq(1:nUStar), function(iCol){
-      QF.V.b <- rep( TRUE, nrow(sDATA) )
-      #iYear <- 1
-      for( iYear in seq_along(uYear.v) ){
-        QF.V.b[ (year.v==uYear.v[iYear]) & is.finite(ustar.m[iYear, iCol]) & (sDATA[,UstarVar.s] < ustar.m[iYear, iCol]) ] <- FALSE  
-      }
-      if( isTRUE(isFlagEntryAfterLowTurbulence) ){
-        ##details<< 
-        ## With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
-        ## to the data acquired when u* is below the threshold,
-        ## the first half hour measured with good turbulence conditions
-        ## after a period with low turbulence is also removed (Papaple et al. 2006).
-        #QF.V.b <- c( TRUE, TRUE, FALSE, TRUE)
-        QF.V.b[ which(diff(QF.V.b) == 1)+1 ] <- FALSE
-      }
-      message('Using Ustar threshold of ',paste(signif(ustar.m[, iCol],2), collapse=","),
-              ' introduced ',(1-signif(sum(QF.V.b)/length(QF.V.b),2))*100,'% gaps'  )
-      .self$sMDSGapFill( Var.s, ..., QF.V.b=QF.V.b, suffix = suffix.v[iCol] )
-    } )
-    return(invisible(NULL))
-    ##value<< 
-    ## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sExportResults}}.
-    ## Each of the columns is calculated for several u*r-estimates and distinguished by a suffix after the variable. 
-    ## By default NEE for best UStar estimate is given in column NEE_UStar_f, 
-    ## and NEE based on lower and upper 90% confidence interval estimates of Ustar threshold 
-    ## are returned in columns NEE_U05_f and NEE_U95_f respectively.
-  }, ex=function(){
-    if( FALSE ) { #Do not always execute example code (e.g. on package installation)
-      # Load the data from text file
-      Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-      EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-      # Create TimeStamp column
-      EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-      
-      #+++ Default use case
-      EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
-      EddyProc.C$sMDSwithUStarDP('NEE' )     # calls sEstUstarThresholdDistribution 
-      dsf <- EddyProc.C$sExportResults()
-      colnames(dsf)		# note the different output columns corresponding to different Ustar estimates, best estimate with suffix "Ustar"
-      #plot( NEE_U05_f ~ NEE_U95_f, dsf)	# differences between gapFilling using differing Ustar thresholds
-      
-      #+++ Only using one Ustar estimate (omitting output columns for range of Ustar estimates)
-      EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-      Ustar <- EddyProc.C$sEstUstarThreshold()$UstarAggr
-      EddyProc.C$sMDSwithUStarDP('NEE', ustar.m=Ustar, suffix.v="Ustar")      
-      colnames(EddyProc.C$sExportResults())
-      
-      #+++ The advanced user can specify his own estimates of Ustar 
-      # modifying arguements to sEstUstarThresholdDistribution, e.g quantiles to inspect
-      EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
-      ustar.m <- EddyProc.C$sEstUstarThresholdDistribution(EddyProc.C$sExportData(), nSample=10, probs=c(0.25,0.5,0.75))
-      ustar.m		# note that the first entry corresponds to the non-bootstrapped Ustar estimate 
-      EddyProc.C$sMDSwithUStarDP('NEE', ustar.m=ustar.m, suffix.v=c("Ustar","U25","U50","U75") )
-      colnames(EddyProc.C$sExportResults())
-      #
-      # specify thresholds directly
-      EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-      ustar.m <- c(0.38, 0.44)	# used for all years
-      ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") )) # possible different thresholds for different years  
-      EddyProc.C$sMDSwithUStarDP('NEE', ustar.m=ustar.m, suffix.v=c("U38","U44") )
-      colnames(EddyProc.C$sExportResults())
-    }
-  }))
-
-sEddyProc$methods(
 	sEstUstarThreshold = structure(function(
 	  ##title<<
 	  ## sEddyProc$sEstUstarThreshold - Estimating ustar threshold
@@ -123,7 +17,8 @@ sEddyProc$methods(
 		,NEEColName = "NEE"			##<< collumn name for NEE
 		,TempColName = "Tair"		##<< collumn name for air temperature
 		,RgColName = "Rg"			##<< collumn name for solar radiation for omitting night time data
-		,seasonFactor.v = createSeasonFactorMonth(ds$sDateTime) ##<< factor for subsetting times see details 
+		,seasonFactor.v = createSeasonFactorMonth(ds$sDateTime) ##<< factor for subsetting times see details
+		,seasonFactorsYear = getYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year that this season belongs to  
 		,ctrlUstarEst.l = controlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{controlUstarEst}}
 		,ctrlUstarSub.l = controlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}} 
 		,fEstimateUStarBinned = estUstarThresholdSingleFw2Binned	##<< function to estimate UStar on a single binned series, see \code{\link{estUstarThresholdSingleFw2Binned}}
@@ -150,7 +45,7 @@ sEddyProc$methods(
 	## where rows with the same value belong to
 	## the same season. It is conveniently generated by one of the following functions:
 	## \itemize{
-	## 	\item{ \code{\link{createSeasonFactorMonth}} (default DJF-MAM-JJA-SON) }
+	## 	\item{ \code{\link{createSeasonFactorMonthWithinYear}} (default DJF-MAM-JJA-SON) }
 	## 	\item{ \code{\link{createSeasonFactorYday}} }
 	## } 
 	##
@@ -169,6 +64,11 @@ sEddyProc$methods(
 	dsF <- cbind(ds,season=seasonFactor.v)
 	dsc <- if( isCleaned) dsF else cleanUStarSeries( dsF, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr)
 	#
+	tdsc <- as.data.frame(table(dsc$season)); colnames(tdsc) <- c("season","nRec")
+	#some seasons might be absent in dsc from cleaning, construct vectors that report NA for missing seasons
+	nRecValidInSeason <- merge( data.frame( season=sort(unique(dsF$season)) ), tdsc, all.x=TRUE)
+	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(season=names(seasonFactorsYear), year=seasonFactorsYear), all.x=TRUE)
+	nYear <- ddply(nRecValidInSeasonYear, .(year), summarize, nRec=sum(nRec, na.rm=TRUE) )
 	##details<< \describe{\item{One-big-season fallback}{
 	## If there are too few records within one year, there is  fallback to assemble the data from 
 	## the different seasons to one big season.
@@ -176,17 +76,21 @@ sEddyProc$methods(
 	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
 	## }}
 	if( nrow(dsc)==0L ) stop("sEstUstarThreshold: no finite records in dataset")
-	if( nrow(dsc) < ctrlUstarSub.l$minRecordsWithinYear){
+	yearsWithFewData <- nYear$year[ nYear$nRec < ctrlUstarSub.l$minRecordsWithinYear ]
+	nRecValidInSeasonYear$seasonAgg <- nRecValidInSeasonYear$season
+	# year <- yearsWithFewData[1] 
+	for( year in yearsWithFewData){
 		if( ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords == FALSE ){
-			stop("sEstUstarThreshold: too few finite records within one year " 
-					,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
-					,"(n=",nrow(dsc)
+			stop("sEstUstarThreshold: too few finite records within one year ", year 
+					," (n=",nYear$nRec[ nYear$year==year ]
 					,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
 					," Or set ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords to TRUE."
 			)
 		} else {
-			warning("sEstUstarThreshold: too few finite records within one year. Aggregating all data to one big season.") 
-			dsc$season <- 0L
+			warning("sEstUstarThreshold: too few finite records within one year ",year,". Aggregating all data of this year to one big season.")
+			seasons <- nRecValidInSeasonYear$season[nRecValidInSeasonYear$year == year]
+			dsc$season[ dsc$season %in% seasons ] <- seasons[1]
+			nRecValidInSeasonYear$seasonAgg[ nRecValidInSeasonYear$season %in% seasons] <- seasons[1]
 		}
 	}
 	#
@@ -211,8 +115,9 @@ sEddyProc$methods(
 				,RgColName = RgColName
 		) # daply over seasons  matrix (nSeason x nTemp)
 		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
+		iNonValid <- rowSums(is.finite(UstarSeasonsTemp))/ncol(UstarSeasonsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
+		uStarSeasons[iNonValid] <- NA_real_
 		# need check to avoid -Inf in max function
-		uStarAggr <- if( all(!is.finite(uStarSeasons))  ) NA_real_ else max( uStarSeasons, na.rm=TRUE)
 	} else {
 		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
@@ -224,18 +129,30 @@ sEddyProc$methods(
 				,RgColName = RgColName
 		) # daply over seasons  matrix (nTemp x nSeason)
 		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
-		uStarAggr <- max( uStarSeasons, na.rm=TRUE)
 	}
+	results <- merge(nRecValidInSeasonYear, data.frame(seasonAgg=names(uStarSeasons),uStar=uStarSeasons), all.x=TRUE)
+	uStarYear = ddply(results, .(year), function(dss){
+				data.frame( uStar=if( all(!is.finite(dss$uStar))  ) NA_real_ else max( dss$uStar, na.rm=TRUE), year=dss$year[1])
+			})
+	uStarAggr <- median(uStarYear$uStar, na.rm=TRUE)
 	message(paste("Estimated UStar threshold of: ", signif(uStarAggr,2)
 					,"by using controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
 			))
+	resultsDf <- results[,c("season","year","uStar")]
+	resultsDf$aggregationMode <- "season"
+	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="year", season=as.factor(NA_integer_)), uStarYear),resultsDf )
+	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="single", season=as.factor(NA), year=NA_integer_), uStar=uStarAggr),resultsDf )
 	##value<< A list with entries
 	list(
-			UstarAggr=uStarAggr				##<< numeric scalar: Ustar threshold estimate:  max_Seasons( median_TempClasses )
-			,UstarSeasonTemp=t(UstarSeasonsTemp)	##<< numeric matrix (nTemp x nSeason): estimates for each subset
-			,UstarSeason=uStarSeasons		##<< numeric vector (nSeason): estimate for the season
-			,countRecordsSeason=table(dsc$season)	##<< numeric vector (nSeason): number of valid input data records for each season
+			uStarTh = resultsDf[,c("aggregationMode","year","season","uStar")]	##<< data.frame with columns "aggregationMode","year","season","uStar" 
+				## with rows for "single": the entire aggregate (median across years)
+				##, "year": each year (maximum across seasons)
+				##, "season": each season (median across temperature classes)
+			,seasonAggregation =  nRecValidInSeasonYear	##<< data.frame listing for each season, the number of valid records, and the seasons it was aggregated to in case of few records 
+			,UstarSeasonTemp=t(UstarSeasonsTemp)		##<< numeric matrix (nTemp x nAggSeason): estimates for each temperature subset for each aggregated season
 	)
+	## uStar values are reported for each season, together with the information on the seasons: to which aggregated season
+	## it belongs (if there were too few records within year), and to which year it is associated.
 },ex = function(){
   if( FALSE ) { #Do not always execute example code (e.g. on package installation)
     Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
@@ -244,6 +161,7 @@ sEddyProc$methods(
     EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
     #ds <- head(ds,2000)
     (Result.L <- EddyProc.C$sEstUstarThreshold())
+	(Results.L2 <- EddyProc.C$sEstUstarThreshold(ctrlUstarEst.l=controlUstarEst(isUsingCPTSeveralT=TRUE)))
   }
 }))
 
@@ -295,9 +213,11 @@ sEddyProc$methods(
 #		} else {
 #			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
 #		}
+	
 		dsiSortTclass <- dsiSort[TId == k,]
 		#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
 		Cor1 = suppressWarnings( abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName])) ) # maybe too few or degenerate cases
+		if( inherits(Cor1,"try-error") ) recover()
 		# TODO: check more correlations here? [check C code]
 		#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
 		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
@@ -424,59 +344,149 @@ attr(controlUstarSubsetting,"ex") <- function(){
 	controlUstarSubsetting()
 }
 
-createSeasonFactorMonth <- function(
-	### calculate factors to denote the season for uStar-Filtering by specifying starting months
+createSeasonFactorMonthWithinYear <- function(
+	### calculate factors to denote the season for uStar-Filtering by specifying starting months, with seasons not spanning year boundaries
   	dates							##<< POSIXct vector of length of the data set to be filled				
-  	, month=as.POSIXlt(dates)$mon   ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record  
-	, startMonth=c(12,3,6,9)-1		##<< integer vector specifying the starting month for each season, counting from zero
+  	, month=as.POSIXlt(dates)$mon   ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record
+	, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
+	, startMonth=c(3,6,9,12)-1		##<< integer vector specifying the starting month for each season, counting from zero, default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
 ){
   ##seealso<< \code{\link{createSeasonFactorYday}}
+  ##details<< 
+  ## If Jan is not a starting month, then the first months of each year will be 
+  ## part of the last period in the year.
+  ## E.g. with the default the fourth period of the first year consists of Jan,Feb,Dec.
+  if( length(year) == 1L) year <- rep(year, length(month))
+  if( length(month) != length(year) ) stop("Month and Year arguments need to have the same length.")
   startMonth <- sort(unique(startMonth))
-  boLastPeriod <- month < startMonth[1] 		# translate month before the first specified beginning month to be after last specified month
+  boLastPeriod <- month < startMonth[1] 		
+  # translate month before the first specified beginning month to be after last specified month (1 becomes 13)
   month[ boLastPeriod ] <- month[ boLastPeriod] +12
   startMonthAdd <- c(startMonth, startMonth[1]+12)
-  seasonFac <- rep(as.integer(1), length(month) )
+  seasonFac <- year*1000L + rep(0L, length(month) )
   # i <- 2
   for( i in 2:length(startMonth) ){
-	  seasonFac[ month >= startMonthAdd[i] & month < startMonthAdd[i+1] ] <- i
+	  bo <- month >= startMonthAdd[i] & month < startMonthAdd[i+1]
+	  seasonFac[bo] <- year[bo]*1000L + (i-1)
   }
   #plot( seasonFac ~ months )
-  seasonFac 	
+  as.factor(seasonFac) 	
   ##value<<
   ## Integer vector length(dates), with each unique value representing one season
+}
+attr(createSeasonFactorMonthWithinYear,"ex") <- function(){
+	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	(res <- createSeasonFactorMonthWithinYear(ds$DateTime))
+	(res2 <- createSeasonFactorYday(ds$DateTime)) # default days are chosen to correspond to start of Febr, June, Sept, and Dec
+}
+
+createSeasonFactorMonth <- function(
+		### calculate factors to denote the season for uStar-Filtering by specifying starting months, with continuous seasons spanning year boundaries
+		dates							##<< POSIXct vector of length of the data set to be filled				
+		, month=as.POSIXlt(dates)$mon   ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record
+		, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
+		, startMonth=c(3,6,9,12)-1		##<< integer vector specifying the starting month for each season, counting from zero, default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
+){
+	##seealso<< \code{\link{createSeasonFactorYday}}
+	##details<< 
+	## If Jan is not a starting month, then the first months of each year will be 
+	## part of the last period in the year.
+	## E.g. with the default the fourth period of the first year consists of Jan,Feb,Dec.
+	if( length(year) == 1L) year <- rep(year, length(month))
+	if( length(month) != length(year) ) stop("Month and Year arguments need to have the same length.")
+	starts <- data.frame(month=sort(unique(startMonth)), year=rep(sort(unique(year)),each=length(startMonth)) )
+	if( starts$month[1] != 0L ) starts <- rbind( data.frame(month=0L, year=starts$year[1]),starts )
+	seasonFac <- integer(length(month)) # 0L
+	starts$startYearMonths <- startYearMonths <- starts$year*1000L + starts$month
+	yearMonths <- year*1000L+month
+	# i <- 1
+	for( i in 1:(length(startYearMonths)-1) ){
+		bo <- yearMonths >= startYearMonths[i] & yearMonths < startYearMonths[i+1]
+		seasonFac[bo] <- starts$year[i]*1000L + starts$month[i] 
+	}
+	i <- length(startYearMonths)
+	bo <- yearMonths >= startYearMonths[i]
+	seasonFac[bo] <- starts$year[i]*1000L + starts$month[i]
+	#plot( seasonFac ~ dates )
+	as.factor(seasonFac) 	
+	##value<<
+	## Integer vector length(dates), with each unique value representing one season
 }
 attr(createSeasonFactorMonth,"ex") <- function(){
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
 	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 	(res <- createSeasonFactorMonth(ds$DateTime))
-	(res2 <- createSeasonFactorYday(ds$DateTime)) # default days are chosen to correspond to start of Febr, June, Sept, and Dec
+	plot( res ~ ds$DateTime)
 }
 
 
 createSeasonFactorYday <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting day of years
 	dates							##<< POSIXct vector of length of the data set to be filled				
-	, yday=as.POSIXlt(dates)$yday  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record  
-	, startYday=c(335,60,152,244)-1	##<< integer vector (0-366) specifying the starting month for each season
+	, yday=as.POSIXlt(dates)$yday  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record
+	, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
+	, startYday=c(335,60,152,244)-1	 ##<< integer vector (0-366) specifying the starting yearDay for each season
 ){
 	##details<<
 	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
 	## If working with dates that denote the end of the period, use \code(yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday
-	startYday <- sort(unique(startYday))
-	boLastPeriod <- (yday < startYday[1])	# days before the first starting day will be in last period 
-	yday[ boLastPeriod ] <- yday[ boLastPeriod] +366  # translate day to be after last specified startday 
-	startYdayAdd <- c(startYday, startYday[1]+366)  # 
-	seasonFac <- rep(as.integer(1), length(yday) )
-	# i <- 2
-	for( i in 2:length(startYday) ){
-		seasonFac[ yday >= startYdayAdd[i] & yday < startYdayAdd[i+1] ] <- i
+	if( length(year) == 1L) year <- rep(year, length(yday))
+	if( length(yday) != length(year) ) stop("Month and Year arguments need to have the same length.")
+	starts <- data.frame(yday=sort(unique(startYday)), year=rep(sort(unique(year)),each=length(startYday)) )
+	if( starts$yday[1] != 0L ) starts <- rbind( data.frame(yday=0L, year=starts$year[1]),starts )
+	seasonFac <- integer(length(yday)) # 0L
+	starts$startYearDays <- startYearDays <- starts$year*1000L + starts$yday
+	yearDays <- year*1000L+yday
+	# i <- 1
+	for( i in 1:(length(startYearDays)-1) ){
+		bo <- yearDays >= startYearDays[i] & yearDays < startYearDays[i+1]
+		seasonFac[bo] <- starts$year[i]*1000L + starts$yday[i] 
 	}
-	#plot( monthsFac ~ months )
-	seasonFac 	
+	i <- length(startYearDays)
+	bo <- yearDays >= startYearDays[i]
+	seasonFac[bo] <- starts$year[i]*1000L + starts$yday[i]
+	#plot( seasonFac ~ dates )
+	as.factor(seasonFac) 	
 	##value<<
 	## Integer vector of nrow ds, each unique class representing one season
 }
+attr(createSeasonFactorYday,"ex") <- function(){
+	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	(res <- createSeasonFactorYday(ds$DateTime))
+	plot( res ~ ds$DateTime)
+}
+
+getYearOfSeason <- function(
+		## determine the year of the record of middle of seasons  
+		seasonFactor.v		##<< factor vector of length data: for each record which season it belongs to 
+		, sDateTime.v		##<< POSIX.t vector of length data: for each record: center of half-hour period
+){
+	originCt <- as.POSIXct("1970-01-01 00:00.00 UTC")
+	timezone <- attr(sDateTime.v[1],"tzone")
+	#dates <- sDateTime.v[seasonFactor.v == seasonFactor.v[1]]
+	res <- tapply(sDateTime.v, seasonFactor.v, FUN=function(dates){
+				x <- as.numeric(dates)
+				xCenter <- x[1] + (x[length(x)] - x[1])/2
+				1900L + as.POSIXlt(xCenter, origin=originCt, tz=timezone)$year
+			})
+	##value<<  named integer vector, with names corresponding to seasons
+	# need to convert 1d array to vector
+	structure(as.vector(res), names=rownames(res))
+}
+.tmp.f <- function(){
+	ds <- eddyProc$sDATA
+	sDateTime.v <-ds$sDateTime
+	seasonFactor.v <- createSeasonFactorMonth(ds$sDateTime)
+	getYearOfSeason( seasonFactor.v, sDateTime.v)
+	getYearOfSeason( seasonFactor.v, sDATA$sDateTime)
+}
+
+
 
 
 binUstar <- function(
@@ -628,68 +638,15 @@ cleanUStarSeries <- function(
 }
 
 sEddyProc$methods(
-		sEstUstarThresholdYears = structure(function(
-		### apply sEstUstarThresholdYear for each year in dataset
-		ds=sDATA					##<< data.frame with columns
-		,boot=1:nrow(ds)			##<< indices for calling by \code{link{boot}}
-		,...						##<< further arguments to \code{\link{sEstUstarThreshold}}
-		,seasonFactor.v = createSeasonFactorMonth(ds$sDateTime)  ##<< factor of seasons to split
-    	,yearFactor.v = as.POSIXlt(ds$sDateTime)$year+1900	  	##<< factor vector (nrow(dsYear) of seasons to split
-		,UstarColName = "Ustar"		##<< collumn name for UStar
-		,NEEColName = "NEE"			##<< collumn name for NEE
-		,TempColName = "Tair"		##<< collumn name for air temperature
-		,RgColName = "Rg"			##<< collumn name for solar radiation for omitting night time data
-		,ctrlUstarSub.l = controlUstarSubsetting() ##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}}
-		,isCleaned=FALSE			##<< set to TRUE to avoid call to \code{\link{cleanUStarSeries}}.
-){
-	##details<< 
-	## Due to change of surface roughness, the threshold of u* can change over years.
-	## This methods estimates u* threshold for each subset by year.
-	
-	##seealso<< \code{\link{sEstUstarThreshold}}
-	
-	##references<< inspired by Papale 2006
-	ds$seasonFactor <- seasonFactor.v
-	ds$yearFactor <- yearFactor.v
-	#remove any no data records for NEE, Tair, Ustar, and Rg
-	dsBoot <- ds[boot,]
-	dsc <- if( isTRUE(isCleaned) ) dsBoot else cleanUStarSeries( dsBoot, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr)
-	
-	if( !length( yearFactor.v) ){
-		c( '0' = .self$sEstUstarThreshold(dsc,...,ctrlUstarSub.l =ctrlUstarSub.l, isCleaned=TRUE )$UstarAggr )
-	}else{
-		#dsYear <- subset(dsc, yearFactor == dsc$yearFactor[1] )
-		res <- daply( dsc, .(yearFactor), function(dsYear){
-#					if( nrow(dsYear) < ctrlUstarSub.l$minRecordsWithinYear){
-#						warning("sEstUstarThreshold: too few finite records within one year " 
-#							,if(length(dsc$DateTime)) as.POSIXlt(dsc$DateTime[1])$year else if(length(dsc$Year)) dsc$Year[1] 
-#							,"(n=",nrow(dsYear)
-#							,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
-#							,". Returning NA and continueing with next year."
-#							)
-#							return( NA )
-#						}
-					uStar.l <- #try( 
-							.self$sEstUstarThreshold(dsYear, ... ,UstarColName = UstarColName, NEEColName = NEEColName, TempColName = TempColName, ctrlUstarSub.l =ctrlUstarSub.l, isCleaned=TRUE  )
-					#)
-					if( inherits(uStar.l,"try-error")){ return(NA) }
-					uStar.l$UstarAggr
-				}, .inform = TRUE, .drop_o = FALSE)
-				#}, .inform = FALSE)
-	}
-	##value<< a vector with Ustar Threshold estimates. Names correspond to the year of the estimate 
-}))
-
-sEddyProc$methods(
 		sEstUstarThresholdDistribution = structure(function(
 		### Estimating the distribution of u* threshold by bootstrapping over data
 		#ds					    ##<< data.frame with columns see \code{\link{sEstUstarThresholdYears}}
 		ctrlUstarEst.l = controlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{controlUstarEst}}
 		,ctrlUstarSub.l = controlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}} 
 		,...						##<< further arguments to \code{\link{sEstUstarThresholdYears}}
-		,seasonFactor.v = as.factor(createSeasonFactorMonth(sDATA$sDateTime))   ##<< factor of seasons to split
-		,yearFactor.v = as.factor(as.POSIXlt(sDATA$sDateTime)$year+1900)	  	##<< factor vector (nrow(dsYear) of seasons so split dsYear 
-		,nSample = 30				##<< the number of repetitions in the bootstrap
+		,seasonFactor.v = createSeasonFactorMonth(sDATA$sDateTime)   ##<< factor of seasons to split (need to permute the same way as sData)
+		,seasonFactorsYear = getYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year that this season belongs to  
+		,nSample = 100L				##<< the number of repetitions in the bootstrap
         ,probs = c(0.05,0.5,0.95)	##<< the quantiles of the bootstrap sample to return. Default is the 5%, median and 95% of the bootstrap
 ){
 		##details<< 
@@ -705,37 +662,62 @@ sEddyProc$methods(
 		
 		##seealso<< \code{\link{sEstUstarThreshold}}, \code{\link{sEstUstarThresholdYears}}, \code{\link{sMDSwithUStarDP}}
 		ds <- sDATA
-		fWrapper <- function(...){
+		ds$seasonFactor.v <- seasonFactor.v
+		res0 <- suppressMessages(.self$sEstUstarThreshold(ds,
+				...
+				,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l
+				, seasonFactor.v=seasonFactor.v	))
+		iPosAgg <- which(res0$uStarTh$aggregationMode=="single")
+		iPosYears <- which(res0$uStarTh$aggregationMode=="year")
+		iPosSeasons <- which(res0$uStarTh$aggregationMode=="season")
+		years0 <- res0$uStarTh$year[iPosYears]
+		seasons0 <- res0$uStarTh$season[iPosSeasons]
+		fWrapper <- function(iSample, ...){
+			dsBootWithinSeason <- ds2 <- ddply(ds, .(seasonFactor.v), function(dss) {
+						iSample <- sample.int(nrow(dss),replace=TRUE)
+						dss[iSample, ,drop=FALSE]
+					})
 			cat(".")
-			res <- .self$sEstUstarThresholdYears(  ...	)
+			res <- .self$sEstUstarThreshold(dsBootWithinSeason, ...
+							, seasonFactor.v=seasonFactor.v, seasonFactorsYear=seasonFactorsYear
+							, ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l	)
 			gc()
-			res
+			# need to check if years and seasons have been calculated differently due to subsetting with
+			# too few values within a season
+			# then report NA for those cases
+			resAgg <- res$uStarTh$uStar[iPosAgg] 
+			years <- res$uStarTh$year[iPosYears]
+			resYears <- structure( 
+					if( all(years == years0) ) res$uStarTh$uStar[iPosYears] else rep(NA_real_, length(years0))
+					, names=as.character(years0) )
+			resSeasons <- structure( 
+					if( nrow(res$uStarTh) == nrow(res0$uStarTh) && all((seasons <- res$uStarTh$season[iPosSeasons]) == seasons0) ) res$uStarTh$uStar[iPosSeasons] else rep(NA_real_, length(seasons0))
+					, names=as.character(seasons0) )
+			return(c(aggYears=resAgg, resYears, resSeasons ))
+			#return(length(res$UstarSeason$uStar))
+			#res$UstarAggr
 		}
-		Ustar.l <- suppressMessages( 
-				boot( ds
-					#, .self$sEstUstarThresholdYears
-					,fWrapper
-					, nSample, simple = TRUE
-					, seasonFactor.v=seasonFactor.v, yearFactor.v=yearFactor.v
-					,ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l
-					, ...
-				) # only evaluate once
+		Ustar.l0 <- res0$uStarTh$uStar[c(iPosAgg, iPosYears, iPosSeasons)]	
+		Ustar.l <- suppressMessages(
+				Ustar.l <- lapply(1:(nSample-1), fWrapper,...)
 		)
 		cat("\n")
-		# if too many bootstrap samples did not detect a treshold, do not report quantiles
-		resQuantiles <-	t(apply( Ustar.l$t, 2, quantile, probs=probs, na.rm=TRUE ))
-		if( 1 - sum(is.na(Ustar.l$t))/length(Ustar.l$t) < ctrlUstarEst.l$minValidBootProp ) resQuantiles[] <- NA
-        res <- cbind(  Ustar=Ustar.l$t0, resQuantiles)
-		rownames(res) <- as.numeric(rownames(Ustar.l$t0)) # years
-		message(paste("Estimated UStar distribution of:\n", paste(capture.output(res),collapse="\n")
-			,"\nby using ",nSample,"bootstrap samples and controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
-		))
-		res
-        ##value<< 
-		## a matrix (nYear x (1+nProbs): first two column is the original estimate 
-		## the other columns correponsing to the quantiles of Ustar estimate 
+		stat <- do.call( rbind, c(list(Ustar.l0),Ustar.l))
+		##details<<
+		## If more than \code{ctrlUstarEst.l$minValidBootProp} did not report a treshold, 
+		## quantiles are set to NA.
+		resQuantiles <-	t(apply( stat, 2, quantile, probs=probs, na.rm=TRUE ))
+		iInvalid <- colSums(is.finite(stat))/nrow(stat) < ctrlUstarEst.l$minValidBootProp 
+		resQuantiles[iInvalid,] <- NA_real_
+		resDf <- cbind(res0$uStarTh, resQuantiles)
+		message(paste("Estimated UStar distribution of:\n", paste(capture.output(resDf[resDf$aggregationMode=="single",-(1:3)]),collapse="\n")
+						,"\nby using ",nSample,"bootstrap samples and controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
+				))
+		resDf
+		##value<< 
+		## A data.frame with columsn aggregationMode, year, and original UStar estimate 
+		## The other columns correpond to the quantiles of Ustar estimate
 		## for given probabilities (argument \code{probs} ).
-		## Rownames hold the corresonding years.
 },ex = function(){
 	if( FALSE ){	# takes long, so do not execute on each install or check
 		# load the data and generate DateTime column
@@ -749,9 +731,50 @@ sEddyProc$methods(
 		#getOption("boot.parallel")
 		#options("boot.parallel" = NULL)
 		(res <- EddyProc.C$sEstUstarThresholdDistribution(nSample=10))
-		#(res <- sEstUstarThresholdDistribution(subset(ds, as.POSIXlt(ds$DateTime)$year==98 ), nSample=20))
+		getAnnualSeasonUStarMappingFromDistributionResult(res)
 	}
 }) )
+
+getAnnualSeasonUStarMappingFromDistributionResult <- function(
+		### extract mapping season -> uStar columns from Distribution result (\code{\link{sEstUstarThresholdDistribution}})
+		uStarTh
+){
+	dsYear <- subset(uStarTh,aggregationMode=="year")
+	dsYear$season <- NULL
+	dsYear$aggregationMode <- NULL
+	##details<<
+	## rows with no threshold get the aggregated value, i.e. the median of columns of other years
+	naLines <- which(apply(dsYear[,-(1) ,drop=FALSE],1,function(x){ all(is.na(x))}))
+	if( length(naLines) ){
+		medianYear <- apply( dsYear[!naLines,-(1),drop=FALSE], 2, median, na.rm=TRUE )
+		dsYear[naLines,-(1)] <- medianYear
+	}
+	dsSeasons <- subset(uStarTh,aggregationMode=="season",select=c("season","year"))
+	res2 <- merge(dsSeasons, dsYear )
+	res2$year <- NULL
+	# transform column names of "x%" to "Ux" with leading zeros
+	colnames(res2)[-(1:2)] <- (gsub(" ","0",sprintf("U%2s",gsub("%","",colnames(res2)[-(1:2)]))))
+	res2
+}
+
+getSeaonalSeasonUStarMappingFromDistributionResult <- function(
+		### extract mapping season -> uStar columns from Distribution result (\code{\link{sEstUstarThresholdDistribution}})
+		uStarTh
+){
+	dsSeasons <- subset(uStarTh,aggregationMode=="season")[-(1:2)]
+	##details<<
+	## missing thresholds are replace by corresponding estimates based on annually aggregated estimates
+	## (\code{\link{getAnnualSeasonUStarMappingFromDistributionResult}})
+	naLines <- apply(dsSeasons[,-(1),drop=FALSE],1,function(x){ all(is.na(x))})
+	if( length(naLines) ){
+		dsYears <- getAnnualSeasonUStarMappingFromDistributionResult(uStarTh)
+		dsSeasons[naLines,] <- dsYears[naLines,]
+	}
+	##value<< a data frame with first column the season, and other columns different uStar threshold estimates
+	# transform column names of "x%" to "Ux" with leading zeros
+	colnames(dsSeasons)[-(1:2)] <- (gsub(" ","0",sprintf("U%2s",gsub("%","",colnames(dsSeasons)[-(1:2)]))))
+	dsSeasons
+}
 
 
 
