@@ -592,11 +592,15 @@ attr(binUstar,"ex") <- function(){
 		}
 	}
 	##value<< integer vector of same length as x, with unique value for each bin.
-	## Each bin holds at least length(x)/nBin records, or more if there were values after the bin that were
+	## Each bin holds at least floor(length(x)/nBin) records, or more if there were values after the bin that were
 	## numerically equal to last value of the bin.
 	## The actual number of bins might be differnt from argument nBin due to numericall equal values
 	## and is reported with attribute \code{nBin}
-	attr(binId,"nBin") <- iBin
+	## Because of using floor in bin-width calculation, the last, i.e. nbin, of the bins may hold more values.
+	#
+	# for C-code compatibility do not use more than nBin classes, and increase the size of the last class
+	binId[binId > nBin] <- nBin
+	attr(binId,"nBin") <- min(iBin,nBin)
 	binId
 }
 
