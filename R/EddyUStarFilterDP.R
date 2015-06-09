@@ -674,7 +674,6 @@ estUstarThresholdSingleFw2Binned <- function(
   # twutz: 1505: implemented option to return NA, to omit from median over bins (C-compatibility)
   if(is.na(UstarThSingle) & !isTRUE(ctrlUstarEst.l$isOmitNoThresholdBins) ) 
 	  UstarThSingle <- Ust_bins.f$Ust_avg[u+1]
-recover()  
   return(UstarThSingle)    
 }
 
