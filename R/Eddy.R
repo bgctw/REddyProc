@@ -247,6 +247,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 	Ustar.V.n <- subset(resUStar$uStarTh, aggregationMode=="single", "uStar")[1,1]
     #+++ Gap filling and partitioning after ustar filtering
     EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.V.n=Ustar.V.n)
+	colnames(EddyProc.C$sExportResults()) # Note the filled collumn with suffix _f	
 	EddyProc.C$sMDSGapFill('Tair')
 	EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar')  # Note suffix
     
@@ -296,6 +297,12 @@ attr(sEddyProc.example,'ex') <- function( ){
 	(UstarThres.df <- getAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
 	# invoke the gapfilling with result columns for the different estimates
 	EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, seasonFactor.v=seasonFactor.v )
+	# if you want to fill with different uStar for the entire dataset, specify only one season
+	if(FALSE){
+		(UstarThres.df <- data.frame(season=1L, uStar=0.41625, u05=0.42775))
+		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+		EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, seasonFactor.v=1L )
+	}
 	
     colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
     # inspect the mean across NEE estimates and uncertainty introduced by different uStar thresholds

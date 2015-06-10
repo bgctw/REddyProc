@@ -583,7 +583,7 @@ sEddyProc$methods(
 	# create a matrix with uStar with one row for each data record 
 	nRec <- nrow(.self$sDATA)
 	uStarM <- if( nrow(UstarThres.df) == 1L){
-		matrix( UstarThres.df[,-1], ncol=ncol(UstarThres.df)-1, nrow=nRec, byrow = TRUE  )
+		matrix( unlist(UstarThres.df[,-1]), ncol=ncol(UstarThres.df)-1, nrow=nRec, byrow = TRUE  )
 	} else {
 		if( missing(seasonFactor.v)) stop("sMDSGapFillAfterUStarDistr: need to provide vector seasonFactor.v of seasons/years for applying different thresholds over time.")
 		if( length(seasonFactor.v) != nRec) stop("sMDSGapFillAfterUStarDistr: provided argument seasonFactor.v of length that differs from number or records in data")
@@ -612,39 +612,7 @@ sEddyProc$methods(
   }))
   
 .tmp.f <- function(){  
-		  # Load the data from text file
-		  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-		  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-		  # Create TimeStamp column
-		  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-		  
-		  #+++ Default use case
-		  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
-		  EddyProc.C$sMDSwithUStarDP('NEE' )     # calls sEstUstarThresholdDistribution 
-		  dsf <- EddyProc.C$sExportResults()
-		  colnames(dsf)		# note the different output columns corresponding to different Ustar estimates, best estimate with suffix "Ustar"
-		  #plot( NEE_U05_f ~ NEE_U95_f, dsf)	# differences between gapFilling using differing Ustar thresholds
-		  
-		  #+++ Only using one Ustar estimate (omitting output columns for range of Ustar estimates)
-		  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		  Ustar <- EddyProc.C$sEstUstarThreshold()$UstarAggr
-		  EddyProc.C$sMDSwithUStarDP('NEE', ustar.m=Ustar, suffix.v="Ustar")      
-		  colnames(EddyProc.C$sExportResults())
-		  
-		  #+++ The advanced user can specify his own estimates of Ustar 
-		  # modifying arguements to sEstUstarThresholdDistribution, e.g quantiles to inspect
-		  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
-		  ustar.m <- EddyProc.C$sEstUstarThresholdDistribution(EddyProc.C$sExportData(), nSample=10, probs=c(0.25,0.5,0.75))
-		  ustar.m		# note that the first entry corresponds to the non-bootstrapped Ustar estimate 
-		  EddyProc.C$sMDSwithUStarDP('NEE', ustar.m=ustar.m, suffix.v=c("Ustar","U25","U50","U75") )
-		  colnames(EddyProc.C$sExportResults())
-		  #
-		  # specify thresholds directly
-		  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		  ustar.m <- c(0.38, 0.44)	# used for all years
-		  ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("05","95") )) # possible different thresholds for different years  
-		  EddyProc.C$sMDSwithUStarDP('NEE', ustar.m=ustar.m, suffix.v=c("U38","U44") )
-		  colnames(EddyProc.C$sExportResults())
+		 #see Eddy.R example 1b
   }
   
 
