@@ -43,3 +43,5 @@ syntax: regexp
 
 syntax: regexp
 ^src-x64$
+syntax: regexp
+^src-i386$

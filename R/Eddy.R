@@ -297,11 +297,11 @@ attr(sEddyProc.example,'ex') <- function( ){
 	(UstarThres.df <- getAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
 	# invoke the gapfilling with result columns for the different estimates
 	EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, seasonFactor.v=seasonFactor.v )
-	# if you want to fill with different uStar for the entire dataset, specify only one season
 	if(FALSE){
+		# if you want to fill with different uStar for the entire dataset, specify only one season, i.e. one row
 		(UstarThres.df <- data.frame(season=1L, uStar=0.41625, u05=0.42775))
 		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, seasonFactor.v=1L )
+		EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df )
 	}
 	
     colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
@@ -312,8 +312,8 @@ attr(sEddyProc.example,'ex') <- function( ){
     
     #+++ Flux partitioning of one of the different gap filling setups, Note the Suffix.s
     EddySetups.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
-    EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Up05')
-    colnames(EddySetups.C$sExportResults())    # Note the suffix R and GPP output columns
+    EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='U05')
+    colnames(EddySetups.C$sExportResults())    # Note the suffix in Reco and GPP output columns
     
     #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Example 2 for advanced users: Extended usage of the gap filling algorithm

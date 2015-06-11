@@ -25,8 +25,7 @@ Then the data can be processed in an R5 reference class framework:
 \itemize{
 \item{ Initalizing the R5 reference class: \code{\link{sEddyProc.new}} }
 \item{ Estimating the turbulence criterion, Ustar threshold, for omitting data from periods of low turbulence: 
-%Functions \code{\link{sEstUstarThreshold}} and \code{\link{sEstUstarThresholdDistribution}} }.
-in preparation }.
+Functions \code{\link{sEstUstarThreshold}} and \code{\link{sEstUstarThresholdDistribution}} }.
 \item{ Gap filling: \code{\link{sMDSGapFill}} and  \code{\link{sMDSGapFillAfterUstar}}. 
 }
 \item{ Flux partitioning: \code{\link{sMRFluxPartition}} }

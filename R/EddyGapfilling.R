@@ -462,8 +462,8 @@ sEddyProc$methods(
     ## Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*
     FluxVar.s             ##<< Flux variable to gap fill after ustar filtering
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data
-		## If only one value is given, it is used for all records
+    ,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
+		## If only one value is given, it is used for all records.
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
     ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).
     ,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
@@ -474,12 +474,15 @@ sEddyProc$methods(
     'Calling sMDSGapFill after filtering for (provided) friction velocity u*'
     
     ##details<< 
-    ## The u* threshold(s) are provided for filtering the conditions of low turbulence.
+    ## The u* threshold(s) are provided with argument \code{UstarThres.df} for filtering the conditions of low turbulence.
     ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
     
     ##seealso<<
-    ## \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
-    
+	## \itemize{
+    ## \item \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
+	## \item \code{\link{sEstUstarThreshold}} for estimating the u* threshold from the data.
+	## }
+	
     # Check column names (with 'none' as dummy)
     # (Numeric type and plausibility have been checked on initialization of sEddyProc)
     fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
@@ -545,8 +548,8 @@ sEddyProc$methods(
     ## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
     FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold 
-	## If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset 
+    ,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold. 
+	## If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset. 
 	## Entries in first column must match levels in argument \code{seasonFactor.v}
 	,seasonFactor.v  	##<< factor for subsetting time into seasons, should be the same as in the uStarThreshold estimation, 
 		## e.g. \code{createSeasonFactorMonth(sDATA$sDateTime)}

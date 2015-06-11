@@ -115,7 +115,7 @@ attr(fitSeg2,"ex") <- function(){
 								c(NA_real_) else resCPT[c("cp")]
 					return(threshold)
 				}, FUN.VALUE=numeric(1L), USE.NAMES = FALSE)
-	})
+	}  )
 #	UstarTh.l <- data.frame(
 #		UstarTh.v  = do.call( c, lapply(thresholdsTList,"[",1,TRUE)) # vector of uStar for temperature classes
 #		,sdUstarTh.v = do.call( c, lapply(thresholdsTList,"[",2,TRUE)) # vector of uStar for temperature classes

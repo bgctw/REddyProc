@@ -128,17 +128,17 @@ test_that("Test sMDSGapFill",{
 test_that("Test sMDSGapFillAfterUStarDistr",{
 			# single value
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=0.42 , UstarSuffix.V.s="Ustar")
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=data.frame(season=1L, uStar=0.42) , UstarSuffix.V.s="Ustar")
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( "NEE_Ustar_f" %in% colnames(Results.F) ) # unchanged column name
 			#
 			# several values 
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			suffix.v <-  c("U05","U95")
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =suffix.v )
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=data.frame(season=1L, u05=0.38,u95=0.42), UstarSuffix.V.s =suffix.v )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.m.n=c(0.38,0.42), UstarSuffix.V.s =paste0(suffix.v))
+			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.df=data.frame(season=1L, u05=0.38,u95=0.42), UstarSuffix.V.s =paste0(suffix.v))
 			# introduced duplicate columns (gapFill-Flag)
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("Tair_U05_f","Tair_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
@@ -156,17 +156,20 @@ test_that("Test sMDSGapFillAfterUStarDistr",{
 			}
 			#
 			# several values for several years
-			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			ustar.m = matrix(c(0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("U05","U95") ))
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=ustar.m, UstarSuffix.V.s = colnames(ustar.m) )
+			ds <- EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),]
+			seasonFac <- createSeasonFactorMonth( ds$DateTime)
+			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
+			UstarThres.df=data.frame(season=levels(seasonFac), U05=0.38,U95=0.42)
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
 			#
-			# NA case - introducting 0% gaps in single year 1998
-			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			ustar.m = matrix(c(NA, NA, 0.38,0.42), byrow=TRUE, ncol=2, nrow=2, dimnames=list(years=c(1998,1999),probs=c("U05","U95") ))
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.m.n=ustar.m, UstarSuffix.V.s = colnames(ustar.m) )
+			# NA case - introducting 0% gaps in single season, by providing ustar of NA 
+			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
+			UstarThres.df=data.frame(season=levels(seasonFac), U05=c(NA,0.38),U95=c(NA,0.42))
+			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
+			expect_true( all(Results.F$Ustar_U05_fqc[ seasonFac==seasonFac[1] ] == 0) )	# quality flag 0 indicates valid uStar
 		})
 
