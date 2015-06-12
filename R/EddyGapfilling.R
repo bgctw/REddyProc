@@ -507,7 +507,7 @@ sEddyProc$methods(
       ## after a period with low turbulence is also removed (Papaple et al. 2006).
       QFustar.V.n[ which(diff(QFustar.V.n) == 1)+1 ] <- 2L
     }
-    message('Ustar filtering marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
+    message('Ustar filtering (u*Th_1=',QFustar.V.n[1],'), marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       message('(including removal of the first half-hour after a period of low turbulence).')
     }

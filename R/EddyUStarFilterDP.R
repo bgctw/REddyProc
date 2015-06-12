@@ -148,6 +148,7 @@ sEddyProc$methods(
 					,"by using controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
 			))
 	resultsDf <- results[,c("season","year","uStar")]
+	resultsDf$season <- as.factor(resultsDf$season)
 	resultsDf$aggregationMode <- "season"
 	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="year", season=as.factor(NA_integer_)), uStarYear),resultsDf )
 	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="single", season=as.factor(NA), year=NA_integer_), uStar=uStarAggr),resultsDf )
