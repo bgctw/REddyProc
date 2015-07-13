@@ -98,7 +98,7 @@ fCalcVPDfromRHandTair <- function(
   attr(VPD.V.n, 'units') <- 'hPa'
   return(VPD.V.n)
   ##value<<
-  ## Data vector of vapour pressure deficit (VPD, hPa)
+  ## Data vector of vapour pressure deficit (VPD, hPa (mbar))
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -111,13 +111,32 @@ fCalcSVPfromTair <- function(
   ## AMM
   ) {
   # Approximation formula after CANVEG (Berkeley) code
-  TZero.c <- 273.15
+  TZero.c <- 273.15  #Absolute zero
   SVP.V.n <- exp(54.8781919 - 6790.4985 / (Tair.V.n+TZero.c) - 5.02808 * log(Tair.V.n+TZero.c))
   attr(SVP.V.n, 'varnames') <- 'SVP'
-  attr(SVP.V.n, 'units') <- 'mbar'
+  attr(SVP.V.n, 'units') <- 'hPa'
   return(SVP.V.n)
   ##value<<
-  ## Data vector of saturation vapor pressure (SVP, mbar)
+  ## Data vector of saturation vapor pressure (SVP, hPa (mbar))
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+fCalcAVPfromVMFandPress <- function(
+  ##description<<
+  ## Calculate AVP from VMF and Press
+  VMF.V.n                ##<< Vapor mole fraction (VMF, mol/mol)
+  ,Press.V.n             ##<< Atmospheric pressure (Press, hPa)
+  ##author<<
+  ## AMM
+  ) {
+  # Calculation of actual vapor pressure, also called vapor partial pressure
+  AVP.V.n <- (VMF.V.n) * Press.V.n
+  attr(AVP.V.n, 'varnames') <- 'AVP'
+  attr(AVP.V.n, 'units') <- 'hPa'
+  return(AVP.V.n)
+  ##value<<
+  ## Data vector of actual vapor pressure (AVP, hPa (mbar))
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -125,7 +144,7 @@ fCalcSVPfromTair <- function(
 fCalcRHfromAVPandTair <- function(
   ##description<<
   ## Calculate relative humidity from actual vapour pressure and air tempature
-  AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, mbar)
+  AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, hPa (mbar))
   ,Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
   ##author<<
   ## AMM
@@ -134,6 +153,9 @@ fCalcRHfromAVPandTair <- function(
   # Definition of relative humidity (ratio of AVP to SVP)
   SVP.V.n <- fCalcSVPfromTair(Tair.V.n)
   RH.V.n <- AVP.V.n/SVP.V.n * 100
+  # Restrict to physically plausible range
+  RH.V.n <- ifelse(RH.V.n >= 0, RH.V.n, 0)
+  RH.V.n <- ifelse(RH.V.n <= 100, RH.V.n, 100)
   attr(RH.V.n, 'varnames') <- 'rH'
   attr(RH.V.n, 'units') <- '%'
   return(RH.V.n)
