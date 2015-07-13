@@ -289,8 +289,8 @@ fInitFilesDir <- function(
   ##author<<
   ## AMM
 {
-  # List files in path and grep files with specified file extension
-  list.files(path=Dir.s)[grep(lFileExt.s, list.files(path=Dir.s))]
+  # List files in path and grep files with specified file extension as character string
+  list.files(path=Dir.s)[grep(lFileExt.s, list.files(path=Dir.s), fixed=T)] 
   ##value<< 
   ## Character vector with names of all available site files.
 }
