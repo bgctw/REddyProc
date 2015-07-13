@@ -176,9 +176,10 @@ fRegrE0fromShortTerm = function(
   #
   # Abort flux partitioning if regression of E_0 failed
   if( is.na(E_0_trim.n) ) {
-    warning(CallFunction.s, ':::fRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ', 
-            nrow(NLSRes.F), ' periods!')
-    return(-111)
+	  # twutz 150226: just warning and returning negative value gives problems later on, maybe better stop and catch exception
+	  warning(CallFunction.s, ':::fRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ', 
+			  nrow(NLSRes.F), ' periods! Aborting partitioning.')
+	  return(-111)
   }
   E_0_trim.n
   ##value<< 
@@ -247,7 +248,8 @@ sEddyProc$methods(
     
     E_0.V.n
     ##value<< 
-    ## Data vector with (constant) temperature sensitivity (E_0, degK)
+    ## Data vector with (constant) temperature sensitivity (E_0, degK) 
+	## On failure, all entries are set to -111
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -468,6 +470,7 @@ sEddyProc$methods(
     ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
     ## If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names 
     ## (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s='WithUstar').
+	## Currently, this works only with defaults of FluxVar.s='NEE_f' and QFFluxVar.s='NEE_fqc'.
     ## }}
     # Rename new columns generated during flux partitioning:
     # For nighttime NEE (FP_NEEnight or FP_NEEnight_Suffix)
@@ -486,4 +489,6 @@ sEddyProc$methods(
     return(invisible(NULL))
     ##value<< 
     ## Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
+	## On success, return value is NULL. On failure an integer scalar error code is returned:
+	## -111 if regression of E_0 failed due to insufficient relationship in the data.
   })

@@ -493,12 +493,22 @@ sEddyProc$methods(
     
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
+<<<<<<< mine
+    QFustar.V.n <- rep( 0, nrow(sDATA) )		
+    for( iYear in seq_along(uYear.v) ){
+      # mark low turbulence with value 1
+      QFustar.V.n[ ((year.v==uYear.v[iYear]) & is.finite(UstarThres.V.n[iYear]) & (sDATA[,UstarVar.s] < UstarThres.V.n[iYear])) |
+                  	((year.v==uYear.v[iYear]) & is.na(sDATA[,UstarVar.s])) #Missing values should be marked as non-good data
+                   ] <- 1  
+    }
+=======
     QFustar.V.n <- integer( nrow(sDATA) )	# 0L
 	# mark low uStar as 1L
     QFustar.V.n[ 
                      !is.na(UstarThres.V.n) & 
                      (sDATA[,UstarVar.s] < UstarThres.V.n) 
                    ] <- 1L  
+>>>>>>> theirs
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       ##details<< 
       ## With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
@@ -507,20 +517,24 @@ sEddyProc$methods(
       ## after a period with low turbulence is also removed (Papaple et al. 2006).
       QFustar.V.n[ which(diff(QFustar.V.n) == 1)+1 ] <- 2L
     }
+<<<<<<< mine
+    message('Ustar filtering of dataset with thresholds of ',paste(signif(UstarThres.V.n,2), collapse=','),
+            ' introduced ', signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2)*100,'% gaps.'  )
+=======
     message('Ustar filtering (u*Th_1=',QFustar.V.n[1],'), marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
+>>>>>>> theirs
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       message('(including removal of the first half-hour after a period of low turbulence).')
     }
     
     # Add filtering step to (temporal) results data frame
-    suffixDash.s <- paste( (if(fCheckValString(UstarSuffix.s)) '_' else ''), UstarSuffix.s, sep='')
-    attr(UstarThres.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_Thres', sep='')
+    attr(UstarThres.V.n, 'varnames') <- paste('Ustar_',FluxVar.s, '_Thres', sep='')
     attr(UstarThres.V.n, 'units') <- 'ms-1'
-    attr(QFustar.V.n, 'varnames') <- paste('Ustar',suffixDash.s, '_fqc', sep='')
+    attr(QFustar.V.n, 'varnames') <- paste('Ustar_',FluxVar.s, '_fqc', sep='')
     attr(QFustar.V.n, 'units') <- '-'
     sTEMP$USTAR_Thres <<- UstarThres.V.n
     sTEMP$USTAR_fqc <<- QFustar.V.n
-    colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar', suffixDash.s, '_', sep=''), colnames(sTEMP))
+    colnames(sTEMP) <<- gsub('USTAR_', paste('Ustar_',FluxVar.s, '_', sep=''), colnames(sTEMP))
     # Check for duplicate columns (to detect if different processing setups were executed without different suffix)
     if( length(names(which(table(colnames(sTEMP)) > 1))) )  {                                                                                                                                 
       warning('sMDSGapFillAfterUstar::: Duplicated columns found! Please specify different Suffix.s when processing different setups on the same dataset!')

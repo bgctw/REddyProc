@@ -4,6 +4,7 @@
 # Author: TW
 #require(testthat)
 context("UStarFilter")
+require(plyr)
 # Furher context: fCheckColNames, fCheckColNumeric, fCheckOutsideRange
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -19,15 +20,17 @@ test_that("binUstar classes are correct",{
 	res <- binUstar(dss$NEE, dss$Ustar)
 	UstarClasses <- controlUstarSubsetting()$UstarClasses
 	Ust_bin_size <- round(nrow(dss)/UstarClasses)
+	expect_true( all(abs(res$nRec[-nrow(res)] - Ust_bin_size) < 60) )
 	# create df of NEE and UStar ordered by Ustar
 	ds.f <- data.frame(NEE=dss$NEE,Ustar=dss$Ustar)
 	ds.f <- arrange(ds.f,ds.f[,2])
 	# create bin id column 
-	ds.f$bin <- UstarClasses # due to rounding, the last classes may be left and neet to get the last class
-	ds.f$bin[1:(UstarClasses*Ust_bin_size)]	 <-	 rep(1:UstarClasses, each=Ust_bin_size)
+	#ds.f$bin <- UstarClasses # due to rounding, the last classes may be left and neet to get the last class
+	#ds.f$bin[1:(UstarClasses*Ust_bin_size)]	 <-	 rep(1:UstarClasses, each=Ust_bin_size)
+	ds.f$bin <- rep(1:nrow(res), times=res$nRec)		
 	# do the averaging
 	tmp1 <- ddply( ds.f, .(bin), function(dsBin){ c(Ust_avg=mean(dsBin[,2], na.rm=TRUE),NEE_avg=mean(dsBin[,1], na.rm=TRUE))})
-	expect_that( res, equals(tmp1[,-1]))
+	expect_that( res[,1:2], equals(tmp1[,-1]))
 })
 
 test_that("estUstarThresholdSingleFw2Binned",{
@@ -56,20 +59,29 @@ test_that("estUstarThresholdSingleFw2Binned",{
 test_that("sEstUstarThreshold: standard case",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 			(res <- EddyProc.C$sEstUstarThreshold())
-			expect_equal( res$UstarAggr, 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
+			expect_equal( res$uStarTh$uStar[1], 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$UstarSeasonTemp)
-				, c( length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime)))
-				     ,controlUstarSubsetting()$taClasses ))
+				, c( controlUstarSubsetting()$taClasses,length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
 		})
 
 test_that("sEstUstarThreshold: changing to FW1",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 			(res <- EddyProc.C$sEstUstarThreshold(fEstimateUStarBinned=estUstarThresholdSingleFw1Binned))
-			expect_equal( res$UstarAggr, 0.36, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
+			expect_equal( res$uStarTh$uStar[1], 0.34, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$UstarSeasonTemp)
-					, c( length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime)))
-							,controlUstarSubsetting()$taClasses ))
+					, c( controlUstarSubsetting()$taClasses,length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
 		})
+
+test_that("sEstUstarThreshold: One-big-season",{
+			dsFew <- EddyDataWithPosix.F
+			dsFew$NEE[ -((nrow(dsFew):(nrow(dsFew)-controlUstarSubsetting()$minRecordsWithinYear-1L))) ] <- NA
+			EddyProc.C <- sEddyProc$new('DE-Tha', dsFew, c('NEE','Rg','Tair','VPD','Ustar'))
+			(res <- EddyProc.C$sEstUstarThreshold())
+			expect_true( all(res$seasonAggregation$seasonAgg == res$seasonAggregation$seasonAgg[1] ))
+			expect_equal( res$uStarTh$uStar[1], 0.37, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
+		})
+
+
 
 test_that("distribution multiyear matrix",{
 	EddyData.F99 <- EddyData.F		
@@ -77,9 +89,10 @@ test_that("distribution multiyear matrix",{
 	EddyDataWithPosix.F99 <- ds <- fConvertTimeToPosix(rbind(EddyData.F, EddyData.F99), 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 	EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F99, c('NEE','Rg','Tair','VPD','Ustar'))
 	(res <- EddyProc.C$sEstUstarThresholdDistribution(nSample=3))
-	expect_that( nrow(res), equals(2) )
-	expect_that( rownames(res), equals(c("1998", "1999")) )
-	expect_that( res[1,1], equals( res[2,1]) )		# same estimate, maybe different distribution due to bootstrap
+	resYears <- subset(res, aggregationMode=="year")
+	expect_that( nrow(resYears), equals(2) )
+	expect_that( resYears$year, equals(c(1998,1999)) )
+	expect_true( resYears$uStar[1] == resYears$uStar[2]  )		# same estimate, maybe different distribution due to bootstrap
 })
 
 

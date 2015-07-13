@@ -2,8 +2,7 @@
 \alias{fConvertNAsToGap}
 \title{fConvertNAsToGap}
 \description{Converts all NAs to gap flag}
-\usage{fConvertNAsToGap(Data.F, GapFlag.n = -9999)}
-\arguments{
+\usage{fConvertNAsToGap(Data.F, GapFlag.n = -9999)}\arguments{
   \item{Data.F}{Data frame to be converted}
   \item{GapFlag.n}{Flag value used for gaps, defaults to -9999.0}
 }

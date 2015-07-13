@@ -5,7 +5,6 @@
 \usage{sEddyProc.example()}
 
 
-
 \author{AMM
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

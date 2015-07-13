@@ -44,9 +44,6 @@ for (File.i in 1:length(CodeIn.V.s)) {
   if( Develop.b==T && File.i != 1) eval(parse(text=Code.s)) 
 }
 
-#+++ Exclude not yet fully develop ustar code from documentation for now
-
-if(Develop.b == F) { system('rm -f R/DummyUstarFilterDP.R') }
 
 #+++ Generate new inlinedocs documentation
 

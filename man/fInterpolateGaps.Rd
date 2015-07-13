@@ -2,8 +2,7 @@
 \alias{fInterpolateGaps}
 \title{fInterpolateGaps}
 \description{Interpolate linearly between gaps, with constant values at beginning/end}
-\usage{fInterpolateGaps(Data.V.n)}
-\arguments{
+\usage{fInterpolateGaps(Data.V.n)}\arguments{
   \item{Data.V.n}{Numeric vector with gaps (missing values, NAs)}
 }
 

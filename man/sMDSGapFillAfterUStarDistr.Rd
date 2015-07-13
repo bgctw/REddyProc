@@ -4,8 +4,7 @@
 \description{sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar}
 \usage{sMDSGapFillAfterUStarDistr(FluxVar.s = "NEE", UstarVar.s = "Ustar", 
     UstarThres.m.n, UstarSuffix.V.s = colnames(UstarThres.m.n), 
-    ...)}
-\arguments{
+    ...)}\arguments{
   \item{FluxVar.s}{Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}
   \item{UstarThres.m.n}{Numeric matrix( nYear x nUStar):

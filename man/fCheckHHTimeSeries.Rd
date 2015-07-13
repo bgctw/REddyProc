@@ -2,8 +2,7 @@
 \alias{fCheckHHTimeSeries}
 \title{fCheckHHTimeSeries}
 \description{Check half-hourly time series data}
-\usage{fCheckHHTimeSeries(Time.V.p, DTS.n, CallFunction.s = "")}
-\arguments{
+\usage{fCheckHHTimeSeries(Time.V.p, DTS.n, CallFunction.s = "")}\arguments{
   \item{Time.V.p}{Time vector in POSIX format}
   \item{DTS.n}{Number of daily time steps (24 or 48)}
   \item{CallFunction.s}{Name of function called from}

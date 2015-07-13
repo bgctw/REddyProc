@@ -4,8 +4,7 @@
 \description{Load specified variables and time stamp information from NetCDF file in Fluxnet BGI format.
 The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour'.}
 \usage{fLoadFluxNCIntoDataframe(VarList.V.s, FileName.s, Dir.s = "", 
-    NcPackage.s = "ncdf4")}
-\arguments{
+    NcPackage.s = "ncdf4")}\arguments{
   \item{VarList.V.s}{Vector of variables to be read in}
   \item{FileName.s}{File name}
   \item{Dir.s}{Directory}

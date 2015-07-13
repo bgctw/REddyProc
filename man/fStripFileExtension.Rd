@@ -2,8 +2,7 @@
 \alias{fStripFileExtension}
 \title{fStripFileExtension}
 \description{Strip file extension }
-\usage{fStripFileExtension(lFiles.V.s)}
-\arguments{
+\usage{fStripFileExtension(lFiles.V.s)}\arguments{
   \item{lFiles.V.s}{Vector with names of all available site files}
 }
 

@@ -5,8 +5,7 @@
 \usage{sMRFluxPartition(FluxVar.s = "NEE_f", QFFluxVar.s = "NEE_fqc", 
     QFFluxValue.n = 0, TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
     QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, Long_deg.n, 
-    TimeZone_h.n, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE))}
-\arguments{
+    TimeZone_h.n, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE))}\arguments{
   \item{FluxVar.s}{Variable name of column with original and filled net ecosystem fluxes (NEE)}
   \item{QFFluxVar.s}{Quality flag of NEE variable}
   \item{QFFluxValue.n}{Value of quality flag for _good_ (original) data}
@@ -60,7 +59,9 @@ a string suffix is needed! This suffix is added to the result column names to di
 If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names 
 (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s='WithUstar').
 }}}
-\value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).}
+\value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
+On success, return value is NULL. On failure an integer scalar error code is returned:
+-111 if regression of E_0 failed due to insufficient relationship in the data.}
 \references{Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
 into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.}
 \author{AMM,TW
