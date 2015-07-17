@@ -7,12 +7,13 @@
     ...)}\arguments{
   \item{FluxVar.s}{Flux variable to gap fill after ustar filtering}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}
-  \item{UstarThres.V.n}{u* thresholds (ms-1) as single number or vector with values for each year}
+  \item{UstarThres.V.n}{numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
+If only one value is given, it is used for all records.}
   \item{UstarSuffix.s}{Different suffixes required for different u* scenarios}
   \item{FlagEntryAfterLowTurbulence.b}{Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).}
   \item{\dots}{Other arguments passed to \code{\link{sMDSGapFill}}}
 }
-\details{The u* threshold(s) are provided for filtering the conditions of low turbulence.
+\details{The u* threshold(s) are provided with argument \code{UstarThres.df} for filtering the conditions of low turbulence.
 After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
 
 With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
@@ -27,5 +28,8 @@ Gap filling results are in sTEMP data frame (with renamed columns) that can be r
 
 
 
-\seealso{\code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  }
+\seealso{\itemize{
+\item \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
+\item \code{\link{sEstUstarThreshold}} for estimating the u* threshold from the data.
+}}
 

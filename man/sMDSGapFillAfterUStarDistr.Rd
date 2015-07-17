@@ -3,14 +3,15 @@
 \title{GapFilling for several filters of estimated friction velocity Ustar thresholds.}
 \description{sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar}
 \usage{sMDSGapFillAfterUStarDistr(FluxVar.s = "NEE", UstarVar.s = "Ustar", 
-    UstarThres.m.n, UstarSuffix.V.s = colnames(UstarThres.m.n), 
+    UstarThres.df, seasonFactor.v, UstarSuffix.V.s = colnames(UstarThres.df)[-1], 
     ...)}\arguments{
   \item{FluxVar.s}{Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}
-  \item{UstarThres.m.n}{Numeric matrix( nYear x nUStar):
-Each row is a vector of different ustar thresholds to apply before gap filling.
-Make sure that one row is given for each year in the dataset to gap-Fill.
-If only one row or a vector is given, then it is re-used for each year.}
+  \item{UstarThres.df}{data.frame with first column, season names, and remaining columns different estimates of uStar Threshold.
+If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset. 
+Entries in first column must match levels in argument \code{seasonFactor.v}}
+  \item{seasonFactor.v}{factor for subsetting time into seasons, should be the same as in the uStarThreshold estimation,
+e.g. \code{createSeasonFactorMonth(sDATA$sDateTime)}}
   \item{UstarSuffix.V.s}{String vector
 to distinguish result columns for different ustar values.
 Its length must correspond to column numbers in \code{UstarThres.m.n}.}
@@ -21,9 +22,10 @@ indicated by a low friction velocity u* needs to be filtered out and gapfilled (
 The threshold value of a sufficient u* causes one of the largest uncertainty components within the gap-filled data. 
 Hence, it is good practice to compare derived quantities based on gap-filled data using different u* threshold values.
 
-For example a user could provide the the following collumns in argument \code{UstarThres.m.n} 
+For example a user could provide the the following collumns in argument \code{UstarThres.df} 
 and corresponding suffixes in argument \code{UstarSuffix.V.s}  
 \itemize{
+\item season: identifier for which season this row is used.
 \item Ustar: estimate on original series
 \item U05: 5\% of bootstrap
 \item U50: median of bootstrap

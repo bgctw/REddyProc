@@ -58,6 +58,7 @@ Attention: When processing the same site data set with different setups for the 
 a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
 If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names 
 (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s='WithUstar').
+Currently, this works only with defaults of FluxVar.s='NEE_f' and QFFluxVar.s='NEE_fqc'.
 }}}
 \value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
 On success, return value is NULL. On failure an integer scalar error code is returned:
