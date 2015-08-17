@@ -2,7 +2,8 @@
 \alias{fGetBeginOfEddyPeriod}
 \title{fGetBeginOfEddyPeriod}
 \description{Get the begin time of a half-hour period, that is denoted by its end time.}
-\usage{fGetBeginOfEddyPeriod(Time.V.p, DTS.n = 48L)}\arguments{
+\usage{fGetBeginOfEddyPeriod(Time.V.p, DTS.n = 48L)}
+\arguments{
   \item{Time.V.p}{Time stamp in POSIXct time format}
   \item{DTS.n}{Daily time steps}
 }

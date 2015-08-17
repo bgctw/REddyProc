@@ -2,7 +2,8 @@
 \alias{estUstarThresholdSingleFw2Binned}
 \title{estUstarThresholdSingleFw2Binned}
 \description{estimate the Ustar threshold for single subset, using FW2 algorithm  	}
-\usage{estUstarThresholdSingleFw2Binned(Ust_bins.f, ctrlUstarEst.l = controlUstarEst())}\arguments{
+\usage{estUstarThresholdSingleFw2Binned(Ust_bins.f, ctrlUstarEst.l = controlUstarEst())}
+\arguments{
   \item{Ust_bins.f}{data.frame with column s NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{binUstar}}}
   \item{ctrlUstarEst.l}{parameter list, see \code{\link{controlUstarEst}} for defaults and description}
 }

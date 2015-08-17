@@ -2,7 +2,8 @@
 \alias{whichValueGreaterEqualC}
 \title{whichValueGreaterEqualC}
 
-\usage{whichValueGreaterEqualC(x, threshold, iStart)}\arguments{
+\usage{whichValueGreaterEqualC(x, threshold, iStart)}
+\arguments{
   \item{x}{
 }
   \item{threshold}{

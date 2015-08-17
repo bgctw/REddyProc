@@ -2,9 +2,10 @@
 \alias{controlUstarSubsetting}
 \title{controlUstarSubsetting}
 \description{Default list of parameters for determining UStar of a single binned series	}
-\usage{controlUstarSubsetting(taClasses = 7, UstarClasses = 20, swThr = 10, 
-    minRecordsWithinTemp = 100, minRecordsWithinSeason = 160, 
-    minRecordsWithinYear = 3000, isUsingOneBigSeasonOnFewRecords = TRUE)}\arguments{
+\usage{controlUstarSubsetting(taClasses = 7, UstarClasses = 20, 
+    swThr = 10, minRecordsWithinTemp = 100, minRecordsWithinSeason = 160, 
+    minRecordsWithinYear = 3000, isUsingOneBigSeasonOnFewRecords = TRUE)}
+\arguments{
   \item{taClasses}{set number of air temperature classes}
   \item{UstarClasses}{set number of Ustar classes}
   \item{swThr}{nighttime data threshold for solar radion [Wm-2]}

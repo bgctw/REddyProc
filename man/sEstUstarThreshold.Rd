@@ -2,13 +2,14 @@
 \alias{sEstUstarThreshold}
 \title{sEddyProc$sEstUstarThreshold - Estimating ustar threshold}
 \description{Estimate the Ustar threshold by aggregating the estimates for seasonal and temperature subsets.}
-\usage{sEstUstarThreshold(ds = sDATA, UstarColName = "Ustar", NEEColName = "NEE", 
-    TempColName = "Tair",
- RgColName = "Rg", seasonFactor.v = createSeasonFactorMonth(ds$sDateTime), 
-    seasonFactorsYear = getYearOfSeason(seasonFactor.v, ds$sDateTime), 
-    ctrlUstarEst.l = controlUstarEst(), ctrlUstarSub.l = controlUstarSubsetting(), 
-    fEstimateUStarBinned = estUstarThresholdSingleFw2Binned, 
-    isCleaned = FALSE)}\arguments{
+\usage{sEstUstarThreshold(ds = sDATA, UstarColName = "Ustar", 
+    NEEColName = "NEE", TempColName = "Tair", RgColName = "Rg", 
+    seasonFactor.v = createSeasonFactorMonth(ds$sDateTime), 
+    seasonFactorsYear = getYearOfSeason(seasonFactor.v, 
+        ds$sDateTime), ctrlUstarEst.l = controlUstarEst(), 
+    ctrlUstarSub.l = controlUstarSubsetting(), fEstimateUStarBinned = estUstarThresholdSingleFw2Binned, 
+    isCleaned = FALSE)}
+\arguments{
   \item{ds}{data.frame with columns named by the following arguments}
   \item{UstarColName}{column name for UStar}
   \item{NEEColName}{column name for NEE}
@@ -51,7 +52,7 @@ This function is called by
 \describe{\item{One-big-season fallback}{
 If there are too few records within one year, instead of reporting no threshold, the records of all the seasons of one year 
 can be aggregated to one big season.
-By default, a warning is issued. The user can suppress the fallback by provinding option
+By default, a warning is issued. The user can suppress the fallback by providing option
 \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}}
 }}
 
@@ -59,15 +60,15 @@ By default, a warning is issued. The user can suppress the fallback by provindin
 With specifying \code{ctrlUstarEst.l=controlUstarEst(isUsingCPTSeveralT=TRUE)}
 change point detection is applied instead of the moving point test (e.g. with Fw2Binned).
 
-The sometimes sensitive binning of uStar values within a temperatue class is avoided.
-Furhter, possible spurious thresholds are avoid by testing that the model with a threshold
-fits the data better than a model without a theshold using a likelihood ratio test.
+The sometimes sensitive binning of uStar values within a temperature class is avoided.
+Further, possible spurious thresholds are avoid by testing that the model with a threshold
+fits the data better than a model without a threshold using a likelihood ratio test.
 In addition, with CPT seasons are excluded where a threshold was detected in only less 
 than ctrlUstarEst.l$minValidUStarTempClassesProp (default 20\% ) of the 
 temperature classes.
 
 Note, that this method often gives higher estimates of the u* threshold.
-}}
+}}}
 \value{A list with entries
 \item{uStarTh}{data.frame with columns "aggregationMode","year","season","uStar"
 with rows for "single": the entire aggregate (median across years)

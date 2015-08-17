@@ -66,7 +66,7 @@ fConvertTimeToPosix <- function(
     #Set time format
     lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz='GMT')
     if(sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp!')
+      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
     
   } else if (TFormat.s == 'YMDH') {
     if( any(c(Year.s, Month.s, Day.s, Hour.s) == 'none') ) 
@@ -88,7 +88,7 @@ fConvertTimeToPosix <- function(
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
     lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
     if(sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), 'time stamps could not be converted!')
+      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
     
   } else if (TFormat.s == 'YMDHM') {
     if( any(c(Year.s, Month.s, Day.s, Hour.s, Min.s) == 'none') )
@@ -112,7 +112,7 @@ fConvertTimeToPosix <- function(
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
     lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')  
     if(sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), ' time stamps could not be converted!')
+       stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
     
   } else {
     stop('Unknown time format ', TFormat.s,'!')
@@ -663,8 +663,8 @@ fSetQF <- function(
   ##description<<
   ## Generate new vector from data and quality flag column.
   Data.F                ##<< Data frame
-  ,Var.s                ##<< Variable to be filled
-  ,QFVar.s              ##<< Quality flag of variable to be filled
+  ,Var.s                ##<< Variable to be filtered
+  ,QFVar.s              ##<< Quality flag of variable to be filtered
   ,QFValue.n            ##<< Numeric value of quality flag for _good_ data, other data is set to missing
   ,CallFunction.s=''    ##<< Name of function called from
 )

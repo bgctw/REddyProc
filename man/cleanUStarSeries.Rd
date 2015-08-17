@@ -3,7 +3,8 @@
 \title{cleanUStarSeries}
 \description{remove non-finite cases and omit night time data.}
 \usage{cleanUStarSeries(ds, UstarColName = "Ustar", NEEColName = "NEE", 
-    TempColName = "Tair", RgColName = "Rg", swThr = controlUstarSubsetting()$swThr)}\arguments{
+    TempColName = "Tair", RgColName = "Rg", swThr = controlUstarSubsetting()$swThr)}
+\arguments{
   \item{ds}{data.frame with columns}
   \item{UstarColName}{
 }

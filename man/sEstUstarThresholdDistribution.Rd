@@ -3,13 +3,15 @@
 \title{sEstUstarThresholdDistribution}
 \description{Estimating the distribution of u* threshold by bootstrapping over data}
 \usage{sEstUstarThresholdDistribution(ctrlUstarEst.l = controlUstarEst(), 
-    ctrlUstarSub.l = controlUstarSubsetting(),
- ..., seasonFactor.v = createSeasonFactorMonth(sDATA$sDateTime), 
-    seasonFactorsYear = getYearOfSeason(seasonFactor.v, ds$sDateTime), 
-    nSample = 100L, probs = c(0.05, 0.5, 0.95))}\arguments{
+    ctrlUstarSub.l = controlUstarSubsetting(), ..., 
+    seasonFactor.v = createSeasonFactorMonth(sDATA$sDateTime), 
+    seasonFactorsYear = getYearOfSeason(seasonFactor.v, 
+        ds$sDateTime), nSample = 100L, probs = c(0.05, 
+        0.5, 0.95))}
+\arguments{
   \item{ctrlUstarEst.l}{control parameters for estimating uStar on a single binned series, see \code{\link{controlUstarEst}}}
   \item{ctrlUstarSub.l}{control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}}}
-  \item{\dots}{further arguments to \code{\link{sEstUstarThresholdYears}}}
+  \item{\dots}{further arguments to \code{\link{sEstUstarThreshold}}}
   \item{seasonFactor.v}{factor of seasons to split (data is resampled only within the seasons)}
   \item{seasonFactorsYear}{named integer vector: for each seasonFactor level, get the year that this season belongs to}
   \item{nSample}{the number of repetitions in the bootstrap}

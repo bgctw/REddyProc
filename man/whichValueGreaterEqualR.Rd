@@ -2,7 +2,8 @@
 \alias{whichValueGreaterEqualR}
 \title{whichValueGreaterEqualR}
 \description{search first element in an integer vector that is larger }
-\usage{whichValueGreaterEqualR(x, threshold, iStart = 1L)}\arguments{
+\usage{whichValueGreaterEqualR(x, threshold, iStart = 1L)}
+\arguments{
   \item{x}{increasingly sorted numeric vector to search}
   \item{threshold}{integer scalar: searched element will need to be greater or equal as this argument}
   \item{iStart}{index in vector to start search}

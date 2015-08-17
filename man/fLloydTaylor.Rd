@@ -2,8 +2,9 @@
 \alias{fLloydTaylor}
 \title{Temperature dependence of soil respiration}
 \description{Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)}
-\usage{fLloydTaylor(R_ref.n, E_0.n, Tsoil.n, T_ref.n = 273.15 + 10, 
-    T_0.n = 227.13)}\arguments{
+\usage{fLloydTaylor(R_ref.n, E_0.n, Tsoil.n, T_ref.n = 273.15 + 
+    10, T_0.n = 227.13)}
+\arguments{
   \item{R_ref.n}{Respiration rate at reference temperature}
   \item{E_0.n}{Temperature sensitivity ("activation energy") in Kelvin (degK)}
   \item{Tsoil.n}{Soil temperature in Kelvin (degK)}

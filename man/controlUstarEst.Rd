@@ -2,10 +2,12 @@
 \alias{controlUstarEst}
 \title{controlUstarEst}
 \description{Default list of parameters for determining UStar of a single binned series	}
-\usage{controlUstarEst(ustPlateauFwd = 10, ustPlateauBack = 6, plateauCrit = 0.95, 
-    corrCheck = 0.5, firstUStarMeanCheck = 0.2, isOmitNoThresholdBins = TRUE, 
-    isUsingCPT = FALSE, isUsingCPTSeveralT = FALSE, minValidUStarTempClassesProp = 0.2, 
-    minValidBootProp = 0.4, minNuStarPlateau = 3L)}\arguments{
+\usage{controlUstarEst(ustPlateauFwd = 10, ustPlateauBack = 6, 
+    plateauCrit = 0.95, corrCheck = 0.5, firstUStarMeanCheck = 0.2, 
+    isOmitNoThresholdBins = TRUE, isUsingCPT = FALSE, 
+    isUsingCPTSeveralT = FALSE, minValidUStarTempClassesProp = 0.2, 
+    minValidBootProp = 0.4, minNuStarPlateau = 3L)}
+\arguments{
   \item{ustPlateauFwd}{number of subsequent uStar bin values to compare to in fwd mode}
   \item{ustPlateauBack}{number of subsequent uStar bin values to compare to in back mode}
   \item{plateauCrit}{significant differences between a u* value and the mean of a "plateau"}

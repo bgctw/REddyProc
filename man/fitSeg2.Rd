@@ -2,7 +2,8 @@
 \alias{fitSeg2}
 \title{fitSeg2}
 \description{fit a segmented relationship according to eq 1a of Barr13}
-\usage{fitSeg2(x, y, n = length(x))}\arguments{
+\usage{fitSeg2(x, y, n = length(x))}
+\arguments{
   \item{x}{
 }
   \item{y}{

@@ -2,9 +2,10 @@
 \alias{sMDSGapFillAfterUstar}
 \title{sEddyProc$sMDSGapFillAfterUstar - MDS gap filling algorithm after u* filtering}
 \description{Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*}
-\usage{sMDSGapFillAfterUstar(FluxVar.s, UstarVar.s = "Ustar", UstarThres.V.n, 
-    UstarSuffix.s = "WithUstar", FlagEntryAfterLowTurbulence.b = FALSE, 
-    ...)}\arguments{
+\usage{sMDSGapFillAfterUstar(FluxVar.s, UstarVar.s = "Ustar", 
+    UstarThres.V.n, UstarSuffix.s = "WithUstar", FlagEntryAfterLowTurbulence.b = FALSE, 
+    ...)}
+\arguments{
   \item{FluxVar.s}{Flux variable to gap fill after ustar filtering}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}
   \item{UstarThres.V.n}{numeric vector (length times in data): u* threshold (ms-1) for each time in the data.

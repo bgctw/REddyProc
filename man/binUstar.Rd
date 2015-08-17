@@ -3,7 +3,8 @@
 \title{binUstar}
 \description{Bin the NEE for a number of classes of UStar classes}
 \usage{binUstar(NEE.v, Ustar.v, UstarClasses = controlUstarSubsetting()$UstarClasses, 
-    isUStarSorted = FALSE)}\arguments{
+    isUStarSorted = FALSE)}
+\arguments{
   \item{NEE.v}{vector with value of Net Ecosystem exchange}
   \item{Ustar.v}{vector with u* (friction velocity (m2/s)}
   \item{UstarClasses}{the number of binning classes}

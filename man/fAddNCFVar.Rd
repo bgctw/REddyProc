@@ -2,7 +2,9 @@
 \alias{fAddNCFVar}
 \title{fAddNCFVar}
 \description{Add variable from NetCDF file to data frame}
-\usage{fAddNCFVar(Data.F, Var.s, FileName.s, Dir.s, NcPackage.s, CallFunction.s = "")}\arguments{
+\usage{fAddNCFVar(Data.F, Var.s, FileName.s, Dir.s, NcPackage.s, 
+    CallFunction.s = "")}
+\arguments{
   \item{Data.F}{Data frame}
   \item{Var.s}{Variable name}
   \item{FileName.s}{NetCDF file name}

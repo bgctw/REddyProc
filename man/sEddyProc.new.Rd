@@ -3,7 +3,8 @@
 \title{sEddyProc$new - Initialization of sEddyProc}
 \description{Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data}
 \usage{sEddyProc.new(ID.s, Data.F, ColNames.V.s, ColPOSIXTime.s = "DateTime", 
-    DTS.n = 48, ...)}\arguments{
+    DTS.n = 48, ...)}
+\arguments{
   \item{ID.s}{String with site ID}
   \item{Data.F}{Data frame with at least three month of half-hourly site-level eddy data}
   \item{ColNames.V.s}{Vector with selected column names, the less columns the faster the processing}

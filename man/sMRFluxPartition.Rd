@@ -4,8 +4,9 @@
 \description{Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)}
 \usage{sMRFluxPartition(FluxVar.s = "NEE_f", QFFluxVar.s = "NEE_fqc", 
     QFFluxValue.n = 0, TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
-    QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, Long_deg.n, 
-    TimeZone_h.n, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE))}\arguments{
+    QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, 
+    Long_deg.n, TimeZone_h.n, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE))}
+\arguments{
   \item{FluxVar.s}{Variable name of column with original and filled net ecosystem fluxes (NEE)}
   \item{QFFluxVar.s}{Quality flag of NEE variable}
   \item{QFFluxValue.n}{Value of quality flag for _good_ (original) data}
