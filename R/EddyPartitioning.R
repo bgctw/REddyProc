@@ -196,7 +196,7 @@ sEddyProc$methods(
     ## for short periods by calling \code{\link{fRegrE0fromShortTerm}}
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-    ,...				          ##<< Parameters passed to \code{\link{fRegrE0fromShortTerm}}
+    ,...				  ##<< Parameters passed to \code{\link{fRegrE0fromShortTerm}}
     ,CallFunction.s=''    ##<< Name of function called from
     ,debug.l = list(fixedE0=NA) ##<< List with controls for debugging, see details
   )
@@ -372,7 +372,8 @@ sEddyProc$methods(
       ##describe<< 
       useLocaltime.b=FALSE	##<< see details on solar vs local time	
       ##end<< 
-    )        
+    )      
+	,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n} 
   )
   ##author<<
   ## AMM,TW
@@ -444,7 +445,8 @@ sEddyProc$methods(
     sTEMP$FP_Temp_NEW <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
-    sTEMP$E_0_NEW <<- sRegrE0fromShortTerm('FP_VARnight', 'FP_Temp_NEW', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
+	# twutz1508: changed to do.call in order to allow passing further parameters when calling sMRFluxPartition
+    sTEMP$E_0_NEW <<- do.call( .self$sRegrE0fromShortTerm, c(list('FP_VARnight', 'FP_Temp_NEW', CallFunction.s='sMRFluxPartition', debug.l=debug.l), parsE0Regression)) 
     if( sum(sTEMP$E_0_NEW==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
     

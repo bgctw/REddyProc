@@ -51,6 +51,12 @@
     #+++ Partition NEE into GPP and respiration
     EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  # Gap-filled Tair (and NEE) needed for partitioning 
     EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
+# there are some constraints, that might be too strict for some datasets
+# e.g. in the tropics the required temperature range might be too large.
+# Its possible to change these constraints
+#EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1
+#	,parsE0Regression=list(TempRange.n=2.0)	)  
+
     
     #+++ Example plots of calculated GPP and respiration 
     EddyProc.C$sPlotFingerprintY('GPP_f', Year.i=1998)

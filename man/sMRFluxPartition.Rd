@@ -5,7 +5,8 @@
 \usage{sMRFluxPartition(FluxVar.s = "NEE_f", QFFluxVar.s = "NEE_fqc", 
     QFFluxValue.n = 0, TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
     QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, 
-    Long_deg.n, TimeZone_h.n, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE))}
+    Long_deg.n, TimeZone_h.n, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE), 
+    parsE0Regression = list())}
 \arguments{
   \item{FluxVar.s}{Variable name of column with original and filled net ecosystem fluxes (NEE)}
   \item{QFFluxVar.s}{Quality flag of NEE variable}
@@ -21,6 +22,7 @@
   \item{debug.l}{List with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}.\describe{
 \item{useLocaltime.b}{see details on solar vs local time}
 }}
+  \item{parsE0Regression}{list with further parameters passed down to \code{\link{sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n}}
 }
 \details{\describe{\item{Description of newly generated variables with partitioning results:}{
 \itemize{
