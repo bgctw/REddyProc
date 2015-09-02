@@ -20,6 +20,7 @@ fOptimSingleE0 <- function(
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
   ,Trim.n=5       ##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
+  ,algorithm="default"  ##<< optimization algorithm used (see \code{\link{nls}}) 
 )
   ##author<<
   ## AMM, TW
@@ -27,8 +28,10 @@ fOptimSingleE0 <- function(
   # Original implementation by AMM
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-                 data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200))        
+    NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
+                 data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
+		 		,algorithm=algorithm
+		 )        
     # Remove points with residuals outside Trim.n quantiles
     Residuals.V.n <- resid(NLS.L)
     #Residuals.V.n <- fLloydTaylor(R_ref=coef(summary(NLS.L))['R_ref',1], E_0=coef(summary(NLS.L))['E_0',1],
@@ -70,15 +73,17 @@ fOptimSingleE0_Lev <- function(
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
   ,Trim.n=5       ##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
+  ,algorithm='LM'  ##<< optimization algorithm used (see see \code{\link{nlsLM}})
 )
   ##author<<
   ## TW
 {
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+    NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
                    data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
                    ,control=nls.lm.control(maxiter = 20)
+				   ,algorithm=algorithm
     )        
     # Remove points with residuals outside Trim.n quantiles
     Residuals.V.n <- resid(NLS.L)
@@ -124,6 +129,7 @@ fRegrE0fromShortTerm = function(
   ,MinE_0.n=30  		  ##<< Minimum E0 for validity check
   ,MaxE_0.n=450	  	  ##<< Maximum E0 for validity check
   ,CallFunction.s=''  ##<< Name of function called from
+  ,optimAlgorithm='default'   ##<< optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see \code{\link{nlsLM}} ) 
 )
 ##author<<
 ## AMM
@@ -143,6 +149,8 @@ fRegrE0fromShortTerm = function(
   #NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
   MinData.n <- 6 # Minimum number of data points
   
+  fOptim <- fOptimSingleE0
+  if( optimAlgorithm=='LM') fOptim <- fOptimSingleE0_Lev
   #tw: better use rbind with a list instead of costly repeated extending a data.frame
   NLSRes.F <- as.data.frame(do.call( rbind, NLSRes.l <- lapply( seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i) ,function(DayMiddle.i){
     #TEST: DayMiddle.i <- 8
@@ -158,7 +166,7 @@ fRegrE0fromShortTerm = function(
     
     if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
       #CountRegr.i <- CountRegr.i+1
-      resOptim <- fOptimSingleE0( NEEnight.V.n, Temp_degK.V.n)
+      resOptim <- fOptim( NEEnight.V.n, Temp_degK.V.n, algorithm=optimAlgorithm)
       NLSRes.F <- c(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
                     resOptim)
     } else NULL

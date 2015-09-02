@@ -54,8 +54,7 @@
 # there are some constraints, that might be too strict for some datasets
 # e.g. in the tropics the required temperature range might be too large.
 # Its possible to change these constraints
-#EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1
-#	,parsE0Regression=list(TempRange.n=2.0)	)  
+#EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, parsE0Regression=list(TempRange.n=2.0, optimAlgorithm="LM")	)  
 
     
     #+++ Example plots of calculated GPP and respiration 
