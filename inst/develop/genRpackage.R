@@ -18,7 +18,7 @@ source('R/FileHandling.R')
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Parse R5 methods to generate documentation with inlinedocs
-CodeIn.V.s <- fInitFilesDir('R','Eddy.*\\.R$')		# omit dir name REddyProc
+CodeIn.V.s <- fInitFilesDir('R','Eddy.*\\.R$', fixed=FALSE)		# omit dir name REddyProc
 CodeOut.V.s <- gsub('Eddy','Dummy', CodeIn.V.s)
 # File.i <- 1
 for (File.i in 1:length(CodeIn.V.s)) {
@@ -64,7 +64,7 @@ file.rename(paste('tmp',CodeIn.V.s,sep='/'), paste('R',CodeIn.V.s,sep='/') )
 
 # Overwrite automatically generated documentation with (self-written) versions
 # from inst/develop/genDocu
-DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','*.Rd')
+DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','.Rd')
 file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
 # If package twDev from TW is used for documenation generation
 if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) { 

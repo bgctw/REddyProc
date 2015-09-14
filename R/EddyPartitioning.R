@@ -20,6 +20,7 @@ fOptimSingleE0 <- function(
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
   ,Trim.n=5       ##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
+  ,algorithm="default"  ##<< optimization algorithm used (see \code{\link{nls}}) 
 )
   ##author<<
   ## AMM, TW
@@ -27,8 +28,10 @@ fOptimSingleE0 <- function(
   # Original implementation by AMM
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-                 data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200))        
+    NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
+                 data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
+		 		,algorithm=algorithm
+		 )        
     # Remove points with residuals outside Trim.n quantiles
     Residuals.V.n <- resid(NLS.L)
     #Residuals.V.n <- fLloydTaylor(R_ref=coef(summary(NLS.L))['R_ref',1], E_0=coef(summary(NLS.L))['E_0',1],
@@ -70,15 +73,17 @@ fOptimSingleE0_Lev <- function(
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
   ,Trim.n=5       ##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
+  ,algorithm='LM'  ##<< optimization algorithm used (see see \code{\link{nlsLM}})
 )
   ##author<<
   ## TW
 {
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+    NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
                    data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
                    ,control=nls.lm.control(maxiter = 20)
+				   ,algorithm=algorithm
     )        
     # Remove points with residuals outside Trim.n quantiles
     Residuals.V.n <- resid(NLS.L)
@@ -124,6 +129,7 @@ fRegrE0fromShortTerm = function(
   ,MinE_0.n=30  		  ##<< Minimum E0 for validity check
   ,MaxE_0.n=450	  	  ##<< Maximum E0 for validity check
   ,CallFunction.s=''  ##<< Name of function called from
+  ,optimAlgorithm='default'   ##<< optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see \code{\link{nlsLM}} ) 
 )
 ##author<<
 ## AMM
@@ -143,6 +149,8 @@ fRegrE0fromShortTerm = function(
   #NLSRes_trim.F <- data.frame(NULL) #Results of non-linear regression
   MinData.n <- 6 # Minimum number of data points
   
+  fOptim <- fOptimSingleE0
+  if( optimAlgorithm=='LM') fOptim <- fOptimSingleE0_Lev
   #tw: better use rbind with a list instead of costly repeated extending a data.frame
   NLSRes.F <- as.data.frame(do.call( rbind, NLSRes.l <- lapply( seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i) ,function(DayMiddle.i){
     #TEST: DayMiddle.i <- 8
@@ -158,7 +166,7 @@ fRegrE0fromShortTerm = function(
     
     if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
       #CountRegr.i <- CountRegr.i+1
-      resOptim <- fOptimSingleE0( NEEnight.V.n, Temp_degK.V.n)
+      resOptim <- fOptim( NEEnight.V.n, Temp_degK.V.n, algorithm=optimAlgorithm)
       NLSRes.F <- c(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
                     resOptim)
     } else NULL
@@ -196,7 +204,7 @@ sEddyProc$methods(
     ## for short periods by calling \code{\link{fRegrE0fromShortTerm}}
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-    ,...				          ##<< Parameters passed to \code{\link{fRegrE0fromShortTerm}}
+    ,...				  ##<< Parameters passed to \code{\link{fRegrE0fromShortTerm}}
     ,CallFunction.s=''    ##<< Name of function called from
     ,debug.l = list(fixedE0=NA) ##<< List with controls for debugging, see details
   )
@@ -372,7 +380,8 @@ sEddyProc$methods(
       ##describe<< 
       useLocaltime.b=FALSE	##<< see details on solar vs local time	
       ##end<< 
-    )        
+    )      
+	,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n} 
   )
   ##author<<
   ## AMM,TW
@@ -444,7 +453,8 @@ sEddyProc$methods(
     sTEMP$FP_Temp_NEW <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
-    sTEMP$E_0_NEW <<- sRegrE0fromShortTerm('FP_VARnight', 'FP_Temp_NEW', CallFunction.s='sMRFluxPartition', debug.l=debug.l)
+	# twutz1508: changed to do.call in order to allow passing further parameters when calling sMRFluxPartition
+    sTEMP$E_0_NEW <<- do.call( .self$sRegrE0fromShortTerm, c(list('FP_VARnight', 'FP_Temp_NEW', CallFunction.s='sMRFluxPartition', debug.l=debug.l), parsE0Regression)) 
     if( sum(sTEMP$E_0_NEW==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
     

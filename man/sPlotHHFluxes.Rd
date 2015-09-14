@@ -4,7 +4,8 @@
 \description{Generates image in specified format ('pdf' or 'png') with half-hourly fluxes and their daily means,
 see also \code{\link{sPlotHHFluxesY}}.}
 \usage{sPlotHHFluxes(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    Format.s = "pdf", Dir.s = "plots")}\arguments{
+    Format.s = "pdf", Dir.s = "plots")}
+\arguments{
   \item{Var.s}{(Filled) variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}
   \item{QFValue.n}{Value of quality flag for data to plot}

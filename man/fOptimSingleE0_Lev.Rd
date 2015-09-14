@@ -3,12 +3,14 @@
 \title{Estimate temperature sensitivity E_0 using Levenberg-Marquard optimization}
 \description{Estimate temperature sensitivity E_0 of \code{\link{fLloydTaylor}} for a single time series
 using Levenberg-Marquard optimization.}
-\usage{fOptimSingleE0_Lev(NEEnight.V.n,
- Temp_degK.V.n, Trim.n = 5, recoverOnError = FALSE)}\arguments{
+\usage{fOptimSingleE0_Lev(NEEnight.V.n, Temp_degK.V.n, Trim.n = 5, 
+    recoverOnError = FALSE, algorithm = "LM")}
+\arguments{
   \item{NEEnight.V.n}{(Original) nighttime ecosystem carbon flux, i.e. respiration vector}
   \item{Temp_degK.V.n}{(Original) air or soil temperature vector (degC)}
   \item{Trim.n}{Percentile to trim residual (\%)}
   \item{recoverOnError}{Set to TRUE to debug errors instead of catching them}
+  \item{algorithm}{optimization algorithm used (see see \code{\link{nlsLM}}}
 }
 
 \value{Numeric vector with following components:

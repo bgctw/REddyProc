@@ -72,7 +72,7 @@ sEddyProc$methods(
 	##details<< \describe{\item{One-big-season fallback}{
 	## If there are too few records within one year, instead of reporting no threshold, the records of all the seasons of one year 
 	## can be aggregated to one big season.
-	## By default, a warning is issued. The user can suppress the fallback by provinding option
+	## By default, a warning is issued. The user can suppress the fallback by providing option
 	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
 	## }}
 	if( nrow(dsc)==0L ) stop("sEstUstarThreshold: no finite records in dataset")
@@ -101,15 +101,15 @@ sEddyProc$methods(
 		## With specifying \code{ctrlUstarEst.l=controlUstarEst(isUsingCPTSeveralT=TRUE)}
 		## change point detection is applied instead of the moving point test (e.g. with Fw2Binned).
 		##
-		## The sometimes sensitive binning of uStar values within a temperatue class is avoided.
-		## Furhter, possible spurious thresholds are avoid by testing that the model with a threshold
-		## fits the data better than a model without a theshold using a likelihood ratio test.
+		## The sometimes sensitive binning of uStar values within a temperature class is avoided.
+		## Further, possible spurious thresholds are avoid by testing that the model with a threshold
+		## fits the data better than a model without a threshold using a likelihood ratio test.
 		## In addition, with CPT seasons are excluded where a threshold was detected in only less 
 		## than ctrlUstarEst.l$minValidUStarTempClassesProp (default 20% ) of the 
 		## temperature classes.
 		##
 		## Note, that this method often gives higher estimates of the u* threshold.
-		## }
+		## }}
 		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeasonCPTSeveralT, .drop_o = FALSE, .inform = TRUE
 				#, .drop_o = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
@@ -455,7 +455,7 @@ createSeasonFactorYday <- function(
 ){
 	##details<<
 	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
-	## If working with dates that denote the end of the period, use \code(yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday
+	## If working with dates that denote the end of the period, use \code{yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday}
 	if( length(year) == 1L) year <- rep(year, length(yday))
 	if( length(yday) != length(year) ) stop("Month and Year arguments need to have the same length.")
 	starts <- data.frame(yday=sort(unique(startYday)), year=rep(sort(unique(year)),each=length(startYday)) )
@@ -716,10 +716,10 @@ cleanUStarSeries <- function(
 sEddyProc$methods(
 		sEstUstarThresholdDistribution = structure(function(
 		### Estimating the distribution of u* threshold by bootstrapping over data
-		#ds					    ##<< data.frame with columns see \code{\link{sEstUstarThresholdYears}}
+		#ds					    ##<< data.frame with columns see \code{\link{sEstUstarThreshold}}
 		ctrlUstarEst.l = controlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{controlUstarEst}}
 		,ctrlUstarSub.l = controlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}} 
-		,...						##<< further arguments to \code{\link{sEstUstarThresholdYears}}
+		,...						##<< further arguments to \code{\link{sEstUstarThreshold}}
 		,seasonFactor.v = createSeasonFactorMonth(sDATA$sDateTime)   ##<< factor of seasons to split (data is resampled only within the seasons)
 		,seasonFactorsYear = getYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year that this season belongs to  
 		,nSample = 100L				##<< the number of repetitions in the bootstrap

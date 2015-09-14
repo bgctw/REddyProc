@@ -29,11 +29,14 @@ sEddyProc$methods(
     ## KS, AMM
   {
     'Set title of plot'
+    # Check for unit of variable
+    Unit.s <- attr(cbind(sDATA,sTEMP)[,Var.s], 'units')
+    if (fCheckValString(Unit.s) && Unit.s != '[#]'  && Unit.s != '--' ) Unit.s <- paste(' (', Unit.s, ') ', sep='') else Unit.s <- ' (-) '
     # Set title depending on quality flag
     if (QFVar.s != 'none') {
-      Title.s <- paste(Name.s, ' of ', Var.s, ' with ', QFVar.s, '=', round(QFValue.n, digits=3), '\n for ', sID, sep='')
+      Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, Unit.s, ' with ', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
     } else {
-      Title.s <- paste(Name.s, ' of ', Var.s, '\n', 'for ', sID, sep='')
+      Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, Unit.s, sep='')
     }
     
     return(Title.s)
@@ -488,9 +491,9 @@ sEddyProc$methods(
     # Set daily sums
     DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow=sINFO$DTS)[1,]
     DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow=sINFO$DTS)[1,]
-    DSum.V.d <- (24/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, sum)
+    DSum.V.d <- (1/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, sum)
     fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
-    DUnc.V.d <- (24/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
+    DUnc.V.d <- (1/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
     
     # Scale to all data
     YMin.n <- min(DSum.V.d-DUnc.V.d, na.rm=T)

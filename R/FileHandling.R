@@ -285,12 +285,13 @@ fInitFilesDir <- function(
   ## Get all available files with specific file extension in directory
   Dir.s           ##<< Directory to be searched for files
   ,lFileExt.s     ##<< File extension specification
+  ,fixed=TRUE	  ##<< set to FALSE, if using regular expressions
 )
   ##author<<
   ## AMM
 {
   # List files in path and grep files with specified file extension as character string
-  list.files(path=Dir.s)[grep(lFileExt.s, list.files(path=Dir.s), fixed=T)] 
+  list.files(path=Dir.s)[grep(lFileExt.s, list.files(path=Dir.s), fixed=fixed)] 
   ##value<< 
   ## Character vector with names of all available site files.
 }

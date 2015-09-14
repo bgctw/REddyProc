@@ -3,8 +3,10 @@
 \title{Estimation of the temperature sensitivity E_0}
 \description{Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor}} for short periods}
 \usage{fRegrE0fromShortTerm(NightFlux.V.n, TempVar.V.n, DayCounter.V.i, 
-    WinDays.i = 7, DayStep.i = 5, TempRange.n = 5, Trim.n = 5, 
-    NumE_0.n = 3, MinE_0.n = 30, MaxE_0.n = 450, CallFunction.s = "")}\arguments{
+    WinDays.i = 7, DayStep.i = 5, TempRange.n = 5, 
+    Trim.n = 5, NumE_0.n = 3, MinE_0.n = 30, MaxE_0.n = 450, 
+    CallFunction.s = "", optimAlgorithm = "default")}
+\arguments{
   \item{NightFlux.V.n}{(Original) nighttime ecosystem carbon flux, i.e. respiration vector}
   \item{TempVar.V.n}{(Original) air or soil temperature vector (degC)}
   \item{DayCounter.V.i}{Integer specifying the day of each record}
@@ -16,6 +18,7 @@
   \item{MinE_0.n}{Minimum E0 for validity check}
   \item{MaxE_0.n}{Maximum E0 for validity check}
   \item{CallFunction.s}{Name of function called from}
+  \item{optimAlgorithm}{optimization algorithm used (see \code{\link{nls}} or 'LM' for Levenberg-Marquard (see \code{\link{nlsLM}}}
 }
 \details{The coefficient E0 is estimated for windows with a length of \code{WinDays.i} days, 
 for successive periods in steps of \code{DayStep.i} days.

@@ -2,7 +2,8 @@
 \alias{fGetYearOfEddyPeriod}
 \title{fGetYearOfEddyPeriod}
 \description{get the Year from a POSIXct, with new Year (1.1. 00:00) belongs to the old year.}
-\usage{fGetYearOfEddyPeriod(Time.V.p, DTS.n = 48L)}\arguments{
+\usage{fGetYearOfEddyPeriod(Time.V.p, DTS.n = 48L)}
+\arguments{
   \item{Time.V.p}{Time stamp in POSIXct time format}
   \item{DTS.n}{Daily time steps}
 }
