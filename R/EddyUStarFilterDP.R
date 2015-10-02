@@ -175,7 +175,10 @@ sEddyProc$methods(
   }
 }))
 
-.estimateUStarSeason <- function(dsi, ctrlUstarSub.l, ctrlUstarEst.l, fEstimateUStarBinned
+.estimateUStarSeason <- function(
+		### Estimate uStar threshold for data of a given season
+		dsi					##<< dataframe with columns UstarColName, NEEColName, TempColName, and RgColName
+		, ctrlUstarSub.l, ctrlUstarEst.l, fEstimateUStarBinned
 		,UstarColName 		##<< column name for UStar
 		,NEEColName 		##<< column name for NEE
 		,TempColName 		##<< column name for air temperature
@@ -238,7 +241,7 @@ sEddyProc$methods(
 				resCPT <- try( fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName]), silent=TRUE )
 				UstarTh.v[k] <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) NA else resCPT["cp"]
 			} else {
-				dsiBinnedUstar <- binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
+				dsiBinnedUstar <- .binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
 				#plot( NEE_avg ~ Ust_avg, dsiBinnedUstar)
 				if( any(!is.finite(dsiBinnedUstar[,2])) ){
 					stop("Encountered non-finite average NEE for a UStar bin.",
@@ -512,7 +515,7 @@ getYearOfSeason <- function(
 
 
 
-binUstar <- function(
+.binUstar <- function(
 	### Bin the NEE for a number of classes of UStar classes
 	NEE.v				##<< vector with value of Net Ecosystem exchange
 	,Ustar.v 			##<< vector with u* (friction velocity (m2/s)
@@ -529,15 +532,6 @@ binUstar <- function(
 	ds.f$uClass <- .binWithEqualValuesMinRec(ds.f$Ustar, nBin=UstarClasses, tol = 1e-14)
 	#
 	ddply( ds.f, .(uClass), summarise, Ust_avg=mean(Ustar,na.rm=TRUE), NEE_avg=mean(NEE, na.rm=TRUE), nRec=length(NEE))[,-1]
-}
-attr(binUstar,"ex") <- function(){
-	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-	EddyData.F <- ds <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-	dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
-	(res <- binUstar(dss$NEE, dss$Ustar))
-	(resFW1 <- estUstarThresholdSingleFw1Binned(res))
-	(resFW2 <- estUstarThresholdSingleFw2Binned(res))
 }
 
 .binWithEqualValuesBalanced <- function(
@@ -628,7 +622,7 @@ attr(binUstar,"ex") <- function(){
 
 estUstarThresholdSingleFw1Binned <- function(
 		### estimate the Ustar threshold for single subset, using FW1 algorithm, relying on binned NEE and Ustar
-		Ust_bins.f			##<< data.frame with columns NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{binUstar}}
+		Ust_bins.f			##<< data.frame with columns NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{.binUstar}}
 		,ctrlUstarEst.l = controlUstarEst() ##<< parameter list, see \code{\link{controlUstarEst}} for defaults and description
 ){
 	##references<< inspired by Papale 2006
@@ -659,7 +653,7 @@ estUstarThresholdSingleFw1Binned <- function(
 
 estUstarThresholdSingleFw2Binned <- function(
   ### estimate the Ustar threshold for single subset, using FW2 algorithm  	
-  Ust_bins.f							##<< data.frame with column s NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{binUstar}}
+  Ust_bins.f							##<< data.frame with column s NEE_avg and Ust_avg, of NEE by Ustar bins by \code{\link{.binUstar}}
   ,ctrlUstarEst.l = controlUstarEst()	##<< parameter list, see \code{\link{controlUstarEst}} for defaults and description 
 ){  
 	# algorithm to check when plateau is reached

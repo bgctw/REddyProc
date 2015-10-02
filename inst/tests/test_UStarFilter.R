@@ -16,8 +16,9 @@ dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-test_that("binUstar classes are correct",{
-	res <- binUstar(dss$NEE, dss$Ustar)
+
+test_that(".binUstar classes are correct",{
+	res <- .binUstar(dss$NEE, dss$Ustar)
 	UstarClasses <- controlUstarSubsetting()$UstarClasses
 	Ust_bin_size <- round(nrow(dss)/UstarClasses)
 	expect_true( all(abs(res$nRec[-nrow(res)] - Ust_bin_size) < 60) )
@@ -32,6 +33,21 @@ test_that("binUstar classes are correct",{
 	tmp1 <- ddply( ds.f, .(bin), function(dsBin){ c(Ust_avg=mean(dsBin[,2], na.rm=TRUE),NEE_avg=mean(dsBin[,1], na.rm=TRUE))})
 	expect_that( res[,1:2], equals(tmp1[,-1]))
 })
+
+test_that(".binUstar example file",{
+			pkgDir <- system.file(package='REddyProc')
+			if( nzchar(pkdDir) ){
+				Dir.s <- paste(pkgDir, 'examples', sep='/')
+				EddyData.F <- ds <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+				EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+				dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250 & Rg<10)
+				(res <- .binUstar(dss$NEE, dss$Ustar))
+				expect_true( nrow(res) >= 18)
+				#(resFW1 <- estUstarThresholdSingleFw1Binned(res))
+				#(resFW2 <- estUstarThresholdSingleFw2Binned(res))
+			}
+		})
+			
 
 test_that("estUstarThresholdSingleFw2Binned",{
 			# regression test
