@@ -73,38 +73,16 @@ sEddyProc$methods(
 		isValidUStar <- .getValidUstarIndices( sDATA, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr) 
 		dsc <- 	sDATA[isValidUStar, ,drop=FALSE] 
 	}
+	if( nrow(dsc)==0L ) stop("sEstUstarThreshold: no finite records in dataset")
+	
 	#
 	tdsc <- as.data.frame(table(dsc$season)); colnames(tdsc) <- c("season","nRec")
 	#some seasons might be absent in dsc from cleaning, construct vectors that report NA for missing seasons
 	nRecValidInSeason <- merge( data.frame( season=sort(unique(sDATA$season)) ), tdsc, all.x=TRUE)
-	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(season=names(seasonFactorsYear), year=seasonFactorsYear), all.x=TRUE)
-	nYear <- ddply(nRecValidInSeasonYear, .(year), summarize, nRec=sum(nRec, na.rm=TRUE) )
-.tmp.TODOinAggr <- function(){	
-	##details<< \describe{\item{One-big-season fallback}{
-	## If there are too few records within one year, instead of reporting no threshold, the records of all the seasons of one year 
-	## can be aggregated to one big season.
-	## By default, a warning is issued. The user can suppress the fallback by providing option
-	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
-	## }}
-	if( nrow(dsc)==0L ) stop("sEstUstarThreshold: no finite records in dataset")
-	yearsWithFewData <- nYear$year[ nYear$nRec < ctrlUstarSub.l$minRecordsWithinYear ]
-	nRecValidInSeasonYear$seasonAgg <- nRecValidInSeasonYear$season
-	# year <- yearsWithFewData[1] 
-	for( year in yearsWithFewData){
-		if( ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords == FALSE ){
-			stop("sEstUstarThreshold: too few finite records within one year ", year 
-					," (n=",nYear$nRec[ nYear$year==year ]
-					,"). Need at least n=",ctrlUstarSub.l$minRecordsWithinYear
-					," Or set ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords to TRUE."
-			)
-		} else {
-			warning("sEstUstarThreshold: too few finite records within one year ",year,". Aggregating all data of this year to one big season.")
-			seasons <- nRecValidInSeasonYear$season[nRecValidInSeasonYear$year == year]
-			dsc$season[ dsc$season %in% seasons ] <- seasons[1]
-			nRecValidInSeasonYear$seasonAgg[ nRecValidInSeasonYear$season %in% seasons] <- seasons[1]
-		}
-	}
-}
+	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(season=names(seasonFactorsYear), seasonYear=seasonFactorsYear), all.x=TRUE)
+	nYear <- ddply(nRecValidInSeasonYear, .(seasonYear), summarize, nRec=sum(nRec, na.rm=TRUE) )
+	seasonYearsWithFewData <- nYear$year[ nYear$nRec < ctrlUstarSub.l$minRecordsWithinYear ]
+	#nRecValidInSeasonYear$seasonAgg <- nRecValidInSeasonYear$season
 	#
 	#dsi <- subset(dsc, season == 4)
 	#dsi <- subset(dsc, season == 0)
@@ -161,30 +139,85 @@ sEddyProc$methods(
 		}
 		#plot( tempBin ~ Tair, dsc, col=rainbow(8)[ as.factor(dsc$season)] )	# check correct ordering
 	}
-	results <- merge(nRecValidInSeasonYear, data.frame(seasonAgg=names(uStarSeasons),uStar=uStarSeasons), all.x=TRUE)
-	uStarYear = ddply(results, .(year), function(dss){
-				data.frame( uStar=if( all(!is.finite(dss$uStar))  ) NA_real_ else max( dss$uStar, na.rm=TRUE), year=dss$year[1])
+	resultsSeason <- nRecValidInSeasonYear
+	resultsSeason$uStarSeasonEst <- uStarSeasons
+	#results <- merge(nRecValidInSeasonYear, data.frame(seasonAgg=names(uStarSeasons),uStar=uStarSeasons), all.x=TRUE)
+	resultsSeasonYear = ddply(resultsSeason, .(seasonYear), function(dss){
+				data.frame( uStarMaxSeason=if( all(!is.finite(dss$uStarSeasonEst))  ) NA_real_ else max( dss$uStarSeasonEst, na.rm=TRUE), seasonYear=dss$seasonYear[1])
 			} )
-	uStarAggr <- median(uStarYear$uStar, na.rm=TRUE)
-	message(paste("Estimated UStar threshold of: ", signif(uStarAggr,2)
+	resultsSeasonYear$uStarAggr <- resultsSeasonYear$uStarMaxSeason
+	#---- for seasonYears with too few records and for seasonYears with no seasonal estimate do a pooled estimate
+	##details<< \describe{\item{One-big-season fallback}{
+	## If there are too few records within one year, of when no season yielded a finite u*Threshold estimate, then
+	## the yearly u*Th is estimated by pooling the data from seasons within one seasonYear.
+	## The user can suppress using pooled data on few records by providing option
+	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{controlUstarSubsetting}})
+	## }}
+	seasonYearsPooled <- resultsSeasonYear$seasonYear[ !is.finite(resultsSeasonYear$uStarAggr) ]
+	if( isTRUE(ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords) )
+		seasonYearsPooled <- union( seasonYearsWithFewData, seasonYearsPooled)
+	resultsSeasonYearPooled <- if( !length(seasonYearsPooled) ){
+		resultsSeasonYears <- data.frame(seasonYear=NA_character_, nRec=NA_integer_ , uStarPooled=NA_real_)[FALSE,]
+	} else {
+		dscPooled <- subset(dsc, seasonYear %in% seasonYearsPooled)
+		UstarYearsTempL <- dlply(dscPooled, .(seasonYear), .estimateUStarSeason, .drop = FALSE, .inform = TRUE
+				,ctrlUstarSub.l = ctrlUstarSub.l
+				,ctrlUstarEst.l = ctrlUstarEst.l
+				,fEstimateUStarBinned = fEstimateUStarBinned
+				,UstarColName = UstarColName
+				,NEEColName = NEEColName
+				,TempColName = TempColName
+				,RgColName = RgColName
+		)
+		UstarYearsTemp <- laply(UstarYearsTempL, "[[", 1L, .drop=FALSE)	# matrix (nSeason x nTemp)
+		uStarYears <- apply( UstarYearsTemp, 1, median, na.rm=TRUE)
+		# different to C-version, report NA where threshold was found in less than 20% of temperature classes
+		iNonValid <- rowSums(is.finite(UstarYearsTemp))/ncol(UstarYearsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
+		uStarYears[iNonValid] <- NA_real_
+		# omit gettting binning into sDATA (do not overwrite bins from seasonal estimates)
+		resultsSeasonYears <- data.frame(seasonYear=names(uStarYears), nRec=as.vector(table(dscPooled$seasonYear)), uStarPooled=uStarYears)
+	}
+	resultsSeasonYear <- merge(resultsSeasonYear, resultsSeasonYearPooled, all.x=TRUE)
+	isFinitePooled <- is.finite(resultsSeasonYear$uStarPooled)
+	resultsSeasonYear$uStarAggr[isFinitePooled] <- resultsSeasonYear$uStarPooled[isFinitePooled]
+	#----- overall is the median across years
+	uStarMedianYears <- median(resultsSeasonYear$uStarAggr, na.rm=TRUE)
+	message(paste("Estimated UStar threshold of: ", signif(uStarMedianYears,2)
 					,"by using controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
 			))
-	resultsDf <- results[,c("season","year","uStar")]
+	#----- propagate aggregate estimates back to NA-slots of years and seaons
+	isNonFinite <- !is.finite(resultsSeasonYear$uStarAggr)
+	resultsSeasonYear$uStarAggr[isNonFinite] <- uStarMedianYears
+	# merge yearly aggregated estimates to season and replace by finite seasonal estimates
+	resultsSeason <- merge(resultsSeason, resultsSeasonYear[,c("seasonYear","uStarAggr")], all.x=TRUE)
+	isFiniteEst <- (is.finite(resultsSeason$uStarSeasonEst))
+	resultsSeason$uStarAggr[isFiniteEst] <- resultsSeason$uStarSeasonEst[isFiniteEst]
+	#
+	resultsDf <- resultsSeason[,c("season","seasonYear","uStarAggr")]
 	resultsDf$season <- as.factor(resultsDf$season)
 	resultsDf$aggregationMode <- "season"
-	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="year", season=as.factor(NA_integer_)), uStarYear),resultsDf )
-	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="single", season=as.factor(NA), year=NA_integer_), uStar=uStarAggr),resultsDf )
+	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="year", season=as.factor(NA_integer_)), resultsSeasonYear[,c("seasonYear","uStarAggr")]),resultsDf )
+	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="single", season=as.factor(NA), seasonYear=NA_integer_), uStarAggr=uStarMedianYears),resultsDf )
+	resultsDf$uStar <- resultsDf$uStarAggr
 	# store indices in sDATA, first remove columns
 	sDATA[isValidUStar,] <<- dsc 	
 	#plot( tempBin ~ Tair, sDATA, col=rainbow(8)[ as.factor(sDATA$season)] )	# check correct ordering
 	##value<< A list with entries
 	res <- sUSTAR <<- list(
-			uStarTh = resultsDf[,c("aggregationMode","year","season","uStar")]	##<< data.frame with columns "aggregationMode","year","season","uStar" 
+			uStarTh = resultsDf[,c("aggregationMode","seasonYear","season","uStar")]	##<< data.frame with columns "aggregationMode","seasonYear","season","uStar" 
 				## with rows for "single": the entire aggregate (median across years)
-				##, "year": each year (maximum across seasons)
+				##, "seasonYear": each year (maximum across seasons or estimate on pooled data)
 				##, "season": each season (median across temperature classes)
-			,seasonAggregation =  nRecValidInSeasonYear	##<< data.frame listing for each season, the number of valid records, and the seasons it was aggregated to in case of few records 
-			,UstarSeasonTemp=t(UstarSeasonsTemp)		##<< numeric matrix (nTemp x nAggSeason): estimates for each temperature subset for each aggregated season
+			,seasonYear = resultsSeasonYear		##<< data.frame listing results for year with columns "seasonYear"
+				## , "uStarMaxSeason" the maximum across seasonal estimates within the year
+				## , "uStarPooled" the estimate based on data pooled across the year (only calculated on few valid records or on uStarMaxSeason was nonfinite) 
+				## , "nRec" number of valid records  (only if the pooled estimate was calculated) 
+				## , "uStarAggr" chosen estimate, corresponding to uStarPooled if this was calculated, or uStarMaxSeason or uStarTh across years if the former was non-finite
+			,season =  resultsSeason	##<< data.frame listing results for each season
+				## , "nRec" the number of valid records
+				## , "uStarSeasonEst" the estimate for based on data within the season (median across temperature classes)
+				## , "uStarAggr" chose estimate, corresponding to uStarSeasonEst, or the yearly seasonYear$uStarAggr, if the former was non-finite 
+			,tempInSeason=t(UstarSeasonsTemp)		##<< numeric matrix (nTemp x nAggSeason): estimates for each temperature subset for each season
 	)
 	res
 	## uStar values are reported for each season, together with the information on the seasons: to which aggregated season
@@ -246,15 +279,21 @@ sEddyProc$methods(
 		,TempColName 		##<< column name for air temperature
 		,RgColName 			##<< column name for solar radiation for omitting night time data
 ){
+	# result in correct format when no quit early 
+	resNA <- 	list(
+			UstarTh.v=rep(NA_real_, ctrlUstarSub.l$taClasses)	##<< vector of uStar for temperature classes
+			,bins.F=data.frame(tempBin=rep(NA_integer_, nrow(dsi)) 
+							 , uStarBin=rep(NA_integer_, nrow(dsi)) )			##<< data.frame with columns tempBin, uStarBin for each row in dsi
+	)
 	if( nrow(dsi) < ctrlUstarSub.l$minRecordsWithinSeason){
 		warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),"). Need at least n=",ctrlUstarSub.l$minRecordsWithinSeason,". Returning NA for this Season." )
-		return( rep(NA_real_, ctrlUstarSub.l$taClasses))
+		return( resNA )
 	}
 	if( nrow(dsi)/ctrlUstarSub.l$taClasses < ctrlUstarSub.l$minRecordsWithinTemp ){
 		warning("sEstUstarThreshold: too few finite records within season (n=",nrow(dsi),") for ",ctrlUstarSub.l$taClasses
 				," temperature classes. Need at least n=",ctrlUstarSub.l$minRecordsWithinTemp*ctrlUstarSub.l$taClasses
 				,". Returning NA for this Season." )
-		return( rep(NA_real_, ctrlUstarSub.l$taClasses))
+		return( resNA )
 	}
 	# if( as.POSIXlt(dsi$sDateTime[1])$year+1900==2002 & dsi$season[1]==2L ) recover()	
 	#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")

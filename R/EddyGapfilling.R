@@ -585,7 +585,8 @@ sEddyProc$methods(
 	## Advanced Example 1b in \code{\link{sEddyProc.example}}
     # # \code{\link{sEstUstarThresholdDistribution}}
     
-	# create a matrix with uStar with one row for each data record 
+	# create a matrix with uStar with one row for each data record
+	if( !all(is.finite(as.matrix(UstarThres.df[,-1])))) warning("Provided non-finite uStarThreshold. All values in corresponding period will be marked as gap.")
 	nRec <- nrow(.self$sDATA)
 	uStarM <- if( nrow(UstarThres.df) == 1L){
 		matrix( unlist(UstarThres.df[,-1]), ncol=ncol(UstarThres.df)-1, nrow=nRec, byrow = TRUE  )

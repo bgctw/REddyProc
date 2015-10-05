@@ -160,7 +160,7 @@ fCheckHHTimeSeries <- function(
   NotDistHH.b <- as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != (24/DTS.n * 60 * 60)
   NotDistHH.i <- sum(NotDistHH.b)
   if( NotDistHH.i > 0 )
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in rows: ', which(NotDistHH.b))
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in rows: ', paste(which(NotDistHH.b),collapse=","))
   ##details<<
   ## and stamped on the half hour.
   NotOnHH.i <- sum(as.numeric(Time.V.p) %% (24/DTS.n * 60 * 60) != 0)

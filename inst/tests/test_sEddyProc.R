@@ -164,12 +164,22 @@ test_that("Test sMDSGapFillAfterUStarDistr",{
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
 			#
-			# NA case - introducting 0% gaps in single season, by providing ustar of NA 
+			# NA case - marking missing uStar Threshold as gaps 
 			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			UstarThres.df=data.frame(season=levels(seasonFac), U05=c(NA,0.38),U95=c(NA,0.42))
+			expect_warning(
+				EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
+			)
+			Results.F <- EddyProc.C$sExportResults()
+			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
+			expect_true( all(Results.F$Ustar_U05_fqc[ seasonFac==seasonFac[1] ] ==3L) )	# quality flag 3L (!=0) indicates invalid uStar
+			#
+			# zero case -introducting 0% gaps in single season, by providing ustar Threshold of 0  
+			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
+			UstarThres.df=data.frame(season=levels(seasonFac), U05=c(0,0.38),U95=c(0,0.42))
 			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
 			Results.F <- EddyProc.C$sExportResults()
 			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
-			expect_true( all(Results.F$Ustar_U05_fqc[ seasonFac==seasonFac[1] ] == 0) )	# quality flag 0 indicates valid uStar
+			expect_true( all(Results.F$Ustar_U05_fqc[ seasonFac==seasonFac[1] ] == 0L) )	# quality flag 0 indicates valid uStar
 		})
 
