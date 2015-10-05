@@ -578,4 +578,51 @@ sEddyProc$methods(
       
       # Close plot
     }, finally=sxClosePlot(PlotFile.s))
+  })
+  
+sEddyProc$methods(
+  sPlotNEEVersusUStarForSeason = function(
+		  ##title<<  
+  ## sEddyProc$sPlotNEEVersusUStarForSeason - Image with NEE versus UStar for each Temperature class of given season
+  ##description<<
+  ## Generates image in specified format ('pdf' or 'png')
+  season.s=levels(sDATA$season)[1]	 ##<< season, i.e. time period, to plot 
+  ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
+  ,Dir.s='plots'      ##<< Directory for plotting
+)
+  ##author<<
+  ## TW  
+  {
+	  'Image with daily sums of each year'
+  # generate subset of data
+  dsSeason <- subset(EddyProc.C$sDATA, season==season.s)
+  tempBinLevels <- sort(unique(dsSeason$tempBin)) 
+  # Open plot
+  PlotType.s <- paste('NEEvsUStar',season,sep="_")
+  WInch.n <- 15
+  HInch.n <- WInch.n/3 * (length(tempBinLevels)+1)
+  PlotFile.s <- sxOpenPlot('none', 'none', NA, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotNEEVersusUStarForSeason')
+  
+  tryCatch({
+			  # Split screen 
+  	  split.screen(c(length(tempBinLevels) + 1, 1))
+		  split.screen(c(3,1), screen=1)
+		  
+		  # Set title of plot
+		  screen(length(tempBinLevels) + 3)
+		  mtext(sxSetTitle('NEE', 'none', NA, paste('NEE versus uStar for season',season.s)), line=-3, side=3, cex=2.0)
+		  
+		  # Loop over all temperature classes
+		  # tempBinI <- 1L
+		  for( tempBinI in seq_along(tempBinLevels) ) {
+			  screen(1L + tempBinI)
+			  tempBinLevel <- tempBinLevels[tempBinI]
+			  uStarTh <- sUSTAR$UstarSeasonTemp[ tempBinLevel, season.s] 
+			  dss <- subset(dsSeason,  tempBin==tempBinLevel )
+			  .plotNEEVersusUStarTempClass(dss, uStarTh )
+		  }
+		  
+		  # Close plot
+			  }, finally=sxClosePlot(PlotFile.s))
   }) 
+  

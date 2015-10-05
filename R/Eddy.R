@@ -16,6 +16,7 @@ sEddyProc <- setRefClass('sEddyProc', fields=list(
   ,sDATA='data.frame'   ##<< Data frame with (fixed) site data
   ,sINFO='list'         ##<< List with site information
   ,sTEMP='data.frame'   ##<< Data frame with (temporary) result data
+  ,sUSTAR='list'		##<< List with results form uStar Threshold estimation
   # Note: The documenation of the class is not processed by 'inlinedocs'
 ))
 

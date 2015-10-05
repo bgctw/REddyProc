@@ -12,13 +12,13 @@ sEddyProc$methods(
 	  ## Estimate the Ustar threshold by aggregating the estimates for seasonal and temperature subsets.
 	  ##author<<
 	  ## TW, OM
-		ds = sDATA					##<< data.frame with columns named by the following arguments
-		,UstarColName = "Ustar"		##<< column name for UStar
+		#	ds = sDATA					##<< data.frame with columns named by the following arguments
+		UstarColName = "Ustar"		##<< column name for UStar
 		,NEEColName = "NEE"			##<< column name for NEE
 		,TempColName = "Tair"		##<< column name for air temperature
 		,RgColName = "Rg"			##<< column name for solar radiation for omitting night time data
-		,seasonFactor.v = createSeasonFactorMonth(ds$sDateTime) ##<< factor for subsetting times (see details)
-		,seasonFactorsYear = getYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year that this season belongs to  
+		,seasonFactor.v = createSeasonFactorMonth(sDATA$sDateTime) ##<< factor for subsetting times (see details)
+		,seasonFactorsYear = getYearOfSeason(seasonFactor.v, sDATA$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year (aggregation period) that this season belongs to  
 		,ctrlUstarEst.l = controlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{controlUstarEst}}
 		,ctrlUstarSub.l = controlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{controlUstarSubsetting}} 
 		,fEstimateUStarBinned = estUstarThresholdSingleFw2Binned	##<< function to estimate UStar on a single binned series, see \code{\link{estUstarThresholdSingleFw2Binned}}
@@ -61,14 +61,25 @@ sEddyProc$methods(
 	## \item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
 	## } 
 	#
-	dsF <- cbind(ds,season=seasonFactor.v)
-	dsc <- if( isCleaned) dsF else cleanUStarSeries( dsF, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr)
+	# add index columns to locate which season/tempClass/uStarBin each record belongs
+	sDATA$season <<- seasonFactor.v
+	sDATA$seasonYear <<- seasonFactorsYear[seasonFactor.v]
+	sDATA$tempBin <<- NA_integer_
+	#not used with all of the  methods: sDATA$uStarBin <<- NA_real_
+	if( isCleaned){
+		isValidUStar <- TRUE
+		dsc <- sDATA
+	} else {
+		isValidUStar <- .getValidUstarIndices( sDATA, UstarColName, NEEColName, TempColName, RgColName, ctrlUstarSub.l$swThr) 
+		dsc <- 	sDATA[isValidUStar, ,drop=FALSE] 
+	}
 	#
 	tdsc <- as.data.frame(table(dsc$season)); colnames(tdsc) <- c("season","nRec")
 	#some seasons might be absent in dsc from cleaning, construct vectors that report NA for missing seasons
-	nRecValidInSeason <- merge( data.frame( season=sort(unique(dsF$season)) ), tdsc, all.x=TRUE)
+	nRecValidInSeason <- merge( data.frame( season=sort(unique(sDATA$season)) ), tdsc, all.x=TRUE)
 	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(season=names(seasonFactorsYear), year=seasonFactorsYear), all.x=TRUE)
 	nYear <- ddply(nRecValidInSeasonYear, .(year), summarize, nRec=sum(nRec, na.rm=TRUE) )
+.tmp.TODOinAggr <- function(){	
 	##details<< \describe{\item{One-big-season fallback}{
 	## If there are too few records within one year, instead of reporting no threshold, the records of all the seasons of one year 
 	## can be aggregated to one big season.
@@ -93,6 +104,7 @@ sEddyProc$methods(
 			nRecValidInSeasonYear$seasonAgg[ nRecValidInSeasonYear$season %in% seasons] <- seasons[1]
 		}
 	}
+}
 	#
 	#dsi <- subset(dsc, season == 4)
 	#dsi <- subset(dsc, season == 0)
@@ -110,7 +122,7 @@ sEddyProc$methods(
 		##
 		## Note, that this method often gives higher estimates of the u* threshold.
 		## }}
-		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeasonCPTSeveralT, .drop_o = FALSE, .inform = TRUE
+		UstarSeasonsTempL <- dlply(dsc, .(season), .estimateUStarSeasonCPTSeveralT, .drop_o = FALSE, .inform = TRUE
 				#, .drop_o = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
 				,ctrlUstarEst.l = ctrlUstarEst.l
@@ -119,13 +131,16 @@ sEddyProc$methods(
 				,NEEColName = NEEColName
 				,TempColName = TempColName
 				,RgColName = RgColName
-		) # daply over seasons  matrix (nSeason x nTemp)
+		)  
+		UstarSeasonsTemp <- ldply(UstarSeasonsTempL, "[[", 1L)	# matrix (nSeason x nTemp)
 		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
 		iNonValid <- rowSums(is.finite(UstarSeasonsTemp))/ncol(UstarSeasonsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
 		uStarSeasons[iNonValid] <- NA_real_
 		# need check to avoid -Inf in max function
 	} else {
-		UstarSeasonsTemp <- daply(dsc, .(season), .estimateUStarSeason, .drop_o = FALSE, .inform = TRUE
+		sDATA$uStarBin <<- NA_integer_
+		dsc$uStarBin <- NA_integer_
+		UstarSeasonsTempL <- dlply(dsc, .(season), .estimateUStarSeason, .drop = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
 				,ctrlUstarEst.l = ctrlUstarEst.l
 				,fEstimateUStarBinned = fEstimateUStarBinned
@@ -133,11 +148,18 @@ sEddyProc$methods(
 				,NEEColName = NEEColName
 				,TempColName = TempColName
 				,RgColName = RgColName
-		) # daply over seasons  matrix (nTemp x nSeason)
+		) 
+		UstarSeasonsTemp <- laply(UstarSeasonsTempL, "[[", 1L)	# matrix (nSeason x nTemp)
 		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
 		# different to C-version, report NA where threshold was found in less than 20% of temperature classes
 		iNonValid <- rowSums(is.finite(UstarSeasonsTemp))/ncol(UstarSeasonsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
 		uStarSeasons[iNonValid] <- NA_real_
+		# extract the temperature and bin indices
+		# season <- names(UstarSeasonsTempL)[2]
+		for( season in names(UstarSeasonsTempL) ){
+			dsc[dsc$season==season,c("tempBin","uStarBin")] <- UstarSeasonsTempL[[season]]$bins.F
+		}
+		#plot( tempBin ~ Tair, dsc, col=rainbow(8)[ as.factor(dsc$season)] )	# check correct ordering
 	}
 	results <- merge(nRecValidInSeasonYear, data.frame(seasonAgg=names(uStarSeasons),uStar=uStarSeasons), all.x=TRUE)
 	uStarYear = ddply(results, .(year), function(dss){
@@ -152,8 +174,11 @@ sEddyProc$methods(
 	resultsDf$aggregationMode <- "season"
 	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="year", season=as.factor(NA_integer_)), uStarYear),resultsDf )
 	resultsDf <- tmp <- rbind(cbind(data.frame(aggregationMode="single", season=as.factor(NA), year=NA_integer_), uStar=uStarAggr),resultsDf )
+	# store indices in sDATA, first remove columns
+	sDATA[isValidUStar,] <<- dsc 	
+	#plot( tempBin ~ Tair, sDATA, col=rainbow(8)[ as.factor(sDATA$season)] )	# check correct ordering
 	##value<< A list with entries
-	list(
+	res <- sUSTAR <<- list(
 			uStarTh = resultsDf[,c("aggregationMode","year","season","uStar")]	##<< data.frame with columns "aggregationMode","year","season","uStar" 
 				## with rows for "single": the entire aggregate (median across years)
 				##, "year": each year (maximum across seasons)
@@ -161,8 +186,11 @@ sEddyProc$methods(
 			,seasonAggregation =  nRecValidInSeasonYear	##<< data.frame listing for each season, the number of valid records, and the seasons it was aggregated to in case of few records 
 			,UstarSeasonTemp=t(UstarSeasonsTemp)		##<< numeric matrix (nTemp x nAggSeason): estimates for each temperature subset for each aggregated season
 	)
+	res
 	## uStar values are reported for each season, together with the information on the seasons: to which aggregated season
 	## it belongs (if there were too few records within year), and to which year it is associated.
+	## In addition there are additional columns in sDATA of the class: season, tempBin and uStarBin reporting
+	## the classes of similar conditions that the record belongs to.
 },ex = function(){
   if( FALSE ) { #Only execute interactively (it fails during first package installation)
     Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
@@ -171,9 +199,43 @@ sEddyProc$methods(
     EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
     #ds <- head(ds,2000)
     (Result.L <- EddyProc.C$sEstUstarThreshold())
+	seasonI <- "1998008"
+	EddyProc.C$sPlotNEEVersusUStarForSeason(seasonI)
+	dsSeason <- subset(EddyProc.C$sDATA, season==seasonI)
+	# tempBinI <- 4
+	for( tempBinI in sort(unique(dsSeason$tempBin))){
+		#plot( tempBin ~ Tair, dsc, col=rainbow(8)[ as.factor(dsc$season)] )	# check correct ordering
+		uStarTh <- Result.L$UstarSeasonTemp[ tempBinI, seasonI] 
+		dss <- subset(dsSeason,  tempBin==tempBinI )
+		.plotNEEVersusUStarTempClass(dss, uStarTh )
+	}
 	(Results.L2 <- EddyProc.C$sEstUstarThreshold(ctrlUstarEst.l=controlUstarEst(isUsingCPTSeveralT=TRUE)))
   }
 }))
+
+.plotNEEVersusUStarTempClass <- function(
+	### plot NEE versus uStar for data of a subset with estimates
+	NEEUStar.F		##<< data.frame with columns of NEE, Ustar and Temperature, and columns 'uStarBin' and 'sDateTime',  
+	,uStarTh		##<< value of uStar of an estimated threshold		
+	,UstarColName = "Ustar"		##<< column name for UStar
+	,NEEColName = "NEE"			##<< column name for NEE
+	,TempColName = "Tair"		##<< column name for air temperature
+){
+	dss <- NEEUStar.F[, c(NEEColName, UstarColName, TempColName, "uStarBin","sDateTime")]
+	colnames(dss) <- c("NEE","Ustar","Temp","uStarBin","sDateTime")
+	##details<< for each uStarBin, mean of NEE and uStar is calculated.
+	dssm <- ddply(dss, .(uStarBin), summarise, mUStar=mean(Ustar), mNEE=mean(NEE) )
+	plot( NEE ~ Ustar, dss, col=adjustcolor("brown",alpha.f=0.3), ylim=quantile(dss$NEE, c(0.02,0.98))) #col=rainbow(20)[dss$uStarBin] )
+	points( mNEE ~ mUStar, dssm, pch="+", cex=1.5)
+	abline(v=uStarTh, lty="dashed",col="grey")
+	dateRange <- strftime( range(dss$sDateTime), "%d.%m.%y" )
+	legend("topleft",legend=c(
+					paste(dsSeason$season[1], " (",dateRange[1],"-",dateRange[2],")",sep="")
+					,paste(tempBinI,sprintf(" (%1.1f-%1.1f°C)",min(dss$Temp),max(dss$Temp)),sep="")
+					,sprintf("u*Thr=%1.2f",uStarTh)
+			))
+	##value<< side effect of plotting NEE ~ Ustar with indicating Means of the bins, uStarThreshold, Date-Range, and Temperature range
+}
 
 .estimateUStarSeason <- function(
 		### Estimate uStar threshold for data of a given season
@@ -196,7 +258,9 @@ sEddyProc$methods(
 	}
 	# if( as.POSIXlt(dsi$sDateTime[1])$year+1900==2002 & dsi$season[1]==2L ) recover()	
 	#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")
-	dsiSort <- arrange(dsi, dsi[,TempColName]) 	#sort values in a season by air temperature (later in class by ustar)
+	orderTemp <- order(dsi[,TempColName])
+	uStarBinSortedT <- integer(nrow(dsi))		# default value for methods that do not bin uStar
+	dsiSort <- dsi[orderTemp, ,drop=FALSE] 	#sort values in a season by air temperature (later in class by ustar)
 	#N <- nrow(dsi ) #number of observations (rows) total, probably can get from elsewhere..
 	#T_bin_size <- round(N/ctrlUstarSub.l$taClasses) #set T_bin size so that every bin has equal #values
 	#set up vector that contains Ustar values for temperature classes
@@ -204,7 +268,6 @@ sEddyProc$methods(
 	# twutz 1505: changed temperature binning of records to put equals temperatures into the same bin (compatibility with C code)
 	#trace(.binWithEqualValues,recover)		#untrace(.binWithEqualValues)
 	TId <- .binWithEqualValuesBalanced(dsiSort[,TempColName], ctrlUstarSub.l$taClasses)
-#recover()	
 	#k<-1L
 	for (k in 1:ctrlUstarSub.l$taClasses){	# k temperature class
 		# minimum number of records within temp checked above					
@@ -229,7 +292,8 @@ sEddyProc$methods(
 #			dsiSortTclass <- dsiSort[((k-1)*T_bin_size+1):((k)*T_bin_size),]
 #		}
 	
-		dsiSortTclass <- dsiSort[TId == k,]
+		isCurrentTclass <- TId == k
+		dsiSortTclass <- dsiSort[isCurrentTclass,]
 		#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
 		Cor1 = suppressWarnings( abs(cor(dsiSortTclass[,UstarColName],dsiSortTclass[,TempColName])) ) # maybe too few or degenerate cases
 		if( inherits(Cor1,"try-error") ) recover()
@@ -241,7 +305,9 @@ sEddyProc$methods(
 				resCPT <- try( fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName]), silent=TRUE )
 				UstarTh.v[k] <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) NA else resCPT["cp"]
 			} else {
-				dsiBinnedUstar <- .binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
+				resBin <- .binUstar(dsiSortTclass[,NEEColName],dsiSortTclass[,UstarColName],ctrlUstarSub.l$UstarClasses)
+				dsiBinnedUstar <- resBin$binAverages
+				uStarBinSortedT[isCurrentTclass] <- resBin$uStarBins
 				#plot( NEE_avg ~ Ust_avg, dsiBinnedUstar)
 				if( any(!is.finite(dsiBinnedUstar[,2])) ){
 					stop("Encountered non-finite average NEE for a UStar bin.",
@@ -262,7 +328,16 @@ sEddyProc$methods(
 			#TODO: should a message be printed here to the user??
 		}
 	}
-	UstarTh.v # vector of uStar for temperature classes
+	# bins of temperature and uStar have been generated on sorted data.frame. Need to assign to original positions
+	TIdUnsorted <- uStarBinUnsortedT <- integer(length(orderTemp)); 	
+	TIdUnsorted[orderTemp] <- TId	
+	uStarBinUnsortedT[orderTemp] <- uStarBinSortedT
+	##value<< list with entries
+	list(
+			UstarTh.v=UstarTh.v 	##<< vector of uStar for temperature classes
+			,bins.F=data.frame(tempBin=TIdUnsorted, uStarBin=uStarBinUnsortedT)			##<< data.frame with columns tempBin, uStarBin for each row in dsi
+	)
+	
 }
 
 
@@ -523,15 +598,26 @@ getYearOfSeason <- function(
 	,isUStarSorted=FALSE	##<< set to TRUE, if NEE and Ustar are already sorted by increasin Ustar values (performance gain)
 
 ){
-	ds.f <- data.frame(NEE=NEE.v,Ustar=Ustar.v)
+	ds.F <- ds0.F <- data.frame(NEE=NEE.v,Ustar=Ustar.v)
 	#within data frame sort values by Ustar
-	if( !isTRUE(isUStarSorted))	ds.f <- arrange(ds.f,ds.f[,2])
+	if( !isTRUE(isUStarSorted)){
+		orderUStar <- order(Ustar.v)
+		ds.F <- ds.F[orderUStar, ]
+	}else{
+		orderUStar <- TRUE
+	}
 	#
 	# twutz 1505: changed binning to take care of equal values in uStar column 
 	# when assigning uStar classes, only start a new class when uStar value changes
-	ds.f$uClass <- .binWithEqualValuesMinRec(ds.f$Ustar, nBin=UstarClasses, tol = 1e-14)
-	#
-	ddply( ds.f, .(uClass), summarise, Ust_avg=mean(Ustar,na.rm=TRUE), NEE_avg=mean(NEE, na.rm=TRUE), nRec=length(NEE))[,-1]
+	ds.F$uClass <- .binWithEqualValuesMinRec(ds.F$Ustar, nBin=UstarClasses, tol = 1e-14)
+	binAverages <- ddply( ds.F, .(uClass), summarise, Ust_avg=mean(Ustar,na.rm=TRUE), NEE_avg=mean(NEE, na.rm=TRUE), nRec=length(NEE))[,-1]
+	uStarBinsUnsorted <- integer(nrow(ds.F)); uStarBinsUnsorted[orderUStar] <- as.integer(ds.F$uClass)
+	# plot( uStarBinsUnsorted ~ ds0.F$Ustar )	# for checking correct ordering
+	##value<< list with entries
+	list(
+			binAverages=binAverages		##<< data.frame with columns Ust_avg   NEE_avg nRec with one row for each bin
+			,uStarBins=uStarBinsUnsorted	##<< integer vector reporting the bin for each record in Ustar.v  	
+			)
 }
 
 .binWithEqualValuesBalanced <- function(
@@ -686,7 +772,7 @@ estUstarThresholdSingleFw2Binned <- function(
 	plot( Ust_bins.f$NEE_avg ~ Ust_avg, Ust_bins.f)
 }
 
-cleanUStarSeries <- function(
+.depr.cleanUStarSeries <- function(
 	### remove non-finite cases and omit night time data.
 	ds						    ##<< data.frame with columns
 	,UstarColName = "Ustar"  
@@ -706,6 +792,26 @@ cleanUStarSeries <- function(
 	##value<< ds with non-finite cases and cases with radiation < swThr removed.
 	ds
 }
+
+.getValidUstarIndices <- function(
+		### getremove non-finite cases and omit night time data.
+		ds						    ##<< data.frame with columns
+		,UstarColName = "Ustar"  
+		,NEEColName = "NEE"
+		,TempColName = "Tair"
+		,RgColName = "Rg"
+		,swThr = controlUstarSubsetting()$swThr
+){
+	bo <- 
+			is.finite(ds[,NEEColName]) & 
+					is.finite(ds[,TempColName]) & 
+					is.finite(ds[,UstarColName]) & 
+					is.finite(ds[,RgColName]) 
+	bo <- bo & ds[,RgColName] < swThr
+	##value<< boolean vector with non-finite cases and cases with radiation < swThr set to FALSE.
+	bo
+}
+
 
 sEddyProc$methods(
 		sEstUstarThresholdDistribution = structure(function(
