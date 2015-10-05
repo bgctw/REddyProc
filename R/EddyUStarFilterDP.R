@@ -487,9 +487,10 @@ attr(controlUstarSubsetting,"ex") <- function(){
 createSeasonFactorMonthWithinYear <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting months, with seasons not spanning year boundaries
   	dates							##<< POSIXct vector of length of the data set to be filled				
-  	, month=as.POSIXlt(dates)$mon   ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record
+  	, month=as.POSIXlt(dates)$mon+1   ##<< integer (1-13) vector of length of the data set to be filled, specifying the month for each record
 	, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
-	, startMonth=c(3,6,9,12)-1		##<< integer vector specifying the starting month for each season, counting from zero, default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
+	, startMonth=c(3,6,9,12)		##<< integer vector specifying the starting month for each season, counting from one
+		## default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
 ){
   ##seealso<< \code{\link{createSeasonFactorYday}}
   ##details<< 
@@ -498,18 +499,20 @@ createSeasonFactorMonthWithinYear <- function(
   ## E.g. with the default the fourth period of the first year consists of Jan,Feb,Dec.
   if( length(year) == 1L) year <- rep(year, length(month))
   if( length(month) != length(year) ) stop("Month and Year arguments need to have the same length.")
+  if( any(month < 1 | month > 12) ) stop("Month out of range 1..12")
   startMonth <- sort(unique(startMonth))
-  boLastPeriod <- month < startMonth[1] 		
+  boLastPeriod <- month < startMonth[1]
   # translate month before the first specified beginning month to be after last specified month (1 becomes 13)
   month[ boLastPeriod ] <- month[ boLastPeriod] +12
   startMonthAdd <- c(startMonth, startMonth[1]+12)
-  seasonFac <- year*1000L + rep(0L, length(month) )
+  seasonFac <- year*1000L + rep(startMonth[1], length(month) )
   # i <- 2
   for( i in 2:length(startMonth) ){
-	  bo <- month >= startMonthAdd[i] & month < startMonthAdd[i+1]
-	  seasonFac[bo] <- year[bo]*1000L + (i-1)
+	  bo <- (month >= startMonthAdd[i]) & (month < startMonthAdd[i+1])
+	  seasonFac[bo] <- year[bo]*1000L + startMonth[i]
   }
-  #plot( seasonFac ~ months )
+  table(seasonFac)
+  #plot.default( as.factor(seasonFac) ~ as.POSIXlt(dates)$mon+1 ); levels(as.factor(seasonFac))
   as.factor(seasonFac) 	
   ##value<<
   ## Integer vector length(dates), with each unique value representing one season
@@ -518,36 +521,38 @@ attr(createSeasonFactorMonthWithinYear,"ex") <- function(){
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
 	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-	(res <- createSeasonFactorMonthWithinYear(ds$DateTime))
-	(res2 <- createSeasonFactorYday(ds$DateTime)) # default days are chosen to correspond to start of Febr, June, Sept, and Dec
+	table(res <- createSeasonFactorMonthWithinYear(ds$DateTime-1))  #-1 to move last record of newYear to 1998 
 }
 
 createSeasonFactorMonth <- function(
 		### calculate factors to denote the season for uStar-Filtering by specifying starting months, with continuous seasons spanning year boundaries
 		dates							##<< POSIXct vector of length of the data set to be filled				
-		, month=as.POSIXlt(dates)$mon   ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record
-		, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
-		, startMonth=c(3,6,9,12)-1		##<< integer vector specifying the starting month for each season, counting from zero, default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
+		, month=as.POSIXlt(dates)$mon+1L   	##<< integer (1-12) vector of length of the data set to be filled, specifying the month for each record
+		, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
+		, startMonth=c(3,6,9,12)		##<< integer vector specifying the starting month for each season, counting from one.
+			## Default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
 ){
-	##seealso<< \code{\link{createSeasonFactorYday}}
+	##seealso<< \code{\link{createSeasonFactorMonthWithinYear}}, \code{\link{createSeasonFactorYday}}, \code{\link{createSeasonFactorYdayYear}}
 	##details<< 
 	## If Jan is not a starting month, then the first months of each year will be 
 	## part of the last period in the year.
 	## E.g. with the default the fourth period of the first year consists of Jan,Feb,Dec.
 	if( length(year) == 1L) year <- rep(year, length(month))
 	if( length(month) != length(year) ) stop("Month and Year arguments need to have the same length.")
+	if( any(month < 1 | month > 12) ) stop("Month out of range 1..12")
 	starts <- data.frame(month=sort(unique(startMonth)), year=rep(sort(unique(year)),each=length(startMonth)) )
-	if( starts$month[1] != 0L ) starts <- rbind( data.frame(month=0L, year=starts$year[1]),starts )
+	if( starts$month[1] != 1L ) starts <- rbind( data.frame(month=1L, year=starts$year[1]),starts )
 	seasonFac <- integer(length(month)) # 0L
 	starts$startYearMonths <- startYearMonths <- starts$year*1000L + starts$month
 	yearMonths <- year*1000L+month
 	# i <- 1
 	for( i in 1:(length(startYearMonths)-1) ){
-		bo <- yearMonths >= startYearMonths[i] & yearMonths < startYearMonths[i+1]
+		bo <- (yearMonths >= startYearMonths[i]) & (yearMonths < startYearMonths[i+1])
 		seasonFac[bo] <- starts$year[i]*1000L + starts$month[i] 
 	}
+	# last period with no end border defined
 	i <- length(startYearMonths)
-	bo <- yearMonths >= startYearMonths[i]
+	bo <- (yearMonths >= startYearMonths[i])
 	seasonFac[bo] <- starts$year[i]*1000L + starts$month[i]
 	#plot( seasonFac ~ dates )
 	as.factor(seasonFac) 	
@@ -555,41 +560,29 @@ createSeasonFactorMonth <- function(
 	## Integer vector length(dates), with each unique value representing one season
 }
 attr(createSeasonFactorMonth,"ex") <- function(){
-	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-	(res <- createSeasonFactorMonth(ds$DateTime))
-	plot( res ~ ds$DateTime)
+	pkgDir <- system.file(package='REddyProc')
+	if( nzchar(pkgDir) ){
+		Dir.s <- paste(pkdDir, 'examples', sep='/')
+		EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+		EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+		(res <- createSeasonFactorMonth(ds$DateTime))
+		plot.default( res ~ ds$DateTime, type="p")
+	}
 }
 
 
 createSeasonFactorYday <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting day of years
 	dates							##<< POSIXct vector of length of the data set to be filled				
-	, yday=as.POSIXlt(dates)$yday  ##<< integer (0-11) vector of length of the data set to be filled, specifying the month for each record
-	, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
-	, startYday=c(335,60,152,244)-1	 ##<< integer vector (0-366) specifying the starting yearDay for each season
+	, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the month for each record
+	, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
+	, startYday=c(335,60,152,244)	 ##<< integer vector (1-366) specifying the starting yearDay for each season in increasing order
 ){
 	##details<<
 	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
 	## If working with dates that denote the end of the period, use \code{yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday}
-	if( length(year) == 1L) year <- rep(year, length(yday))
-	if( length(yday) != length(year) ) stop("Month and Year arguments need to have the same length.")
 	starts <- data.frame(yday=sort(unique(startYday)), year=rep(sort(unique(year)),each=length(startYday)) )
-	if( starts$yday[1] != 0L ) starts <- rbind( data.frame(yday=0L, year=starts$year[1]),starts )
-	seasonFac <- integer(length(yday)) # 0L
-	starts$startYearDays <- startYearDays <- starts$year*1000L + starts$yday
-	yearDays <- year*1000L+yday
-	# i <- 1
-	for( i in 1:(length(startYearDays)-1) ){
-		bo <- yearDays >= startYearDays[i] & yearDays < startYearDays[i+1]
-		seasonFac[bo] <- starts$year[i]*1000L + starts$yday[i] 
-	}
-	i <- length(startYearDays)
-	bo <- yearDays >= startYearDays[i]
-	seasonFac[bo] <- starts$year[i]*1000L + starts$yday[i]
-	#plot( seasonFac ~ dates )
-	as.factor(seasonFac) 	
+	createSeasonFactorYdayYear( dates, yday, year, starts)	
 	##value<<
 	## Integer vector of nrow ds, each unique class representing one season
 }
@@ -597,9 +590,44 @@ attr(createSeasonFactorYday,"ex") <- function(){
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
 	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-	(res <- createSeasonFactorYday(ds$DateTime))
-	plot( res ~ ds$DateTime)
+	table(res <- createSeasonFactorYday(ds$DateTime))
+	plot.default( res ~ ds$DateTime)
 }
+
+createSeasonFactorYdayYear <- function(
+		### calculate factors to denote the season for uStar-Filtering by specifying starting day and year of each season
+		dates							##<< POSIXct vector of length of the data set to be filled				
+		, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the month for each record
+		, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
+		, starts	 					 ##<< data.frame with first column specifying the starting yday (integer 1-366) and second column the year (integer e.g. 1998) for each season in increasing order
+){
+	##details<<
+	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
+	## If working with dates that denote the end of the period, use \code{yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday}
+	if( length(year) == 1L) year <- rep(year, length(yday))
+	if( length(yday) != length(year) ) stop("Month and Year arguments need to have the same length.")
+	if( any(yday < 1 | yday > 366) ) stop("yday out of range 1..366")
+	#
+	colnames(starts) <- c("yday","year")
+	if( starts$yday[1] != 1L ) starts <- rbind( data.frame(yday=1L, year=starts$year[1]),starts )
+	seasonFac <- integer(length(yday)) # 0L
+	starts$startYearDays <- startYearDays <- starts$year*1000L + starts$yday
+	yearDays <- year*1000L+yday
+	# i <- 1
+	for( i in 1:(length(startYearDays)-1) ){
+		bo <- (yearDays >= startYearDays[i]) & (yearDays < startYearDays[i+1])
+		seasonFac[bo] <- starts$year[i]*1000L + starts$yday[i] 
+	}
+	# last period with no defined end border
+	i <- length(startYearDays)
+	bo <- (yearDays >= startYearDays[i])
+	seasonFac[bo] <- starts$year[i]*1000L + starts$yday[i]
+	#plot( seasonFac ~ dates ); levels(as.factor(seasonFac))
+	as.factor(seasonFac) 	
+	##value<<
+	## Integer vector of nrow ds, each unique class representing one season
+}
+
 
 getYearOfSeason <- function(
 		## determine the year of the record of middle of seasons  
