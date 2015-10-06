@@ -19,7 +19,7 @@ dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
 
 test_that(".binUstar classes are correct",{
 	res <- .binUstar(dss$NEE, dss$Ustar)$binAverages
-	UstarClasses <- controlUstarSubsetting()$UstarClasses
+	UstarClasses <- usControlUstarSubsetting()$UstarClasses
 	Ust_bin_size <- round(nrow(dss)/UstarClasses)
 	expect_true( all(abs(res$nRec[-nrow(res)] - Ust_bin_size) < 60) )
 	# create df of NEE and UStar ordered by Ustar
@@ -43,14 +43,14 @@ test_that(".binUstar example file",{
 				dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250 & Rg<10)
 				(res <- .binUstar(dss$NEE, dss$Ustar)$binAverages)
 				expect_true( nrow(res) >= 18)
-				#(resFW1 <- estUstarThresholdSingleFw1Binned(res))
-				#(resFW2 <- estUstarThresholdSingleFw2Binned(res))
+				#(resFW1 <- usEstUstarThresholdSingleFw1Binned(res))
+				#(resFW2 <- usEstUstarThresholdSingleFw2Binned(res))
 			}
 		})
 
 
 
-test_that("estUstarThresholdSingleFw2Binned",{
+test_that("usEstUstarThresholdSingleFw2Binned",{
 			# regression test
 			Ust_bins.f <- structure(list(Ust_avg = c(0.276666666666667, 0.326666666666667, 
 									0.341111111111111, 0.363333333333333, 0.384444444444444, 0.401111111111111, 
@@ -65,9 +65,9 @@ test_that("estUstarThresholdSingleFw2Binned",{
 							)), .Names = c("Ust_avg", "NEE_avg"), row.names = c(NA, -20L), class = "data.frame")
 			ctrlUstarEst.l <- list(ustPlateauFwd = 10, ustPlateauBack = 6, plateauCrit = 0.95, 
 							corrCheck = 0.5)
-					#?estUstarThresholdSingleFw2Binned
-			#trace(estUstarThresholdSingleFw2Binned, recover)	# untrace(estUstarThresholdSingleFw2Binned)
-			UstarEst <- estUstarThresholdSingleFw2Binned( Ust_bins.f, ctrlUstarEst.l=ctrlUstarEst.l )
+					#?usEstUstarThresholdSingleFw2Binned
+			#trace(usEstUstarThresholdSingleFw2Binned, recover)	# untrace(usEstUstarThresholdSingleFw2Binned)
+			UstarEst <- usEstUstarThresholdSingleFw2Binned( Ust_bins.f, ctrlUstarEst.l=ctrlUstarEst.l )
 			#plot( NEE_avg ~ Ust_avg , Ust_bins.f);	abline(v=UstarEst)	
 			expect_equal( UstarEst, 0.46, tolerance=0.01 )
 		})
@@ -78,16 +78,16 @@ test_that("sEstUstarThreshold: standard case",{
 			(res <- EddyProc.C$sEstUstarThreshold())
 			expect_equal( res$uStarTh$uStar[1], 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$tempInSeason)
-				, c( controlUstarSubsetting()$taClasses,length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
+				, c( usControlUstarSubsetting()$taClasses,length(unique(usCreateSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
 		})
 
 
 test_that("sEstUstarThreshold: changing to FW1",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-			(res <- EddyProc.C$sEstUstarThreshold(fEstimateUStarBinned=estUstarThresholdSingleFw1Binned))
+			(res <- EddyProc.C$sEstUstarThreshold(fEstimateUStarBinned=usEstUstarThresholdSingleFw1Binned))
 			expect_equal( res$uStarTh$uStar[1], 0.34, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$tempInSeason)
-					, c( controlUstarSubsetting()$taClasses,length(unique(createSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
+					, c( usControlUstarSubsetting()$taClasses,length(unique(usCreateSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
 		})
 
 test_that("sEstUstarThreshold: multi-year and One-big-season",{
@@ -97,8 +97,8 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			#
 			dsAll <- EddyDataWithPosix.F
 			# construct in a way so that that in each seasons there are not enough valid values in 98
-			nRec <- max(controlUstarSubsetting()$minRecordsWithinSeason, controlUstarSubsetting()$taClasses*controlUstarSubsetting()$minRecordsWithinTemp) -50
-			dsAll$seasonFactor <- createSeasonFactorMonthWithinYear(dsAll$DateTime)
+			nRec <- max(usControlUstarSubsetting()$minRecordsWithinSeason, usControlUstarSubsetting()$taClasses*usControlUstarSubsetting()$minRecordsWithinTemp) -50
+			dsAll$seasonFactor <- usCreateSeasonFactorMonthWithinYear(dsAll$DateTime)
 			dsFew <- ddply(dsAll, .(seasonFactor), function(dss){
 				isValid <- .getValidUstarIndices(dss)
 				if( sum(isValid) >= nRec)
@@ -112,7 +112,7 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			dsComb <- rbind(dsFew,EddyDataWithPosix.F99)
 			EddyProc.C <- sEddyProc$new('DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
 			(res <- EddyProc.C$sEstUstarThreshold(
-								seasonFactor.v = createSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime) 								
+								seasonFactor.v = usCreateSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime) 								
 								))
 			expect_true( all(res$seasonAggregation$seasonAgg == res$seasonAggregation$seasonAgg[1] ))
 			expect_equal( res$uStarTh$uStar[1], 0.43, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run

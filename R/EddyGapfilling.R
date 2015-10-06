@@ -554,7 +554,7 @@ sEddyProc$methods(
 	## If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset. 
 	## Entries in first column must match levels in argument \code{seasonFactor.v}
 	,seasonFactor.v  	##<< factor for subsetting time into seasons, should be the same as in the uStarThreshold estimation, 
-		## e.g. \code{createSeasonFactorMonth(sDATA$sDateTime)}
+		## e.g. \code{usCreateSeasonFactorMonth(sDATA$sDateTime)}
 	,UstarSuffix.V.s = colnames(UstarThres.df)[-1]  ##<< String vector 
     ## to distinguish result columns for different ustar values.
     ## Its length must correspond to column numbers in \code{UstarThres.m.n}.

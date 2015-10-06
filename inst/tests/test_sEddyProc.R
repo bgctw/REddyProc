@@ -157,7 +157,7 @@ test_that("Test sMDSGapFillAfterUStarDistr",{
 			#
 			# several values for several years
 			ds <- EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),]
-			seasonFac <- createSeasonFactorMonth( ds$DateTime)
+			seasonFac <- usCreateSeasonFactorMonth( ds$DateTime)
 			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
 			UstarThres.df=data.frame(season=levels(seasonFac), U05=0.38,U95=0.42)
 			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )

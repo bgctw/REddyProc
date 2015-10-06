@@ -291,7 +291,7 @@ attr(sEddyProc.example,'ex') <- function( ){
     
     
 	#+++ specify seasonal subsets of the data 
-	seasonFactor.v <- createSeasonFactorMonth(EddySetups.C$sDATA$sDateTime, startMonth=c(3,6,9,12)-1)
+	seasonFactor.v <- usCreateSeasonFactorMonth(EddySetups.C$sDATA$sDateTime, startMonth=c(3,6,9,12)-1)
 	#+++ estimate different u* thresholds from the data (see also function sEstUstarThresholdDistribution)
 	# for real application, use larger sample size (it takes longer)
 	EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
@@ -300,7 +300,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 	# for all seasons within one year.
 	# Note that seasons that span across year boundaries (default Dec, Jan, Feb) 
 	# are associated with the year of the record in the middle of the period
-	(UstarThres.df <- getAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
+	(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
 	# invoke the gapfilling with result columns for the different estimates
 	EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, seasonFactor.v=seasonFactor.v )
 	if(FALSE){
