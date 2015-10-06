@@ -462,7 +462,9 @@ sEddyProc$methods(
     ## Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*
     FluxVar.s             ##<< Flux variable to gap fill after ustar filtering
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
+	,UstarThres.df=usGetAnnualSeasonUStarMappingFromDistributionResult(sUSTAR$uStarTh)		  ##<< data.frame with first column, season names, and second column estimates of uStar Threshold.
+		##<< Alternatively, a single value to be used as threshold for all records
+    #,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
 		## If only one value is given, it is used for all records.
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
     ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).
@@ -483,13 +485,21 @@ sEddyProc$methods(
 	## \item \code{\link{sEstUstarThreshold}} for estimating the u* threshold from the data.
 	## }
 	
+	UstarThres.V.n <- if( is.numeric(UstarThres.df) ){
+				if(length(UstarThres.df) != 1L) stop("Without seasons, only a single uStarThreshold can be provided, but got a vector.")
+				UstarThres.V.n <- rep(UstarThres.df, nrow(.self$sDATA) )
+		} else {
+			if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+			colnames(UstarThres.df) <- c("season","uStarThreshold")	# make sure merge will work
+			if( any(!is.finite(UstarThres.df$uStarThreshold))) stop("must provide finite uStarThresholds")
+			iMissingLevels <- which(!(levels(.self$sDATA$season) %in% UstarThres.df$season))
+			if( length(iMissingLevels) ) stop("missing uStarTrheshold for seasons ",paste(levels(.self$sDATA$season)[iMissingLevels],collapse=","))
+			tmpDs <- merge( subset(sDATA, select="season"), UstarThres.df, all.x=TRUE )
+			UstarThres.V.n <- tmpDs[,2L]
+		}
     # Check column names (with 'none' as dummy)
     # (Numeric type and plausibility have been checked on initialization of sEddyProc)
     fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
-    
-    # Expand ustar value(s) to number of years
-    if( length(UstarThres.V.n) == 1L) UstarThres.V.n <- rep(UstarThres.V.n, nrow(.self$sDATA) )
-    if( length(UstarThres.V.n) != nrow(.self$sDATA)) stop('sMDSGapFillAfterUstar: number uStar thresholds must correspond to number of records in the dataset: ', nrow(.self$sDATA))
     
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
@@ -548,18 +558,14 @@ sEddyProc$methods(
     ## GapFilling for several filters of estimated friction velocity Ustar thresholds.
     ##description<<
     ## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
-    FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
-    ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold. 
+	...                   ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
+	,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold. 
 	## If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset. 
 	## Entries in first column must match levels in argument \code{seasonFactor.v}
-	,seasonFactor.v  	##<< factor for subsetting time into seasons, should be the same as in the uStarThreshold estimation, 
-		## e.g. \code{usCreateSeasonFactorMonth(sDATA$sDateTime)}
 	,UstarSuffix.V.s = colnames(UstarThres.df)[-1]  ##<< String vector 
     ## to distinguish result columns for different ustar values.
     ## Its length must correspond to column numbers in \code{UstarThres.m.n}.
 	# return value function \code{\link{sEstUstarThresholdDistribution}} 
-    ,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
   )
   ##author<< TW
 {
@@ -585,24 +591,22 @@ sEddyProc$methods(
 	## Advanced Example 1b in \code{\link{sEddyProc.example}}
     # # \code{\link{sEstUstarThresholdDistribution}}
     
-	# create a matrix with uStar with one row for each data record
+	if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
 	if( !all(is.finite(as.matrix(UstarThres.df[,-1])))) warning("Provided non-finite uStarThreshold. All values in corresponding period will be marked as gap.")
 	nRec <- nrow(.self$sDATA)
-	uStarM <- if( nrow(UstarThres.df) == 1L){
-		matrix( unlist(UstarThres.df[,-1]), ncol=ncol(UstarThres.df)-1, nrow=nRec, byrow = TRUE  )
-	} else {
-		if( missing(seasonFactor.v)) stop("sMDSGapFillAfterUStarDistr: need to provide vector seasonFactor.v of seasons/years for applying different thresholds over time.")
-		if( length(seasonFactor.v) != nRec) stop("sMDSGapFillAfterUStarDistr: provided argument seasonFactor.v of length that differs from number or records in data")
-		as.matrix(merge( data.frame(season=seasonFactor.v), UstarThres.df )[,-1])
+	nSeason <- length(levels(.self$sDATA$season))
+	if( nrow(UstarThres.df) == 1L){
+		UstarThres.df <- cbind( data.frame(season=levels(.self$sDATA$season)), UstarThres.df[,-1], row.names = NULL)
 	}
 
-	nEstimates <- ncol(uStarM)
+	nEstimates <- ncol(UstarThres.df)-1L
 	UstarSuffix.V.s <- unique(UstarSuffix.V.s)
 	if( length(UstarSuffix.V.s) != nEstimates ) stop("sMDSGapFillUStar: number of unique suffixes must correspond to number of uStar-thresholds")
 	
-    filterCols <- lapply( seq(1:nEstimates), function(iCol){
-      .self$sMDSGapFillAfterUstar( FluxVar.s=FluxVar.s, UstarVar.s=UstarVar.s
-                                   ,UstarThres.V.n = uStarM[,iCol]
+	#iCol <- 1L
+	filterCols <- lapply( seq(1L:nEstimates), function(iCol){
+      .self$sMDSGapFillAfterUstar( ...
+                                   ,UstarThres.df = UstarThres.df[,c(1L,1L+iCol)]
                                    ,UstarSuffix.s = UstarSuffix.V.s[iCol]
       )
     } )

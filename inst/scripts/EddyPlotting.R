@@ -15,7 +15,7 @@
 #+++ Internal helper functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 sEddyProc$methods(  
-  sxSetTitle = function(
+  .sxSetTitle = function(
     ##title<<
     ## sEddyProc - Internal function
     ##description<<
@@ -47,7 +47,7 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(  
-  sxOpenPlot = function(
+  .sxOpenPlot = function(
     ##title<<
     ## sEddyProc - Internal function
     ##description<<
@@ -68,7 +68,7 @@ sEddyProc$methods(
 { 
     'Open graphics device.'
     # Check if variable names exist and numeric before opening plot
-    SubCallFunc.s <- paste(CallFunction.s, 'sxOpenPlot', sep=':::')
+    SubCallFunc.s <- paste(CallFunction.s, '.sxOpenPlot', sep=':::')
     fCheckColNames(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
     fCheckColNum(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
   
@@ -107,7 +107,7 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(  
-  sxClosePlot = function(
+  .sxClosePlot = function(
     ##title<<
     ## sEddyProc - Internal function
     ##description<<
@@ -184,7 +184,7 @@ sEddyProc$methods(
       box()
       warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
     } else { #Plot legend and title
-      Title.s <- sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
+      Title.s <- .sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
       Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(Jet.n-1))
       par(mai=c(3,1,3,1))
       image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=fJetColors(Jet.n), zlim=c(YMin.n,YMax.n),
@@ -205,7 +205,7 @@ sEddyProc$methods(
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
-    ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') as in \code{\link{sxOpenPlot}}
+    ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') as in \code{\link{.sxOpenPlot}}
     ,Dir.s='plots'      ##<< Directory for plotting
   )
     ##author<<
@@ -220,7 +220,7 @@ sEddyProc$methods(
     
     # Open plot
     PlotType.s <- 'FP'
-    PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotFingerprint')
+    PlotFile.s <- .sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotFingerprint')
     
     tryCatch({
       #Split into Screens.n screens with 3 columns
@@ -234,7 +234,7 @@ sEddyProc$methods(
       sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, sINFO$Y.END, Legend=T)
       
       # Close plot
-    }, finally=sxClosePlot(PlotFile.s))
+    }, finally=.sxClosePlot(PlotFile.s))
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -242,9 +242,9 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sPlotDiurnalCycleM = function(
+  .sPlotDiurnalCycleM = function(
     ##title<<
-    ## sEddyProc$sPlotDiurnalCycleM - Plot diurnal cycles of specified month
+    ## sEddyProc$.sPlotDiurnalCycleM - Plot diurnal cycles of specified month
     ##description<<
     ## The diurnal cycles of a single month are potted to the current device, scaled to all data. Each year is plotted as a different (coloured) line.
     Var.s               ##<< Variable to plot
@@ -255,12 +255,12 @@ sEddyProc$methods(
   )
     ##author<<
     ## AMM, KS
-    # TEST: sPlotDiurnalCycleM('NEE', 'none', NA, 10)
+    # TEST: .sPlotDiurnalCycleM('NEE', 'none', NA, 10)
   {
     'Plot diurnal cycles of specified month'
     # Set plot contents
     # Diurnal cycles 
-    Plot.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotDiurnalCycleM')
+    Plot.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, '.sPlotDiurnalCycleM')
     Month.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%m')), nrow=sINFO$DTS)[1,]
     DYear.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%Y')), nrow=sINFO$DTS)[1,]
     Plot.M.n <- matrix(Plot.V.n, ncol=sINFO$DTS, byrow=T)
@@ -293,7 +293,7 @@ sEddyProc$methods(
       plot(rep(0,sINFO$DTS)~seq(0.0, 23.5, by=(24/sINFO$DTS)), type='n', axes=F, xlab='', ylab='', main=month.name[Month.i])
       axis(1, at=XAxis.V.n, cex.axis=1.0, col.axis='blue')
       box()
-      warning('sPlotDiurnalCycleM::: No data available for month: ', month.name[Month.i], '!')
+      warning('.sPlotDiurnalCycleM::: No data available for month: ', month.name[Month.i], '!')
     }
   })
 
@@ -304,7 +304,7 @@ sEddyProc$methods(
     ##title<<  
     ## sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month
     ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with diurnal cycles, see also \code{\link{sPlotDiurnalCycleM}}.
+    ## Generates image in specified format ('pdf' or 'png') with diurnal cycles, see also \code{\link{.sPlotDiurnalCycleM}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
@@ -320,7 +320,7 @@ sEddyProc$methods(
     PlotType.s <- 'DC'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * 5
-    PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDiurnalCycle')
+    PlotFile.s <- .sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDiurnalCycle')
     
     tryCatch({  
       # Slpit the printing area in 5 lines and 3 rows
@@ -333,7 +333,7 @@ sEddyProc$methods(
       
       # Set title of plot
       screen(6) 
-      mtext(sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Diurnal cycles'), line=-3, side=3, cex=2.0)
+      mtext(.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Diurnal cycles'), line=-3, side=3, cex=2.0)
       screen(8)
       mtext(sINFO$Y.NAME, line=1, side=3, cex=2.0)
       
@@ -341,14 +341,14 @@ sEddyProc$methods(
       for (Month.i in 1:12){
         screen(Month.i+8)
         if (Month.i == 12) {
-          sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i) #with legend
+          .sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i) #with legend
         } else {
-          sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i, Legend.b=F)
+          .sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i, Legend.b=F)
         }
       }
       
       # Close plot  
-    }, finally=sxClosePlot(PlotFile.s))
+    }, finally=.sxClosePlot(PlotFile.s))
   })
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -430,7 +430,7 @@ sEddyProc$methods(
     PlotType.s <- 'Flux'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * (sINFO$Y.NUMS+1)
-    PlotFile.s <- sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotHHFluxes')
+    PlotFile.s <- .sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotHHFluxes')
     
     tryCatch({
       # Split the screen
@@ -439,7 +439,7 @@ sEddyProc$methods(
       
       # Set title of plot
       screen(sINFO$Y.NUMS + 3)
-      mtext(sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Half-hourly fluxes and daily means'), line=-3, side=3, cex=2.0)
+      mtext(.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Half-hourly fluxes and daily means'), line=-3, side=3, cex=2.0)
       
       # Loop over all years
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
@@ -448,7 +448,7 @@ sEddyProc$methods(
       }
       
       # Close plot
-    }, finally=sxClosePlot(PlotFile.s))
+    }, finally=.sxClosePlot(PlotFile.s))
   }) 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -555,7 +555,7 @@ sEddyProc$methods(
     PlotType.s <- if (VarUnc.s == 'none') 'DSum' else 'DSumU'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * (sINFO$Y.NUMS+1)
-    PlotFile.s <- sxOpenPlot(Var.s, 'none', NA, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDailySums')
+    PlotFile.s <- .sxOpenPlot(Var.s, 'none', NA, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDailySums')
     
     tryCatch({
       # Split screen 
@@ -565,9 +565,9 @@ sEddyProc$methods(
       # Set title of plot
       screen(sINFO$Y.NUMS + 3)
       if (VarUnc.s == 'none') {
-        mtext(sxSetTitle(Var.s, 'none', NA, 'Daily sums'), line=-3, side=3, cex=2.0)
+        mtext(.sxSetTitle(Var.s, 'none', NA, 'Daily sums'), line=-3, side=3, cex=2.0)
       } else {
-        mtext(sxSetTitle(Var.s, 'none', NA, 'Daily sums with uncertainties'), line=1, side=3, cex=2.0)
+        mtext(.sxSetTitle(Var.s, 'none', NA, 'Daily sums with uncertainties'), line=1, side=3, cex=2.0)
       }
       
       # Loop over all years
@@ -577,5 +577,5 @@ sEddyProc$methods(
       }
       
       # Close plot
-    }, finally=sxClosePlot(PlotFile.s))
+    }, finally=.sxClosePlot(PlotFile.s))
   }) 

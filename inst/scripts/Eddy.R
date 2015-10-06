@@ -216,7 +216,7 @@ attr(sEddyProc.example,'ex') <- function( ){
     #+++ Plot individual months/years to screen (of current R graphics device)
     EddyProc.C$sPlotHHFluxesY('NEE', Year.i=1998)
     EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
-    EddyProc.C$sPlotDiurnalCycleM('NEE', Month.i=1)
+    EddyProc.C$.sPlotDiurnalCycleM('NEE', Month.i=1)
     
     #+++ Fill gaps in variables with MDS gap filling algorithm (without prior ustar filtering)
     EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties

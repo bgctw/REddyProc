@@ -90,6 +90,25 @@ test_that("sEstUstarThreshold: changing to FW1",{
 					, c( usControlUstarSubsetting()$taClasses,length(unique(usCreateSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
 		})
 
+test_that("sEstUstarThreshold: different seasons",{
+			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+			seasonFactor.v <- usCreateSeasonFactorYdayYear( EddySetups.C$sDATA$sDateTime, starts=data.frame(
+							startyday=c(30,300,45,280),startyear=c(1998,1998,1999,1999) ))
+			expect_warning(	# on too few records
+				resUStar <- EddySetups.C$sEstUstarThreshold(seasonFactor.v=seasonFactor.v )
+			)
+			expect_equal( levels(seasonFactor.v), levels(EddySetups.C$sDATA$season))
+		})
+
+test_that("sEstUstarThreshold: using ChangePointDetection",{
+			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+			(resUStar <- EddySetups.C$sEstUstarThreshold(
+								ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
+						))$uStarTh
+			# CPT does no binning uStar
+			expect_equal( c(0L,NA), unique(EddySetups.C$sDATA$uStarBin))
+		})
+
 test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			EddyData.F99 <- EddyData.F		
 			EddyData.F99$Year <- EddyData.F$Year +1
@@ -100,7 +119,7 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			nRec <- max(usControlUstarSubsetting()$minRecordsWithinSeason, usControlUstarSubsetting()$taClasses*usControlUstarSubsetting()$minRecordsWithinTemp) -50
 			dsAll$seasonFactor <- usCreateSeasonFactorMonthWithinYear(dsAll$DateTime)
 			dsFew <- ddply(dsAll, .(seasonFactor), function(dss){
-				isValid <- .getValidUstarIndices(dss)
+				isValid <- usGetValidUstarIndices(dss)
 				if( sum(isValid) >= nRec)
 					dss$NEE[isValid][(nRec):sum(isValid)] <- NA
 				#print(dss$seasonFactor[1])
@@ -111,15 +130,20 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			dsFew <- arrange(dsFew, DateTime)
 			dsComb <- rbind(dsFew,EddyDataWithPosix.F99)
 			EddyProc.C <- sEddyProc$new('DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
-			(res <- EddyProc.C$sEstUstarThreshold(
+			expect_warning(
+			res <- EddyProc.C$sEstUstarThreshold(
 								seasonFactor.v = usCreateSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime) 								
-								))
+								)
+					)					
 			expect_true( all(res$seasonAggregation$seasonAgg == res$seasonAggregation$seasonAgg[1] ))
 			expect_equal( res$uStarTh$uStar[1], 0.43, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			res98 <- subset(res$seasonYear, seasonYear==1998)			
 			expect_equal( res98$uStarAggr[1], res98$uStarPooled, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			res99 <- subset(res$seasonYear, seasonYear==1999)			
 			expect_equal( res99$uStarAggr[1], res99$uStarMaxSeason, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
+			expect_equal(EddyProc.C$sDATA$tempBin, res$bins$tempBin)
+			#
+			#EddyProc.C$sPlotNEEVersusUStarForSeason(res$season$season[5])			
 		})
 
 

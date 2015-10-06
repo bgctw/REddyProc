@@ -125,61 +125,77 @@ test_that("Test sMDSGapFill",{
   expect_that(Results.F[1,'Tair_fnum'], equals(124)) #Equal to 68 with old MR PV-Wave congruent settings
 })
 
-test_that("Test sMDSGapFillAfterUStarDistr",{
-			# single value
-			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=data.frame(season=1L, uStar=0.42) , UstarSuffix.V.s="Ustar")
-			Results.F <- EddyProc.C$sExportResults()
-			expect_true( "NEE_Ustar_f" %in% colnames(Results.F) ) # unchanged column name
+test_that("Test sMDSGapFillAfterUStar default case",{
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+			uStar98 <- subset(uStarTh, aggregationMode=="year" & seasonYear==1998, "uStar" )[1,1] 
+			EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b = FALSE)
+			expect_equal( uStar98, min(EddyProc.C$sDATA$Ustar[ EddyProc.C$sTEMP$NEE_WithUstar_fqc==0 ]), tolerance = 0.05  )
+		})
+
+test_that("Test sMDSGapFillAfterUStar single value",{
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+			uStarFixed <- 0.46
+			EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b = FALSE, UstarThres.df=uStarFixed)
+			expect_equal( uStarFixed, min(EddyProc.C$sDATA$Ustar[ EddyProc.C$sTEMP$NEE_WithUstar_fqc==0 ]), tolerance = 0.05  )
+		})
+
+test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+			UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)[-1, ,drop=FALSE]
+			expect_error(
+				EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
+			)		
+		})
+
+test_that("Test sMDSGapFillAfterUStar error on na-values",{
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+			UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)
+			UstarThres.df[1,2] <- NA
+			expect_error(
+					EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
+			)		
+		})
+
+
+test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitioning",{
+			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+			# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		
+			(uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample=3L ))
+			(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
+			EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
+			# Note the columns with differnt suffixes for different uStar estimates (uStar, U05, U50, U95)		
+			cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
+			expect_true( all(c("Ustar_U50_Thres", "Ustar_U50_fqc", "NEE_U50_orig", "NEE_U50_f", 
+									"NEE_U50_fqc", "NEE_U50_fall", "NEE_U50_fall_qc", "NEE_U50_fnum", 
+									"NEE_U50_fsd", "NEE_U50_fmeth", "NEE_U50_fwin")
+			%in% cNames) )
 			#
-			# several values 
-			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			suffix.v <-  c("U05","U95")
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=data.frame(season=1L, u05=0.38,u95=0.42), UstarSuffix.V.s =suffix.v )
-			Results.F <- EddyProc.C$sExportResults()
-			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-			EddyProc.C$sMDSGapFillAfterUStarDistr('Tair', Verbose.b=F, UstarThres.df=data.frame(season=1L, u05=0.38,u95=0.42), UstarSuffix.V.s =paste0(suffix.v))
-			# introduced duplicate columns (gapFill-Flag)
-			Results.F <- EddyProc.C$sExportResults()
-			expect_true( all(c("Tair_U05_f","Tair_U95_f") %in% colnames(Results.F)) ) # column names according to suffix.v
-			#
-			# test whether sMRFluxPartition can use changed column names
-			#suffix.s <- suffix.v[1]
-			.tmp.f <- function(){
-				EddyProc.C$sMRFluxPartition(
-						, Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1
-						, suffix.s=suffix.v[1]
-				)
-				Results.F <- EddyProc.C$sExportResults()
-				# decision: overwrite GPP results when using different column name
-				expect_true( all(c("GPP_f","Reco") %in% colnames(Results.F)) ) # unchanged column names
+			EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
+			for( suffix in c('U05', 'U50')){
+				EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s = suffix)
 			}
-			#
-			# several values for several years
-			ds <- EddyDataWithPosix2yr.F[14000+(1:(48*3*30)),]
-			seasonFac <- usCreateSeasonFactorMonth( ds$DateTime)
-			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			UstarThres.df=data.frame(season=levels(seasonFac), U05=0.38,U95=0.42)
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
-			Results.F <- EddyProc.C$sExportResults()
-			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
-			#
-			# NA case - marking missing uStar Threshold as gaps 
-			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			UstarThres.df=data.frame(season=levels(seasonFac), U05=c(NA,0.38),U95=c(NA,0.42))
-			expect_warning(
-				EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
-			)
-			Results.F <- EddyProc.C$sExportResults()
-			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
-			expect_true( all(Results.F$Ustar_U05_fqc[ seasonFac==seasonFac[1] ] ==3L) )	# quality flag 3L (!=0) indicates invalid uStar
-			#
-			# zero case -introducting 0% gaps in single season, by providing ustar Threshold of 0  
-			EddyProc.C <- sEddyProc$new('DE-Tha', ds, c('NEE','Rg', 'Tair', 'VPD','Ustar'))
-			UstarThres.df=data.frame(season=levels(seasonFac), U05=c(0,0.38),U95=c(0,0.42))
-			EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', Verbose.b=F, UstarThres.df=UstarThres.df, seasonFactor.v=seasonFac )
-			Results.F <- EddyProc.C$sExportResults()
-			expect_true( all(c("NEE_U05_f","NEE_U95_f") %in% colnames(Results.F)) ) # unchanged column name
-			expect_true( all(Results.F$Ustar_U05_fqc[ seasonFac==seasonFac[1] ] == 0L) )	# quality flag 0 indicates valid uStar
+			cNames2 <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE) 	
+			expect_true( all(			c("PotRad_U50",	"FP_NEEnight_U50", "FP_Temp_U50"
+									, "E_0_U50", "R_ref_U50", "Reco_U50", 
+									"GPP_U50_f", "GPP_U50_fqc")
+									%in% cNames2) )
+		})
+
+test_that("Test sMDSGapFillAfterUStarDistr single row",{
+			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+			# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		
+			(uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample=3L ))
+			# take only the first row, would throw an error in test on season mismatch, but with one row applied for all
+			(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes)[1, c(1,3,4),drop=FALSE])
+			EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
+			# Note the columns with differnt suffixes for different uStar estimates (uStar, U05, U50, U95)		
+			cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
+			expect_true( all(c("Ustar_U50_Thres", "Ustar_U50_fqc", "NEE_U50_orig", "NEE_U50_f", 
+											"NEE_U50_fqc", "NEE_U50_fall", "NEE_U50_fall_qc", "NEE_U50_fnum", 
+											"NEE_U50_fsd", "NEE_U50_fmeth", "NEE_U50_fwin")
+									%in% cNames) )
 		})
 

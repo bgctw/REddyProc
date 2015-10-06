@@ -243,7 +243,7 @@ fPlots <- function(ClassName.s, Var.s, QFVar.s='none', QFValue.n=NA, VarUnc.s='n
                           QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
     eval(parse(text=paste(ClassName.s, '$sPlotDailySumsY(\'', Var.s, '\', VarUnc.s=\'', 
                           VarUnc.s, '\', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s=\'', 
+    eval(parse(text=paste(ClassName.s, '$.sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s=\'', 
                           QFVar.s, '\', QFValue.n=', QFValue.n, ', Month.i=', Month.i, ')', sep='')))
   }
 }
