@@ -4,12 +4,16 @@ exportPattern("^[^\\.]")	#exports all variables that do not start with a period.
 
 #useDynLib(ProjectsDllBaseName)	# only required when supplying C or FORTRAN code 
 
-useDynLib(REddyProc)
-importFrom(Rcpp, sourceCpp)
+import( methods )		# R5 classes
 
-import( plyr )
-import( minpack.lm )
-import( inline )		# c++ code
+useDynLib(REddyProc)
+#importFrom(Rcpp, sourceCpp)
+#import( inline )		# c++ code
+
 #importFrom(plyr, arrange, ddply)	# problems with function "." ...,  just do import(plyr)
-importFrom(boot, boot)
-importFrom(segmented, segmented, seg.control)
+import( plyr )
+
+# only checked in code by require(), let R CMD check complain (only NOTE)
+#importFrom(boot, boot)
+#importFrom(segmented, segmented, seg.control)
+#importFROM( minpack.lm, nlsLM, nls.lm.control )

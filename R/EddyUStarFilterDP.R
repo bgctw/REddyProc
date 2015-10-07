@@ -326,6 +326,7 @@ usEstUstarThreshold = function(
 		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
 		if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
 			if( isTRUE(ctrlUstarEst.l$isUsingCPT) ){
+				if( !require(segmented) ) stop("Need to install package segmented before using Change Point Decetion for estimation of UStar threshold.")
 				resCPT <- try( fitSeg1(dsiSortTclass[,"Ustar"], dsiSortTclass[,"NEE"]), silent=TRUE )
 				UstarTh.v[k] <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) NA else resCPT["cp"]
 				#plot( dsiSortTclass[,"Ustar"], dsiSortTclass[,"NEE"] )	

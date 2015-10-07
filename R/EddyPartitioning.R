@@ -78,6 +78,7 @@ fOptimSingleE0_Lev <- function(
   ##author<<
   ## TW
 {
+  if( !require(minpack.lm) ) stop("Need to install package minpack.lm before using LM optimization.")
   res <- tryCatch({
     # Non-linear regression
     NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,

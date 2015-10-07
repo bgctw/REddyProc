@@ -4,13 +4,18 @@ Date: 2015-08-15
 Title: Data processing and plotting utilities of (half-)hourly eddy-covariance measurements
 Author: (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)
 Maintainer: Department for Biogeochemical Integration <REddyProc-help@bgc.mpg.de>
-Authors@R: c( person("Markus", "Reichstein", role=c("aut"), email="mreichstein@bgc-jena.mpg.de"),
-              person( c("Antje","Maria"), "Moffat", role=c("aut","trl"), email="antje.moffat@bgc.mpg.de" ) )
+Authors@R: c( person("Markus", "Reichstein", role=c("aut"), email="mreichstein@bgc-jena.mpg.de")
+              ,person( c("Antje","Maria"), "Moffat", role=c("aut","trl"), email="antje.moffat@bgc.mpg.de" ) 
+              ,person( c("Thomas","Wutzler"), "Wutzler", role=c("aut"), email="twutz@bgc-jena.mpg.de" ) 
+              ,person( c("Kerstin","Sickel"), "Sickel", role=c("aut","trl"), email="ksickel@bgc-jena.mpg.de" ) 
+              ,person( c("Olaf","Menzer"), "Menzer", role=c("ctb"), email="omenzer@bgc-jena.mpg.de" ) 
+              ,person( c("Mirco","Migliavacca"), "Migliavacca", role=c("cre"), email="mmiglia@bgc-jena.mpg.de" ) 
+              )
 Description: R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
 URL: http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb, http://r-forge.r-project.org/projects/reddyproc/
 Depends: R (>= 3.0.0), methods
-Imports: plyr, boot, minpack.lm, inline, Rcpp, segmented
-Suggests: ncdf4, RNetCDF, testthat, inlinedocs
+Imports: plyr 
+Suggests: ncdf4, RNetCDF, testthat, minpack.lm, segmented
 LinkingTo: Rcpp
 License: GPL (>= 2)
 LazyLoad: yes
