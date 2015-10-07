@@ -263,9 +263,11 @@ usEstUstarThreshold = function(
 	points( mNEE ~ mUStar, dssm, pch="+", cex=1.5)
 	abline(v=uStarTh, lty="dashed",col="grey")
 	dateRange <- strftime( range(dss$sDateTime), "%d.%m.%y" )
+	#\u2103 is degree Centigrade (degree symbol is not ascii) but does not work with some devices
+	#\u00B0 is degree only
 	legend("topleft",legend=c(
 					paste(NEEUStar.F$season[1], " (",dateRange[1],"-",dateRange[2],")",sep="")
-					,sprintf(" (%1.1f-%1.1f\u0366C)",min(dss$Temp),max(dss$Temp))
+					,sprintf(" (%1.1f-%1.1f\u00B0C)",min(dss$Temp),max(dss$Temp))
 					,sprintf("u*Thr=%1.2f",uStarTh)
 			))
 	##value<< side effect of plotting NEE ~ Ustar with indicating Means of the bins, uStarThreshold, Date-Range, and Temperature range
@@ -908,7 +910,7 @@ usGetSeaonalSeasonUStarMappingFromDistributionResult <- function(
 	## TW
 	# omit aggregation model and seasonYear column
 	dsSeasons <- uStarTh[uStarTh$aggregationMode=="season", ,drop=FALSE]
-	dsSeasons$season <- NULL
+	dsSeasons$seasonYear <- NULL
 	dsSeasons$aggregationMode <- NULL
 	
 	# deprecated: already done in uStar estimation

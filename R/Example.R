@@ -32,7 +32,6 @@ attr(sEddyProc.example,'ex') <- function( ){
 		#+++ Plot individual months/years to screen (of current R graphics device)
 		EddyProc.C$sPlotHHFluxesY('NEE', Year.i=1998)
 		EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
-		EddyProc.C$.sPlotDiurnalCycleM('NEE', Month.i=1)
 		
 		#+++ Fill gaps in variables with MDS gap filling algorithm (without prior ustar filtering)
 		EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux uncertainties
@@ -68,7 +67,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		# for other options see Example 4
 		EddyProc.C$sMDSGapFillAfterUstar('NEE')
 		colnames(EddyProc.C$sExportResults()) # Note the collumns with suffix _WithUstar	
-		EddyProc.C$sMDSGapFill('Tair')
+		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
 		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar')  # Note suffix
 		
 		#+++ Export gap filled and partitioned data to standard data frame
@@ -86,9 +85,9 @@ attr(sEddyProc.example,'ex') <- function( ){
 		
 		#+++ When running several processing setup, a string suffix declaration is needed
 		#+++ Here: Gap filling with and without ustar threshold
-		EddySetups.C$sMDSGapFill('NEE', Suffix.s='NoUstar')
-		EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=0.3, UstarSuffix.s='Thres1')
-		EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=0.4, UstarSuffix.s='Thres2')
+		EddySetups.C$sMDSGapFill('NEE', FillAll.b=FALSE, Suffix.s='NoUstar')
+		EddySetups.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.3, UstarSuffix.s='Thres1')
+		EddySetups.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.4, UstarSuffix.s='Thres2')
 		EddySetups.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
 		colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
 		
@@ -96,7 +95,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='NoUstar')
 		EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres1')
 		EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres2')
-		colnames(EddySetups.C$sExportResults())	# Note the suffix in output columns
+		colnames(EddySetups.C$sExportResults())	# Note the suffix in output columns also in GPP and Reco
 		
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		# Example 2 for advanced users: Extended usage of the gap filling algorithm
@@ -176,10 +175,11 @@ attr(sEddyProc.example,'ex') <- function( ){
 		# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		
 		(uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample=3L ))
 		(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
-		EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df)
+		EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df)
 		# Note the columns with differnt suffixes for different uStar estimates (uStar, U05, U50, U95)		
 		colnames(EddySetups.C$sExportResults()) 	
-		# Note the possiblity to propagate the uncertainty to GPP and respitation (suffix with these columns) 		
+		# Note the possiblity to propagate the uncertainty to GPP and respiration (suffix with these columns)
+		# as in Example 2
 		EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 		for( suffix in c('U05', 'U50', 'U95')){
 			EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s = suffix)
@@ -198,10 +198,10 @@ attr(sEddyProc.example,'ex') <- function( ){
 
 		#+++ Using change point detection instead of moving point method
 		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		(resUStar <- EddySetups.C$sEstUstarThreshold(
+		resUStar <- EddySetups.C$sEstUstarThreshold(
 							#ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
 							ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)
-					))$uStarTh
+					)
 		resUStar[3:4]	# threshold found in only one season (example already uStar-Filtered)
 	}
 }

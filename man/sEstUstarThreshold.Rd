@@ -12,7 +12,7 @@
   \item{\dots}{further arguments to \code{\link{usEstUstarThreshold}}}
 }
 
-\value{restul of \code{\link{usEstUstarThreshold}}. In addition the result is stored
+\value{restult of \code{\link{usEstUstarThreshold}}. In addition the result is stored
 in class variable sUSTAR and the bins as additional columsn to sDATA}
 
 \author{TW
