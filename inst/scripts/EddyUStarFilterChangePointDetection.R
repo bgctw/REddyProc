@@ -1,4 +1,4 @@
-fitSeg1 <- function(
+.fitSeg1 <- function(
 		### fit a segmented relationship according to eq 1b of Barr13
 		x
 		,y
@@ -29,7 +29,7 @@ fitSeg1 <- function(
 }
 
 
-fitSeg2 <- function(
+.fitSeg2 <- function(
 		### fit a segmented relationship according to eq 1a of Barr13
 		x
 		,y
@@ -48,7 +48,7 @@ fitSeg2 <- function(
 		, p=anova(lm1, seg1)[[6]][2]	##<< probability of F test that segmented model is better than linear model (with slope and intercept)
 	)
 }
-attr(fitSeg2,"ex") <- function(){
+attr(.fitSeg2,"ex") <- function(){
 	n <- 11L
 	x <- seq(0L,1L,length.out=n)
 	noise <- rnorm(n, sd=0.1)
@@ -58,13 +58,13 @@ attr(fitSeg2,"ex") <- function(){
 	y3[iSlope] <- 0.2 + (0.8/0.5)*x[iSlope] + noise[iSlope]
 	y <- y2
 	plot( y ~ x)
-	cf2 <- fitSeg2(x,y)
-	cf1 <- fitSeg1(x,y)
+	cf2 <- .fitSeg2(x,y)
+	cf1 <- .fitSeg1(x,y)
 }
 
 .tmp.f <- function(){
-	trace(fitSeg1, recover)	#untrace(fitSeg1)
-	tmp <- fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName])
+	trace(.fitSeg1, recover)	#untrace(.fitSeg1)
+	tmp <- .fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName])
 }
 
 
@@ -109,7 +109,7 @@ attr(fitSeg2,"ex") <- function(){
 					#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
 					#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
 					if( (!is.finite(Cor1)) || (Cor1 > ctrlUstarEst.l$corrCheck)) return(NA_real_)
-					resCPT <- try( suppressWarnings(fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName])), silent=TRUE )
+					resCPT <- try( suppressWarnings(.fitSeg1(dsiSortTclass[,UstarColName], dsiSortTclass[,NEEColName])), silent=TRUE )
 					threshold <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) 
 								#c(NA_real_,NA_real_) else resCPT[c("cp","sdCp")]	# testing weighted mean, no improment, simplify again 
 								c(NA_real_) else resCPT[c("cp")]

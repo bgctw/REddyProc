@@ -1,4 +1,4 @@
-exportPattern("^[^\\.]")	#exports all variables that do not start with a period.
+exportPattern("^[^\\._]")	#exports all variables that do not start with a period. or uncerscore _
 
 #import(aNamespace)	# only required when extending S3 methods 
 
@@ -7,7 +7,7 @@ exportPattern("^[^\\.]")	#exports all variables that do not start with a period.
 import( methods )		# R5 classes
 
 useDynLib(REddyProc)
-#importFrom(Rcpp, sourceCpp)
+importFrom(Rcpp, sourceCpp, evalCpp)
 #import( inline )		# c++ code
 
 #importFrom(plyr, arrange, ddply)	# problems with function "." ...,  just do import(plyr)

@@ -78,12 +78,12 @@ fOptimSingleE0_Lev <- function(
   ##author<<
   ## TW
 {
-  if( !require(minpack.lm) ) stop("Need to install package minpack.lm before using LM optimization.")
+  if( !requireNamespace(minpack.lm) ) stop("Need to install package minpack.lm before using LM optimization.")
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
+    NLS.L <- minpack.lm::nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
                    data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
-                   ,control=nls.lm.control(maxiter = 20)
+                   ,control=minpack.lm::nls.lm.control(maxiter = 20)
 				   ,algorithm=algorithm
     )        
     # Remove points with residuals outside Trim.n quantiles
@@ -92,7 +92,7 @@ fOptimSingleE0_Lev <- function(
     t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
     #points( Residuals.V.n[!t.b] ~ Temp_degK.V.n[!t.b], col="red")				
     # Trimmed non-linear regression
-    NLS_trim.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+    NLS_trim.L <- minpack.lm::nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
                         data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b]))
                         , start=coef(NLS.L)
                         #, start=list(R_ref=2,E_0=200)

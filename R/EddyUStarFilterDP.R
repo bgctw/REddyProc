@@ -326,8 +326,8 @@ usEstUstarThreshold = function(
 		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
 		if( (is.finite(Cor1)) && (Cor1 < ctrlUstarEst.l$corrCheck)){ #& Cor2 < CORR_CHECK & Cor3 < CORR_CHECK){
 			if( isTRUE(ctrlUstarEst.l$isUsingCPT) ){
-				if( !require(segmented) ) stop("Need to install package segmented before using Change Point Decetion for estimation of UStar threshold.")
-				resCPT <- try( fitSeg1(dsiSortTclass[,"Ustar"], dsiSortTclass[,"NEE"]), silent=TRUE )
+				if( !requireNamespace('segmented') ) stop("Need to install package segmented before using Change Point Decetion for estimation of UStar threshold.")
+				resCPT <- try( .fitSeg1(dsiSortTclass[,"Ustar"], dsiSortTclass[,"NEE"]), silent=TRUE )
 				UstarTh.v[k] <- if( inherits(resCPT,"try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) NA else resCPT["cp"]
 				#plot( dsiSortTclass[,"Ustar"], dsiSortTclass[,"NEE"] )	
 			} else {
@@ -432,7 +432,7 @@ attr(usControlUstarEst,"ex") <- function(){
 }
 
 usControlUstarSubsetting <- function(
-	### Default list of parameters for determining UStar of a single binned series	
+	### Default list of parameters for subsetting the data for uStarThreshold estimation into classes with similar environmental conditions 	
 	taClasses=7 		##<< set number of air temperature classes 
 	,UstarClasses=20 	##<< set number of Ustar classes 	
 	# seasons param deprecated
@@ -781,10 +781,14 @@ usGetYearOfSeason <- function(
 ){
 	##author<<
 	## TW
+	# see tests/test_binWithEqualValues.R
 	#which(x >= threshold)[1]
 	#iStart-1 + which(x[iStart:length(x)] >= threshold)[1]
 	# for performance reasons call a c++ function that loops across the vector
-	whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
+	# 
+	# cannot generate C function with dot
+	# Rcpp::compileAttributes() generates a function without leading dot, need to adjust by hand afterwards 
+	.whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
 	##value<< 
 	## Scalar integer: first index in x, that is >= iStart, and whose value x[i] is >= threshold.
 	## If no index was found, returns NA
