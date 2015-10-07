@@ -103,10 +103,11 @@ test_that("sEstUstarThreshold: different seasons",{
 test_that("sEstUstarThreshold: using ChangePointDetection",{
 			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 			(resUStar <- EddySetups.C$sEstUstarThreshold(
-								ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
-						))$uStarTh
+								#ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
+								ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT =TRUE)
+			))$uStarTh
 			# CPT does no binning uStar
-			expect_equal( c(0L,NA), unique(EddySetups.C$sDATA$uStarBin))
+			expect_equal( c(0L), as.vector(na.omit(unique(EddySetups.C$sDATA$uStarBin))))
 		})
 
 test_that("sEstUstarThreshold: multi-year and One-big-season",{

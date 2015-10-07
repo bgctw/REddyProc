@@ -341,9 +341,9 @@ sEddyProc$methods(
       for (Month.i in 1:12){
         screen(Month.i+8)
         if (Month.i == 12) {
-          .sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i) #with legend
+			.self$.sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i) #with legend
         } else {
-          .sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i, Legend.b=F)
+			.self$.sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i, Legend.b=F)
         }
       }
       

@@ -25,7 +25,7 @@ sEddyProc$methods(
 	sDATA$season <<-  resEst$bins$season
 	sDATA$tempBin <<-  resEst$bins$tempBin
 	sDATA$uStarBin <<-  resEst$bins$uStarBin
-	##value<< restul of \code{\link{usEstUstarThreshold}}. In addition the result is stored
+	##value<< restult of \code{\link{usEstUstarThreshold}}. In addition the result is stored
 	## in class variable sUSTAR and the bins as additional columsn to sDATA
 	resEst
 })
@@ -85,7 +85,8 @@ usEstUstarThreshold = function(
 	ds$season <- seasonFactor.v
 	ds$seasonYear <- seasonFactorsYear[seasonFactor.v]
 	ds$tempBin <- NA_integer_
-	#not used with all of the  methods: ds$uStarBin <- NA_real_
+	ds$uStarBin <- NA_integer_
+	# extract valid (nighttime records)
 	if( isCleaned){
 		isValidUStar <- TRUE
 		dsc <- ds
@@ -106,54 +107,45 @@ usEstUstarThreshold = function(
 	#
 	#dsi <- subset(dsc, season == 4)
 	#dsi <- subset(dsc, season == 0)
-	if( isTRUE(ctrlUstarEst.l$isUsingCPTSeveralT)){
-		##details<< \describe{\item{change point detection (CPT) method}{
-		## With specifying \code{ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT=TRUE)}
-		## change point detection is applied instead of the moving point test (e.g. with Fw2Binned).
-		##
-		## The sometimes sensitive binning of uStar values within a temperature class is avoided.
-		## Further, possible spurious thresholds are avoid by testing that the model with a threshold
-		## fits the data better than a model without a threshold using a likelihood ratio test.
-		## In addition, with CPT seasons are excluded where a threshold was detected in only less 
-		## than ctrlUstarEst.l$minValidUStarTempClassesProp (default 20% ) of the 
-		## temperature classes.
-		##
-		## Note, that this method often gives higher estimates of the u* threshold.
-		## }}
-		UstarSeasonsTempL <- dlply(dsc, .(season), .estimateUStarSeasonCPTSeveralT, .drop_o = FALSE, .inform = TRUE
+	fEstimateUStarSeason <- function(...){
+		if( isTRUE(ctrlUstarEst.l$isUsingCPTSeveralT)){
+			##details<< \describe{\item{change point detection (CPT) method}{
+			## With specifying \code{ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT=TRUE)}
+			## change point detection is applied instead of the moving point test (e.g. with Fw2Binned).
+			##
+			## The sometimes sensitive binning of uStar values within a temperature class is avoided.
+			## Further, possible spurious thresholds are avoid by testing that the model with a threshold
+			## fits the data better than a model without a threshold using a likelihood ratio test.
+			## In addition, with CPT seasons are excluded where a threshold was detected in only less 
+			## than ctrlUstarEst.l$minValidUStarTempClassesProp (default 20% ) of the 
+			## temperature classes.
+			##
+			## Note, that this method often gives higher estimates of the u* threshold.
+			## }}
+			.estimateUStarSeasonCPTSeveralT(...)
+		} else .estimateUStarSeason(...)
+	}
+	UstarSeasonsTempL <- dlply(dsc, .(season), fEstimateUStarSeason, .drop = FALSE, .inform = TRUE
 				#, .drop_o = FALSE, .inform = TRUE
 				,ctrlUstarSub.l = ctrlUstarSub.l
 				,ctrlUstarEst.l = ctrlUstarEst.l
 				,fEstimateUStarBinned = fEstimateUStarBinned
 		)  
-		UstarSeasonsTemp <- ldply(UstarSeasonsTempL, "[[", 1L)	# matrix (nSeason x nTemp)
-		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
-		iNonValid <- rowSums(is.finite(UstarSeasonsTemp))/ncol(UstarSeasonsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
-		uStarSeasons[iNonValid] <- NA_real_
-		# need check to avoid -Inf in max function
-	} else {
-		ds$uStarBin <- NA_integer_
-		dsc$uStarBin <- NA_integer_
-		UstarSeasonsTempL <- dlply(dsc, .(season), .estimateUStarSeason, .drop = FALSE, .inform = TRUE
-				,ctrlUstarSub.l = ctrlUstarSub.l
-				,ctrlUstarEst.l = ctrlUstarEst.l
-				,fEstimateUStarBinned = fEstimateUStarBinned
-		) 
-		UstarSeasonsTemp <- laply(UstarSeasonsTempL, "[[", 1L)	# matrix (nSeason x nTemp)
-		uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
-		# different to C-version, report NA where threshold was found in less than 20% of temperature classes
-		iNonValid <- rowSums(is.finite(UstarSeasonsTemp))/ncol(UstarSeasonsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
-		uStarSeasons[iNonValid] <- NA_real_
-		# extract the temperature and bin indices
-		# season <- names(UstarSeasonsTempL)[2]
-		for( season in names(UstarSeasonsTempL) ){
-			dsc[dsc$season==season,c("tempBin","uStarBin")] <- UstarSeasonsTempL[[season]]$bins.F
-		}
-		#plot( tempBin ~ Tair, dsc, col=rainbow(8)[ as.factor(dsc$season)] )	# check correct ordering
+	UstarSeasonsTemp <- laply(UstarSeasonsTempL, "[[", 1L)	# matrix (nSeason x nTemp)
+	uStarSeasons <- apply( UstarSeasonsTemp, 1, median, na.rm=TRUE)
+	# different to C-version, report NA where threshold was found in less than 20% of temperature classes
+	iNonValid <- rowSums(is.finite(UstarSeasonsTemp))/ncol(UstarSeasonsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
+	uStarSeasons[iNonValid] <- NA_real_
+	# extract the temperature and bin indices
+	# season <- names(UstarSeasonsTempL)[2]
+	for( season in names(UstarSeasonsTempL) ){
+		dsc[dsc$season==season,c("tempBin","uStarBin")] <- UstarSeasonsTempL[[season]]$bins.F
 	}
+	#plot( tempBin ~ Tair, dsc, col=rainbow(8)[ as.factor(dsc$season)] )	# check correct ordering
+	#
 	resultsSeason <- nRecValidInSeasonYear
 	resultsSeason$uStarSeasonEst <- uStarSeasons
-	#results <- merge(nRecValidInSeasonYear, data.frame(seasonAgg=names(uStarSeasons),uStar=uStarSeasons), all.x=TRUE)
+	#
 	resultsSeasonYear = ddply(resultsSeason, as.quoted('seasonYear'), function(dss){
 				data.frame( uStarMaxSeason=if( all(!is.finite(dss$uStarSeasonEst))  ) NA_real_ else max( dss$uStarSeasonEst, na.rm=TRUE), seasonYear=dss$seasonYear[1])
 			} )
@@ -169,21 +161,21 @@ usEstUstarThreshold = function(
 	if( isTRUE(ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords) )
 		seasonYearsPooled <- union( seasonYearsWithFewData, seasonYearsPooled)
 	resultsSeasonYearPooled <- if( !length(seasonYearsPooled) ){
-				resultsSeasonYears <- data.frame(seasonYear=NA_character_, nRec=NA_integer_ , uStarPooled=NA_real_)[FALSE,]
+				resultsSeasonYearPooled <- data.frame(seasonYear=NA_character_, nRec=NA_integer_ , uStarPooled=NA_real_)[FALSE,]
 			} else {
 				dscPooled <- dsc[dsc$seasonYear %in% seasonYearsPooled, ,drop=FALSE]
-				UstarYearsTempL <- dlply(dscPooled, as.quoted('seasonYear'), .estimateUStarSeason, .drop = FALSE, .inform = TRUE
+				UstarYearsTempL <- dlply(dscPooled, as.quoted('seasonYear'), fEstimateUStarSeason, .drop = FALSE, .inform = TRUE
 						,ctrlUstarSub.l = ctrlUstarSub.l
 						,ctrlUstarEst.l = ctrlUstarEst.l
 						,fEstimateUStarBinned = fEstimateUStarBinned
-				)
+					)
 				UstarYearsTemp <- laply(UstarYearsTempL, "[[", 1L, .drop=FALSE)	# matrix (nSeason x nTemp)
 				uStarYears <- apply( UstarYearsTemp, 1, median, na.rm=TRUE)
 				# different to C-version, report NA where threshold was found in less than 20% of temperature classes
 				iNonValid <- rowSums(is.finite(UstarYearsTemp))/ncol(UstarYearsTemp) < ctrlUstarEst.l$minValidUStarTempClassesProp
 				uStarYears[iNonValid] <- NA_real_
 				# omit gettting binning into ds (do not overwrite bins from seasonal estimates)
-				resultsSeasonYears <- data.frame(seasonYear=names(uStarYears), nRec=as.vector(table(dscPooled$seasonYear)), uStarPooled=uStarYears)
+				resultsSeasonYearPooled <- data.frame(seasonYear=names(uStarYears), nRec=as.vector(table(dscPooled$seasonYear)), uStarPooled=uStarYears)
 			}
 	resultsSeasonYear <- merge(resultsSeasonYear, resultsSeasonYearPooled, all.x=TRUE)
 	isFinitePooled <- is.finite(resultsSeasonYear$uStarPooled)
@@ -302,8 +294,6 @@ usEstUstarThreshold = function(
 				,". Returning NA for this Season." )
 		return( resNA )
 	}
-	# if( as.POSIXlt(dsi$sDateTime[1])$year+1900==2002 & dsi$season[1]==2L ) recover()	
-	#cat(dsi$season[1], as.POSIXlt(dsi$DateTime[1])$mon, ",")
 	orderTemp <- order(dsi[,"Tair"])
 	uStarBinSortedT <- integer(nrow(dsi))		# default value for methods that do not bin uStar
 	dsiSort <- dsi[orderTemp, ,drop=FALSE] 	#sort values in a season by air temperature (later in class by ustar)
@@ -359,11 +349,10 @@ usEstUstarThreshold = function(
 	TIdUnsorted[orderTemp] <- TId	
 	uStarBinUnsortedT[orderTemp] <- uStarBinSortedT
 	##value<< list with entries
-	list(
+	invisible(list(
 			UstarTh.v=UstarTh.v 	##<< vector of uStar for temperature classes
 			,bins.F=data.frame(tempBin=TIdUnsorted, uStarBin=uStarBinUnsortedT)			##<< data.frame with columns tempBin, uStarBin for each row in dsi
-	)
-	
+	))
 }
 
 
@@ -707,6 +696,7 @@ usGetYearOfSeason <- function(
 	,tol = 1e-8		##<< distance between successive values of x that are treated to be equal
 	,isBinSizeFloorUsed=TRUE	##<< set to FALSE to postpone rounding on start and end values
 ){
+	if( nBin == 1L) return(integer(length(x)))
 	binSize <- length(x) / nBin
 	##details<< 
 	## By not taking the floor, a better distribution of samples across bins is achieved.
@@ -716,7 +706,7 @@ usGetYearOfSeason <- function(
 	binId <- rep(1L,length(x))
 	iBreak <- 1L	# index from which to seek next break
 	#iClass <- 2L
-	for( iClass in 2:nBin){
+	for( iClass in 2L:as.integer(nBin)){
 		start0 <- round((iClass-1)*binSize)+1
 		iBreak <- .whichValueGreaterEqual(breaksX, start0, iStart=iBreak)
 		start1 <- breaksX[iBreak]

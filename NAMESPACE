@@ -1,4 +1,4 @@
-exportPattern("^[^\\._]")	#exports all variables that do not start with a period. or uncerscore _
+exportPattern("^[^\\.]")	#exports all variables that do not start with a period. or uncerscore _
 
 #import(aNamespace)	# only required when extending S3 methods 
 

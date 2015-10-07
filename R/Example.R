@@ -199,8 +199,9 @@ attr(sEddyProc.example,'ex') <- function( ){
 		#+++ Using change point detection instead of moving point method
 		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 		(resUStar <- EddySetups.C$sEstUstarThreshold(
-							ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
-						))$uStarTh
+							#ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
+							ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)
+					))$uStarTh
 		resUStar[3:4]	# threshold found in only one season (example already uStar-Filtered)
 	}
 }
