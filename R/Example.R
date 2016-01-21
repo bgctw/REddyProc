@@ -74,6 +74,10 @@ attr(sEddyProc.example,'ex') <- function( ){
 		FilledEddyData.F <- EddyProc.C$sExportResults()
 		#+++ Save results into (tab-delimited) text file in directory \out
 		CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
+		#+++ Rename variables to correspond to Ameriflux and Berkeley2016 Fluxnet release 
+		colnames(CombinedDataBerkeley.F <- renameVariablesInDataframe(CombinedData.F, getLathuilleToBerkeleyVariableNameMapping() ))
+		CombinedDataBerkeley.F$TIMESTAMP_END <- POSIXct2BerkeleyJulianDate( EddyProc.C$sExportData()[[1]] )
+		#colnames(tmp <- renameVariablesInDataframe(CombinedData.F, getBerkeleyToLathuilleVariableNameMapping() ))
 		fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
 		
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
