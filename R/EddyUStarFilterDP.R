@@ -567,7 +567,7 @@ usCreateSeasonFactorMonthWithinYear <- function(
 usCreateSeasonFactorYday <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting day of years
 	dates							##<< POSIXct vector of length of the data set to be filled				
-	, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the month for each record
+	, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the day of the year (1..366) for each record
 	, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
 	, startYday=c(335,60,152,244)	 ##<< integer vector (1-366) specifying the starting yearDay for each season in increasing order
 ){
@@ -594,7 +594,7 @@ usCreateSeasonFactorYday <- function(
 usCreateSeasonFactorYdayYear <- function(
 		### calculate factors to denote the season for uStar-Filtering by specifying starting day and year of each season
 		dates							##<< POSIXct vector of length of the data set to be filled				
-		, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the month for each record
+		, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the day of the year (1..366) for each record
 		, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
 		, starts	 					 ##<< data.frame with first column specifying the starting yday (integer 1-366) and second column the year (integer e.g. 1998) for each season in increasing order
 ){
@@ -944,6 +944,7 @@ sEddyProc$methods(
 		,seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year that this season belongs to  
 		,nSample = 100L				##<< the number of repetitions in the bootstrap
         ,probs = c(0.05,0.5,0.95)	##<< the quantiles of the bootstrap sample to return. Default is the 5%, median and 95% of the bootstrap
+		,verbose.b=TRUE				##<< set to FALSE to omit printing progress
 ){
 	##author<<
 	## TW
@@ -980,7 +981,7 @@ sEddyProc$methods(
 						iSample <- sample.int(nrow(dss),replace=TRUE)
 						dss[iSample, ,drop=FALSE]
 					} )
-			cat(".")
+			if( isTRUE(verbose.b) ) message(".", appendLF = FALSE)
 			res <- usEstUstarThreshold(dsBootWithinSeason, ...
 							, seasonFactor.v=seasonFactor.v
 							, ctrlUstarEst.l =ctrlUstarEst.l, ctrlUstarSub.l=ctrlUstarSub.l	)
@@ -1004,7 +1005,7 @@ sEddyProc$methods(
 		Ustar.l <- suppressMessages(
 				Ustar.l <- lapply(1:(nSample-1), fWrapper,...)
 		)
-		cat("\n")
+		if( isTRUE(verbose.b) ) message("")	# line break
 		stat <- do.call( rbind, c(list(Ustar.l0),Ustar.l))
 		##details<< \describe{\item{Quality Assurance}{
 		## If more than \code{ctrlUstarEst.l$minValidBootProp} (default 40%) did not report a treshold, 

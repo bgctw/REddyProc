@@ -8,7 +8,7 @@
     ..., seasonFactor.v = usCreateSeasonFactorMonth(sDATA$sDateTime), 
     seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, 
         ds$sDateTime), nSample = 100L, probs = c(0.05, 
-        0.5, 0.95))}
+        0.5, 0.95), verbose.b = TRUE)}
 \arguments{
   \item{ctrlUstarEst.l}{control parameters for estimating uStar on a single binned series, see \code{\link{usControlUstarEst}}}
   \item{ctrlUstarSub.l}{control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{usControlUstarSubsetting}}}
@@ -21,6 +21,7 @@
   \item{seasonFactorsYear}{named integer vector: for each seasonFactor level, get the year that this season belongs to}
   \item{nSample}{the number of repetitions in the bootstrap}
   \item{probs}{the quantiles of the bootstrap sample to return. Default is the 5\%, median and 95\% of the bootstrap}
+  \item{verbose.b}{set to FALSE to omit printing progress}
 }
 \details{The choice of the criterion for sufficiently turbulent conditions (u* > choosen threshold)
 introduces large uncertainties in calculations based on gap-filled Eddy data.

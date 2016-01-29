@@ -35,7 +35,7 @@ a string suffix is needed! This suffix is added to the result column names to di
 \value{Gap filling results in sTEMP data frame (with renamed columns).}
 \references{Reichstein, M. et al. (2005) On the separation of net ecosystem exchange 
 into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.}
-\author{AMM
+\author{AMM, TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
 

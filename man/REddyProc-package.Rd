@@ -41,6 +41,9 @@ Before or after processing, the data can be plotted:
 
 A \bold{complete list} of REddyProc functions be viewed by clicking on the \bold{Index} link at the bottom of this help page.
 
+Also have a look at the package vignettes: get a list with \code{vignette(package = "REddyProc")}, view with \code{vignette("DEGebExample")}. 
+
+
 }%details
 
 

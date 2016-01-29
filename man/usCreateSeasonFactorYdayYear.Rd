@@ -6,7 +6,7 @@
     1L, year = as.POSIXlt(dates)$year + 1900L, starts)}
 \arguments{
   \item{dates}{POSIXct vector of length of the data set to be filled}
-  \item{yday}{integer (1-366) vector of length of the data set to be filled, specifying the month for each record}
+  \item{yday}{integer (1-366) vector of length of the data set to be filled, specifying the day of the year (1..366) for each record}
   \item{year}{integer vector of length of the data set to be filled, specifying the year}
   \item{starts}{data.frame with first column specifying the starting yday (integer 1-366) and second column the year (integer e.g. 1998) for each season in increasing order}
 }

@@ -73,7 +73,7 @@ fOptimSingleE0_Lev <- function(
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
   ,Trim.n=5       ##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
-  ,algorithm='LM'  ##<< optimization algorithm used (see see \code{\link{nlsLM}})
+  ,algorithm='LM'  ##<< optimization algorithm used (see nlsLM from package minpack.lm)
 )
   ##author<<
   ## TW
@@ -130,7 +130,7 @@ fRegrE0fromShortTerm = function(
   ,MinE_0.n=30  		  ##<< Minimum E0 for validity check
   ,MaxE_0.n=450	  	  ##<< Maximum E0 for validity check
   ,CallFunction.s=''  ##<< Name of function called from
-  ,optimAlgorithm='default'   ##<< optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see \code{\link{nlsLM}} ) 
+  ,optimAlgorithm='default'   ##<< optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see nlsLM from package minpack.lm) 
 )
 ##author<<
 ## AMM

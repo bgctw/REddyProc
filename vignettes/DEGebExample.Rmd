@@ -1,0 +1,173 @@
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{DEGeb example: UStar estimation}
+-->
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(out.extra='style="display:block; margin: auto"'
+    #, fig.align="center"
+    , fig.width=4.3, fig.height=3.2, dev.args=list(pointsize=10)
+    , message=FALSE
+    )
+knit_hooks$set(spar = function(before, options, envir) {
+    if (before){
+        par( las=1 )                   #also y axis labels horizontal
+        par(mar=c(2.0,3.3,0,0)+0.3 )  #margins
+        par(tck=0.02 )                          #axe-tick length inside plots             
+        par(mgp=c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
+     }
+})
+```
+
+Crop example demonstrating multiple years and user defined uStar-Seasons
+========================================================================
+
+```{r results='hide'}
+#isDevelopMode <- TRUE
+if(!exists("isDevelopMode")) library(REddyProc)
+set.seed(0815)      # for reproducible results
+```
+
+First, the data is loaded. This example uses data that has been downloaded 
+from http://www.europe-fluxdata.eu
+and preprocessed by `fLoadEuroFlux16`, where the DateTime Column has been created, 
+and the variables renamed to the BGC-convention (e.g. Tair instead of Ta).
+
+```{r}
+		data(DEGebExample)
+		summary(DEGebExample)
+```
+
+
+VPD was not given with the original dataset and is calculated from Tair and rH.
+```{r}
+		DEGebExample$VPD <- fCalcVPDfromRHandTair(DEGebExample$rH, DEGebExample$Tair)
+		EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
+```
+
+Defining Seasons with different surface friction conditions 
+-----------------------------------------------------------
+
+The site is a crop site. The harvesting times are visible as sharp edges in the plots of NEE.
+
+The micrometeorological conditions differ between the different cropping periods,
+because the friction at the surface differs.
+Also not the cropping periods do not correspond very well to seasons.
+Hence, for the estimation of uStar-Thresholds, we apply a user-defined splitting 
+of uStar-seasons. With function `usCreateSeasonFactorYdayYear` we provide the starting
+points of the seasons.  
+
+Note that, here, the seaonson are not constrained within one calendaryear. 
+There are other variants of a user-specified season that do respect calendaryear boundaries, 
+or that let seasons start at the same day each year. 
+
+```{r DEGEb_estUStar1a, spar=TRUE, fig.width=10}
+	seasonStarts <- as.data.frame( do.call( rbind, list(
+			c(70,2004) 
+			,c(210,2004) 
+			,c(70,2005) 
+			,c(180,2005) 
+			,c(120,2006) 
+			,c(305,2006)
+	)))
+	seasonFactor <- usCreateSeasonFactorYdayYear(DEGebExample$DateTime, starts=seasonStarts)
+	plot( NEE ~ DateTime, DEGebExample )
+	seasonStartsDate <- fConvertTimeToPosix( data.frame(Year=seasonStarts[,2]
+		, DoY=seasonStarts[,1], Hour=12),'YDH',Year.s="Year", Day.s="DoY",Hour.s="Hour")
+	abline( v=seasonStartsDate$DateTime)
+```
+
+The user-specific seasoning is provided to the gap-filling by the argument `seasonFactor.v`. 
+```{r DEGEb_estUStar1b, cache=TRUE}
+	(uStarTh <- EddyProc.C$sEstUstarThreshold(seasonFactor.v=seasonFactor)$uStarTh)
+	# estimation can be inspected by plotting the saturation of NEE with UStar for the temperatures of one season
+	#EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
+```
+
+Note that there is an estimate for each season. Further, an annual estimate is obtained
+by taking the maximum across the seasons, and the overall estimate is the mean across the years.
+
+By default the gap-filling uses annually aggregated estimates of uStar-Threshold.
+This usually works for sites with continuous vegetation cover.
+For the crop-site of this example, we will use a different threshold for each of the defined seasons.
+This is achieved by providing the seasonal estimates with argument `UstarThres.df`.
+The season factor has already been stored with the class when calling `EddyProc.C$sEstUstarThreshold`. 
+
+```{r DEGEb_estUStar1c}
+	(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarTh))
+```	
+```{r DEGEb_gapFill1, cache=TRUE, output='hide', message=FALSE}
+	EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df, Verbose.b=FALSE)
+```		
+
+
+Uncertainty introduced by the uStar Threshold estimate: bootstrap  
+-----------------------------------------------------------------
+
+With a lower estimate of uStar threshold, more records with lower NEE a kept in 
+the dataset instead of marked as gaps. Therefore annual estimate of NEE will decrease
+with decreasing uStar Threshold. Also the partitioning of the net-flux to GPP and REco is 
+sensitive to inclusion of data at dawn period with conditions of low uStar.
+
+In order to quantify this uncertainty, a lower, median and upper estimates of uStar 
+are obtained from a bootstrapped sample of half-hourly NEE measurements.
+The Gap-Filling and computation of derived quantities such as GPP are then repeated for
+different estimates of the uStar Threshold.
+
+
+```{r DEGEb_estUStarBoot1, cache=TRUE, message=FALSE}
+	# here, because of speed only 30 samples instead of 100, and 10% and 90% percentile instead of 5%,50%, and 95%
+	# uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor )
+	uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor
+		, nSample=30L, probs =c(0.1,0.9))
+	(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarRes))
+```	
+```{r DEGEb_gapFillBoot1, cache=TRUE, message=FALSE, output='hide'}
+	EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df)
+```
+
+Additional output columns are produced for each uStar quantile. 
+
+```{r}
+	grep("^NEE.*_f$", colnames( EddyProc.C$sExportResults()), value=TRUE )
+```		
+		
+In order to feed results of different uStar Threshold estimates into the Gap-Filling, the 
+argument suffix.s is used. The output columns of the Gap-Filling carry the same suffix.
+
+```{r DEGEb_fluxPart1, cache=TRUE}
+	EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
+	for( suffix in c('U10', 'U90')){
+		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.1, Long_deg.n=10.9, TimeZone_h.n=1, Suffix.s = suffix)
+	}
+	grep("U10", colnames(EddyProc.C$sExportResults()), value = TRUE) 	
+```
+
+Using change point detection instead of moving point method for UStar Threshold estimation
+------------------------------------------------------------------------------------------
+
+The package also provides another method of estimating the point where NEE saturates with increasing uStar.
+With the ChangePointDetection (CPT) method, the data is not binned by classes of uStar but the changepoint
+is estimated based on the entire subset within one seasons and one temperature class.
+The user selects this method by specifying argument `ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)`
+to `EstUstarThreshold` or `sEstUstarThresholdDistribution`.
+
+The CPT method is usually yields higher thresholds and marks more data as Gap. 
+  
+```{r DEGEb_estUStarCPT, cache=TRUE}
+	EddySetups.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
+	resUStar <- EddySetups.C$sEstUstarThreshold(
+						ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)
+						,seasonFactor.v=seasonFactor
+				)$uStarTh
+	(UstarThresCP.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(resUStar))
+	#UstarThres.df
+```
+
+
+		
+
+
+
+

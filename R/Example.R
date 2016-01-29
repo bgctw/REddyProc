@@ -74,10 +74,11 @@ attr(sEddyProc.example,'ex') <- function( ){
 		FilledEddyData.F <- EddyProc.C$sExportResults()
 		#+++ Save results into (tab-delimited) text file in directory \out
 		CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
-		#+++ Rename variables to correspond to Ameriflux and Berkeley2016 Fluxnet release 
-		colnames(CombinedDataBerkeley.F <- renameVariablesInDataframe(CombinedData.F, getLathuilleToBerkeleyVariableNameMapping() ))
-		CombinedDataBerkeley.F$TIMESTAMP_END <- POSIXct2BerkeleyJulianDate( EddyProc.C$sExportData()[[1]] )
-		#colnames(tmp <- renameVariablesInDataframe(CombinedData.F, getBerkeleyToLathuilleVariableNameMapping() ))
+		#+++ May rename variables to correspond to Ameriflux 
+		colnames(CombinedDataAmeriflux.F <- renameVariablesInDataframe(CombinedData.F, getBGC05ToAmerifluxVariableNameMapping() ))
+		CombinedDataAmeriflux.F$TIMESTAMP_END <- POSIXctToBerkeleyJulianDate( EddyProc.C$sExportData()[[1]] )
+		head(tmp <- BerkeleyJulianDateToPOSIXct( CombinedDataAmeriflux.F$TIMESTAMP_END ))
+		#colnames(tmp <- renameVariablesInDataframe(CombinedData.F, getAmerifluxToBGC05VariableNameMapping() ))
 		fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
 		
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -168,44 +169,10 @@ attr(sEddyProc.example,'ex') <- function( ){
 		Ustar.V.n <- 0.46  
 		EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
 		
-		#+++ Using seasonal instead of annual uStar threshold estimates 
-		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		(uStarTh <- EddySetups.C$sEstUstarThreshold()$uStarTh)
-		(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarTh))
-		EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=UstarThres.df)
-
-		#+++ Bootstrapping uncertainty associated with uStar Threshold estimation
-		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		
-		(uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample=3L ))
-		(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
-		EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df)
-		# Note the columns with differnt suffixes for different uStar estimates (uStar, U05, U50, U95)		
-		colnames(EddySetups.C$sExportResults()) 	
-		# Note the possiblity to propagate the uncertainty to GPP and respiration (suffix with these columns)
-		# as in Example 2
-		EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
-		for( suffix in c('U05', 'U50', 'U95')){
-			EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s = suffix)
-		}
-		grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE) 	
-		
-		#+++ Specifying different seaons
-		# Users can provide their own factor-vector that determines the season (seasonFactor.v)
-		# together with a mapping of season to an aggregation period 'year' (seasonFactorsYear)
-		# There are several functions that help with that, e.g.
-		# only two seasons per year that differ by year (although here data is only from 1998)
-		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		seasonFactor.v <- usCreateSeasonFactorYdayYear( EddySetups.C$sDATA$sDateTime, starts=data.frame(
-								startyday=c(30,300,45,280),startyear=c(1998,1998,1999,1999) ))
-		(resUStar <- EddySetups.C$sEstUstarThreshold(seasonFactor.v=seasonFactor.v ))$season
-
-		#+++ Using change point detection instead of moving point method
-		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		resUStar <- EddySetups.C$sEstUstarThreshold(
-							#ctrlUstarEst.l=usControlUstarEst(isUsingCPT=TRUE)
-							ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)
-					)
-		resUStar[3:4]	# threshold found in only one season (example already uStar-Filtered)
+		# See vignette DEGebExample for
+		#  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)
+		#  - using seasonal instead of annual uStar threshold estimates in gapfilling
+		#  - Bootstrapping uncertainty associated with uStar Threshold estimation
+		#  - Using change point detection instead of moving point method
 	}
 }

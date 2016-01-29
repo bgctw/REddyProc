@@ -45,3 +45,13 @@ syntax: regexp
 ^src-x64$
 syntax: regexp
 ^src-i386$
+
+syntax: regexp
+vignettes/cache$
+syntax: regexp
+vignettes/figure$
+syntax: regexp
+vignettes/plots$
+syntax: glob
+*vignettes/*.html
+*vignettes/*.md

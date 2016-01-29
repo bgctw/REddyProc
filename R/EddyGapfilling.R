@@ -142,8 +142,8 @@ sEddyProc$methods(
       for( Pos.i in 1:length(ToBeFilled.V.i) ) {
         # Message on progress if wanted
         NoneCols.b <- c(V1.s, V2.s, V3.s, V4.s, V5.s) %in% 'none' 
-        if( Verbose.b && Pos.i ==1 )  cat('Look up table with window size of ', WinDays.i, ' days with ', 
-                                          paste(c(V1.s, V2.s, V3.s, V4.s, V5.s)[!NoneCols.b], collapse=' '), '\n.', sep='')
+        if( Verbose.b && Pos.i ==1 )  message('Look up table with window size of ', WinDays.i, ' days with ', 
+                                          paste(c(V1.s, V2.s, V3.s, V4.s, V5.s)[!NoneCols.b], collapse=' '))
         # Set window size
         Gap.i   <- ToBeFilled.V.i[Pos.i]
         if (T==T) {
@@ -213,10 +213,10 @@ sEddyProc$methods(
           } 
           lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
         }
-        if( Verbose.b && Pos.i%%100 == 0 )  cat('.')
-        if( Verbose.b && Pos.i%%6000 == 0 ) cat('\n.')
+        if( Verbose.b && Pos.i%%100 == 0 )  message('.', appendLF=FALSE)
+        if( Verbose.b && Pos.i%%6000 == 0 ) message('\n.', appendLF=FALSE)
       }
-      if( Verbose.b ) cat('', nrow(lGF.M), '\n')
+      if( Verbose.b ) message('', nrow(lGF.M))
     }
     # Copy gap filled values and properties to sTEMP
     if( nrow(lGF.M) > 0 ) {
@@ -261,7 +261,7 @@ sEddyProc$methods(
     if( length(ToBeFilled.V.i) > 0 ) {
       for(Pos.i in 1:length(ToBeFilled.V.i)){
         # Message on progress if wanted
-        if( Verbose.b && Pos.i == 1 ) cat('Mean diurnal course with window size of ', WinDays.i, ' days: \n.', sep='')
+        if( Verbose.b && Pos.i == 1 ) message('Mean diurnal course with window size of ', WinDays.i, ' days: .', sep='')
         
         # Set index within window size
         Gap.i   <- ToBeFilled.V.i[Pos.i]
@@ -303,10 +303,10 @@ sEddyProc$methods(
           
           lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
         }
-        if( Verbose.b && Pos.i%%100 == 0 )  cat('.')
-        if( Verbose.b && Pos.i%%6000 == 0 ) cat('\n.')
+        if( Verbose.b && Pos.i%%100 == 0 )  message('.', appendLF=FALSE)
+        if( Verbose.b && Pos.i%%6000 == 0 ) message('\n.', appendLF=FALSE)
       }
-      if( Verbose.b ) cat('', nrow(lGF.M), '\n')
+      if( Verbose.b ) message('', nrow(lGF.M))
     }
     # Copy gap filled values and properties to sTEMP
     if( nrow(lGF.M) > 0 ) {
@@ -347,7 +347,7 @@ sEddyProc$methods(
     #! ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
   )
   ##author<<
-  ## AMM
+  ## AMM, TW
   ##references<<
   ## Reichstein, M. et al. (2005) On the separation of net ecosystem exchange 
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
