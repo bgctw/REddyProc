@@ -174,10 +174,10 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 	Ustar.V.n <- 0.46  
 	EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
 	
-	# See vignette DEGEbExample for 
+	# See vignette DEGebExample for
+	#  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)
 	#  - using seasonal instead of annual uStar threshold estimates in gapfilling
 	#  - Bootstrapping uncertainty associated with uStar Threshold estimation
-	#  - Specifying different seaons
 	#  - Using change point detection instead of moving point method
 }
 }

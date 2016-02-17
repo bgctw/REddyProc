@@ -19,6 +19,10 @@ fLoadTXTIntoDataframe <- function(
   ## AMM
   # TEST: FileName.s <- 'Example_DETha98.txt'; Dir.s <- 'inst/examples'
 {
+	##details<<
+	## Alternatively \code{\link{fLoadFluxNCIntoDataframe}} loads data from NetCDF-Files.
+	## In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.
+	
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')  
   
   # Read in header
@@ -125,6 +129,7 @@ fReadTimeSeveralCols <- function(
 }
 
 fReadTimeBerkeley <- function(
+		### Reads time columns (year, month, day, hour) from column in ISODate integer format
 		Data.F                ##<< Data frame
 		,FileName.s           ##<< NetCDF file name
 		,Dir.s                ##<< Directory
@@ -146,7 +151,6 @@ fReadTimeBerkeley <- function(
 						as.integer(substr(timeStampChar,11,12))/60
 	))
 	#str(Data.F)
-	#stop("TODO implement")
 	Data.F
 }
 

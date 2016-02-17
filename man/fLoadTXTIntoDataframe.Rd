@@ -7,7 +7,8 @@
   \item{FileName.s}{File name}
   \item{Dir.s}{Directory}
 }
-
+\details{Alternatively \code{\link{fLoadFluxNCIntoDataframe}} loads data from NetCDF-Files.
+In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.}
 \value{Data frame with data from text file.}
 
 \author{AMM

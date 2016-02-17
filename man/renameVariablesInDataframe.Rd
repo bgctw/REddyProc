@@ -7,7 +7,7 @@
   \item{data.F}{data.frame whose columns should be renamped}
   \item{variableNameMapping}{named character vector:
 << specifying a renaming (name -> value)  
-<< of the variables, see e.g. \code{\link{getBerkeleyVariableNameMapping}}}
+<< of the variables, see e.g. \code{\link{getAmerifluxToBGC05VariableNameMapping}}}
 }
 
 

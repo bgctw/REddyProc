@@ -18,7 +18,7 @@
   \item{MinE_0.n}{Minimum E0 for validity check}
   \item{MaxE_0.n}{Maximum E0 for validity check}
   \item{CallFunction.s}{Name of function called from}
-  \item{optimAlgorithm}{optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see \code{\link{nlsLM}} )}
+  \item{optimAlgorithm}{optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see nlsLM from package minpack.lm)}
 }
 \details{The coefficient E0 is estimated for windows with a length of \code{WinDays.i} days, 
 for successive periods in steps of \code{DayStep.i} days.

@@ -10,7 +10,7 @@ using Levenberg-Marquard optimization.}
   \item{Temp_degK.V.n}{(Original) air or soil temperature vector (degC)}
   \item{Trim.n}{Percentile to trim residual (\%)}
   \item{recoverOnError}{Set to TRUE to debug errors instead of catching them}
-  \item{algorithm}{optimization algorithm used (see see \code{\link{nlsLM}}}
+  \item{algorithm}{optimization algorithm used (see nlsLM from package minpack.lm)}
 }
 
 \value{Numeric vector with following components:
