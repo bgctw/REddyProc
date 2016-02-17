@@ -58,18 +58,20 @@ Hence, for the estimation of uStar-Thresholds, we apply a user-defined splitting
 of uStar-seasons. With function `usCreateSeasonFactorYdayYear` we provide the starting
 points of the seasons.  
 
-Note that, here, the seaonson are not constrained within one calendaryear. 
+Note that, here, the seasons are not constrained within one calendaryear. 
 There are other variants of a user-specified season that do respect calendaryear boundaries, 
 or that let seasons start at the same day each year. 
 
-```{r DEGEb_estUStar1a, spar=TRUE, fig.width=10}
+```{r DEGeb_estUStar1a, spar=TRUE, fig.width=10}
 	seasonStarts <- as.data.frame( do.call( rbind, list(
-			c(70,2004) 
-			,c(210,2004) 
-			,c(70,2005) 
-			,c(180,2005) 
-			,c(120,2006) 
-			,c(305,2006)
+		  c(70,2004)
+            ,c(210,2004)
+            ,c(320,2004)
+            ,c(70,2005)
+            ,c(180,2005)
+            ,c(320,2005)
+            ,c(120,2006)
+            ,c(305,2006) 		
 	)))
 	seasonFactor <- usCreateSeasonFactorYdayYear(DEGebExample$DateTime, starts=seasonStarts)
 	plot( NEE ~ DateTime, DEGebExample )
@@ -79,7 +81,7 @@ or that let seasons start at the same day each year.
 ```
 
 The user-specific seasoning is provided to the gap-filling by the argument `seasonFactor.v`. 
-```{r DEGEb_estUStar1b, cache=TRUE}
+```{r DEGeb_estUStar1b, cache=TRUE}
 	(uStarTh <- EddyProc.C$sEstUstarThreshold(seasonFactor.v=seasonFactor)$uStarTh)
 	# estimation can be inspected by plotting the saturation of NEE with UStar for the temperatures of one season
 	#EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
@@ -94,10 +96,10 @@ For the crop-site of this example, we will use a different threshold for each of
 This is achieved by providing the seasonal estimates with argument `UstarThres.df`.
 The season factor has already been stored with the class when calling `EddyProc.C$sEstUstarThreshold`. 
 
-```{r DEGEb_estUStar1c}
+```{r DEGeb_estUStar1c}
 	(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarTh))
 ```	
-```{r DEGEb_gapFill1, cache=TRUE, output='hide', message=FALSE}
+```{r DEGeb_gapFill1, cache=TRUE, output='hide', message=FALSE}
 	EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df, Verbose.b=FALSE)
 ```		
 
@@ -116,14 +118,14 @@ The Gap-Filling and computation of derived quantities such as GPP are then repea
 different estimates of the uStar Threshold.
 
 
-```{r DEGEb_estUStarBoot1, cache=TRUE, message=FALSE}
+```{r DEGeb_estUStarBoot1, cache=TRUE, message=FALSE}
 	# here, because of speed only 30 samples instead of 100, and 10% and 90% percentile instead of 5%,50%, and 95%
 	# uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor )
 	uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor
 		, nSample=30L, probs =c(0.1,0.9))
 	(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarRes))
 ```	
-```{r DEGEb_gapFillBoot1, cache=TRUE, message=FALSE, output='hide'}
+```{r DEGeb_gapFillBoot1, cache=TRUE, message=FALSE, output='hide'}
 	EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df)
 ```
 
@@ -136,7 +138,7 @@ Additional output columns are produced for each uStar quantile.
 In order to feed results of different uStar Threshold estimates into the Gap-Filling, the 
 argument suffix.s is used. The output columns of the Gap-Filling carry the same suffix.
 
-```{r DEGEb_fluxPart1, cache=TRUE}
+```{r DEGeb_fluxPart1, cache=TRUE}
 	EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 	for( suffix in c('U10', 'U90')){
 		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.1, Long_deg.n=10.9, TimeZone_h.n=1, Suffix.s = suffix)
@@ -155,7 +157,7 @@ to `EstUstarThreshold` or `sEstUstarThresholdDistribution`.
 
 The CPT method is usually yields higher thresholds and marks more data as Gap. 
   
-```{r DEGEb_estUStarCPT, cache=TRUE}
+```{r DEGeb_estUStarCPT, cache=TRUE}
 	EddySetups.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
 	resUStar <- EddySetups.C$sEstUstarThreshold(
 						ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)

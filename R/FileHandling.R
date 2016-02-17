@@ -201,12 +201,15 @@ fAddNCFVar <- function(
   }
   #
 	NCFile.C <- fOpen(InputNCF.s)
+	tmpFilename <- tempfile(); tmpFile <- file(tmpFilename, open = "wt")
 	tryCatch({
 				newCols <- lapply( seq_along(Var.s), function(i){
 							newCol <- try( as.vector(fReadVar(NCFile.C, Var.s[i], ...)) )
 							if( length(newCol) && !inherits(newCol,"try-error")){
 								attr(newCol, 'varnames') <- VarNew.s[i]
-								attr(newCol, 'units') <- fGetAtt(NCFile.C, Var.s[i], 'units')
+								sink( tmpFile, type = "message" ) # to prevent error message, that appears even with try(,silent=TRUE) on non-existing attribute
+								try( attr(newCol, 'units') <- fGetAtt(NCFile.C, Var.s[i], 'units'), silent=TRUE)
+								sink(NULL, type="message")
 								newCol
 							} else {
 								warning("could not read variable ",Var.s[i]," from netCdf-File ",FileName.s)
@@ -221,7 +224,11 @@ fAddNCFVar <- function(
 				if( nrow(newCols.F) )
 					Data.F <- if(length(Data.F)) cbind(Data.F, newCols.F) else newCols.F
 			}, 
-			finally = fClose(NCFile.C)
+			finally = {
+				fClose(NCFile.C)
+				close(tmpFile)
+				unlink(tmpFilename)
+			}
 	)
   Data.F
   ##value<<
