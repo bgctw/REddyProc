@@ -11,9 +11,17 @@
   \item{Flux measurements}{NEE}
   \item{Meteo measurements}{Rg, Tair, rH, VPD, Ustar}
   }
-For processing of the example data see \code{\link{sEddyProc.example}}.
+For processing of the example data see \code{vignette("DEGebExample")}.
 }
 
-\source{The data originates from the  http://www.europe-fluxdata.eu.}
+\details{
+DISCLAIMER: This example dataset should only be used for test purposes of the REddyProc R package. 
+For other uses, the data is openly available through the European Fluxes Database 
+(http://www.europe-fluxdata.eu/home/site-details?id=3) 
+and upon registration the current version can be downloaded there.
+}
+
+
+\source{The data was downloaed from \code{http://www.europe-fluxdata.eu} at date 2016-01-25.}
 %\references{}
 \keyword{dataset}
