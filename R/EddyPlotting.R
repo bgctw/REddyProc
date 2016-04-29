@@ -206,7 +206,7 @@ sEddyProc$methods(
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
     ,Legend.b=F         ##<< Plot only legend
-	,col=				##<< color scale argument to \code{\link{image}} 
+	,Col.V=				##<< Color palette for fingerprint plot (can be also defined by user), i.e. color scale argument to \code{\link{image}} 
 		colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))(50)
 	,valueLimits=range(Plot.V.n, na.rm=TRUE)	##<< values outside this range will be set to the range borders to avoid distorting colour scale
 		##<< e.g. valueLimits=quantile(EddyProc.C$sDATA$NEE, prob=c(0.05,0.95),na.rm=TRUE)	
@@ -242,7 +242,7 @@ sEddyProc$methods(
     if( !sum(!is.na(Plot.V.n))==0 && Legend.b==F ) {
       # Plot fingerprint
       par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=col,
+      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=Col.V,
             axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
       axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet') 
@@ -250,7 +250,7 @@ sEddyProc$methods(
     } else if ( Legend.b==F ) {
       #Plot empy box
       par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(0,1), col=col,
+      image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(0,1), col=Col.V,
            axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
       axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
@@ -258,9 +258,9 @@ sEddyProc$methods(
       warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
     } else { #Plot legend and title
       Title.s <- .self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
-      Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(length(col)-1))
+      Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(length(Col.V)-1))
       par(mai=c(3,1,3,1))
-      image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=col, zlim=c(YMin.n,YMax.n),
+      image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=Col.V, zlim=c(YMin.n,YMax.n),
             xlab=Var.s, yaxt='n', ylab='', main=Title.s)
       box()
     }
