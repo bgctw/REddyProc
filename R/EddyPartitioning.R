@@ -18,6 +18,7 @@ fOptimSingleE0 <- function(
   ## using a Newton type optimization.
   NEEnight.V.n	  ##<< (Original) nighttime ecosystem carbon flux, i.e. respiration vector
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
+  ,T_ref.n #=273.15+15  ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
   ,Trim.n=5       ##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
   ,algorithm="default"  ##<< optimization algorithm used (see \code{\link{nls}}) 
@@ -28,17 +29,17 @@ fOptimSingleE0 <- function(
   # Original implementation by AMM
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
+    NLS.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=T_ref.n), trace=FALSE,
                  data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
 		 		,algorithm=algorithm
 		 )        
     # Remove points with residuals outside Trim.n quantiles
     Residuals.V.n <- resid(NLS.L)
     #Residuals.V.n <- fLloydTaylor(R_ref=coef(summary(NLS.L))['R_ref',1], E_0=coef(summary(NLS.L))['E_0',1],
-    #		Temp_degK.V.n, T_ref.n=273.15+15) - NEEnight.V.n
+    #		Temp_degK.V.n, T_ref.n=T_ref.n) - NEEnight.V.n
     t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
     # Trimmed non-linear regression
-    NLS_trim.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+    NLS_trim.L <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=T_ref.n), algorithm='default', trace=FALSE,
                       data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b])), start=list(R_ref=2,E_0=200))
     ##value<< Numeric vector with following components:
     res <- c(
@@ -69,11 +70,12 @@ fOptimSingleE0_Lev <- function(
   ##description<<
   ## Estimate temperature sensitivity E_0 of \code{\link{fLloydTaylor}} for a single time series
   ## using Levenberg-Marquard optimization.
-  NEEnight.V.n	  ##<< (Original) nighttime ecosystem carbon flux, i.e. respiration vector
+  NEEnight.V.n	 	##<< (Original) nighttime ecosystem carbon flux, i.e. respiration vector
   ,Temp_degK.V.n	##<< (Original) air or soil temperature vector (degC)
-  ,Trim.n=5       ##<< Percentile to trim residual (%)
+  ,T_ref.n #=273.15+15   ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
+  ,Trim.n=5      	##<< Percentile to trim residual (%)
   ,recoverOnError=FALSE	##<< Set to TRUE to debug errors instead of catching them
-  ,algorithm='LM'  ##<< optimization algorithm used (see nlsLM from package minpack.lm)
+  ,algorithm='LM' 	##<< optimization algorithm used (see nlsLM from package minpack.lm)
 )
   ##author<<
   ## TW
@@ -81,7 +83,7 @@ fOptimSingleE0_Lev <- function(
   if( !requireNamespace('minpack.lm') ) stop("Need to install package minpack.lm before using LM optimization.")
   res <- tryCatch({
     # Non-linear regression
-    NLS.L <- minpack.lm::nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), trace=FALSE,
+    NLS.L <- minpack.lm::nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=T_ref.n), trace=FALSE,
                    data=as.data.frame(cbind(R_eco=NEEnight.V.n,Temp=Temp_degK.V.n)), start=list(R_ref=2,E_0=200)
                    ,control=minpack.lm::nls.lm.control(maxiter = 20)
 				   ,algorithm=algorithm
@@ -92,7 +94,7 @@ fOptimSingleE0_Lev <- function(
     t.b <- Residuals.V.n >= quantile(Residuals.V.n, probs=c(Trim.n/100)) & Residuals.V.n <= quantile(Residuals.V.n, probs=c(1-Trim.n/100))
     #points( Residuals.V.n[!t.b] ~ Temp_degK.V.n[!t.b], col="red")				
     # Trimmed non-linear regression
-    NLS_trim.L <- minpack.lm::nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+    NLS_trim.L <- minpack.lm::nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=T_ref.n), algorithm='default', trace=FALSE,
                         data=as.data.frame(cbind(R_eco=NEEnight.V.n[t.b], Temp=Temp_degK.V.n[t.b]))
                         , start=coef(NLS.L)
                         #, start=list(R_ref=2,E_0=200)
@@ -129,6 +131,7 @@ fRegrE0fromShortTerm = function(
   ,NumE_0.n=3         ##<< Number of best E_0's to average over
   ,MinE_0.n=30  		  ##<< Minimum E0 for validity check
   ,MaxE_0.n=450	  	  ##<< Maximum E0 for validity check
+  ,T_ref.n	#=273.15+15   ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
   ,CallFunction.s=''  ##<< Name of function called from
   ,optimAlgorithm='default'   ##<< optimization algorithm used (see \code{\link{nls}} ) or 'LM' for Levenberg-Marquard (see nlsLM from package minpack.lm) 
 )
@@ -167,7 +170,7 @@ fRegrE0fromShortTerm = function(
     
     if( length(NEEnight.V.n) > MinData.n && diff(range(Temp_degK.V.n)) >= TempRange.n ) {
       #CountRegr.i <- CountRegr.i+1
-      resOptim <- fOptim( NEEnight.V.n, Temp_degK.V.n, algorithm=optimAlgorithm)
+      resOptim <- fOptim( NEEnight.V.n, Temp_degK.V.n, algorithm=optimAlgorithm, T_ref.n=T_ref.n)
       NLSRes.F <- c(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), TRange=diff(range(Temp_degK.V.n)),
                     resOptim)
     } else NULL
@@ -271,8 +274,9 @@ sEddyProc$methods(
     ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-    ,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sRegrE0fromShortTerm}}
-    ,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
+	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sRegrE0fromShortTerm}}
+	,T_ref.n #=273.15+15   ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
+	,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
     ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor}} regression in days
     ,CallFunction.s=''    ##<< Name of function called from
   )
@@ -322,13 +326,13 @@ sEddyProc$methods(
       if( length(NEEnight.V.n) > MinData.n ) {
         CountRegr.i <- CountRegr.i+1
         tryCatch({
-          LM.L <- lm(R_eco ~ 0 + fLloydTaylor(R_ref, E_0, Temp_degK, T_ref.n=273.15+15), data=as.data.frame(cbind(R_eco=NEEnight.V.n, R_ref=1, E_0=E_0.V.n, Temp_degK=Temp_degK.V.n)))
+          LM.L <- lm(R_eco ~ 0 + fLloydTaylor(R_ref, E_0, Temp_degK, T_ref.n=T_ref.n), data=as.data.frame(cbind(R_eco=NEEnight.V.n, R_ref=1, E_0=E_0.V.n, Temp_degK=Temp_degK.V.n)))
           LMRes.F <- rbind(LMRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), MeanH=MeanHour.i, 
                                           R_ref=coef(summary(LM.L))[1], R_ref_SD=coef(summary(LM.L))[2]))
           #! Note on PV-Wave code: trimmed linear regression not used in the end, i.e. in online webtool
           
           if( F ) { # Plot for testing
-            plot(NEEnight.V.n ~ fLloydTaylor(1, E_0.V.n, Temp_degK.V.n, T_ref.n=273.15+15))
+            plot(NEEnight.V.n ~ fLloydTaylor(1, E_0.V.n, Temp_degK.V.n, T_ref.n=T_ref.n))
             curve(coef(LM.L)[1] * x, add=T, col='green')
           }  
         }, error = function(e) {
@@ -376,7 +380,8 @@ sEddyProc$methods(
     ,Lat_deg.n             ##<< Latitude in (decimal) degrees
     ,Long_deg.n            ##<< Longitude in (decimal) degrees
     ,TimeZone_h.n          ##<< Time zone (in hours)
-    ,Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
+	,T_ref.n=273.15+15     ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
+	,Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
     ,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}).
       ##describe<< 
       useLocaltime.b=FALSE	##<< see details on solar vs local time	
@@ -455,15 +460,17 @@ sEddyProc$methods(
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
 	# twutz1508: changed to do.call in order to allow passing further parameters when calling sMRFluxPartition
-    sTEMP$E_0_NEW <<- do.call( .self$sRegrE0fromShortTerm, c(list('FP_VARnight', 'FP_Temp_NEW', CallFunction.s='sMRFluxPartition', debug.l=debug.l), parsE0Regression)) 
+    sTEMP$E_0_NEW <<- do.call( .self$sRegrE0fromShortTerm, c(
+					list('FP_VARnight', 'FP_Temp_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition', debug.l=debug.l)
+					, parsE0Regression)) 
     if( sum(sTEMP$E_0_NEW==-111) != 0 )
       return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
     
     # Reanalyse R_ref with E_0 fixed
-    sTEMP$R_ref_NEW <<- sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', CallFunction.s='sMRFluxPartition')
+    sTEMP$R_ref_NEW <<- sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition')
     
     # Calculate the ecosystem respiration Reco
-    sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=273.15+15)
+    sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=T_ref.n)
     attr(sTEMP$Reco_NEW, 'varnames') <<- 'Reco'
     attr(sTEMP$Reco_NEW, 'units') <<- attr(Var.V.n, 'units')
     

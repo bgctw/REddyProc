@@ -520,7 +520,7 @@ sEddyProc$methods(
 	# mark those conditions as bad, when no threshold is defined 
 	QFustar.V.n[ !is.finite(UstarThres.V.n) ]	<- 3L			
 	# mark those recods as bad, where uStar is not defined 
-	QFustar.V.n[ !is.finite(Ustar.V.n) ]	<- 1L			
+	QFustar.V.n[ !is.finite(Ustar.V.n) ]	<- 4L			
 	message('Ustar filtering (u*Th_1=',UstarThres.V.n[1],'), marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       message('(including removal of the first half-hour after a period of low turbulence).')
@@ -547,7 +547,7 @@ sEddyProc$methods(
     sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0, ..., Suffix.s = UstarSuffix.s)
     
     ##value<< 
-    ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence, 3: no threshold available)
+    ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence, 3: no threshold available, 4: missing uStar value)
     ## Gap filling results are in sTEMP data frame (with renamed columns) that can be retrieved by \code{\link{sExportResults}}.
     return(invisible(QFustar.V.n))
     
