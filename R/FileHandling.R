@@ -121,10 +121,17 @@ fReadTimeSeveralCols <- function(
 		, colMonth='month'	  ##<< Name of variable holding the month
 		, colDay='day'		  ##<< Name of variable holding the day
 		, colHour='hour'	  ##<< Name of variable holding the hour
-		,...					##<< further arguments to var.get.nc or ncvar_get, such as start and count
+		, defaultHour=0	  	  ##<< default used when colHour=NA, when only days are specified
+		,...				  ##<< further arguments to var.get.nc or ncvar_get, such as start and count
 ){
-	Data.F <- fAddNCFVar(Data.F, c(colYear, colMonth, colDay, colHour), FileName.s, Dir.s, NcPackage.s, CallFunction.s
-					, VarNew.s=c("year","month","day","hour"), ...)
+	if( !length(colHour) ){
+		Data.F <- fAddNCFVar(Data.F, c(colYear, colMonth, colDay), FileName.s, Dir.s, NcPackage.s, CallFunction.s
+				, VarNew.s=c("year","month","day"), ...)
+		Data.F$hour <- defaultHour
+	} else {
+		Data.F <- fAddNCFVar(Data.F, c(colYear, colMonth, colDay, colHour), FileName.s, Dir.s, NcPackage.s, CallFunction.s
+						, VarNew.s=c("year","month","day","hour"), ...)
+	}
 	Data.F
 }
 
@@ -142,7 +149,8 @@ fReadTimeBerkeley <- function(
 	## In the Berkeley-Release of the fluxnet data, the time is stored as an integer
 	## with base10-digits representing YYYYMMddhhmm 
 	Data.F <- fAddNCFVar(Data.F, colTime, FileName.s, Dir.s, NcPackage.s, CallFunction.s, ...)
-	timeStampChar <- as.character(Data.F$TIMESTAMP_END)
+	timeStampChar <- as.character(Data.F[[colTime]])
+recover()	
 	Data.F <- cbind(Data.F, data.frame(
 					year = as.integer(substr(timeStampChar,1,4))
 					,month = as.integer(substr(timeStampChar,5,6))

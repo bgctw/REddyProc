@@ -375,8 +375,8 @@ usControlUstarEst <- function(
   ,corrCheck = 0.5 		##<< threshold value for correlation between Tair and u* data
   ,firstUStarMeanCheck=0.2	##<< if first uStar bin average of a class is already larger than this value, the temperature class is skipped.
   ,isOmitNoThresholdBins = TRUE	##<< if TRUE, bins where no threshold was found are ignored. Set to FALSE to report highest uStar bin for these cases
-  ,isUsingCPT=FALSE		##<< set to TRUE to use changePointDetection without binning uStar before in usual aggregation method
-  ,isUsingCPTSeveralT=FALSE	##<< set to TRUE to use changePointDetection without binning uStar but with additionally changed aggregation scheme for several temperature classifications
+  ,isUsingCPTSeveralT=FALSE		##<< set to TRUE to use changePointDetection without binning uStar but with additionally changed aggregation scheme for several temperature classifications
+  ,isUsingCPT=FALSE				##<< set to TRUE to use changePointDetection without binning uStar before in usual aggregation method (good for comparing methods, but not recommended, overruled by isUsingCPTSeveralT=TRUE)
   ,minValidUStarTempClassesProp=0.2 ##<< seasons, in which only less than this proportion of temperature classes a threshold was detected, are excluded from aggregation
   ,minValidBootProp=0.4	##<< minimum proportion of bootstrap samples for which a threshold was detected. Below this proportion NA quantiles are reported.
   ,minNuStarPlateau=3L  ##<< minimum number of records in plateau, threshold must be larger than mean of this many bins 
@@ -468,7 +468,7 @@ attr(usControlUstarSubsetting,"ex") <- function(){
 
 usCreateSeasonFactorMonth <- function(
 		### calculate factors to denote the season for uStar-Filtering by specifying starting months, with continuous seasons spanning year boundaries
-		dates							##<< POSIXct vector of length of the data set to be filled				
+		dates							##<< POSIXct vector of length of the data set to be filled, specifying the center-time of each record				
 		, month=as.POSIXlt(dates)$mon+1L   	##<< integer (1-12) vector of length of the data set to be filled, specifying the month for each record
 		, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
 		, startMonth=c(3,6,9,12)		##<< integer vector specifying the starting month for each season, counting from one.
@@ -484,6 +484,10 @@ usCreateSeasonFactorMonth <- function(
 	## If Jan is not a starting month, then the first months of each year will be 
 	## part of the last period in the year.
 	## E.g. with the default the fourth period of the first year consists of Jan,Feb,Dec.
+	##
+	## REddyProc internally works with a timestamp 15 minutes after the start of each half hour.
+	## When providing the \code{dates} argument, user may shift the start time by \code{dates=myDataset$DateTime+15*60}
+	#
 	if( length(year) == 1L) year <- rep(year, length(month))
 	if( length(month) != length(year) ) stop("Month and Year arguments need to have the same length.")
 	if( any(month < 1 | month > 12) ) stop("Month out of range 1..12")
@@ -522,8 +526,8 @@ usCreateSeasonFactorMonth <- function(
 
 usCreateSeasonFactorMonthWithinYear <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting months, with seasons not spanning year boundaries
-  	dates							##<< POSIXct vector of length of the data set to be filled				
-  	, month=as.POSIXlt(dates)$mon+1   ##<< integer (1-13) vector of length of the data set to be filled, specifying the month for each record
+	dates							##<< POSIXct vector of length of the data set to be filled, specifying the center-time of each record				
+	, month=as.POSIXlt(dates)$mon+1   ##<< integer (1-13) vector of length of the data set to be filled, specifying the month for each record
 	, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
 	, startMonth=c(3,6,9,12)		##<< integer vector specifying the starting month for each season, counting from one
 		## default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
@@ -566,7 +570,7 @@ usCreateSeasonFactorMonthWithinYear <- function(
 
 usCreateSeasonFactorYday <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting day of years
-	dates							##<< POSIXct vector of length of the data set to be filled				
+	dates							##<< POSIXct vector of length of the data set to be filled, specifying the center-time of each record				
 	, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the day of the year (1..366) for each record
 	, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
 	, startYday=c(335,60,152,244)	 ##<< integer vector (1-366) specifying the starting yearDay for each season in increasing order
@@ -593,7 +597,7 @@ usCreateSeasonFactorYday <- function(
 
 usCreateSeasonFactorYdayYear <- function(
 		### calculate factors to denote the season for uStar-Filtering by specifying starting day and year of each season
-		dates							##<< POSIXct vector of length of the data set to be filled				
+		dates							##<< POSIXct vector of length of the data set to be filled, specifying the center-time of each record				
 		, yday=as.POSIXlt(dates)$yday+1L  ##<< integer (1-366) vector of length of the data set to be filled, specifying the day of the year (1..366) for each record
 		, year=as.POSIXlt(dates)$year+1900L	##<< integer vector of length of the data set to be filled, specifying the year 
 		, starts	 					 ##<< data.frame with first column specifying the starting yday (integer 1-366) and second column the year (integer e.g. 1998) for each season in increasing order
@@ -604,6 +608,7 @@ usCreateSeasonFactorYdayYear <- function(
 	##details<<
 	## With default parameterization, dates are assumed to denote begin or center of the eddy time period.
 	## If working with dates that denote the end of the period, use \code{yday=as.POSIXlt(fGetBeginOfEddyPeriod(dates))$yday}
+	##
 	if( length(year) == 1L) year <- rep(year, length(yday))
 	if( length(yday) != length(year) ) stop("Month and Year arguments need to have the same length.")
 	if( any(yday < 1 | yday > 366) ) stop("yday out of range 1..366")
@@ -902,7 +907,8 @@ usGetAnnualSeasonUStarMappingFromDistributionResult <- function(
 	res2
 }
 
-usGetSeaonalSeasonUStarMappingFromDistributionResult <- function(
+usGetSeaonalSeasonUStarMappingFromDistributionResult <- 
+usGetSeasonalSeasonUStarMappingFromDistributionResult <- function(
 		### extract mapping season -> uStar columns from Distribution result (\code{\link{sEstUstarThresholdDistribution}})
 		uStarTh		##<< result of \code{\link{sEstUstarThresholdDistribution}} or \code{\link{sEstUstarThreshold}}$uStarTh
 ){

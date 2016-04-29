@@ -183,7 +183,7 @@ sEddyProc$methods(
 		warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
 	} else { #Plot legend and title
 		Title.s <- .self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
-		Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(Jet.n-1))
+		Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(length(col)-1))
 		par(mai=c(3,1,3,1))
 		image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=col, zlim=c(YMin.n,YMax.n),
 				xlab=Var.s, yaxt='n', ylab='', main=Title.s)
@@ -258,7 +258,7 @@ sEddyProc$methods(
       warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
     } else { #Plot legend and title
       Title.s <- .self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
-      Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(Jet.n-1))
+      Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(length(col)-1))
       par(mai=c(3,1,3,1))
       image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=col, zlim=c(YMin.n,YMax.n),
             xlab=Var.s, yaxt='n', ylab='', main=Title.s)
@@ -280,6 +280,7 @@ sEddyProc$methods(
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') 
     ,Dir.s='plots'      ##<< Directory for plotting
+	,...				##<< further arguments to \code{\link{sPlotFingerprintY}}
   )
     ##author<<
     ## KS, AMM
@@ -301,10 +302,10 @@ sEddyProc$methods(
       
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1)
-        sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, Year.i)
+        sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, Year.i, ...)
       }
       screen(sINFO$Y.END-sINFO$Y.START+2)
-      sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, sINFO$Y.END, Legend=T)
+      sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, sINFO$Y.END, Legend=T, ...)
       
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))

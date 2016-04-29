@@ -6,7 +6,7 @@
     1, year = as.POSIXlt(dates)$year + 1900, startMonth = c(3, 
     6, 9, 12))}
 \arguments{
-  \item{dates}{POSIXct vector of length of the data set to be filled}
+  \item{dates}{POSIXct vector of length of the data set to be filled, specifying the center-time of each record}
   \item{month}{integer (1-13) vector of length of the data set to be filled, specifying the month for each record}
   \item{year}{integer vector of length of the data set to be filled, specifying the year}
   \item{startMonth}{integer vector specifying the starting month for each season, counting from one

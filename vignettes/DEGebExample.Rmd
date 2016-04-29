@@ -73,10 +73,10 @@ or that let seasons start at the same day each year.
             ,c(120,2006)
             ,c(305,2006) 		
 	)))
-	seasonFactor <- usCreateSeasonFactorYdayYear(DEGebExample$DateTime, starts=seasonStarts)
+	seasonFactor <- usCreateSeasonFactorYdayYear(DEGebExample$DateTime+15*60, starts=seasonStarts)
 	plot( NEE ~ DateTime, DEGebExample )
 	seasonStartsDate <- fConvertTimeToPosix( data.frame(Year=seasonStarts[,2]
-		, DoY=seasonStarts[,1], Hour=12),'YDH',Year.s="Year", Day.s="DoY",Hour.s="Hour")
+		, DoY=seasonStarts[,1], Hour=0.25),'YDH',Year.s="Year", Day.s="DoY",Hour.s="Hour")
 	abline( v=seasonStartsDate$DateTime)
 ```
 
