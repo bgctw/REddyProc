@@ -97,7 +97,7 @@ This is achieved by providing the seasonal estimates with argument `UstarThres.d
 The season factor has already been stored with the class when calling `EddyProc.C$sEstUstarThreshold`. 
 
 ```{r DEGeb_estUStar1c}
-	(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarTh))
+	(UstarThres.df <- usGetSeasonalSeasonUStarMappingFromDistributionResult(uStarTh))
 ```	
 ```{r DEGeb_gapFill1, cache=TRUE, output='hide', message=FALSE}
 	EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df, Verbose.b=FALSE)
@@ -123,7 +123,7 @@ different estimates of the uStar Threshold.
 	# uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor )
 	uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor
 		, nSample=30L, probs =c(0.1,0.9))
-	(UstarThres.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(uStarRes))
+	(UstarThres.df <- usGetSeasonalSeasonUStarMappingFromDistributionResult(uStarRes))
 ```	
 ```{r DEGeb_gapFillBoot1, cache=TRUE, message=FALSE, output='hide'}
 	EddyProc.C$sMDSGapFillAfterUStarDistr('NEE', FillAll.b=FALSE, UstarThres.df=UstarThres.df)
@@ -163,7 +163,7 @@ The CPT method is usually yields higher thresholds and marks more data as Gap.
 						ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)
 						,seasonFactor.v=seasonFactor
 				)$uStarTh
-	(UstarThresCP.df <- usGetSeaonalSeasonUStarMappingFromDistributionResult(resUStar))
+	(UstarThresCP.df <- usGetSeasonalSeasonUStarMappingFromDistributionResult(resUStar))
 	#UstarThres.df
 ```
 
