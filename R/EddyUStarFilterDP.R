@@ -79,6 +79,8 @@ usEstUstarThreshold = function(
 	## \item{ \code{\link{sEstUstarThreshold}} which stores the result in the class variables (sUSTAR and sDATA).}
 	## \item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
 	## } 
+	##
+	## For inspecting the NEE~uStar relationship plotting is provided by \code{\link{sPlotNEEVersusUStarForSeason}}
 	#
 	# add index columns to locate which season/tempClass/uStarBin each record belongs
 	# cannot directly change sDATA, in EddyProcC, because will be overwritten in each bootstrap 
