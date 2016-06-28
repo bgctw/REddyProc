@@ -33,6 +33,7 @@ sEddyProc$methods(
     ,ColNames.V.s       ##<< Vector with selected column names, the less columns the faster the processing
     ,ColPOSIXTime.s='DateTime' ##<< Column name with POSIX time stamp
     ,DTS.n=48           ##<< Daily time steps
+	,ColNamesNonNumeric.V.s=character(0)	##<< Names of columns that should not be checked for numeric type, e.g. season column   
     ,...                ##<< ('...' required for initialization of class fields)
     ##author<<
     ## AMM
@@ -58,7 +59,7 @@ sEddyProc$methods(
     ## All other columns may only contain numeric data.
     ## Please use NA as a gap flag for missing data or low quality data not to be used in the processing.
     ## The columns are also checked for plausibility with warnings if outside range.
-    fCheckColNum(Data.F, ColNames.V.s, 'sEddyProc.initialize')
+    fCheckColNum(Data.F, setdiff(ColNames.V.s,ColNamesNonNumeric.V.s), 'sEddyProc.initialize')
     fCheckColPlausibility(Data.F, ColNames.V.s, 'sEddyProc.initialize')
     
     ##details<<
