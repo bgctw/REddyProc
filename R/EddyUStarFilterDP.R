@@ -84,7 +84,8 @@ usEstUstarThreshold = function(
 	#
 	# add index columns to locate which season/tempClass/uStarBin each record belongs
 	# cannot directly change sDATA, in EddyProcC, because will be overwritten in each bootstrap 
-	ds$season <- seasonFactor.v
+	if( any(is.na(seasonFactor.v)) ) stop("usEstUstarThreshold: encountered NA in seasonFactor. Need to specify a valid season for each record.")
+    ds$season <- as.factor(seasonFactor.v)
 	ds$seasonYear <- seasonFactorsYear[seasonFactor.v]
 	ds$tempBin <- NA_integer_
 	ds$uStarBin <- NA_integer_
@@ -97,11 +98,10 @@ usEstUstarThreshold = function(
 		dsc <- 	ds[isValidUStar, ,drop=FALSE] 
 	}
 	if( nrow(dsc)==0L ) stop("sEstUstarThreshold: no finite records in dataset")
-	
 	#
 	tdsc <- as.data.frame(table(dsc$season)); colnames(tdsc) <- c("season","nRec")
 	#some seasons might be absent in dsc from cleaning, construct vectors that report NA for missing seasons
-	nRecValidInSeason <- merge( data.frame( season=sort(unique(ds$season)) ), tdsc, all.x=TRUE)
+	nRecValidInSeason <- merge( data.frame( season=levels(ds$season) ), tdsc, all.x=TRUE)
 	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(season=names(seasonFactorsYear), seasonYear=seasonFactorsYear), all.x=TRUE)
 	nYear <- ddply(nRecValidInSeasonYear, as.quoted('seasonYear'), summarize, nRec=sum(substitute(nRec), na.rm=TRUE) )
 	seasonYearsWithFewData <- nYear$year[ nYear$nRec < ctrlUstarSub.l$minRecordsWithinYear ]
@@ -149,7 +149,7 @@ usEstUstarThreshold = function(
 	resultsSeason$uStarSeasonEst <- uStarSeasons
 	#
 	resultsSeasonYear = ddply(resultsSeason, as.quoted('seasonYear'), function(dss){
-				data.frame( uStarMaxSeason=if( all(!is.finite(dss$uStarSeasonEst))  ) NA_real_ else max( dss$uStarSeasonEst, na.rm=TRUE), seasonYear=dss$seasonYear[1])
+				data.frame( uStarMaxSeason=if( all(!is.finite(dss$uStarSeasonEst))  ) NA_real_ else max( dss$uStarSeasonEst, na.rm=TRUE), seasonYear=dss$seasonYear[1], nRec=sum(dss$nRec) )
 			} )
 	resultsSeasonYear$uStarAggr <- resultsSeasonYear$uStarMaxSeason
 	#---- for seasonYears with too few records and for seasonYears with no seasonal estimate do a pooled estimate
@@ -159,7 +159,7 @@ usEstUstarThreshold = function(
 	## The user can suppress using pooled data on few records by providing option
 	## \code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{usControlUstarSubsetting}})
 	## }}
-	seasonYearsPooled <- resultsSeasonYear$seasonYear[ !is.finite(resultsSeasonYear$uStarAggr) ]
+	seasonYearsPooled <- resultsSeasonYear$seasonYear[ !is.finite(resultsSeasonYear$uStarAggr) & resultsSeasonYear$nRec > 0]
 	if( isTRUE(ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords) )
 		seasonYearsPooled <- union( seasonYearsWithFewData, seasonYearsPooled)
 	resultsSeasonYearPooled <- if( !length(seasonYearsPooled) ){
