@@ -572,13 +572,16 @@ sEddyProc$methods(
     CountMissingUnc.n <- sum(!is.na(Plot.V.n) & is.na(PlotSD.V.n))
     
     # Compute daily sums
+	nRecInDay <- sINFO$DTS
     DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow=sINFO$DTS)[1,]
     DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow=sINFO$DTS)[1,]
-	DAvg.V.d <- (1/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, mean)
+	DAvg.V.d <- (1/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=nRecInDay), 2, mean)
     DSum.V.d <- DAvg.V.d * timeFactor.n * massFactor.n
-    fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
-    DUnc.V.d <- (1/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
-    
+    fSumOfSquares <- function(x, ...) {sum(x^2, ...)}	 
+    #DUnc.V.d <- (1/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
+	# twutz: 160729:  *timeFactor.n * massFactor.n
+	DUnc.V.d <- (1/nRecInDay) * sqrt(apply(matrix(PlotSD.V.n, nrow=nRecInDay), 2, fSumOfSquares)) * timeFactor.n * massFactor.n   
+	
     # Scale to all data
     YMin.n <- min(DSum.V.d-DUnc.V.d, na.rm=T)
     YMax.n <- max(DSum.V.d+DUnc.V.d, na.rm=T)
