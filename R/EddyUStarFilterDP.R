@@ -529,7 +529,7 @@ usCreateSeasonFactorMonth <- function(
 usCreateSeasonFactorMonthWithinYear <- function(
 	### calculate factors to denote the season for uStar-Filtering by specifying starting months, with seasons not spanning year boundaries
 	dates							##<< POSIXct vector of length of the data set to be filled, specifying the center-time of each record				
-	, month=as.POSIXlt(dates)$mon+1   ##<< integer (1-13) vector of length of the data set to be filled, specifying the month for each record
+	, month=as.POSIXlt(dates)$mon+1   ##<< integer (1-12) vector of length of the data set to be filled, specifying the month for each record
 	, year=as.POSIXlt(dates)$year+1900	##<< integer vector of length of the data set to be filled, specifying the year 
 	, startMonth=c(3,6,9,12)		##<< integer vector specifying the starting month for each season, counting from one
 		## default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)
@@ -870,7 +870,7 @@ usGetValidUstarIndices <- function(
 		,NEEColName = "NEE"			##<< column name for NEE
 		,TempColName = "Tair"		##<< column name for air temperature
 		,RgColName = "Rg"			##<< column name for solar radiation for omitting night time data
-		,swThr = usControlUstarSubsetting()$swThr
+		,swThr = usControlUstarSubsetting()$swThr	##<< threshold below which data is acknowledged as night time respiration.
 ){
 	##author<<
 	## TW

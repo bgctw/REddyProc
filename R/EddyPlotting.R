@@ -24,19 +24,19 @@ sEddyProc$methods(
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Name.s             ##<< Name of plot
+	,unit.s = attr(cbind(sDATA,sTEMP)[,Var.s], 'units')		##<< unit string, defaults to attribute of the variable
   )
     ##author<<
     ## KS, AMM
   {
     'Set title of plot'
     # Check for unit of variable
-    Unit.s <- attr(cbind(sDATA,sTEMP)[,Var.s], 'units')
-    if (fCheckValString(Unit.s) && Unit.s != '[#]'  && Unit.s != '--' ) Unit.s <- paste(' (', Unit.s, ') ', sep='') else Unit.s <- ' (-) '
+    if (fCheckValString(unit.s) && unit.s != '[#]'  && unit.s != '--' ) unit.s <- paste(' (', unit.s, ') ', sep='') else unit.s <- ' (-) '
     # Set title depending on quality flag
     if (QFVar.s != 'none') {
-      Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, Unit.s, ' with ', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
+      Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, unit.s, ' with ', QFVar.s, '=', round(QFValue.n, digits=3), sep='')
     } else {
-      Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, Unit.s, sep='')
+      Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, unit.s, sep='')
     }
     
     return(Title.s)
@@ -539,13 +539,22 @@ sEddyProc$methods(
     Var.s               ##<< (Filled) variable to plot
     ,VarUnc.s='none'    ##<< Uncertainty estimates for variable
     ,Year.i             ##<< Year to plot
+	,timeFactor.n=3600*24	##<< time conversion factor with default per second to per day
+	,massFactor.n=(44.0096/1000000)*(12.011/44.0096) ##<< mass conversion factor with default from mumol CO2 to g C
+	,unit.s = "gC/m2/day"	##<< resulting unit
   )
     ##author<<
     ## AMM, KS
     # TEST: sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
   {
     'Plot daily sum of specified year'
-    # Set plot contents
+	##description<<
+	## This function first computes the everage flux for each day.
+	## If the original unit is not "per day", then it need to be converted to "per day" by argument \code{timeFactor.n}. 
+	## Furthermore, a change of the mass unit is provided by argument \code{massFactor.n}.
+	## The default parameters assume original units of mumol CO2/m2/second and convert to gC/m2/day.
+	## The conversion factors allow plotting variables with different units
+	# Set plot contents
     Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, 'none', NA, 'sPlotDailySumsY')
     FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')
     Time.V.n <- FullYearData.F$DateTime
@@ -562,10 +571,11 @@ sEddyProc$methods(
     # If there is data but no uncertainty estimates, an empty box will be plotted
     CountMissingUnc.n <- sum(!is.na(Plot.V.n) & is.na(PlotSD.V.n))
     
-    # Set daily sums
+    # Compute daily sums
     DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow=sINFO$DTS)[1,]
     DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow=sINFO$DTS)[1,]
-    DSum.V.d <- (1/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, sum)
+	DAvg.V.d <- (1/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, mean)
+    DSum.V.d <- DAvg.V.d * timeFactor.n * massFactor.n
     fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
     DUnc.V.d <- (1/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
     
@@ -581,6 +591,7 @@ sEddyProc$methods(
       # Plot
       plot(DSum.V.d ~ DoY.V.d, type='n', ylim=c(YMin.n,YMax.n),
            axes=F, xlab='', ylab='', main=Year.i)
+   	  mtext(unit.s,2,2.2)
       
       if (VarUnc.s != 'none'){
         t.b <- !is.na(DUnc.V.d) #Polygons sensitive to NAs 
@@ -619,6 +630,8 @@ sEddyProc$methods(
     ,VarUnc.s='none'    ##<< Uncertainty estimates for variable
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
+	,unit.s='gC/m2/day' ##<< unit of the daily sums
+	,...				##<< further arguments to \code{\link{sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.
   )
     ##author<<
     ## KS, AMM  
@@ -639,15 +652,15 @@ sEddyProc$methods(
       # Set title of plot
       screen(sINFO$Y.NUMS + 3)
       if (VarUnc.s == 'none') {
-        mtext(.self$.sxSetTitle(Var.s, 'none', NA, 'Daily sums'), line=-3, side=3, cex=2.0)
+        mtext(.self$.sxSetTitle(Var.s, 'none', NA, 'Daily sums', unit.s=unit.s), line=-3, side=3, cex=2.0)
       } else {
-        mtext(.self$.sxSetTitle(Var.s, 'none', NA, 'Daily sums with uncertainties'), line=1, side=3, cex=2.0)
-      }
+        mtext(.self$.sxSetTitle(Var.s, 'none', NA, 'Daily sums with uncertainties', unit.s=unit.s), line=1, side=3, cex=2.0)
+	}
       
       # Loop over all years
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1 + 1)
-        sPlotDailySumsY(Var.s, VarUnc.s, Year.i)
+        sPlotDailySumsY(Var.s, VarUnc.s, Year.i, unit.s=unit.s, ...)
       }
       
       # Close plot

@@ -468,6 +468,8 @@ sEddyProc$methods(
 		## If only one value is given, it is used for all records.
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
     ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).
+	,isFilterDayTime=FALSE		##<< Set to TRUE to also filter day-time values
+	,swThr = usControlUstarSubsetting()$swThr	##<< threshold below which data is marked as night time respiration.
     ,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
   )
   ##author<<

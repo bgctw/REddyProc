@@ -40,6 +40,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		#+++ Example plots of filled data to screen or to directory \plots
 		EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
 		EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998) #Plot of sums with uncertainties
+		#EddyProc.C$trace("sPlotDailySums", recover)
 		EddyProc.C$sPlotDailySums('NEE_f','NEE_fsd')
 		
 		#+++ Partition NEE into GPP and respiration
