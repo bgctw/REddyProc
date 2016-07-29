@@ -45,6 +45,8 @@ This function is called by
 \item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
 } 
 
+For inspecting the NEE~uStar relationship plotting is provided by \code{\link{sPlotNEEVersusUStarForSeason}}
+
 \describe{\item{change point detection (CPT) method}{
 With specifying \code{ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT=TRUE)}
 change point detection is applied instead of the moving point test (e.g. with Fw2Binned).

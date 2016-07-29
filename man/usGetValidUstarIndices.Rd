@@ -11,8 +11,7 @@
   \item{NEEColName}{column name for NEE}
   \item{TempColName}{column name for air temperature}
   \item{RgColName}{column name for solar radiation for omitting night time data}
-  \item{swThr}{
-}
+  \item{swThr}{threshold below which data is acknowledged as night time respiration.}
 }
 
 \value{boolean vector with non-finite cases and cases with radiation < swThr set to FALSE.}

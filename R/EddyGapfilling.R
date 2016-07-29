@@ -468,9 +468,10 @@ sEddyProc$methods(
 		## If only one value is given, it is used for all records.
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
     ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).
-	,isFilterDayTime=FALSE		##<< Set to TRUE to also filter day-time values
-	,swThr = usControlUstarSubsetting()$swThr	##<< threshold below which data is marked as night time respiration.
-    ,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
+	,isFilterDayTime=FALSE		##<< Set to TRUE to also filter day-time values, default only filters night-time data
+	,swThr = 10			  ##<< threshold of solar radiation below which data is marked as night time respiration.
+	,RgColName = "Rg"     ##<< Column name of incoming short wave radiation
+	,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
   )
   ##author<<
   ## AMM, TW
@@ -506,8 +507,11 @@ sEddyProc$methods(
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
     QFustar.V.n <- integer( nrow(sDATA) )	# 0L
+	# if not filtering dayTimeValues, create a vector that is TRUE only for nightTime
+	isRowFiltered <- if( isFilterDayTime ) TRUE else (!is.finite(sDATA[,RgColName]) | sDATA[,RgColName] < swThr) 
 	# mark low uStar or bad uStar as 1L
     QFustar.V.n[ 
+					 isRowFiltered &
                      !is.na(UstarThres.V.n) & 
                      (sDATA[,UstarVar.s] < UstarThres.V.n) 
                    ] <- 1L
@@ -520,9 +524,9 @@ sEddyProc$methods(
       QFustar.V.n[ which(diff(QFustar.V.n) == 1)+1 ] <- 2L
     }
 	# mark those conditions as bad, when no threshold is defined 
-	QFustar.V.n[ !is.finite(UstarThres.V.n) ]	<- 3L			
+	QFustar.V.n[ isRowFiltered & !is.finite(UstarThres.V.n) ]	<- 3L			
 	# mark those recods as bad, where uStar is not defined 
-	QFustar.V.n[ !is.finite(Ustar.V.n) ]	<- 4L			
+	QFustar.V.n[ isRowFiltered & !is.finite(Ustar.V.n) ]	<- 4L			
 	message('Ustar filtering (u*Th_1=',UstarThres.V.n[1],'), marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       message('(including removal of the first half-hour after a period of low turbulence).')

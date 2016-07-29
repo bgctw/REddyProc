@@ -157,14 +157,15 @@ fCheckHHTimeSeries <- function(
     stop(CallFunction.s, ':::fCheckHHTimeSeries::: Provided time stamp data not in POSIX time format!')
   ##details<<
   ## equidistant half-hours,
-  NotDistHH.i <- sum(as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != (24/DTS.n * 60 * 60))
+  NotDistHH.b <- as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != (24/DTS.n * 60 * 60)
+  NotDistHH.i <- sum(NotDistHH.b)
   if( NotDistHH.i > 0 )
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in ', NotDistHH.i , ' cases!')
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in rows: ', paste(which(NotDistHH.b),collapse=","))
   ##details<<
   ## and stamped on the half hour.
   NotOnHH.i <- sum(as.numeric(Time.V.p) %% (24/DTS.n * 60 * 60) != 0)
   if( NotOnHH.i > 0 )
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time step is not stamped at half-hours in ', NotOnHH.i , ' cases!')
+    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time step is not stamped at half-hours in rows: ', which(as.numeric(Time.V.p) %% (24/DTS.n * 60 * 60) != 0))
   ##details<<
   ## The sEddyProc procedures require at least three months of data.
   if( length(Time.V.p) < (3 * 30 * DTS.n) )

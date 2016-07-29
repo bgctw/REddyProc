@@ -128,16 +128,17 @@ test_that("Test sMDSGapFill",{
 test_that("Test sMDSGapFillAfterUStar default case",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
 			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
-			uStar98 <- subset(uStarTh, aggregationMode=="year" & seasonYear==1998, "uStar" )[1,1] 
+			uStar98 <- subset(uStarTh, aggregationMode=="year" & seasonYear==1998, "uStar" )[1,1]
+			#EddyProc.C$trace("sMDSGapFillAfterUstar", recover)	#EddyProc.C$untrace("sMDSGapFillAfterUstar")
 			EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b = FALSE)
-			expect_equal( uStar98, min(EddyProc.C$sDATA$Ustar[ EddyProc.C$sTEMP$NEE_WithUstar_fqc==0 ]), tolerance = 0.05  )
+			expect_equal( uStar98, min(EddyProc.C$sDATA$Ustar[ EddyProc.C$sTEMP$NEE_WithUstar_fqc==0 & (EddyProc.C$sDATA$Rg < 10)], na.rm=TRUE), tolerance = 0.05  )
 		})
 
 test_that("Test sMDSGapFillAfterUStar single value",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
 			uStarFixed <- 0.46
 			EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b = FALSE, UstarThres.df=uStarFixed)
-			expect_equal( uStarFixed, min(EddyProc.C$sDATA$Ustar[ EddyProc.C$sTEMP$NEE_WithUstar_fqc==0 ]), tolerance = 0.05  )
+			expect_equal( uStarFixed, min(EddyProc.C$sDATA$Ustar[ EddyProc.C$sTEMP$NEE_WithUstar_fqc==0 & (EddyProc.C$sDATA$Rg < 10)], na.rm=TRUE), tolerance = 0.05  )
 		})
 
 test_that("Test sMDSGapFillAfterUStar error on season mismatch",{

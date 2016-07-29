@@ -3,13 +3,15 @@
 \title{sEddyProc$new - Initialization of sEddyProc}
 \description{Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data}
 \usage{sEddyProc.new(ID.s, Data.F, ColNames.V.s, ColPOSIXTime.s = "DateTime", 
-    DTS.n = 48, ...)}
+    DTS.n = 48, ColNamesNonNumeric.V.s = character(0), 
+    ...)}
 \arguments{
   \item{ID.s}{String with site ID}
   \item{Data.F}{Data frame with at least three month of half-hourly site-level eddy data}
   \item{ColNames.V.s}{Vector with selected column names, the less columns the faster the processing}
   \item{ColPOSIXTime.s}{Column name with POSIX time stamp}
   \item{DTS.n}{Daily time steps}
+  \item{ColNamesNonNumeric.V.s}{Names of columns that should not be checked for numeric type, e.g. season column}
   \item{\dots}{('...' required for initialization of class fields)}
 }
 \details{The time stamp must be provided in POSIX format, see also \code{\link{fConvertTimeToPosix}}.

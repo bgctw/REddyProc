@@ -142,8 +142,8 @@ sEddyProc$methods(
       for( Pos.i in 1:length(ToBeFilled.V.i) ) {
         # Message on progress if wanted
         NoneCols.b <- c(V1.s, V2.s, V3.s, V4.s, V5.s) %in% 'none' 
-        if( Verbose.b && Pos.i ==1 )  cat('Look up table with window size of ', WinDays.i, ' days with ', 
-                                          paste(c(V1.s, V2.s, V3.s, V4.s, V5.s)[!NoneCols.b], collapse=' '), '\n.', sep='')
+        if( Verbose.b && Pos.i ==1 )  message('Look up table with window size of ', WinDays.i, ' days with ', 
+                                          paste(c(V1.s, V2.s, V3.s, V4.s, V5.s)[!NoneCols.b], collapse=' '))
         # Set window size
         Gap.i   <- ToBeFilled.V.i[Pos.i]
         if (T==T) {
@@ -213,10 +213,10 @@ sEddyProc$methods(
           } 
           lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
         }
-        if( Verbose.b && Pos.i%%100 == 0 )  cat('.')
-        if( Verbose.b && Pos.i%%6000 == 0 ) cat('\n.')
+        if( Verbose.b && Pos.i%%100 == 0 )  message('.', appendLF=FALSE)
+        if( Verbose.b && Pos.i%%6000 == 0 ) message('\n.', appendLF=FALSE)
       }
-      if( Verbose.b ) cat('', nrow(lGF.M), '\n')
+      if( Verbose.b ) message('', nrow(lGF.M))
     }
     # Copy gap filled values and properties to sTEMP
     if( nrow(lGF.M) > 0 ) {
@@ -261,7 +261,7 @@ sEddyProc$methods(
     if( length(ToBeFilled.V.i) > 0 ) {
       for(Pos.i in 1:length(ToBeFilled.V.i)){
         # Message on progress if wanted
-        if( Verbose.b && Pos.i == 1 ) cat('Mean diurnal course with window size of ', WinDays.i, ' days: \n.', sep='')
+        if( Verbose.b && Pos.i == 1 ) message('Mean diurnal course with window size of ', WinDays.i, ' days: .', sep='')
         
         # Set index within window size
         Gap.i   <- ToBeFilled.V.i[Pos.i]
@@ -303,10 +303,10 @@ sEddyProc$methods(
           
           lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
         }
-        if( Verbose.b && Pos.i%%100 == 0 )  cat('.')
-        if( Verbose.b && Pos.i%%6000 == 0 ) cat('\n.')
+        if( Verbose.b && Pos.i%%100 == 0 )  message('.', appendLF=FALSE)
+        if( Verbose.b && Pos.i%%6000 == 0 ) message('\n.', appendLF=FALSE)
       }
-      if( Verbose.b ) cat('', nrow(lGF.M), '\n')
+      if( Verbose.b ) message('', nrow(lGF.M))
     }
     # Copy gap filled values and properties to sTEMP
     if( nrow(lGF.M) > 0 ) {
@@ -347,7 +347,7 @@ sEddyProc$methods(
     #! ,QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
   )
   ##author<<
-  ## AMM
+  ## AMM, TW
   ##references<<
   ## Reichstein, M. et al. (2005) On the separation of net ecosystem exchange 
   ## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
@@ -462,11 +462,16 @@ sEddyProc$methods(
     ## Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*
     FluxVar.s             ##<< Flux variable to gap fill after ustar filtering
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
+	,UstarThres.df=usGetAnnualSeasonUStarMappingFromDistributionResult(sUSTAR$uStarTh)		  ##<< data.frame with first column, season names, and second column estimates of uStar Threshold.
+		##<< Alternatively, a single value to be used as threshold for all records
+    #,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
 		## If only one value is given, it is used for all records.
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
     ,FlagEntryAfterLowTurbulence.b=FALSE  ##<< Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).
-    ,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
+	,isFilterDayTime=FALSE		##<< Set to TRUE to also filter day-time values, default only filters night-time data
+	,swThr = 10			  ##<< threshold of solar radiation below which data is marked as night time respiration.
+	,RgColName = "Rg"     ##<< Column name of incoming short wave radiation
+	,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
   )
   ##author<<
   ## AMM, TW
@@ -483,22 +488,33 @@ sEddyProc$methods(
 	## \item \code{\link{sEstUstarThreshold}} for estimating the u* threshold from the data.
 	## }
 	
+	UstarThres.V.n <- if( is.numeric(UstarThres.df) ){
+				if(length(UstarThres.df) != 1L) stop("Without seasons, only a single uStarThreshold can be provided, but got a vector.")
+				UstarThres.V.n <- rep(UstarThres.df, nrow(.self$sDATA) )
+		} else {
+			if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+			colnames(UstarThres.df) <- c("season","uStarThreshold")	# make sure merge will work
+			if( any(!is.finite(UstarThres.df$uStarThreshold))) stop("must provide finite uStarThresholds")
+			iMissingLevels <- which(!(levels(.self$sDATA$season) %in% UstarThres.df$season))
+			if( length(iMissingLevels) ) stop("missing uStarTrheshold for seasons ",paste(levels(.self$sDATA$season)[iMissingLevels],collapse=","))
+			tmpDs <- merge( subset(sDATA, select="season"), UstarThres.df, all.x=TRUE )
+			UstarThres.V.n <- tmpDs[,2L]
+		}
     # Check column names (with 'none' as dummy)
     # (Numeric type and plausibility have been checked on initialization of sEddyProc)
     fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
     
-    # Expand ustar value(s) to number of years
-    if( length(UstarThres.V.n) == 1L) UstarThres.V.n <- rep(UstarThres.V.n, nrow(.self$sDATA) )
-    if( length(UstarThres.V.n) != nrow(.self$sDATA)) stop('sMDSGapFillAfterUstar: number uStar thresholds must correspond to number of records in the dataset: ', nrow(.self$sDATA))
-    
     # Filter data
     Ustar.V.n <- sDATA[,UstarVar.s]
     QFustar.V.n <- integer( nrow(sDATA) )	# 0L
-	# mark low uStar as 1L
+	# if not filtering dayTimeValues, create a vector that is TRUE only for nightTime
+	isRowFiltered <- if( isFilterDayTime ) TRUE else (!is.finite(sDATA[,RgColName]) | sDATA[,RgColName] < swThr) 
+	# mark low uStar or bad uStar as 1L
     QFustar.V.n[ 
+					 isRowFiltered &
                      !is.na(UstarThres.V.n) & 
                      (sDATA[,UstarVar.s] < UstarThres.V.n) 
-                   ] <- 1L  
+                   ] <- 1L
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       ##details<< 
       ## With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
@@ -507,7 +523,11 @@ sEddyProc$methods(
       ## after a period with low turbulence is also removed (Papaple et al. 2006).
       QFustar.V.n[ which(diff(QFustar.V.n) == 1)+1 ] <- 2L
     }
-    message('Ustar filtering (u*Th_1=',UstarThres.V.n[1],'), marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
+	# mark those conditions as bad, when no threshold is defined 
+	QFustar.V.n[ isRowFiltered & !is.finite(UstarThres.V.n) ]	<- 3L			
+	# mark those recods as bad, where uStar is not defined 
+	QFustar.V.n[ isRowFiltered & !is.finite(Ustar.V.n) ]	<- 4L			
+	message('Ustar filtering (u*Th_1=',UstarThres.V.n[1],'), marked ',(signif(sum(QFustar.V.n != 0)/length(QFustar.V.n),2))*100,'% of the data as gap'  )
     if( isTRUE(FlagEntryAfterLowTurbulence.b) ){
       message('(including removal of the first half-hour after a period of low turbulence).')
     }
@@ -533,7 +553,7 @@ sEddyProc$methods(
     sMDSGapFill(FluxVar.s, QFVar.s=attr(QFustar.V.n, 'varnames'), QFValue.n=0, ..., Suffix.s = UstarSuffix.s)
     
     ##value<< 
-    ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence)
+    ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence, 3: no threshold available, 4: missing uStar value)
     ## Gap filling results are in sTEMP data frame (with renamed columns) that can be retrieved by \code{\link{sExportResults}}.
     return(invisible(QFustar.V.n))
     
@@ -546,18 +566,14 @@ sEddyProc$methods(
     ## GapFilling for several filters of estimated friction velocity Ustar thresholds.
     ##description<<
     ## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
-    FluxVar.s='NEE'       ##<< Variable, i.e. collumn name,  of net ecosystem fluxes, default 'NEE'
-    ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-    ,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold. 
+	...                   ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
+	,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold. 
 	## If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset. 
 	## Entries in first column must match levels in argument \code{seasonFactor.v}
-	,seasonFactor.v  	##<< factor for subsetting time into seasons, should be the same as in the uStarThreshold estimation, 
-		## e.g. \code{usCreateSeasonFactorMonth(sDATA$sDateTime)}
 	,UstarSuffix.V.s = colnames(UstarThres.df)[-1]  ##<< String vector 
     ## to distinguish result columns for different ustar values.
     ## Its length must correspond to column numbers in \code{UstarThres.m.n}.
 	# return value function \code{\link{sEstUstarThresholdDistribution}} 
-    ,...                  	 ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
   )
   ##author<< TW
 {
@@ -583,23 +599,22 @@ sEddyProc$methods(
 	## Advanced Example 1b in \code{\link{sEddyProc.example}}
     # # \code{\link{sEstUstarThresholdDistribution}}
     
-	# create a matrix with uStar with one row for each data record 
+	if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+	if( !all(is.finite(as.matrix(UstarThres.df[,-1])))) warning("Provided non-finite uStarThreshold. All values in corresponding period will be marked as gap.")
 	nRec <- nrow(.self$sDATA)
-	uStarM <- if( nrow(UstarThres.df) == 1L){
-		matrix( unlist(UstarThres.df[,-1]), ncol=ncol(UstarThres.df)-1, nrow=nRec, byrow = TRUE  )
-	} else {
-		if( missing(seasonFactor.v)) stop("sMDSGapFillAfterUStarDistr: need to provide vector seasonFactor.v of seasons/years for applying different thresholds over time.")
-		if( length(seasonFactor.v) != nRec) stop("sMDSGapFillAfterUStarDistr: provided argument seasonFactor.v of length that differs from number or records in data")
-		as.matrix(merge( data.frame(season=seasonFactor.v), UstarThres.df )[,-1])
+	nSeason <- length(levels(.self$sDATA$season))
+	if( nrow(UstarThres.df) == 1L){
+		UstarThres.df <- cbind( data.frame(season=levels(.self$sDATA$season)), UstarThres.df[,-1], row.names = NULL)
 	}
 
-	nEstimates <- ncol(uStarM)
+	nEstimates <- ncol(UstarThres.df)-1L
 	UstarSuffix.V.s <- unique(UstarSuffix.V.s)
 	if( length(UstarSuffix.V.s) != nEstimates ) stop("sMDSGapFillUStar: number of unique suffixes must correspond to number of uStar-thresholds")
 	
-    filterCols <- lapply( seq(1:nEstimates), function(iCol){
-      .self$sMDSGapFillAfterUstar( FluxVar.s=FluxVar.s, UstarVar.s=UstarVar.s
-                                   ,UstarThres.V.n = uStarM[,iCol]
+	#iCol <- 1L
+	filterCols <- lapply( seq(1L:nEstimates), function(iCol){
+      .self$sMDSGapFillAfterUstar( ...
+                                   ,UstarThres.df = UstarThres.df[,c(1L,1L+iCol)]
                                    ,UstarSuffix.s = UstarSuffix.V.s[iCol]
       )
     } )

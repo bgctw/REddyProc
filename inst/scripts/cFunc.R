@@ -1,6 +1,7 @@
 .tmp.f <- function(){
 	# moved to src folder
-	# when chaning something remember calling Rcpp::compileAttributes()
+	# when changing something remember calling Rcpp::compileAttributes()
+	require(inline)
 	.whichValueGreaterEqualC <- cxxfunction(
 			# see .whichValueGreaterEqual in EddyUStrFilterDP
 			signature(x="integer",
@@ -17,6 +18,7 @@
 }
 
 .tmp.f <- function(){
+	#require(Rcpp)
 	sourceCpp("src/HelloWorld.cpp")
 	sourceCpp("src/whichValueGreaterEqualC.cpp")
 	x <- 1:10
