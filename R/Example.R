@@ -15,6 +15,8 @@ attr(sEddyProc.example,'ex') <- function( ){
 		#+++ Load data with one header and one unit row from (tab-delimited) text file
 		Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 		EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+		# note: use \code{fFilterAttr} to subset rows while keeping the units attributes
+		
 		#+++ If not provided, calculate VPD from Tair and rH
 		EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
 		

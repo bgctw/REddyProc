@@ -703,3 +703,18 @@ fSetQF <- function(
   ##value<< 
   ## Numeric vector with _good_ data.
 }
+
+fFilterAttr <- function(
+		### filter, i.e. subset rows, a data.frame with keeping attributes (e.g. units) of the columns
+		x				##<< data frame to filter
+		, isFiltered.v	##<< boolean vector specifying which rows to keep
+){
+	if( !is.data.frame(x)) stop("fFilterAttr error: expected first argument to be a data.frame, but was ",class(x))
+	ans <- x[isFiltered.v,]
+	for( i in 1:ncol(x) ){
+		attributes(ans[[i]]) <- attributes(x[[i]])
+	}
+	##value<< \code{x[,isFiltered.v]} with column attributes preserved
+	ans
+}
+

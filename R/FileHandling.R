@@ -23,6 +23,9 @@ fLoadTXTIntoDataframe <- function(
 	## Alternatively \code{\link{fLoadFluxNCIntoDataframe}} loads data from NetCDF-Files.
 	## In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.
 	
+	##details<<
+	## For using only part of the records, use \code{fFilterAttr} to keep units attributes.
+	
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')  
   
   # Read in header
