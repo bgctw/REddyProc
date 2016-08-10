@@ -153,7 +153,6 @@ fReadTimeBerkeley <- function(
 	## with base10-digits representing YYYYMMddhhmm 
 	Data.F <- fAddNCFVar(Data.F, colTime, FileName.s, Dir.s, NcPackage.s, CallFunction.s, ...)
 	timeStampChar <- as.character(Data.F[[colTime]])
-recover()	
 	Data.F <- cbind(Data.F, data.frame(
 					year = as.integer(substr(timeStampChar,1,4))
 					,month = as.integer(substr(timeStampChar,5,6))
