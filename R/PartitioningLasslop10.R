@@ -7,8 +7,8 @@ partRHLightResponse <- function(
 		theta, 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb))
 		Rg,   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		VPD, 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
-		Fc, 	##<< Fc [numeric] -> GPP or NEE time series [umolCO2/m2/s], required for inverse run, else may set to NA
-		Fc_unc, ##<< Fc_unc [numeric] -> Uncertainty of fluxes [umolCO2/m2/s]
+		Fc=NA, 		##<< Fc [numeric] -> GPP or NEE time series [umolCO2/m2/s], required for inverse run, else may set to NA
+		Fc_unc=NA,  ##<< Fc_unc [numeric] -> Uncertainty of fluxes [umolCO2/m2/s]
 		Temp, 	##<< Temp [degC] -> Temperature [degC] 
 		E0, 	##<< Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		VPD0 = 10, 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
@@ -19,10 +19,17 @@ partRHLightResponse <- function(
 	##details<<
 	## with fixes E0 for the estimation of Rd
 	## VPD effect included according to Lasslop et al., 2010
-	kVPD<-theta[1]
-	beta0<-theta[2]
-	alfa<-theta[3]
-	Rref<-theta[4]
+	if( is.matrix(theta) ){
+		kVPD<-theta[,1]
+		beta0<-theta[,2]
+		alfa<-theta[,3]
+		Rref<-theta[,4]
+	} else {
+		kVPD<-theta[1]
+		beta0<-theta[2]
+		alfa<-theta[3]
+		Rref<-theta[4]
+	}
 	Amax <- if( isTRUE(fixVPD) ) beta0 else {
 		ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
 	} 
@@ -135,40 +142,6 @@ recover()
 			)
 			#sTEMP$NEW_R_ref_DT <<- tmp
 
-			# create a dataframe with parameter estimates before and after
-			dss <- data.frame(T=ds[,TempVar.s], RbBefore=NA, E0Before=NA, RbAfter=NA, E0After=NA, wBefore=NA_integer_, wAfter=NA_integer_)
-			dss[resLRC$MeanH,2:3] <- dss[resLRC$MeanH,4:5] <- resLRC[,c("R_ref","E_0")]
-			dss[resLRC$MeanH,c("wBefore","wAfter")] <- 1L 
-			# 
-			#iLRC <- 2L
-			for( iLRC in 2:(nLRC-1L) ){
-				prevRec <- resLRC$MeanH[iLRC-1L]
-				currRec <- resLRC$MeanH[iLRC]
-				nextRec <- resLRC$MeanH[iLRC+1L]
-				#resLRC$MeanH[iLRC+(-1L:1L)]
-				# weights inverse to the distance in records
-				dss[(prevRec+1L):(currRec-1L),"wAfter"] <- 1/((currRec-prevRec-1L):1)  #...,3,2,1	 
-				dss[(currRec+1L):(nextRec-1L),"wBefore"] <- 1/(1:(nextRec-currRec-1))  #1,2,3,...	
-				dss[(prevRec+1L):(currRec-1L),4:5] <- dss[(currRec+1L):(nextRec-1L),2:3] <- resLRC[iLRC,c("R_ref","E_0"),drop=FALSE]
-			}
-			#set ends both before and after to edge parameters
-			nLRC <- nrow(resLRC)
-			dss[1:resLRC$MeanH[1],2:5] <- resLRC[1,c("R_ref","E_0"),drop=FALSE] 
-			dss[1:resLRC$MeanH[1],c("wBefore","wAfter")] <- 1L 
-			dss[resLRC$MeanH[nLRC]:nrow(dss),2:5] <- resLRC[nLRC,c("R_ref","E_0"),drop=FALSE]
-			dss[resLRC$MeanH[nLRC]:nrow(dss),c("wBefore","wAfter")] <- 1L 
-			# fill in first and last record to the before and after periods
-			dss[(resLRC$MeanH[1]+1L):(resLRC$MeanH[2]-1L),2:3] <- resLRC[1,c("R_ref","E_0"),drop=FALSE]	 
-			dss[(resLRC$MeanH[1]+1L):(resLRC$MeanH[2]-1L),"wBefore"] <- 1/(1:(diff(resLRC$MeanH[1:2])-1L))	 
-			dss[(resLRC$MeanH[nLRC-1L]+1L):(resLRC$MeanH[nLRC]-1L),4:5] <- resLRC[nLRC,c("R_ref","E_0"),drop=FALSE]	 
-			dss[(resLRC$MeanH[nLRC-1L]+1L):(resLRC$MeanH[nLRC]-1L),"wAfter"] <- 1/((diff(resLRC$MeanH[nLRC-(1:0)])-1L):1)
-			#
-			dss$REcoBefore <- fLloydTaylor(dss$RbBefore, dss$E0Before, dss$T, T_ref.n=273.15+15)
-			dss$REcoAfter  <- fLloydTaylor(dss$RbAfter,  dss$E0After,  dss$T, T_ref.n=273.15+15)
-			dss$REco <- (dss$REcoBefore*dss$wBefore + dss$REcoAfter*dss$wAfter) / (dss$wBefore + dss$wAfter)
-			plot(dss$REco, ylim=c(-2,1000), type="l")
-			lines(dss$REcoBefore, ylim=c(-2,1000), type="l", col="red")
-			lines(dss$REcoAfter, ylim=c(-2,1000), type="l", col="blue")
 			
 			
 			##sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp')
@@ -248,7 +221,12 @@ partGLEstimateTempSensInBounds <- function(
 
 partGLFitLRC <- function(
 		### optimization for three different initial parameter sets
-		NEEDay.V.n, NEENight.V.n, Rg.V.n, Temp_degK.V.n, VPD.V.n, E_0.V.n
+		NEEDay.V.n			##<< non-na numeric vector of day time fluxes
+		, NEENight.V.n		##<< non-na numeric vector of night time fluxes to estimate initial value of Rb
+		, Rg.V.n			##<< solar radion (numeric vector of length of NEEDay)
+		, Temp_C.V.n		##<< temperature in deg Celsius
+		, VPD.V.n			##<< VPD	
+		, E_0.n				##<< temperature sensitivity of respiration
 ){
 	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
 	theta.V.n<-matrix(NA, 3,4, dimnames=list(NULL,c("k","beta0", "alfa", "Rb" )))
@@ -272,9 +250,9 @@ partGLFitLRC <- function(
 					# TODO: think about uncertainties use NEE_fsd
 					#Fc_unc = abs(0.0001*NEEday.V.n)/abs(0.0001*NEEday.V.n),  
 					Fc_unc = abs(0.05*NEEDay.V.n[idx]),	  
-					Temp=Temp_degK.V.n[idx]-273.15,
+					Temp=Temp_C.V.n[idx],
 					VPD = VPD.V.n[idx],
-					E0 = E_0.V.n,
+					E0 = E_0.n,
 					#run = 'inverse',
 					isInverse = TRUE,
 					method="BFGS", hessian=FALSE)
@@ -287,9 +265,9 @@ partGLFitLRC <- function(
 					# TODO: think about uncertainties use NEE_fsd
 					#Fc_unc = abs(0.0001*NEEday.V.n)/abs(0.0001*NEEday.V.n),  
 					Fc_unc = abs(0.05*NEEDay.V.n[idx]),	  
-					Temp=Temp_degK.V.n[idx]-273.15,
+					Temp=Temp_C.V.n[idx],
 					VPD = VPD.V.n[idx],
-					E0 = E_0.V.n,
+					E0 = E_0.n,
 					#run = 'inverse',
 					isInverse = TRUE,
 					method="BFGS", hessian=FALSE)
@@ -313,7 +291,7 @@ partGLFitLRC <- function(
 							Fc_unc = abs(0.01*NEEDay.V.n),  
 							Temp=Temp_degK.V.n-273.15,
 							VPD = VPD.V.n,
-							E0 = E_0.V.n,
+							E0 = E_0.n,
 							fixVPD = FALSE,
 							#run = 'forward'
 							isInverse=FALSE
@@ -447,12 +425,12 @@ partGLFitLRCWindows=function(
 			,k=NA_real_, k_SD=NA_real_
 			,parms_out_range=NA_integer_)
 	lastGoodParameters.V.n <- rep(NA_real_, 5)		# indicate no good parameter set found yet
-	E_0.V.n <- NA
+	E_0.n <- NA
 	CountRegr.i <- 0L
 	for (iDay in seq_along(middleDays.V.i)) {   #not sure is correct to me should be 
 		#TEST: iDay<-1L
 		DayMiddle.i <- middleDays.V.i[iDay]
-		message(",",DayMiddle.i, appendLF = FALSE)
+		if( isVerbose ) message(",",DayMiddle.i, appendLF = FALSE)
 		DayStart.i <- DayMiddle.i-WinDays.i
 		DayEnd.i <- DayMiddle.i+WinDays.i
 		DayStart.Night.i <- DayMiddle.i-WinNight.i
@@ -494,15 +472,15 @@ partGLFitLRCWindows=function(
 			#}
 			#			
 			#resOptim <- sOptimSingleE0_Lev( NEEnight.V.n, Tempnight_degK.V.n)
-			resE0 <- partGLEstimateTempSensInBounds(NEENightInPeriod.V.n, TempInNightPeriod_degK.V.n, prevE0=E_0.V.n)
-			E_0.V.n <- resE0$E_0
+			resE0 <- partGLEstimateTempSensInBounds(NEENightInPeriod.V.n, TempInNightPeriod_degK.V.n, prevE0=E_0.n)
+			E_0.n <- resE0$E_0
 			#
 			#tryCatch({
-			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEENightInPeriod.V.n, RgInPeriod.V.n, TempInPeriod_degK.V.n, VPDInPeriod.V.n, E_0.V.n)
+			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEENightInPeriod.V.n, RgInPeriod.V.n, TempInPeriod.V.n, VPDInPeriod.V.n, E_0.n=E_0.n)
 			#if( DayMiddle.i >= 5 ) recover()
 			.tmp.plot <- function(){
 				plot( -NEEDayInPeriod.V.n ~ RgInPeriod.V.n )
-				tmp <- partRHLightResponse(resOpt$opt.parms.V, RgInPeriod.V.n, VPDInPeriod.V.n, NEEDayInPeriod.V.n, 1, TempInPeriod_degK.V.n-273.15,  E_0.V.n)
+				tmp <- partRHLightResponse(resOpt$opt.parms.V, RgInPeriod.V.n, VPDInPeriod.V.n, NEEDayInPeriod.V.n, 1, TempInPeriod.V.n,  E_0.n)
 				lines(  tmp ~ RgInPeriod.V.n )
 			}
 			#
@@ -516,7 +494,7 @@ partGLFitLRCWindows=function(
 			# twutz: avoid slow rbind, but write into existing data.frame
 			resDf[iDay, ] <- data.frame(
 					Start=DayStart.i, End=DayEnd.i, Num=length(NEEDayInPeriod.V.n), MeanH=MeanHour.i,
-					E_0=E_0.V.n, E_0_SD=resE0$E_0_SD,   
+					E_0=E_0.n, E_0_SD=resE0$E_0_SD,   
 					R_ref=resOptBounded$opt.parms.V[4], R_ref_SD=resOptBounded$se.parms.V[4],
 					a=resOptBounded$opt.parms.V[3], a_SD=resOptBounded$se.parms.V[3],
 					b=resOptBounded$opt.parms.V[2], b_SD=resOptBounded$se.parms.V[2],
@@ -540,11 +518,100 @@ partGLFitLRCWindows=function(
 			
 			
 	} # for i in days
+	if( isVerbose ) message("") # LineFeed
 	OPTRes.LRC <- resDf[!is.na(resDf$End),]
 #	#! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
 #	#TODO later: Flag for long distances between R_refs, especially if long distance in the beginning - twutz: may make use of resDf$End == NA 
 #	#TODO later: Provide some kind of uncertainty estimate from R_ref_SD
 }
+
+
+.partGPAssociateSpecialRows <- function(
+		### associate each row with the previous and next row from a subset of rows
+		iRowsSpecial	##<< ordered unique integer vector specifying the rows for which some special data is available
+		,nRec			##<< integer scalar of number of rows in the full data.frame 
+){
+	##details<< 
+	## When only for a subset of rows some more data available, this function creates
+	## columns that refer to the previous and next row that are in the subset.
+	## E.g. if some more data is available for rows 3 and 7, then rows 4:6 will indicate 
+	## \code{iBefore=3, iAfter=7}.
+	##value<< a dataframe with index of previous and next rows inside the subset
+	ans <- data.frame(
+			iRec=1:nRec			##<< the original row number
+			, iBefore=NA_integer_	##<< index of the previous subset row (position in subset)
+			, iAfter=NA_integer_	##<< index of the next subset row
+			, wBefore=NA_real_		##<< weight of the previous, inverse of the distance in records
+			, wAfter=NA_real_)		##<< weight of the next, inverse of the distance in records
+	##details<<
+	## The subset rows inside the subset refer both (before and after) to the same subset rows, with weights 1
+	nRecS <- length(iRowsSpecial)
+	if( 0 == nRecS ) stop("cannot associate special rows, if length of argument iRowsSpecial is zero.")
+	ans[iRowsSpecial,"iBefore"] <- ans[iRowsSpecial,"iAfter"] <- iRowsSpecial
+	ans[iRowsSpecial,c("wBefore","wAfter")] <- 1L
+	#iS <- 2L
+	for( iS in 1:nRecS ){
+		currRec <- iRowsSpecial[iS]
+		# before and after last special row will be treated afterwards
+		prevRec <- if( iS==1L) currRec else iRowsSpecial[iS-1L]
+		nextRec <- if( iS==nRecS) currRec else iRowsSpecial[iS+1L]
+		#c(prevRec,currRec,nextRec)
+		##details<<
+		## the weight is inversely proportional to the distance in rows
+		if( currRec-prevRec > 1L){
+			ans[(prevRec+1L):(currRec-1L),"iAfter"] <- currRec 
+			ans[(prevRec+1L):(currRec-1L),"wAfter"] <- 1/((currRec-prevRec-1L):1)  #...,3,2,1	 
+		}
+		if( nextRec-currRec > 1L){
+			ans[(currRec+1L):(nextRec-1L),"iBefore"] <- currRec
+			ans[(currRec+1L):(nextRec-1L),"wBefore"] <- 1/(1:(nextRec-currRec-1))  #1,2,3,...
+		} 	
+	}
+	##details<<
+	## the rows before the first subset row refer bot (after and before) to the first subset row with weights 1
+	## similar the rows after the last subset row refer to the last subset row
+	ans[1:iRowsSpecial[1],c("iBefore","iAfter")] <- iRowsSpecial[1L] 
+	ans[1:iRowsSpecial[1],c("wBefore","wAfter")] <- 1L 
+	ans[iRowsSpecial[nRecS]:nrow(ans),c("iBefore","iAfter")] <- iRowsSpecial[nRecS]
+	ans[iRowsSpecial[nRecS]:nrow(ans),c("wBefore","wAfter")] <- 1L
+	ans
+}
+
+
+partGPInterpolateFluxes <- function(
+		### Predict REco and GPP by Light respons curve for two neighboring parameter sets and interpolate
+		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
+		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
+		,Temp 	##<< Temp [degC] -> Temperature [degC] 
+		,resLRC	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+){
+	##details<< 
+	## \code{resLRC$MeanH} must denote the row for which the LRC parameters are representative
+	# create a dataframe with index of rows of estimates before and after and correponding weights
+	nLRC <- nrow(resLRC)
+	nRec <- length(Rg) 
+	Temp_Kelvin <- Temp+273.15
+	# for each original record merge parameters assicated with previous fit or next fit respectively
+	dsAssoc <- .partGPAssociateSpecialRows(resLRC$MeanH,nRec)	
+	dsBefore <- merge( data.frame(MeanH=dsAssoc$iBefore), resLRC[,c("R_ref","E_0","a","b","k")])
+	dsAfter <- merge( data.frame(MeanH=dsAssoc$iAfter), resLRC[,c("R_ref","E_0","a","b","k")])
+	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+		fLloydTaylor(dsi$R_ref, dsi$E_0, Temp_Kelvin, T_ref.n=273.15+15)
+	})
+	#dsi <- dsBefore
+	GPP2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+				theta <- as.matrix(dsi[,c("k","b","a","R_ref")])
+				tmp <- partRHLightResponse(theta, Rg, VPD, Temp=Temp, E0=dsi$E_0)	# TODO: negative?
+		})
+	# interpolate between previous and next fit
+	Reco <- (dsAssoc$wBefore*Reco2[[1]] + dsAssoc$wAfter*Reco2[[2]]) / (dsAssoc$wBefore+dsAssoc$wAfter)  
+	GPP <- (dsAssoc$wBefore*GPP2[[1]] + dsAssoc$wAfter*GPP2[[2]]) / (dsAssoc$wBefore+dsAssoc$wAfter)
+	ans <- data.frame(
+			Reco_DT = Reco
+			,GPP = GPP
+	)
+}
+
 
 
 

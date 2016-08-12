@@ -8,7 +8,7 @@ context("partGL")
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # 8 first days of may from IT-MBo.2005.txt
-ds <- structure(list(sDateTime = structure(c(1117584900, 1117586700, 
+dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700, 
 								1117588500, 1117590300, 1117592100, 1117593900, 1117595700, 1117597500, 
 								1117599300, 1117601100, 1117602900, 1117604700, 1117606500, 1117608300, 
 								1117610100, 1117611900, 1117613700, 1117615500, 1117617300, 1117619100, 
@@ -249,9 +249,23 @@ ds <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 		), row.names = 7249:7584, class = "data.frame")
 
 
-test_that("estimateLRCParms outputs are in accepted range",{
-			dss <- subset(ds, as.POSIXlt(ds$sDateTime)$mday %in% 1:8 
-							& !is.na(ds$FP_VARnight))
+resLRCEx1 <- structure(list(Start = c(1, 3), End = c(5, 7), Num = c(82L, 63L
+				), MeanH = c(162, 238), E_0 = c(185.617678757497, 185.617678757497
+				), E_0_SD = c(144.277836860512, 144.277836860512), R_ref = c(3.20466768712475, 
+						2.62127227871677), R_ref_SD = c(3.82346370836232, 3.14809139955078
+				), a = c(0.185051474696062, 0.164205399828651), a_SD = c(0.209518496410871, 
+						0.0827738480243852), b = c(26.3986276489297, 27.0923397859845
+				), b_SD = c(3.29039671084698, 4.9740306750336), k = c(0, 0), 
+				k_SD = c(0, 0), parms_out_range = c(0L, 0L)), .Names = c("Start", 
+				"End", "Num", "MeanH", "E_0", "E_0_SD", "R_ref", "R_ref_SD", 
+				"a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"), row.names = 1:2, class = "data.frame")
+
+
+
+
+test_that("estimating temperature sensitivity outputs are in accepted range",{
+			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 
+							& !is.na(dsNEE$FP_VARnight))
 			dss <- dss[ order(dss$NEW_FP_Temp), ]
 			res <- partGLEstimateTempSensInBounds(dss$FP_VARnight, dss$NEW_FP_Temp+273.15)
 			expect_true( res$E_0 >= 50 && res$E_0 < 400 )
@@ -261,35 +275,104 @@ test_that("estimateLRCParms outputs are in accepted range",{
 				lines( fLloydTaylor(p[1], p[2], dss$NEW_FP_Temp+273.15) ~ dss$NEW_FP_Temp)#
 			}
 		})
-					
+
+
+test_that("partGLFitLRC",{
+			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
+			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
+			dssNight <- subset(dss, !is.na(dsNEE$FP_VARnight) )
+			dssDay <- dssDay[ order(dssDay$Rg), ]
+			res <- partGLFitLRC(dssDay$FP_VARday, dssNight$FP_VARnight, dssDay$Rg, dssDay$NEW_FP_Temp, dssDay$NEW_FP_VPD, E_0.n=185)
+			.tmp.plot <- function(){
+				plot( -FP_VARday ~ Rg, dssDay)		# FP_VARnight negative?
+				p <- res$opt.parms.V
+				pred <- partRHLightResponse(p, dssDay$Rg, dssDay$NEW_FP_VPD, NA, NA, dssDay$NEW_FP_Temp, dssDay$NEW_FP_VPD, E0=185)
+				lines(pred  ~ dssDay$Rg)#
+			}
+		})
+
 		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
-			#yday <- as.POSIXlt(ds$sDateTime)$yday			
-			resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, Temp.V.n=ds$NEW_FP_Temp
-					, VPD.V.n=ds$NEW_FP_VPD	
-					, Rg.V.n=ds$Rg
+			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday			
+			resParms <- partGLFitLRCWindows(dsNEE$FP_VARnight, dsNEE$FP_VARday, Temp.V.n=dsNEE$NEW_FP_Temp
+					, VPD.V.n=dsNEE$NEW_FP_VPD	
+					, Rg.V.n=dsNEE$Rg
 					, nRecInDay=48L
 			)
 			# check the conditions of Lasslop10 Table A1
-			resValid <- na.omit(resParms)
+			resValid <- resParms[!is.na(resParms$R_ref),]
 			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
 			expect_true( all(resValid$R_Ref > 0) )
 			expect_true( all(resValid$a >= 0 & resValid$a < 0.22) )
 			expect_true( all(resValid$b >= 0 & resValid$b < 250) )
 			expect_true( all(ifelse(resValid$b > 100, resValid$b_SD < resValid$b, TRUE) ))
 			expect_true( all(resValid$k >= 0) )
+			sum( )
+			expect_true( !all(is.na(resValid$R_ref_SD)))
+			
 			.tmp.inspectYear <- function(){
 				# generated from inside sPartitionGL
-				dsYear <- localload("tmp/dsTestPartitioningLasslop10.RData") #ds
-				resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, Temp.V.n=ds$NEW_FP_Temp
-						, VPD.V.n=ds$NEW_FP_VPD	
-						, Rg.V.n=ds$Rg
+				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) }) 
+				resY <- partGLFitLRCWindows(dsYear$FP_VARnight, dsYear$FP_VARday, Temp.V.n=dsYear$NEW_FP_Temp
+						, VPD.V.n=dsYear$NEW_FP_VPD	
+						, Rg.V.n=dsYear$Rg
 						, nRecInDay=48L
 				)
-				head(resParms)				
-				plot( R_ref ~ Start, resParms)
-				plot( b ~ Start, resParms)
-				plot( E_0 ~ Start, resParms )
+				head(resY)				
+				plot( R_ref ~ Start, resY)
+				plot( b ~ Start, resY)
+				plot( E_0 ~ Start, resY )
 			}
 })
 
+test_that(".partGPAssociateSpecialRows",{
+			expect_error(
+					res <- .partGPAssociateSpecialRows(integer(0),9)
+			)
+			res <- .partGPAssociateSpecialRows(c(3,6,7,9),12)
+			# special rows
+			expect_equal( c(iRec=3,iBefore=3, iAfter=3, wBefore=1, wAfter=1), unlist(res[3,])) 
+			expect_equal( c(iRec=6,iBefore=6, iAfter=6, wBefore=1, wAfter=1), unlist(res[6,]))
+			# first rows and last rows
+			expect_equal( c(iRec=1,iBefore=3, iAfter=3, wBefore=1, wAfter=1), unlist(res[1,])) 
+			expect_equal( c(iRec=12,iBefore=9, iAfter=9, wBefore=1, wAfter=1), unlist(res[12,])) 
+			# weights after and before special row 6
+			expect_equal( rep(3,2), unlist(res[4:5,"iBefore"])) 
+			expect_equal( rep(6,2), unlist(res[4:5,"iAfter"])) 
+			expect_equal( 1/(1:2), unlist(res[4:5,"wBefore"])) 
+			expect_equal( 1/(2:1), unlist(res[4:5,"wAfter"])) 
+			# test last row is special
+			res <- .partGPAssociateSpecialRows(c(3,6,7,9),9)
+		})
+			
+			
+test_that("interpolate Fluxes",{
+			tmp <- partGPInterpolateFluxes( dsNEE$Rg, dsNEE$NEW_FP_VPD, dsNEE$NEW_FP_Temp, resLRCEx1)
+			
+			dss[230:260,]
+			
+			# check the conditions of Lasslop10 Table A1
+			resValid <- resParms[!is.na(resParms$R_ref),]
+			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
+			expect_true( all(resValid$R_Ref > 0) )
+			expect_true( all(resValid$a >= 0 & resValid$a < 0.22) )
+			expect_true( all(resValid$b >= 0 & resValid$b < 250) )
+			expect_true( all(ifelse(resValid$b > 100, resValid$b_SD < resValid$b, TRUE) ))
+			expect_true( all(resValid$k >= 0) )
+			sum( )
+			expect_true( !all(is.na(resValid$R_ref_SD)))
+			
+			.tmp.inspectYear <- function(){
+				# generated from inside sPartitionGL
+				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) }) 
+				resY <- partGLFitLRCWindows(dsYear$FP_VARnight, dsYear$FP_VARday, Temp.V.n=dsYear$NEW_FP_Temp
+						, VPD.V.n=dsYear$NEW_FP_VPD	
+						, Rg.V.n=dsYear$Rg
+						, nRecInDay=48L
+				)
+				head(resY)				
+				plot( R_ref ~ Start, resY)
+				plot( b ~ Start, resY)
+				plot( E_0 ~ Start, resY )
+			}
+		})
