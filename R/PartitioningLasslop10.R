@@ -4,46 +4,36 @@
 
 fRHRF_VPDRdFit <- function(
 		###Rectungular Hyperbolic Light Response function: (Xu & Baldocchi, 2004; Falge et al., 2001; Lasslop et al., 2010)
-		#with fixes E0 for the estimation of Rd
-		#VPD effect included according to Lasslop et al., 2010
-		theta, #theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb))
-		Rg,   #ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
-		VPD, #VPD [numeric] -> Vapor Pressure Deficit [hPa]
-		Fc, #Fc [numeric] -> GPP or NEE time series [umolCO2/m2/s]
-		Fc_unc, #Fc_unc [numeric] -> Uncertainty of fluxes [umolCO2/m2/s]
-		Temp, #Temp [degC] -> Temperature [degC] 
-		E0, #Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
-		VPD0 = 10, #VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		fixVPD = FALSE,   #fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
-		run = 'forward'  #run [character] -> 'forward' or 'inverse' if run the model forward or in inverse mode for optimization  
+		theta, 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb))
+		Rg,   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
+		VPD, 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
+		Fc, 	##<< Fc [numeric] -> GPP or NEE time series [umolCO2/m2/s], required for inverse run, else may set to NA
+		Fc_unc, ##<< Fc_unc [numeric] -> Uncertainty of fluxes [umolCO2/m2/s]
+		Temp, 	##<< Temp [degC] -> Temperature [degC] 
+		E0, 	##<< Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
+		VPD0 = 10, 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
+		fixVPD = FALSE,   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		#run = 'forward'   	##<< run [character] -> 'forward' or 'inverse' if run the model forward or in inverse mode for optimization #twutz: string comparison can be slow, avoid in cost function  
+		isInverse = FALSE  	##<< if TRUE, return the residual sum of squares instead of prediction  
 ) {
-	
+	##details<<
+	## with fixes E0 for the estimation of Rd
+	## VPD effect included according to Lasslop et al., 2010
 	kVPD<-theta[1]
 	beta0<-theta[2]
 	alfa<-theta[3]
 	Rref<-theta[4]
-	
-	#Conerting NEE in NEP
-	NEP<-(-1)*Fc
-	
-	if (fixVPD == FALSE){
-		ifelse(VPD > VPD0, Amax<-beta0*exp(-kVPD*(VPD-VPD0)), Amax<-beta0)
-	}  
-	
-	if (fixVPD == TRUE){
-		Amax<-beta0
+	Amax <- if( isTRUE(fixVPD) ) beta0 else {
+		ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
 	} 
-	
 	Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
-	
 	NEP_mod<-(Amax*alfa*Rg)/(alfa*Rg+Amax) - Reco
-	
-	RSS<-sum(((NEP_mod-NEP)/Fc_unc)^2)
-	#print(RSS)
-	
-	if (run == 'inverse') return(RSS)
-	if (run == 'forward') return(NEP_mod)
-	
+	ans <- if(isInverse){
+		#Conerting NEE in NEP
+		NEP<-(-1)*Fc
+		RSS<-sum(((NEP_mod-NEP)/Fc_unc)^2)
+	} else NEP_mod
+	ans
 }
 
 .fRHRF_NoVPDRdFit <- function(
@@ -102,7 +92,7 @@ sEddyProc$methods(
 			fCheckColPlausibility(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sGLFluxPartition')
 			Var.V.n <- fSetQF(ds, FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sGLFluxPartition')
 			
-			message('Start flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
+			message('Start daytime flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
 			
 			# Calculate potential radiation
 			#! New code: Local time and equation of time accounted for in potential radiation calculation
@@ -135,17 +125,60 @@ sEddyProc$methods(
 			
 			#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 			
-			ds <- cbind(sDATA,sTEMP)	# with new columns in sTEMP
 			# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
-			tmp <- estimateLRCParms(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$Tair_f
-					, VPDVar.V.n=ds$VPD	# _orig #_f
-					, RgVar.V.n=ds$Rg
+recover()
+			resLRC <- tmp <- estimateLRCParms(sTEMP$FP_VARnight, sTEMP$FP_VARday, TempVar.V.n=sTEMP$NEW_FP_Temp
+					, VPDVar.V.n=sTEMP$NEW_FP_VPD
+					, RgVar.V.n=ds[[RadVar.s]]
 					, CallFunction.s='sGLFluxPartition'
+					, nRecInDay=sINFO$DTS
 			)
-			sTEMP$NEW_R_ref_DT <<- tmp
+			#sTEMP$NEW_R_ref_DT <<- tmp
+
+			# create a dataframe with parameter estimates before and after
+			dss <- data.frame(T=ds[,TempVar.s], RbBefore=NA, E0Before=NA, RbAfter=NA, E0After=NA, wBefore=NA_integer_, wAfter=NA_integer_)
+			dss[resLRC$MeanH,2:3] <- dss[resLRC$MeanH,4:5] <- resLRC[,c("R_ref","E_0")]
+			dss[resLRC$MeanH,c("wBefore","wAfter")] <- 1L 
+			# 
+			#iLRC <- 2L
+			for( iLRC in 2:(nLRC-1L) ){
+				prevRec <- resLRC$MeanH[iLRC-1L]
+				currRec <- resLRC$MeanH[iLRC]
+				nextRec <- resLRC$MeanH[iLRC+1L]
+				#resLRC$MeanH[iLRC+(-1L:1L)]
+				# weights inverse to the distance in records
+				dss[(prevRec+1L):(currRec-1L),"wAfter"] <- 1/((currRec-prevRec-1L):1)  #...,3,2,1	 
+				dss[(currRec+1L):(nextRec-1L),"wBefore"] <- 1/(1:(nextRec-currRec-1))  #1,2,3,...	
+				dss[(prevRec+1L):(currRec-1L),4:5] <- dss[(currRec+1L):(nextRec-1L),2:3] <- resLRC[iLRC,c("R_ref","E_0"),drop=FALSE]
+			}
+			#set ends both before and after to edge parameters
+			nLRC <- nrow(resLRC)
+			dss[1:resLRC$MeanH[1],2:5] <- resLRC[1,c("R_ref","E_0"),drop=FALSE] 
+			dss[1:resLRC$MeanH[1],c("wBefore","wAfter")] <- 1L 
+			dss[resLRC$MeanH[nLRC]:nrow(dss),2:5] <- resLRC[nLRC,c("R_ref","E_0"),drop=FALSE]
+			dss[resLRC$MeanH[nLRC]:nrow(dss),c("wBefore","wAfter")] <- 1L 
+			# fill in first and last record to the before and after periods
+			dss[(resLRC$MeanH[1]+1L):(resLRC$MeanH[2]-1L),2:3] <- resLRC[1,c("R_ref","E_0"),drop=FALSE]	 
+			dss[(resLRC$MeanH[1]+1L):(resLRC$MeanH[2]-1L),"wBefore"] <- 1/(1:(diff(resLRC$MeanH[1:2])-1L))	 
+			dss[(resLRC$MeanH[nLRC-1L]+1L):(resLRC$MeanH[nLRC]-1L),4:5] <- resLRC[nLRC,c("R_ref","E_0"),drop=FALSE]	 
+			dss[(resLRC$MeanH[nLRC-1L]+1L):(resLRC$MeanH[nLRC]-1L),"wAfter"] <- 1/((diff(resLRC$MeanH[nLRC-(1:0)])-1L):1)
+			#
+			dss$REcoBefore <- fLloydTaylor(dss$RbBefore, dss$E0Before, dss$T, T_ref.n=273.15+15)
+			dss$REcoAfter  <- fLloydTaylor(dss$RbAfter,  dss$E0After,  dss$T, T_ref.n=273.15+15)
+			dss$REco <- (dss$REcoBefore*dss$wBefore + dss$REcoAfter*dss$wAfter) / (dss$wBefore + dss$wAfter)
+			plot(dss$REco, ylim=c(-2,1000), type="l")
+			lines(dss$REcoBefore, ylim=c(-2,1000), type="l", col="red")
+			lines(dss$REcoAfter, ylim=c(-2,1000), type="l", col="blue")
+			
+			
+			##sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp')
+			sTEMP$NEW_E_0 <<- tmp <- .self$sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sGLFluxPartition', debug.l=debug.l)
+			#if( sum(sTEMP$NEW_E_0==-111) != 0 )
+			#  return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
+			#E_0.V.n <- subset(sTEMP[,E_0.s], Subset.b) # (Constant value)
 			
 			# Calculate the ecosystem respiration Reco
-			sTEMP$Reco_DT <<- fLloydTaylor(sTEMP$NEW_R_ref_DT, sTEMP$NEW_E_0, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=273.15+15)
+			sTEMP$Reco_DT <<- tmp <- fLloydTaylor(sTEMP$NEW_R_ref_DT, sTEMP$NEW_E_0, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=273.15+15)
 			attr(sTEMP$Reco_DT, 'varnames') <<- 'Reco_DT'
 			attr(sTEMP$Reco_DT, 'units') <<- attr(Var.V.n, 'units')
 			
@@ -184,19 +217,26 @@ sEddyProc$methods(
 
 
 estimateTempSensLasslop10 <- function(
-		### Estimate temperature sensitivity E_0 of Reco, and apply bounds
+		### Estimate temperature sensitivity E_0 of Reco, and apply bounds or previous estimate
 		REco.V.n	##<< numeric vector: night time NEE, i.e. ecosytem respiration
 		,temperatureKelvin.V.n		##<< temperature in K
+		,prevE0	= NA				##<< numeric scalar: the previous guess of Temperature Sensitivity 
 ){
 	NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
 			data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
-			,control=nls.lm.control(maxiter = 20))        
-	E_0.V.n <- coef(summary(NLS.L))['E_0',1]
+			,control=nls.lm.control(maxiter = 20))
+	E_0Bounded.V.n <- E_0.V.n <- coef(summary(NLS.L))['E_0',1]
 	E_0_SD.V.n <- coef(summary(NLS.L))['E_0',2]
-	E_0Bounded.V.n <- min(400,max(50,E_0.V.n))
+	if( (E_0.V.n < 50) || (E_0.V.n > 400)){
+		E_0Bounded.V.n <- if( is.na(prevE0) ){
+			 min(400,max(50,E_0.V.n))
+		} else {
+			prevE0
+		}
+	}
 	##value<< list with entries
 	list(
-			E_0.V.n=E_0.V.n			##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
+			E_0.V.n=E_0Bounded.V.n			##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
 			,E_0_SD.V.n=E_0_SD.V.n	##<< numeric scalar of standard deviation of E0
 		)
 }
@@ -231,7 +271,8 @@ optLRC3Lasslop10 <- function(
 					Temp=Temp_degK.V.n[idx]-273.15,
 					VPD = VPD.V.n[idx],
 					E0 = E_0.V.n,
-					run = 'inverse',
+					#run = 'inverse',
+					isInverse = TRUE,
 					method="BFGS", hessian=FALSE)
 			resOptim$par=c(0,resOptim$par)	# add VPD parameter again
 			resOptim
@@ -245,7 +286,8 @@ optLRC3Lasslop10 <- function(
 					Temp=Temp_degK.V.n[idx]-273.15,
 					VPD = VPD.V.n[idx],
 					E0 = E_0.V.n,
-					run = 'inverse',
+					#run = 'inverse',
+					isInverse = TRUE,
 					method="BFGS", hessian=FALSE)
 		}
 	}
@@ -267,7 +309,9 @@ optLRC3Lasslop10 <- function(
 							VPD = VPD.V.n,
 							E0 = E_0.V.n,
 							fixVPD = FALSE,
-							run = 'forward'), col="Red")
+							#run = 'forward'
+							isInverse=FALSE
+							), col="Red")
 		}
 	}
 	opt.parms.V<-opt[[iBest <- which.min(optSSE)]]		
@@ -326,13 +370,13 @@ setParameterBoundsLasslop10 <- function(
 		opt.parms.V[3]<-last_good[3]	
 		isGoodParameterSet <- FALSE
 	}
-	if( !isGoodParameterSet){
-		se.parms.V[]<-NA                  
-	}
-	#whole par set not used, if beta > 250 or rb < 0 
-	if ((opt.parms.V[2] > 250 | opt.parms.V[4] < 0)){ 
+	#whole par set not used, if beta > 250 or (beta > 100 and sdBeta >= beta) or rb < 0 
+	if ((opt.parms.V[2] > 250 | (opt.parms.V[2] > 100 && se.parms.V[2] >= opt.parms.V[2] ) | opt.parms.V[4] < 0  )){ 
 		opt.parms.V[]<-NA
 		isGoodParameterSet <- FALSE
+	}
+	if( !isGoodParameterSet){
+		se.parms.V[]<-NA                  
 	}
 	##value<< list with entries
 	list(
@@ -345,7 +389,7 @@ setParameterBoundsLasslop10 <- function(
 
 estimateLRCParms=function(
 		### estimateLRCParms - Estimation of the parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k)
-		NEENight.V.n        ##<< numeric vector of (original) nighttime ecosystem carbon flux, i.e. respiration
+		NEENight.V.n       ##<< numeric vector of (original) nighttime ecosystem carbon flux, i.e. respiration
 		,NEEDay.V.n         ##<< numeric vector of (original) daytime ecosystem carbon flux, i.e. Net Ecosystem Exchange
 		,TempVar.V.n        ##<< numeric vector of (original) air or soil temperature (degC)
 		,VPDVar.V.n         ##<< numeric vector of (original) Vapor Pressure Deficit VPD (hPa)
@@ -355,6 +399,7 @@ estimateLRCParms=function(
 		,DayStep.i=2        ##<< Window step for \code{\link{fHLRC()}} regression in days#Verify IF CORRECT
 		,CallFunction.s=''  ##<< Name of function called from
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
+		,nRecInDay=48L		##<< number of records within one day (for half-hourly data its 48)
 ){
 	##author<<
 	## MM, TW
@@ -365,55 +410,56 @@ estimateLRCParms=function(
 	LMRes.F <- data.frame(NULL) #Results of linear regression
 	MinData.n <- 2 # Minimum number of data points for regression #CHECK IN GITTA'S CODE MINIMUM NUMBERS OF DAYS
 	# Loop regression periods
-	DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
-	CountRegr.i <- 0L
+	#DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS #twutz: do not rely on sINFO here, also a -1 is missing 
+	##details<<
+	## All the vectors must have the same length and consist of entire days, with each day having the same number of records
+	nRec <- length(NEENight.V.n) 
+	DayCounter.V.i <- (c(1:nRec)-1L) %/% nRecInDay 
 	#DayMiddle.i <- WinDays.i+1
 	# setup a data.frame for the results
 	middleDays.V.i <- seq(WinDays.i+1, max(DayCounter.V.i), DayStep.i)
-	resDf <- data.frame(Start=middleDays.V.i, End=NA_integer_, Num=NA_integer_, MeanH=NA_real_,
-			E_0=NA_real_, E_0_SD=NA_real_,   
-			R_ref=NA_real_, R_ref_SD=NA_real_,
-			a=NA_real_, a_SD=NA_real_,
-			b=NA_real_, b_SD=NA_real_,
-			k=NA_real_, k_SD=NA_real_,
-			parms_out_range=NA_integer_)
+	##value<< data.frame with columns
+	resDf <- data.frame(
+			Start=middleDays.V.i	##<< the starting day of the window
+			, End=NA_integer_		##<< the endding day of the window  
+			, Num=NA_integer_		##<< the number of records flux records in the window
+			, MeanH=NA_real_		##<< the record for which the parameters have been estimated
+			, E_0=NA_real_			##<< temperature sensitivty
+			, E_0_SD=NA_real_		##<< standard deviation of temperature sensitivity
+			, R_ref=NA_real_		##<< respiration at reference temperature
+			, R_ref_SD=NA_real_		##< standard deviation of reference temperature
+			,a=NA_real_, a_SD=NA_real_
+			,b=NA_real_, b_SD=NA_real_
+			,k=NA_real_, k_SD=NA_real_
+			,parms_out_range=NA_integer_)
+	lastGoodParameters.V.n <- rep(NA_real_, 5)		# indicate no good parameter set found yet
+	E_0.V.n <- NA
+	CountRegr.i <- 0L
 	for (iDay in seq_along(middleDays.V.i)) {   #not sure is correct to me should be 
-		#TEST: DayMiddle.i <- 8
+		#TEST: iDay<-1L
 		DayMiddle.i <- middleDays.V.i[iDay]
-		message(",",DayMiddle.i)
+		message(",",DayMiddle.i, appendLF = FALSE)
 		DayStart.i <- DayMiddle.i-WinDays.i
 		DayEnd.i <- DayMiddle.i+WinDays.i
-		
 		DayStart.Night.i <- DayMiddle.i-WinNight.i
 		DayEnd.Night.i <- DayMiddle.i+WinNight.i
-		
 		#! Window size of 2 days corresponds to a full window length of 5 days, non-congruent with PV-Wave code of 4 days, in paper not mentioned
 		#! New code: Last window has minimum of window size
-		
 		Subset.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i & 
 				!is.na(NEEDay.V.n) & !is.na(TempVar.V.n) & !is.na(VPDVar.V.n)
 		Subset.Night.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
 				!is.na(NEENight.V.n)
-		
-		MeanHour.i <- round(mean(which(Subset.b))) # Weighted middle of the time period #twutz: ?the rownumber in the entire dataset representing the middle 
+		MeanHour.i <- round(mean(which(Subset.b))) # the rownumber in the entire dataset representing the center of the period 
 		NEENightInPeriod.V.n <- subset(NEENight.V.n, Subset.Night.b)
 		NEEDayInPeriod.V.n <- subset(NEEDay.V.n, Subset.b)
-		
+		#
 		Temp.V.n <- subset(TempVar.V.n, Subset.b)
 		Tempnight.V.n <- subset(TempVar.V.n, Subset.Night.b)
 		Temp_degK.V.n <- fConvertCtoK(Temp.V.n)
 		Tempnight_degK.V.n <- fConvertCtoK(Tempnight.V.n)
-		
 		VPD.V.n <- subset(VPDVar.V.n, Subset.b)
 		Rg.V.n  <- subset(RgVar.V.n, Subset.b)
-		
-		#sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp')
-		#sTEMP$NEW_E_0 <<- sRegrE0fromShortTerm('FP_VARnight', 'NEW_FP_Temp', CallFunction.s='sGLFluxPartition', debug.l=debug.l)
-		#if( sum(sTEMP$NEW_E_0==-111) != 0 )
-		#  return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
-		#E_0.V.n <- subset(sTEMP[,E_0.s], Subset.b) # (Constant value)
-		
-		lastGoodParameters.V.n <- NA_real_		# indicate no good parameter set found yet
+		#		
 		if( length(NEEDayInPeriod.V.n) > MinData.n ) {
 			CountRegr.i <- CountRegr.i+1L
 			#Estimation of model parameters
@@ -432,17 +478,23 @@ estimateLRCParms=function(
 			#  LMRes.F <- rbind(LMRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), MeanH=MeanHour.i, 
 			#                                  R_ref=NA, R_ref_SD=NA))
 			#}
-			
+			#			
 			#resOptim <- sOptimSingleE0_Lev( NEEnight.V.n, Tempnight_degK.V.n)
-			resE0 <- estimateTempSensLasslop10(NEENightInPeriod.V.n, Tempnight_degK.V.n)
+			resE0 <- estimateTempSensLasslop10(NEENightInPeriod.V.n, Tempnight_degK.V.n, prevE0=E_0.V.n)
 			E_0.V.n <- resE0$E_0.V.n
-			
+			#
 			#tryCatch({
 			resOpt <- resOpt0 <- optLRC3Lasslop10(NEEDayInPeriod.V.n, NEENight.V.n, Rg.V.n, Temp_degK.V.n, VPD.V.n, E_0.V.n)
+#if( DayMiddle.i >= 5 ) recover()
+.tmp.f <- function(){
+	plot( -NEEDayInPeriod.V.n ~ Rg.V.n )
+	tmp <- fRHRF_VPDRdFit(resOpt$opt.parms.V, Rg.V.n, VPD.V.n, NEEDayInPeriod.V.n, 1, Temp_degK.V.n-273.15,  E_0.V.n)
+	lines(  tmp ~ Rg.V.n )
+}
 			#
 			#isFirstDay <- (DayMiddle.i == (WinDays.i+1))
 			# on first day, set last good parameter set to the initial guess from before the optimization
-			if( is.na(lastGoodParameters.V.n) ) lastGoodParameters.V.n <- resOpt$initialGuess.parms.V.n	
+			if( is.na(lastGoodParameters.V.n[1]) ) lastGoodParameters.V.n <- resOpt$initialGuess.parms.V.n	
 			resOptBounded <- setParameterBoundsLasslop10( resOpt, lastGoodParameters.V.n)
 			if( resOptBounded$isGoodParameterSet )
 				lastGoodParameters.V.n <- resOptBounded$opt.parms.V
@@ -451,10 +503,10 @@ estimateLRCParms=function(
 			resDf[iDay, ] <- data.frame(
 					Start=DayStart.i, End=DayEnd.i, Num=length(NEEDayInPeriod.V.n), MeanH=MeanHour.i,
 					E_0=E_0.V.n, E_0_SD=resE0$E_0_SD.V.n,   
-					R_ref=resOpt$opt.parms.V[4], R_ref_SD=resOpt$se.parms.V[4],
-					a=resOpt$opt.parms.V[3], a_SD=resOpt$se.parms.V[3],
-					b=resOpt$opt.parms.V[2], b_SD=resOpt$se.parms.V[2],
-					k=resOpt$opt.parms.V[1], k_SD=resOpt$se.parms.V[1],
+					R_ref=resOptBounded$opt.parms.V[4], R_ref_SD=resOptBounded$se.parms.V[4],
+					a=resOptBounded$opt.parms.V[3], a_SD=resOptBounded$se.parms.V[3],
+					b=resOptBounded$opt.parms.V[2], b_SD=resOptBounded$se.parms.V[2],
+					k=resOptBounded$opt.parms.V[1], k_SD=resOptBounded$se.parms.V[1],
 					parms_out_range=as.integer(!resOptBounded$isGoodParameterSet))
 		} # if enough records
 		# remove those rows where there was not enough data
@@ -475,20 +527,9 @@ estimateLRCParms=function(
 			
 	} # for i in days
 	OPTRes.LRC <- resDf[!is.na(resDf$End),]
-	#! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
-	#TODO later: Flag for long distances between R_refs, especially if long distance in the beginning - twutz: may make use of resDf$End == NA 
-	#TODO later: Provide some kind of uncertainty estimate from R_ref_SD
-	##TO BE MODIFIED
-	# Interpolate R_ref periods linearly between MeanHour.i and keep constant at beginning/end
-	Rref.V.n <- rep(NA, length(NEENight.V.n))
-	Rref.V.n[OPTRes.LRC$MeanH] <- OPTRes.LRC$R_ref
-	Rref.V.n <- tmp <- fInterpolateGaps(Rref.V.n)
-	attr(Rref.V.n, 'varnames') <- 'R_ref'
-	attr(Rref.V.n, 'units') <- attr(NEENight.V.n, 'units')
-	if( isVerbose) message('Estimated reference respiration R_ref for ', sum(!is.na(OPTRes.LRC$R_ref)), ' periods.')
-	Rref.V.n
-	##value<< 
-	## numeric vector with reference respiration (R_ref, flux units)
+#	#! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
+#	#TODO later: Flag for long distances between R_refs, especially if long distance in the beginning - twutz: may make use of resDf$End == NA 
+#	#TODO later: Provide some kind of uncertainty estimate from R_ref_SD
 }
 
 

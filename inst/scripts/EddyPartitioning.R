@@ -220,8 +220,9 @@ sEddyProc$methods(
     #
     # Check if specified columns are numeric
     SubCallFunc.s <- paste(CallFunction.s,'sRegrE0fromShortTerm', sep=':::')
-    fCheckColNames(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
-    fCheckColNum(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
+	ds <- cbind(sDATA,sTEMP)
+    fCheckColNames(ds, c(NightFlux.s, TempVar.s), SubCallFunc.s)
+    fCheckColNum(ds, c(NightFlux.s, TempVar.s), SubCallFunc.s)
     #
     ##details<< \describe{ \item{Debugging control}{
     ## When supplying a finite scalar value \code{debug.l$fixedE0}, then this value 
@@ -232,8 +233,8 @@ sEddyProc$methods(
       message('Using prescribed temperature sensitivity E_0 of: ', format(E_0_trim.n, digits=5), '.')
     }else{
       # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
-      NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
-      TempVar.V.n <- cbind(sDATA,sTEMP)[,TempVar.s]
+      NightFlux.V.n <- ds[,NightFlux.s]
+      TempVar.V.n <- ds[,TempVar.s]
       DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
       #
       # Check for validity of E_0 regression results
@@ -295,16 +296,17 @@ sEddyProc$methods(
     
     # Check if specified columns are numeric
     SubCallFunc.s <- paste(CallFunction.s,'sRegrRref', sep=':::')
-    fCheckColNames(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
-    fCheckColNum(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
+	ds <- cbind(sDATA,sTEMP)
+    fCheckColNames(ds, c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
+    fCheckColNum(ds, c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
     
     # Regression settings
     LMRes.F <- data.frame(NULL) #Results of linear regression
     MinData.n <- 2 # Minimum number of data points for regression
     
     # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
-    NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
-    TempVar.V.n <- cbind(sDATA,sTEMP)[,TempVar.s]
+    NightFlux.V.n <- ds[,NightFlux.s]
+    TempVar.V.n <- ds[,TempVar.s]
     
     # Loop regression periods
     DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
@@ -423,12 +425,12 @@ sEddyProc$methods(
       FluxVar.s <- paste('NEE_', Suffix.s, '_f', sep='')
       QFFluxVar.s <- paste('NEE_', Suffix.s, '_fqc', sep='')
     }
-    
+    ds <- cbind(sDATA,sTEMP)
     # Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-    fCheckColNames(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
-    fCheckColNum(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
-    fCheckColPlausibility(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
-    Var.V.n <- fSetQF(cbind(sDATA,sTEMP), FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sMRFluxPartition')
+    fCheckColNames(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
+    fCheckColNum(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
+    fCheckColPlausibility(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
+    Var.V.n <- fSetQF(ds, FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sMRFluxPartition')
     
     message('Start flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
     
@@ -456,7 +458,7 @@ sEddyProc$methods(
     #! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
     
     # Apply quality flag for temperature
-    sTEMP$FP_Temp_NEW <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
+    sTEMP$FP_Temp_NEW <<- fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
     
     # Estimate E_0 and R_ref (results are saved in sTEMP)
 	# twutz1508: changed to do.call in order to allow passing further parameters when calling sMRFluxPartition
@@ -470,13 +472,13 @@ sEddyProc$methods(
     sTEMP$R_ref_NEW <<- sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition')
     
     # Calculate the ecosystem respiration Reco
-    sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=T_ref.n)
+    sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(ds[,TempVar.s]), T_ref.n=T_ref.n)
     attr(sTEMP$Reco_NEW, 'varnames') <<- 'Reco'
     attr(sTEMP$Reco_NEW, 'units') <<- attr(Var.V.n, 'units')
     
     # Calculate the gross primary production GPP_f
-    sTEMP$GPP_NEW_f <<- -cbind(sDATA,sTEMP)[,FluxVar.s] + sTEMP$Reco_NEW
-    sTEMP$GPP_NEW_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
+    sTEMP$GPP_NEW_f <<- -ds[,FluxVar.s] + sTEMP$Reco_NEW
+    sTEMP$GPP_NEW_fqc <<- ds[,QFFluxVar.s]
     #! New code: MDS gap filling information are not copied from NEE_fmet and NEE_fwin to GPP_fmet and GPP_fwin
     #           (since not known within this pure partitioning function)
     attr(sTEMP$GPP_NEW_f, 'varnames') <<- 'GPP_f'
