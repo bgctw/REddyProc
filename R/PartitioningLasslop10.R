@@ -2,7 +2,7 @@
 # renamve functions
 # look with Mirco at why testcases not producing good results.
 
-fRHRF_VPDRdFit <- function(
+partRHLightResponse <- function(
 		###Rectungular Hyperbolic Light Response function: (Xu & Baldocchi, 2004; Falge et al., 2001; Lasslop et al., 2010)
 		theta, 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb))
 		Rg,   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
@@ -36,14 +36,14 @@ fRHRF_VPDRdFit <- function(
 	ans
 }
 
-.fRHRF_NoVPDRdFit <- function(
+.partRHLightResponse_NoVPD <- function(
 		### calling \code{\link{fRHRF_VPDRdFit}} with a parameter vector that omits first component, which is assumed zero 
 		theta	##<< parameter vector with first component omitted
 		,...	##<< further parameters to \code{\link{fRHRF_VPDRdFit}}
 ){
 	##details<<
 	## necessary for fitting the subset of parameters
-	fRHRF_VPDRdFit( c(0,theta), ...,fixVPD=TRUE)
+	partRHLightResponse( c(0,theta), ...,fixVPD=TRUE)
 }
 
 
@@ -127,7 +127,7 @@ sEddyProc$methods(
 			
 			# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
 recover()
-			resLRC <- tmp <- estimateLRCParms(sTEMP$FP_VARnight, sTEMP$FP_VARday, TempVar.V.n=sTEMP$NEW_FP_Temp
+			resLRC <- tmp <- partGLFitLRCWindows(sTEMP$FP_VARnight, sTEMP$FP_VARday, TempVar.V.n=sTEMP$NEW_FP_Temp
 					, VPDVar.V.n=sTEMP$NEW_FP_VPD
 					, RgVar.V.n=ds[[RadVar.s]]
 					, CallFunction.s='sGLFluxPartition'
@@ -216,7 +216,7 @@ recover()
 )
 
 
-estimateTempSensLasslop10 <- function(
+partGLEstimateTempSensInBounds <- function(
 		### Estimate temperature sensitivity E_0 of Reco, and apply bounds or previous estimate
 		REco.V.n	##<< numeric vector: night time NEE, i.e. ecosytem respiration
 		,temperatureKelvin.V.n		##<< temperature in K
@@ -241,7 +241,7 @@ estimateTempSensLasslop10 <- function(
 		)
 }
 
-optLRC3Lasslop10 <- function(
+partGLFitLRC <- function(
 		### optimization for three different initial parameter sets
 		NEEDay.V.n, NEENight.V.n, Rg.V.n, Temp_degK.V.n, VPD.V.n, E_0.V.n
 ){
@@ -262,7 +262,7 @@ optLRC3Lasslop10 <- function(
 		# one fit of the light response curve, as function to avoid duplication
 		# TODO: change to nlsLM
 		if( isUsingFixedVPD){
-			resOptim <- optim(theta[-1], .fRHRF_NoVPDRdFit, 
+			resOptim <- optim(theta[-1], .partRHLightResponse_NoVPD, 
 					Rg = Rg.V.n[idx], 
 					Fc = NEEDay.V.n[idx], 
 					# TODO: think about uncertainties use NEE_fsd
@@ -277,7 +277,7 @@ optLRC3Lasslop10 <- function(
 			resOptim$par=c(0,resOptim$par)	# add VPD parameter again
 			resOptim
 		} else {
-			optim(theta, fRHRF_VPDRdFit, 
+			optim(theta, partRHLightResponse, 
 					Rg = Rg.V.n[idx], 
 					Fc = NEEDay.V.n[idx], 
 					# TODO: think about uncertainties use NEE_fsd
@@ -301,7 +301,7 @@ optLRC3Lasslop10 <- function(
 		optSSE[iparms] <- resOpt$value 
 		.tmp.plot <- function(){
 			plot(Rg.V.n,-1*NEEDay.V.n)
-			points(Rg.V.n, fRHRF_VPDRdFit(theta=resOpt$par,
+			points(Rg.V.n, partRHLightResponse(theta=resOpt$par,
 							Rg = Rg.V.n, 
 							Fc = NEEDay.V.n, 
 							Fc_unc = abs(0.01*NEEDay.V.n),  
@@ -339,7 +339,7 @@ optLRC3Lasslop10 <- function(
 	)
 }
 
-setParameterBoundsLasslop10 <- function(
+partGLBoundParameters <- function(
 		### Check if parameters are in the range
 		resOpt			##<< list with first entry vector of parameters, second entry its uncertainty
 		, last_good		##<< vector of windows most recent good fit, make sure to set it to reasonable values, e.g. initial guess before optimiztion
@@ -387,7 +387,7 @@ setParameterBoundsLasslop10 <- function(
 }
 
 
-estimateLRCParms=function(
+partGLFitLRCWindows=function(
 		### estimateLRCParms - Estimation of the parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k)
 		NEENight.V.n       ##<< numeric vector of (original) nighttime ecosystem carbon flux, i.e. respiration
 		,NEEDay.V.n         ##<< numeric vector of (original) daytime ecosystem carbon flux, i.e. Net Ecosystem Exchange
@@ -480,22 +480,22 @@ estimateLRCParms=function(
 			#}
 			#			
 			#resOptim <- sOptimSingleE0_Lev( NEEnight.V.n, Tempnight_degK.V.n)
-			resE0 <- estimateTempSensLasslop10(NEENightInPeriod.V.n, Tempnight_degK.V.n, prevE0=E_0.V.n)
+			resE0 <- partGLEstimateTempSensInBounds(NEENightInPeriod.V.n, Tempnight_degK.V.n, prevE0=E_0.V.n)
 			E_0.V.n <- resE0$E_0.V.n
 			#
 			#tryCatch({
-			resOpt <- resOpt0 <- optLRC3Lasslop10(NEEDayInPeriod.V.n, NEENight.V.n, Rg.V.n, Temp_degK.V.n, VPD.V.n, E_0.V.n)
+			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEENight.V.n, Rg.V.n, Temp_degK.V.n, VPD.V.n, E_0.V.n)
 #if( DayMiddle.i >= 5 ) recover()
 .tmp.f <- function(){
 	plot( -NEEDayInPeriod.V.n ~ Rg.V.n )
-	tmp <- fRHRF_VPDRdFit(resOpt$opt.parms.V, Rg.V.n, VPD.V.n, NEEDayInPeriod.V.n, 1, Temp_degK.V.n-273.15,  E_0.V.n)
+	tmp <- partRHLightResponse(resOpt$opt.parms.V, Rg.V.n, VPD.V.n, NEEDayInPeriod.V.n, 1, Temp_degK.V.n-273.15,  E_0.V.n)
 	lines(  tmp ~ Rg.V.n )
 }
 			#
 			#isFirstDay <- (DayMiddle.i == (WinDays.i+1))
 			# on first day, set last good parameter set to the initial guess from before the optimization
 			if( is.na(lastGoodParameters.V.n[1]) ) lastGoodParameters.V.n <- resOpt$initialGuess.parms.V.n	
-			resOptBounded <- setParameterBoundsLasslop10( resOpt, lastGoodParameters.V.n)
+			resOptBounded <- partGLBoundParameters( resOpt, lastGoodParameters.V.n)
 			if( resOptBounded$isGoodParameterSet )
 				lastGoodParameters.V.n <- resOptBounded$opt.parms.V
 			#

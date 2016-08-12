@@ -248,9 +248,15 @@ ds <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 				"FP_VARnight", "FP_VARday", "NEW_FP_Temp", "NEW_FP_VPD", "Rg"
 		), row.names = 7249:7584, class = "data.frame")
 
-test_that("estimateLRCParms ranges",{
+
+test_that("estimateLRCParms outputs are in accepted range",{
+			
+		})
+					
+		
+test_that("partGLFitLRCWindows outputs are in accepted range",{
 			#yday <- as.POSIXlt(ds$sDateTime)$yday			
-			resParms <- estimateLRCParms(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$NEW_FP_Temp
+			resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$NEW_FP_Temp
 					, VPDVar.V.n=ds$NEW_FP_VPD	
 					, RgVar.V.n=ds$Rg
 					, nRecInDay=48L
@@ -266,7 +272,7 @@ test_that("estimateLRCParms ranges",{
 			.tmp.inspectYear <- function(){
 				# generated from inside sPartitionGL
 				load("tmp/dsTestPartitioningLasslop10.RData") #ds
-				resParms <- estimateLRCParms(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$NEW_FP_Temp
+				resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$NEW_FP_Temp
 						, VPDVar.V.n=ds$NEW_FP_VPD	
 						, RgVar.V.n=ds$Rg
 						, nRecInDay=48L
