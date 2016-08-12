@@ -250,15 +250,24 @@ ds <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 
 
 test_that("estimateLRCParms outputs are in accepted range",{
-			
+			dss <- subset(ds, as.POSIXlt(ds$sDateTime)$mday %in% 1:8 
+							& !is.na(ds$FP_VARnight))
+			dss <- dss[ order(dss$NEW_FP_Temp), ]
+			res <- partGLEstimateTempSensInBounds(dss$FP_VARnight, dss$NEW_FP_Temp+273.15)
+			expect_true( res$E_0 >= 50 && res$E_0 < 400 )
+			.tmp.plot <- function(){
+				plot( FP_VARnight ~ NEW_FP_Temp, dss)		# FP_VARnight negative?
+				p <- coef(res$resFit)
+				lines( fLloydTaylor(p[1], p[2], dss$NEW_FP_Temp+273.15) ~ dss$NEW_FP_Temp)#
+			}
 		})
 					
 		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
 			#yday <- as.POSIXlt(ds$sDateTime)$yday			
-			resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$NEW_FP_Temp
-					, VPDVar.V.n=ds$NEW_FP_VPD	
-					, RgVar.V.n=ds$Rg
+			resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, Temp.V.n=ds$NEW_FP_Temp
+					, VPD.V.n=ds$NEW_FP_VPD	
+					, Rg.V.n=ds$Rg
 					, nRecInDay=48L
 			)
 			# check the conditions of Lasslop10 Table A1
@@ -271,10 +280,10 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			expect_true( all(resValid$k >= 0) )
 			.tmp.inspectYear <- function(){
 				# generated from inside sPartitionGL
-				load("tmp/dsTestPartitioningLasslop10.RData") #ds
-				resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, TempVar.V.n=ds$NEW_FP_Temp
-						, VPDVar.V.n=ds$NEW_FP_VPD	
-						, RgVar.V.n=ds$Rg
+				dsYear <- localload("tmp/dsTestPartitioningLasslop10.RData") #ds
+				resParms <- partGLFitLRCWindows(ds$FP_VARnight, ds$FP_VARday, Temp.V.n=ds$NEW_FP_Temp
+						, VPD.V.n=ds$NEW_FP_VPD	
+						, Rg.V.n=ds$Rg
 						, nRecInDay=48L
 				)
 				head(resParms)				
