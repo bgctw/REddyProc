@@ -3,15 +3,15 @@ parGLPartitionFluxes=function(
 		##description<<
 		## Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
 		ds						##<< dataset with all the specified input columns and full days in equidistant times		
-		,FluxVar.s=paste0('NEE',suffixDash.s,'_f')       ##<< Variable of net ecosystem fluxes
-		,QFFluxVar.s=paste0('NEE',suffixDash.s,'_fqc')  ##<< Quality flag of variable
+		,FluxVar.s=paste0('NEE',SuffixDash.s,'_f')       ##<< Variable of net ecosystem fluxes
+		,QFFluxVar.s=paste0('NEE',SuffixDash.s,'_fqc')  ##<< Quality flag of variable
 		,QFFluxValue.n=0         						##<< Value of quality flag for _good_ (original) data
-		,TempVar.s=paste0('Tair',suffixDash.s,'_f')     ##<< Filled air or soil temperature variable (degC)
-		,QFTempVar.s=paste0('Tair',suffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
+		,TempVar.s=paste0('Tair',SuffixDash.s,'_f')     ##<< Filled air or soil temperature variable (degC)
+		,QFTempVar.s=paste0('Tair',SuffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
 		,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
 		,RadVar.s='Rg'         ##<< Unfilled (original) radiation variable
-		,VPDVar.s=paste0('VPD',suffixDash.s,'_f')     ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
-		,QFVPDVar.s=paste0('VPD',suffixDash.s,'_fqc') ##<< Quality flag of filled VPD variable    
+		,VPDVar.s=paste0('VPD',SuffixDash.s,'_f')     ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
+		,QFVPDVar.s=paste0('VPD',SuffixDash.s,'_fqc') ##<< Quality flag of filled VPD variable    
 		,QFVPDValue.n=0        ##<< Value of VPD quality flag for _good_ (original) data
 		,Lat_deg.n             ##<< Latitude in (decimal) degrees
 		,Long_deg.n            ##<< Longitude in (decimal) degrees
@@ -26,6 +26,7 @@ parGLPartitionFluxes=function(
 		,T_ref.n=273.15+15       ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
 		,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n}
 		,isVerbose=TRUE			 ##<< set to FALSE to suppress output messages
+		,nRecInDay=48L			##<< number of records within one day (for half-hourly data its 48)
 )
 ##author<<
 ## MM, TW
@@ -35,7 +36,7 @@ parGLPartitionFluxes=function(
 {
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-	suffixDash.s <- paste( (if(fCheckValString(suffix.s)) "_" else ""), suffix.s, sep="")
+	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="")
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
 	fCheckColNames(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sGLFluxPartition')
@@ -45,74 +46,67 @@ parGLPartitionFluxes=function(
 	if( isVerbose ) message('Start daytime flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
 	# Calculate potential radiation
 	#! New code: Local time and equation of time accounted for in potential radiation calculation
-	#DoY.V.n <- as.numeric(format(sDATA$sDateTime, '%j'))
 	DoY.V.n <- as.POSIXlt(ds$sDateTime)$yday + 1L
-	#Hour.V.n <- as.numeric(format(sDATA$sDateTime, '%H')) + as.numeric(format(sDATA$sDateTime, '%M'))/60
 	Hour.V.n <- as.POSIXlt(ds$sDateTime)$hour + as.POSIXlt(ds$sDateTime)$min/60
 	##value<< data.frame with columns
 	## Reco_DT_<suffix>: predicted ecosystem respiraiton: mumol CO2/m2/second
 	## GPP_DT_<suffix>: predicted gross primary production mumol CO2/m2/second
-	REcoDTVar.s <- paste0('Reco_DT',suffixDash.s) 
-	GPPDTVar.s <- paste0('GPP_DT',suffixDash.s) 
+	## Light response curve parameters are estimated for windows, and are reported for the first record of the central day of the window
+	REcoDTVar.s <- paste0('Reco_DT',SuffixDash.s) 
+	GPPDTVar.s <- paste0('GPP_DT',SuffixDash.s) 
 	dsAns <- data.frame(
-			NEW_PotRad=NA_real_		##<< computed potential radiation from time, timezone, and position on globe
+			NEW_PotRad=numeric(nrow(ds))	##<< computed potential radiation from time, timezone, and position on globe
 			,FP_VARnight=NA_real_	##<< NEE filtered for nighttime records (others NA)
 			,FP_VARday=NA_real_		##<< NEE filtered for daytime recores (others NA)
 			,NEW_FP_Temp=NA_real_	##<< temperature after filtering for quality flag degree Celsius
 			,NEW_FP_VPD=NA_real_	##<< vapour pressure deficit after filtering for quality flag, hPa
-			,FP_E0=NA_real_			##<< temperature sensitivity estimated from nighttime NEE window for records in center of windows, in Kelvin (degK) 
-			,FP_R_ref=NA_real_		##<< basal respiration estimated from daytime window for records in center of windows W/m2
+			,FP_E0=NA_real_			##<< temperature sensitivity estimated from nighttime NEE window  in Kelvin (degK) 
+			,FP_R_ref=NA_real_		##<< basal respiration estimated from LRC of daytime window  (W/m2)
+		#TODO Mirco: add descriptions to meaning of LRC parameters
+		#TODO: report uncertainties of parameters?
+		#TODO: old tool file also reports SE_GPP_HBLR
+			,FP_alpha=NA_real_			##<< 
+			,FP_beta=NA_real_			##<< 
+			,FP_k=NA_real_				##<< 
 	)
 	##end<<
-	dsAns$NEW_PotRad <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
+	dsAns$NEW_PotRad <- tmp <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
 			, useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )
 	# Filter night time values only
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E0
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	dsAns$FP_VARnight <- ifelse(ds[,RadVar.s] > 4 | sTEMP$NEW_PotRad != 0, NA,  Var.V.n)
-	attr(dsAns$FP_VARnight, 'varnames') <<- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
-	attr(dsAns$FP_VARnight, 'units') <<- attr(Var.V.n, 'units')
+	dsAns$FP_VARnight <- ifelse(ds[,RadVar.s] > 4 | dsAns$NEW_PotRad != 0, NA,  Var.V.n)
+	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
+	attr(dsAns$FP_VARnight, 'units') <- attr(Var.V.n, 'units')
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	dsAns$FP_VARday <<- ifelse(sDATA[,RadVar.s] < 4 | sTEMP$NEW_PotRad == 0, NA,  Var.V.n)
-	attr(dsAns$FP_VARday, 'varnames') <<- paste(attr(Var.V.n, 'varnames'), '_day', sep='')
-	attr(dsAns$FP_VARday, 'units') <<- attr(Var.V.n, 'units')
+	dsAns$FP_VARday <- ifelse(ds[,RadVar.s] < 4 | dsAns$NEW_PotRad == 0, NA,  Var.V.n)
+	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_day', sep='')
+	attr(dsAns$FP_VARday, 'units') <- attr(Var.V.n, 'units')
 	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
-	# Apply quality flag for temperature
-	dsAns$NEW_FP_Temp <<- fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'sGLFluxPartition')
-	# Apply quality flag for VPD
-	dsAns$NEW_FP_VPD <<- fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'sGLFluxPartition')
+	# Apply quality flag for temperature and VPD
+	dsAns$NEW_FP_Temp <- fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'sGLFluxPartition')
+	dsAns$NEW_FP_VPD <- fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'sGLFluxPartition')
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 	# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
 	resLRC <- tmp <- partGLFitLRCWindows(dsAns$FP_VARnight, dsAns$FP_VARday, Temp.V.n=dsAns$NEW_FP_Temp
 			, VPD.V.n=dsAns$NEW_FP_VPD
 			, Rg.V.n=ds[[RadVar.s]]
 			, CallFunction.s='sGLFluxPartition'
-			, nRecInDay=sINFO$DTS
+			, nRecInDay=nRecInDay
 	)
-	# TODO: append estimated coefficients to dsAns positions
-recover()
-	dsAns$FP_E0[resLRC]
-	dsAnsFluxes <- partGPInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRCE	)
+	dsAns[resLRC$iFirstRecInCentralDay,c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k")] <- resLRC[,c("E_0","R_ref","a","b","k")] 	
+	dsAnsFluxes <- partGPInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC	)
 	dsAns[[REcoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[REcoDTVar.s]], 'varnames') <- REcoDTVar.s
 	attr(dsAns[[REcoDTVar.s]], 'units') <- attr(Var.V.n, 'units')
-	dsAns[[GPPDTVar.s]] <- dsAnsFluxes$Reco
+	dsAns[[GPPDTVar.s]] <- dsAnsFluxes$GPP
 	attr(dsAns[[GPPDTVar.s]], 'varnames') <- GPPDTVar.s
 	attr(dsAns[[GPPDTVar.s]], 'units') <- attr(Var.V.n, 'units')
 	#sTEMP$GPP_DT_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
 	#! New code: MDS gap filling information are not copied from NEE_fmet and NEE_fwin to GPP_fmet and GPP_fwin
 	#           (since not known within this pure partitioning function)
-	##details<<
-	## Description of newly generated variables with partitioning results: \cr
-	## PotRad - Potential radiation \cr
-	## FP_NEEnight - Good (original) NEE nighttime fluxes  used for flux partitioning \cr
-	## FP_Temp - Good (original) temperature measurements used for flux partitioning \cr
-	## E_0 - Estimated temperature sensitivity \cr
-	## R_ref - Estimated reference respiration \cr
-	## Reco_DT - Estimated ecosystem respiration from daytime partitioning (Lasslop et al., 2010) \cr
-	## GPP_f - Estimated gross primary production from daytime partitioning (Lasslop et al., 2010) \cr
 	return(dsAns)
 }
 
@@ -183,6 +177,7 @@ partGLFitLRCWindows=function(
 			, End=NA_integer_		##<< the endding day of the window  
 			, Num=NA_integer_		##<< the number of records flux records in the window
 			, MeanH=NA_real_		##<< the record for which the parameters have been estimated
+			, iFirstRecInCentralDay=NA_real_	##<< the record number of the first record of the center day of the window
 			, E_0=NA_real_			##<< temperature sensitivty
 			, E_0_SD=NA_real_		##<< standard deviation of temperature sensitivity
 			, R_ref=NA_real_		##<< respiration at reference temperature
@@ -194,8 +189,8 @@ partGLFitLRCWindows=function(
 	lastGoodParameters.V.n <- rep(NA_real_, 5)		# indicate no good parameter set found yet
 	E_0.n <- NA
 	CountRegr.i <- 0L
+	#iDay<-1L
 	for (iDay in seq_along(middleDays.V.i)) {   #not sure is correct to me should be 
-		#TEST: iDay<-1L
 		DayMiddle.i <- middleDays.V.i[iDay]
 		if( isVerbose ) message(",",DayMiddle.i, appendLF = FALSE)
 		DayStart.i <- DayMiddle.i-WinDays.i
@@ -204,11 +199,13 @@ partGLFitLRCWindows=function(
 		DayEnd.Night.i <- DayMiddle.i+WinNight.i
 		#! Window size of 2 days corresponds to a full window length of 5 days, non-congruent with PV-Wave code of 4 days, in paper not mentioned
 		#! New code: Last window has minimum of window size
-		Subset.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i & 
+		SubsetDay.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i 
+		Subset.b <-  SubsetDay.b & 
 				!is.na(NEEDay.V.n) & !is.na(Temp.V.n) & !is.na(VPD.V.n)
 		Subset.Night.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
 				!is.na(NEENight.V.n)
-		MeanHour.i <- round(mean(which(Subset.b))) # the rownumber in the entire dataset representing the center of the period 
+		MeanHour.i <- round(mean(which(Subset.b))) # the rownumber in the entire dataset representing the center of the period
+		firstRecInCentralDay.i <- which(SubsetDay.b)[1] # the rownumber of the first record of the day of time center
 		NEENightInPeriod.V.n <- subset(NEENight.V.n, Subset.Night.b)
 		NEEDayInPeriod.V.n <- subset(NEEDay.V.n, Subset.b)
 		# note that 
@@ -260,9 +257,11 @@ partGLFitLRCWindows=function(
 			#
 			# twutz: avoid slow rbind, but write into existing data.frame
 			resDf[iDay, ] <- data.frame(
-					Start=DayStart.i, End=DayEnd.i, Num=length(NEEDayInPeriod.V.n), MeanH=MeanHour.i,
-					E_0=E_0.n, E_0_SD=resE0$E_0_SD,   
-					R_ref=resOptBounded$opt.parms.V[4], R_ref_SD=resOptBounded$se.parms.V[4],
+					Start=DayStart.i, End=DayEnd.i, Num=length(NEEDayInPeriod.V.n)
+					,MeanH=MeanHour.i
+					,iFirstRecInCentralDay = firstRecInCentralDay.i
+					,E_0=E_0.n, E_0_SD=resE0$E_0_SD   
+					,R_ref=resOptBounded$opt.parms.V[4], R_ref_SD=resOptBounded$se.parms.V[4],
 					a=resOptBounded$opt.parms.V[3], a_SD=resOptBounded$se.parms.V[3],
 					b=resOptBounded$opt.parms.V[2], b_SD=resOptBounded$se.parms.V[2],
 					k=resOptBounded$opt.parms.V[1], k_SD=resOptBounded$se.parms.V[1],
@@ -517,8 +516,6 @@ partGLBoundParameters <- function(
 	)
 }
 
-
-
 partGPInterpolateFluxes <- function(
 		### Predict REco and GPP by Light respons curve for two neighboring parameter sets and interpolate
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
@@ -527,15 +524,16 @@ partGPInterpolateFluxes <- function(
 		,resLRC	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
 ){
 	##details<< 
-	## \code{resLRC$MeanH} must denote the row for which the LRC parameters are representative
+	## \code{resLRC$iFirstRecInCentralDay} must denote the row for which the LRC parameters are representative, 
+	## here, the first record of the center day
 	# create a dataframe with index of rows of estimates before and after and correponding weights
 	nLRC <- nrow(resLRC)
 	nRec <- length(Rg) 
 	Temp_Kelvin <- Temp+273.15
 	# for each original record merge parameters assicated with previous fit or next fit respectively
-	dsAssoc <- .partGPAssociateSpecialRows(resLRC$MeanH,nRec)	
-	dsBefore <- merge( data.frame(MeanH=dsAssoc$iBefore), resLRC[,c("MeanH","R_ref","E_0","a","b","k")])
-	dsAfter <- merge( data.frame(MeanH=dsAssoc$iAfter), resLRC[,c("MeanH","R_ref","E_0","a","b","k")])
+	dsAssoc <- .partGPAssociateSpecialRows(resLRC$iFirstRecInCentralDay,nRec)	
+	dsBefore <- merge( data.frame(iFirstRecInCentralDay=dsAssoc$iBefore), resLRC[,c("iFirstRecInCentralDay","R_ref","E_0","a","b","k")])
+	dsAfter <- merge( data.frame(iFirstRecInCentralDay=dsAssoc$iAfter), resLRC[,c("iFirstRecInCentralDay","R_ref","E_0","a","b","k")])
 	if( nrow(dsBefore) != nrow(dsAssoc) ) stop("error in merging parameters to original records.")
 	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
 		tmp <- fLloydTaylor(dsi$R_ref, dsi$E_0, Temp_Kelvin, T_ref.n=273.15+15)
@@ -569,7 +567,7 @@ partGPInterpolateFluxes <- function(
 }
 
 .partGPAssociateSpecialRows <- function(
-		### associate each row with the previous and next row from a subset of rows
+		### associate each row with the previous and next row from a subset of special rows
 		iRowsSpecial	##<< ordered unique integer vector specifying the rows for which some special data is available
 		,nRec			##<< integer scalar of number of rows in the full data.frame 
 ){
@@ -580,17 +578,17 @@ partGPInterpolateFluxes <- function(
 	## \code{iBefore=3, iAfter=7}.
 	##value<< a dataframe with index of previous and next rows inside the subset
 	ans <- data.frame(
-			iRec=1:nRec			##<< the original row number
-			, iBefore=NA_integer_	##<< index of the previous subset row (position in subset)
-			, iAfter=NA_integer_	##<< index of the next subset row
+			iRec=1:nRec				##<< the original row number
+			, iBefore=NA_integer_	##<< index of the previous special row 
+			, iAfter=NA_integer_	##<< index of the next special row
 			, wBefore=NA_real_		##<< weight of the previous, inverse of the distance in records
 			, wAfter=NA_real_)		##<< weight of the next, inverse of the distance in records
 	##details<<
-	## The subset rows inside the subset refer both (before and after) to the same subset rows, with weights 1
+	## The subset rows inside the subset refer both (before and after) to the same subset rows, with weights 1/2
 	nRecS <- length(iRowsSpecial)
 	if( 0 == nRecS ) stop("cannot associate special rows, if length of argument iRowsSpecial is zero.")
 	ans[iRowsSpecial,"iBefore"] <- ans[iRowsSpecial,"iAfter"] <- iRowsSpecial
-	ans[iRowsSpecial,c("wBefore","wAfter")] <- 1L
+	ans[iRowsSpecial,c("wBefore","wAfter")] <- 0.5
 	#iS <- 2L
 	for( iS in 1:nRecS ){
 		currRec <- iRowsSpecial[iS]
@@ -610,12 +608,12 @@ partGPInterpolateFluxes <- function(
 		} 	
 	}
 	##details<<
-	## the rows before the first subset row refer bot (after and before) to the first subset row with weights 1
+	## the rows before the first subset row refer bot (after and before) to the first subset row with weights 1/2
 	## similar the rows after the last subset row refer to the last subset row
 	ans[1:iRowsSpecial[1],c("iBefore","iAfter")] <- iRowsSpecial[1L] 
-	ans[1:iRowsSpecial[1],c("wBefore","wAfter")] <- 1L 
+	ans[1:iRowsSpecial[1],c("wBefore","wAfter")] <- 0.5 
 	ans[iRowsSpecial[nRecS]:nrow(ans),c("iBefore","iAfter")] <- iRowsSpecial[nRecS]
-	ans[iRowsSpecial[nRecS]:nrow(ans),c("wBefore","wAfter")] <- 1L
+	ans[iRowsSpecial[nRecS]:nrow(ans),c("wBefore","wAfter")] <- 0.5
 	ans
 }
 

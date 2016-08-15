@@ -24,7 +24,9 @@ sEddyProc$methods(
 			##references<<
 			## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
 			## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187–208
-			dsAns <- parGLPartitionFluxes( cbind(sDATA, sTEMP), ...)
+			dsAns <- parGLPartitionFluxes( cbind(sDATA, sTEMP), ...
+					, nRecInDay=sINFO$DTS
+							)
 			iExisting <- na.omit(match( colnames(sTEMP), colnames(dsAns) ))
 			if( length(iExisting) ){
 				warning("replacing exisitng output columns", paste(colnames(sTEMP)[iExisting],col=","))

@@ -7,7 +7,7 @@ context("partGL")
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# 8 first days of may from IT-MBo.2005.txt
+# 8 first days of June from IT-MBo.2005.txt
 dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700, 
 								1117588500, 1117590300, 1117592100, 1117593900, 1117595700, 1117597500, 
 								1117599300, 1117601100, 1117602900, 1117604700, 1117606500, 1117608300, 
@@ -250,16 +250,16 @@ dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 
 
 resLRCEx1 <- structure(list(Start = c(1, 3), End = c(5, 7), Num = c(82L, 63L
-				), MeanH = c(162, 238), E_0 = c(185.617678757497, 185.617678757497
-				), E_0_SD = c(144.277836860512, 144.277836860512), R_ref = c(3.20466768712475, 
-						2.62127227871677), R_ref_SD = c(3.82346370836232, 3.14809139955078
-				), a = c(0.185051474696062, 0.164205399828651), a_SD = c(0.209518496410871, 
-						0.0827738480243852), b = c(26.3986276489297, 27.0923397859845
-				), b_SD = c(3.29039671084698, 4.9740306750336), k = c(0, 0), 
-				k_SD = c(0, 0), parms_out_range = c(0L, 0L)), .Names = c("Start", 
-				"End", "Num", "MeanH", "E_0", "E_0_SD", "R_ref", "R_ref_SD", 
-				"a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"), row.names = 1:2, class = "data.frame")
-
+				), MeanH = c(162, 238), iFirstRecInCentralDay = c(49, 145), E_0 = c(185.617678757497, 
+						185.617678757497), E_0_SD = c(144.277836860512, 144.277836860512
+				), R_ref = c(3.20466768712475, 2.62127227871677), R_ref_SD = c(5.03682769387594, 
+						2.22579454449657), a = c(0.185051474696062, 0.164205399828651
+				), a_SD = c(0.302895841389311, 0.137069609955839), b = c(26.3986276489297, 
+						27.0923397859845), b_SD = c(3.59753923232877, 3.16809867732855
+				), k = c(0, 0), k_SD = c(0, 0), parms_out_range = c(0L, 0L)), .Names = c("Start", 
+				"End", "Num", "MeanH", "iFirstRecInCentralDay", "E_0", "E_0_SD", 
+				"R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"
+		), row.names = 1:2, class = "data.frame")
 
 
 
@@ -324,17 +324,17 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			}
 })
 
-test_that(".partGPAssociateSpecialRows",{
+test_that(".partGPAssociateSpecialRows correct next lines",{
 			expect_error(
 					res <- .partGPAssociateSpecialRows(integer(0),9)
 			)
 			res <- .partGPAssociateSpecialRows(c(3,6,7,9),12)
 			# special rows
-			expect_equal( c(iRec=3,iBefore=3, iAfter=3, wBefore=1, wAfter=1), unlist(res[3,])) 
-			expect_equal( c(iRec=6,iBefore=6, iAfter=6, wBefore=1, wAfter=1), unlist(res[6,]))
+			expect_equal( c(iRec=3,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[3,])) 
+			expect_equal( c(iRec=6,iBefore=6, iAfter=6, wBefore=0.5, wAfter=0.5), unlist(res[6,]))
 			# first rows and last rows
-			expect_equal( c(iRec=1,iBefore=3, iAfter=3, wBefore=1, wAfter=1), unlist(res[1,])) 
-			expect_equal( c(iRec=12,iBefore=9, iAfter=9, wBefore=1, wAfter=1), unlist(res[12,])) 
+			expect_equal( c(iRec=1,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[1,])) 
+			expect_equal( c(iRec=12,iBefore=9, iAfter=9, wBefore=0.5, wAfter=0.5), unlist(res[12,])) 
 			# weights after and before special row 6
 			expect_equal( rep(3,2), unlist(res[4:5,"iBefore"])) 
 			expect_equal( rep(6,2), unlist(res[4:5,"iAfter"])) 
@@ -345,7 +345,7 @@ test_that(".partGPAssociateSpecialRows",{
 		})
 			
 			
-test_that("interpolate Fluxes",{
+test_that("partGPInterpolateFluxes runs",{
 			tmp <- partGPInterpolateFluxes( dsNEE$Rg, dsNEE$NEW_FP_VPD, dsNEE$NEW_FP_Temp, resLRCEx1)
 			expect_equal( nrow(dsNEE), nrow(tmp) )
 			.tmp.plot <- function(){
@@ -354,3 +354,34 @@ test_that("interpolate Fluxes",{
 				plot( GPP_DT ~ time, tmp)
 			}
 		})
+
+test_that("parGLPartitionFluxes",{
+			dsNEE1 <- dsNEE
+			dsNEE1$NEE_f <- dsNEE1$FP_VARnight
+			dsNEE1$NEE_f[!is.na(dsNEE1$FP_VARday)] <- dsNEE1$FP_VARday[!is.na(dsNEE1$FP_VARday)]
+			dsNEE1$NEE_fqc <- ifelse( is.finite(dsNEE1$NEE_f),0L,1L )
+			dsNEE1$Tair_f <- dsNEE1$NEW_FP_Temp
+			dsNEE1$Tair_fqc <- ifelse( is.finite(dsNEE1$Tair_f),0L,1L )
+			dsNEE1$VPD_f <- dsNEE1$NEW_FP_VPD
+			dsNEE1$VPD_fqc <- ifelse( is.finite(dsNEE1$VPD_f),0L,1L )
+			dsNEE1$Rg <- ifelse( dsNEE1$Rg >= 0, dsNEE1$Rg, 0 )
+			tmp <- parGLPartitionFluxes( dsNEE1, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0)
+			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			#
+			dsNEE2 <- dsNEE1
+			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "Tair_f", "Tair_fqc","VPD_f", "VPD_fqc"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "Tair_u50_f", "Tair_u50_fqc","VPD_u50_f", "VPD_u50_fqc")
+			tmp <- parGLPartitionFluxes( dsNEE2, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0, Suffix.s="u50")
+			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			expect_true( all(is.finite(tmp$GPP_DT_u50)))
+			expect_true( all(tmp$GPP_DT_u50 >= 0))
+			expect_true( all(tmp$GPP_DT_u50 < 250))
+			expect_true( all(tmp$Reco_DT_u50 < 5))
+			expect_true( all(tmp$Reco_DT_u50 > 0))
+			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.5))	#smooth
+			.tmp.plot <- function(){
+				tmp$time <- dsNEE1$sDateTime
+				plot( Reco_DT_u50 ~ time, tmp)
+				plot( GPP_DT_u50 ~ time, tmp)
+			}
+		})
+
