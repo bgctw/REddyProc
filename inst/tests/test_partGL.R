@@ -286,8 +286,8 @@ test_that("partGLFitLRC",{
 			.tmp.plot <- function(){
 				plot( -FP_VARday ~ Rg, dssDay)		# FP_VARnight negative?
 				p <- res$opt.parms.V
-				pred <- partRHLightResponse(p, dssDay$Rg, dssDay$NEW_FP_VPD, NA, NA, dssDay$NEW_FP_Temp, dssDay$NEW_FP_VPD, E0=185)
-				lines(pred  ~ dssDay$Rg)#
+				pred <- partRHLightResponse(p, Rg=dssDay$Rg, VPD=dssDay$NEW_FP_VPD, Temp=dssDay$NEW_FP_Temp, E0=185)
+				lines(pred$NEP  ~ dssDay$Rg)
 			}
 		})
 
@@ -307,7 +307,6 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			expect_true( all(resValid$b >= 0 & resValid$b < 250) )
 			expect_true( all(ifelse(resValid$b > 100, resValid$b_SD < resValid$b, TRUE) ))
 			expect_true( all(resValid$k >= 0) )
-			sum( )
 			expect_true( !all(is.na(resValid$R_ref_SD)))
 			
 			.tmp.inspectYear <- function(){
@@ -348,31 +347,10 @@ test_that(".partGPAssociateSpecialRows",{
 			
 test_that("interpolate Fluxes",{
 			tmp <- partGPInterpolateFluxes( dsNEE$Rg, dsNEE$NEW_FP_VPD, dsNEE$NEW_FP_Temp, resLRCEx1)
-			
-			dss[230:260,]
-			
-			# check the conditions of Lasslop10 Table A1
-			resValid <- resParms[!is.na(resParms$R_ref),]
-			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
-			expect_true( all(resValid$R_Ref > 0) )
-			expect_true( all(resValid$a >= 0 & resValid$a < 0.22) )
-			expect_true( all(resValid$b >= 0 & resValid$b < 250) )
-			expect_true( all(ifelse(resValid$b > 100, resValid$b_SD < resValid$b, TRUE) ))
-			expect_true( all(resValid$k >= 0) )
-			sum( )
-			expect_true( !all(is.na(resValid$R_ref_SD)))
-			
-			.tmp.inspectYear <- function(){
-				# generated from inside sPartitionGL
-				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) }) 
-				resY <- partGLFitLRCWindows(dsYear$FP_VARnight, dsYear$FP_VARday, Temp.V.n=dsYear$NEW_FP_Temp
-						, VPD.V.n=dsYear$NEW_FP_VPD	
-						, Rg.V.n=dsYear$Rg
-						, nRecInDay=48L
-				)
-				head(resY)				
-				plot( R_ref ~ Start, resY)
-				plot( b ~ Start, resY)
-				plot( E_0 ~ Start, resY )
+			expect_equal( nrow(dsNEE), nrow(tmp) )
+			.tmp.plot <- function(){
+				tmp$time <- dsNEE$sDateTime
+				plot( Reco_DT ~ time, tmp)
+				plot( GPP_DT ~ time, tmp)
 			}
 		})
