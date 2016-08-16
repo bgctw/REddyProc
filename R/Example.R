@@ -26,6 +26,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		#+++ Initalize R5 reference class sEddyProc for processing of eddy data
 		#+++ with all variables needed for processing later
 		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 		
 		#+++ Generate plots of all data in directory \plots (of current R working dir)
 		EddyProc.C$sPlotHHFluxes('NEE')
@@ -46,12 +47,14 @@ attr(sEddyProc.example,'ex') <- function( ){
 		
 		#+++ Partition NEE into GPP and respiration
 		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning 
-		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
-		#EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, T_ref.n=10)  #Location of DE-Tharandt
+		EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning 
+		EddyProc.C$sMRFluxPartition()	# night time partitioning -> Reco, GPP
+		EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
+		#plot( EddyProc.C$sTEMP$GPP_DT ~ EddyProc.C$sTEMP$GPP_f); abline(0,1)
 		# there are some constraints, that might be too strict for some datasets
 		# e.g. in the tropics the required temperature range might be too large.
 		# Its possible to change these constraints
-		#EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, parsE0Regression=list(TempRange.n=2.0, optimAlgorithm="LM")	)  
+		#EddyProc.C$sMRFluxPartition(parsE0Regression=list(TempRange.n=2.0, optimAlgorithm="LM")	)  
 		
 		
 		#+++ Example plots of calculated GPP and respiration 

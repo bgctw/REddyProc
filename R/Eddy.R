@@ -15,9 +15,10 @@ sEddyProc <- setRefClass('sEddyProc', fields=list(
   sID='character'       ##<< String with Site ID
   ,sDATA='data.frame'   ##<< Data frame with (fixed) site data
   ,sINFO='list'         ##<< List with site information
+  ,sLOCATION='list'		##<< List with site location information
   ,sTEMP='data.frame'   ##<< Data frame with (temporary) result data
   ,sUSTAR='list'		##<< List with results form uStar Threshold estimation
-  # Note: The documenation of the class is not processed by 'inlinedocs'
+# Note: The documenation of the class is not processed by 'inlinedocs'
 ))
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -33,7 +34,10 @@ sEddyProc$methods(
     ,ColNames.V.s       ##<< Vector with selected column names, the less columns the faster the processing
     ,ColPOSIXTime.s='DateTime' ##<< Column name with POSIX time stamp
     ,DTS.n=48           ##<< Daily time steps
-	,ColNamesNonNumeric.V.s=character(0)	##<< Names of columns that should not be checked for numeric type, e.g. season column   
+	,ColNamesNonNumeric.V.s=character(0)	##<< Names of columns that should not be checked for numeric type, e.g. season column
+	,Lat_deg.n = NA_real_    	##<< Latitude in (decimal) degrees (-90 to +90)
+	,Long_deg.n = NA_real_   	##<< Longitude in (decimal) degrees (-180 to +180)
+	,TimeZone_h.n = NA_integer_	##<< Time zone (in hours) shift to UTC, e.g. 1 for Berlin
     ,...                ##<< ('...' required for initialization of class fields)
     ##author<<
     ## AMM
@@ -83,14 +87,20 @@ sEddyProc$methods(
     
     ##details<<
     ## sINFO is a list containing the time series information.
+	##describe<<
     sINFO <<- list(
-      DIMS=length(sDATA$sDateTime) # Number of data rows
-      ,DTS=DTS.n                   # Number of daily time steps (24 or 48)
-      ,Y.START=YStart.n            # Starting year
-      ,Y.END=YEnd.n                # Ending year
-      ,Y.NUMS=YNums.n              # Number of years
-      ,Y.NAME=YName.s              # Name for years
+      DIMS=length(sDATA$sDateTime) ##<< Number of data rows
+      ,DTS=DTS.n                   ##<< Number of daily time steps (24 or 48)
+      ,Y.START=YStart.n            ##<< Starting year
+      ,Y.END=YEnd.n                ##<< Ending year
+      ,Y.NUMS=YNums.n              ##<< Number of years
+      ,Y.NAME=YName.s              ##<< Name for years
     )
+	##end<<
+	
+	##details<<
+	## sLOCATION is a list of information on site location and timezone (see \code{\link{sSetLocationInfo}}).
+	.self$sSetLocationInfo(  Lat_deg.n ,Long_deg.n ,TimeZone_h.n ) 
     
     ##details<<
     ## sTEMP is a data frame used only temporally.
@@ -102,10 +112,32 @@ sEddyProc$methods(
     ##value<< 
     ## Initialized fields of sEddyProc.
   })
+  
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ sEddyProc class: Data handling functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+sEddyProc$methods(
+		sSetLocationInfo = function( 
+				### set Location and time Zone information to sLOCATION
+				Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to +90)
+				,Long_deg.n		##<< Longitude in (decimal) degrees (-180 to +180)
+				,TimeZone_h.n	##<< Time zone (in hours) shift to UTC, e.g. 1 for Berlin
+		){
+			##author<< TW
+			# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
+			# and therefore should be stored with the class, instead of passed each time.
+			if( !is.na(Lat_deg.n) & (Lat_deg.n < -90 | Lat_deg.n > 90)) stop("Latitude must be in interval -90 to +90")
+			if( !is.na(Long_deg.n) & (Long_deg.n < -180 | Long_deg.n > 180)) stop("Longitude must be in interval -180 to +180")
+			if( !is.na(TimeZone_h.n) & (TimeZone_h.n < -12 | TimeZone_h.n > +12 | TimeZone_h.n != as.integer(TimeZone_h.n))) stop("Timezone must be an integer in interval -12 to 12")
+			sLOCATION <<- list(
+					Lat_deg.n = Lat_deg.n
+					,Long_deg.n = Long_deg.n
+					,TimeZone_h.n = TimeZone_h.n
+			)
+		})  
+
 
 sEddyProc$methods(
   sGetData = function( )
@@ -135,7 +167,7 @@ sEddyProc$methods(
   {
     'Export class internal sDATA data frame'
     lDATA <- sDATA
-    lDATA$sDateTime <- lDATA$sDateTime + (15 * 60)
+    lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
     colnames(lDATA) <- c('DateTime', colnames(lDATA)[-1])
     
     lDATA

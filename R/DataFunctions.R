@@ -585,7 +585,7 @@ fCheckColPlausibility <- function(
   # Separated checks for upper and lower limit to have separate warnings
   for (v.i in 1:length(VarName.V.s)) {
     ## 'Rg' - global radiation, W m-2
-    if( grepl('Rg', VarName.V.s[v.i]) )
+    if( grepl('Rg|PotRad', VarName.V.s[v.i]) )
     {
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 1200), SubCallFunc.s)

@@ -175,8 +175,9 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
 			%in% cNames) )
 			#
 			EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
+			EddySetups.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
 			for( suffix in c('U05', 'U50')){
-				EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s = suffix)
+				EddySetups.C$sMRFluxPartition(Suffix.s = suffix)
 			}
 			cNames2 <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE) 	
 			expect_true( all(			c("PotRad_U50",	"FP_NEEnight_U50", "FP_Temp_U50"

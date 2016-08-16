@@ -99,7 +99,8 @@ test_that("fRegrE0fromShortTerm",{
 		
 		
 test_that("sMRFluxPartition Standard",{
-            EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )   
+			EddyHour.C$sSetLocationInfo(Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1)
+            EddyHour.C$sMRFluxPartition()   
             expect_that( EddyHour.C$sTEMP$E_0[1], equals(133.7, tolerance = .1))
         })
 
@@ -108,6 +109,7 @@ test_that("Using fixed E0",{
             E0 <- 120
             #EddyHour.C$trace("sMRFluxPartition", recover )            # EddyHour.C$untrace("sMRFluxPartition")
 			EddyHour.C$sTEMP$E_0 <- NULL
+			EddyHour.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
 			# warning on duplicted columns with former test
 			suppressWarnings( EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1, debug.l=list(fixedE0=E0) ))   # calling sRegrE0fromShortTerm
             expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance=1e-6)

@@ -17,20 +17,28 @@ sEddyProc$methods(
 				##description<<
 				## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
 				...		##<< arguments to \code{\link{parGLPartitionFluxes}} additional to the dataset \code{ds}
-					##<< such as Lat_deg.n, Long_deg.n, TimeZone_h.n, Suffix.s = ""
+						##<< such as \code{Suffix.s}
+				,debug.l=list(		     ##<< List with debugging control.
+						##describe<< 
+						useLocaltime.b=FALSE	##<< if TRUE use local time zone instead of geo-solar time to compute potential radiation 	
+						##end<< 
+					)   
+				,isWarnReplaceColumns=TRUE		##<< set to FALSE to avoid the warning on replacing output columns
+	
 		){
 			##author<<
 			## MM, TW
 			##references<<
 			## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
 			## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187–208
+			.self$sCalcPotRadiation(useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )	
 			dsAns <- parGLPartitionFluxes( cbind(sDATA, sTEMP), ...
 					, nRecInDay=sINFO$DTS
 							)
-			iExisting <- na.omit(match( colnames(sTEMP), colnames(dsAns) ))
+			iExisting <- na.omit(match( colnames(dsAns), colnames(sTEMP)  ))
 			if( length(iExisting) ){
-				warning("replacing exisitng output columns", paste(colnames(sTEMP)[iExisting],col=","))
-				sTEMP[,iExisting] <<- NULL
+				if(isWarnReplaceColumns) warning("replacing existing output columns", paste(colnames(sTEMP)[iExisting],collapse=","))
+				sTEMP <<- sTEMP[,-iExisting] 
 			}
 			sTEMP <<- cbind(sTEMP, dsAns)
 			return(invisible(NULL))
@@ -38,9 +46,6 @@ sEddyProc$methods(
 			## Flux partitioning results are in sTEMP data frame of the class.
 		}
 )
-
-#TODO: store/access Lat,Long, TimeZone as class variables
-#TODO: avoid repeated compuation of potential radiation with both partitioning methods -> only if column does not exist?
 
 sEddyProc$methods(
 		sMRFluxPartition = function(
@@ -122,10 +127,7 @@ sEddyProc$methods(
 			## }}
 			# Calculate potential radiation
 			#! New code: Local time and equation of time accounted for in potential radiation calculation
-			DoY.V.n <- as.numeric(format(sDATA$sDateTime, '%j'))
-			Hour.V.n <- as.numeric(format(sDATA$sDateTime, '%H')) + as.numeric(format(sDATA$sDateTime, '%M'))/60
-			sTEMP$PotRad_NEW <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
-					, useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )
+			.self$sCalcPotRadiation(useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )	
 			
 			# Filter night time values only
 			#! Note: Rg <= 10 congruent with MR PV-Wave, in paper Rg <= 20
@@ -147,7 +149,7 @@ sEddyProc$methods(
 				return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
 			
 			# Reanalyse R_ref with E_0 fixed
-			sTEMP$R_ref_NEW <<- sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition')
+			sTEMP$R_ref_NEW <<- .self$sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition')
 			
 			# Calculate the ecosystem respiration Reco
 			sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=T_ref.n)
@@ -189,8 +191,23 @@ sEddyProc$methods(
 			## Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
 			## On success, return value is NULL. On failure an integer scalar error code is returned:
 			## -111 if regression of E_0 failed due to insufficient relationship in the data.
-		})
+})
 
+sEddyProc$methods(
+	sCalcPotRadiation = function(
+			### compute potential radiation from position and time
+			useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
+				##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
+){
+		DoY.V.n <- as.POSIXlt(sDATA$sDateTime)$yday + 1L
+		Hour.V.n <- as.POSIXlt(sDATA$sDateTime)$hour + as.POSIXlt(sDATA$sDateTime)$min/60
+		# Check that location info has been set
+		if( !( is.finite(sLOCATION$Lat_deg.n) & is.finite(sLOCATION$Long_deg.n) & is.finite(sLOCATION$TimeZone_h.n)))
+			stop("Need to set valid location information (sSetLocationInfo) before calling sCalcPotRadiation.")
+		##value<< column PotRad_NEW in sTEMP 
+		sTEMP$PotRad_NEW <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, sLOCATION$Lat_deg.n, sLOCATION$Long_deg.n, sLOCATION$TimeZone_h.n
+				, useSolartime.b=useSolartime.b )
+})  
 
 fOptimSingleE0 <- function(
   ##title<<

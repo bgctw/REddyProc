@@ -13,9 +13,7 @@ parGLPartitionFluxes=function(
 		,VPDVar.s=paste0('VPD',SuffixDash.s,'_f')     ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
 		,QFVPDVar.s=paste0('VPD',SuffixDash.s,'_fqc') ##<< Quality flag of filled VPD variable    
 		,QFVPDValue.n=0        ##<< Value of VPD quality flag for _good_ (original) data
-		,Lat_deg.n             ##<< Latitude in (decimal) degrees
-		,Long_deg.n            ##<< Longitude in (decimal) degrees
-		,TimeZone_h.n          ##<< Time zone (in hours)
+		,PotRadVar.s="PotRad_NEW"	##<< Variable name of potential radiation (W/m2)			   
 		,Suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillUStar}}).
 		,debug.l=list(		   ##<< list with debugging control, see \code{\link{sRegrE0fromShortTerm}}.
 				##describe<< 
@@ -39,15 +37,11 @@ parGLPartitionFluxes=function(
 	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="")
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-	fCheckColNames(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sGLFluxPartition')
-	fCheckColNum(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sGLFluxPartition')
-	fCheckColPlausibility(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sGLFluxPartition')
+	fCheckColNames(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
+	fCheckColNum(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
+	fCheckColPlausibility(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
 	Var.V.n <- fSetQF(ds, FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sGLFluxPartition')
 	if( isVerbose ) message('Start daytime flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
-	# Calculate potential radiation
-	#! New code: Local time and equation of time accounted for in potential radiation calculation
-	DoY.V.n <- as.POSIXlt(ds$sDateTime)$yday + 1L
-	Hour.V.n <- as.POSIXlt(ds$sDateTime)$hour + as.POSIXlt(ds$sDateTime)$min/60
 	##value<< data.frame with columns
 	## Reco_DT_<suffix>: predicted ecosystem respiraiton: mumol CO2/m2/second
 	## GPP_DT_<suffix>: predicted gross primary production mumol CO2/m2/second
@@ -55,8 +49,7 @@ parGLPartitionFluxes=function(
 	REcoDTVar.s <- paste0('Reco_DT',SuffixDash.s) 
 	GPPDTVar.s <- paste0('GPP_DT',SuffixDash.s) 
 	dsAns <- data.frame(
-			NEW_PotRad=numeric(nrow(ds))	##<< computed potential radiation from time, timezone, and position on globe
-			,FP_VARnight=NA_real_	##<< NEE filtered for nighttime records (others NA)
+			FP_VARnight=rep(NA_real_,nrow(ds))	##<< NEE filtered for nighttime records (others NA)
 			,FP_VARday=NA_real_		##<< NEE filtered for daytime recores (others NA)
 			,NEW_FP_Temp=NA_real_	##<< temperature after filtering for quality flag degree Celsius
 			,NEW_FP_VPD=NA_real_	##<< vapour pressure deficit after filtering for quality flag, hPa
@@ -70,18 +63,16 @@ parGLPartitionFluxes=function(
 			,FP_k=NA_real_				##<< 
 	)
 	##end<<
-	dsAns$NEW_PotRad <- tmp <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n
-			, useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )
 	# Filter night time values only
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E0
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	dsAns$FP_VARnight <- ifelse(ds[,RadVar.s] > 4 | dsAns$NEW_PotRad != 0, NA,  Var.V.n)
+	dsAns$FP_VARnight <- ifelse(ds[,RadVar.s] > 4 | ds[[PotRadVar.s]] != 0, NA,  Var.V.n)
 	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
 	attr(dsAns$FP_VARnight, 'units') <- attr(Var.V.n, 'units')
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	dsAns$FP_VARday <- ifelse(ds[,RadVar.s] < 4 | dsAns$NEW_PotRad == 0, NA,  Var.V.n)
+	dsAns$FP_VARday <- ifelse(ds[,RadVar.s] < 4 | ds[[PotRadVar.s]] == 0, NA,  Var.V.n)
 	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_day', sep='')
 	attr(dsAns$FP_VARday, 'units') <- attr(Var.V.n, 'units')
 	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
@@ -97,7 +88,7 @@ parGLPartitionFluxes=function(
 			, nRecInDay=nRecInDay
 	)
 	dsAns[resLRC$iFirstRecInCentralDay,c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k")] <- resLRC[,c("E_0","R_ref","a","b","k")] 	
-	dsAnsFluxes <- partGPInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC	)
+	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC	)
 	dsAns[[REcoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[REcoDTVar.s]], 'varnames') <- REcoDTVar.s
 	attr(dsAns[[REcoDTVar.s]], 'units') <- attr(Var.V.n, 'units')
@@ -110,35 +101,6 @@ parGLPartitionFluxes=function(
 	return(dsAns)
 }
 
-partGLEstimateTempSensInBounds <- function(
-		### Estimate temperature sensitivity E_0 of Reco, and apply bounds or previous estimate
-		REco.V.n	##<< numeric vector: night time NEE, i.e. ecosytem respiration
-		,temperatureKelvin.V.n		##<< temperature in K
-		,prevE0	= NA				##<< numeric scalar: the previous guess of Temperature Sensitivity 
-){
-	#twutz: using nls to avoid additional package dependency
-	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
-	#		,control=nls.lm.control(maxiter = 20))
-	resFit <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-			data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
-			,control=nls.control(maxiter = 20))
-	E_0Bounded.V.n <- E_0.V.n <- coef(resFit)['E_0']
-	E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
-	if( (E_0.V.n < 50) || (E_0.V.n > 400)){
-		E_0Bounded.V.n <- if( is.na(prevE0) ){
-			 min(400,max(50,E_0.V.n))
-		} else {
-			prevE0
-		}
-	}
-	##value<< list with entries
-	list(
-			E_0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
-			,E_0_SD=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
-			,resFit=resFit				##<< the fit-object
-		)
-}
 
 partGLFitLRCWindows=function(
 		### estimateLRCParms - Estimation of the parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k)
@@ -240,8 +202,8 @@ partGLFitLRCWindows=function(
 			E_0.n <- resE0$E_0
 			#
 			#tryCatch({
+	#if( DayMiddle.i == 113) recover()
 			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEENightInPeriod.V.n, RgInPeriod.V.n, TempInPeriod.V.n, VPDInPeriod.V.n, E_0.n=E_0.n)
-			#if( DayMiddle.i >= 5 ) recover()
 			.tmp.plot <- function(){
 				plot( -NEEDayInPeriod.V.n ~ RgInPeriod.V.n )
 				tmp <- partRHLightResponse(resOpt$opt.parms.V, RgInPeriod.V.n, VPDInPeriod.V.n, NEEDayInPeriod.V.n, 1, TempInPeriod.V.n,  E_0.n)
@@ -291,7 +253,35 @@ partGLFitLRCWindows=function(
 #	#TODO later: Provide some kind of uncertainty estimate from R_ref_SD
 }
 
-
+partGLEstimateTempSensInBounds <- function(
+		### Estimate temperature sensitivity E_0 of Reco, and apply bounds or previous estimate
+		REco.V.n	##<< numeric vector: night time NEE, i.e. ecosytem respiration
+		,temperatureKelvin.V.n		##<< temperature in K
+		,prevE0	= NA				##<< numeric scalar: the previous guess of Temperature Sensitivity 
+){
+	#twutz: using nls to avoid additional package dependency
+	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
+	#		,control=nls.lm.control(maxiter = 20))
+	resFit <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+			data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
+			,control=nls.control(maxiter = 20))
+	E_0Bounded.V.n <- E_0.V.n <- coef(resFit)['E_0']
+	E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
+	if( (E_0.V.n < 50) || (E_0.V.n > 400)){
+		E_0Bounded.V.n <- if( is.na(prevE0) ){
+					min(400,max(50,E_0.V.n))
+				} else {
+					prevE0
+				}
+	}
+	##value<< list with entries
+	list(
+			E_0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
+			,E_0_SD=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
+			,resFit=resFit				##<< the fit-object
+	)
+}
 
 partGLFitLRC <- function(
 		### optimization for three different initial parameter sets
@@ -302,7 +292,7 @@ partGLFitLRC <- function(
 		, VPD.V.n			##<< VPD	
 		, E_0.n				##<< temperature sensitivity of respiration
 		, nBoot.i=10L		##<< scalar integer of number of bootstrap samples for estimating uncertainty of parameters
-		#TODO: increase default of nBoot after testing
+		#TODO: increase default of nBoot after testing, option to use Hessian
 ){
 	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
 	theta.V.n<-matrix(NA, 3,4, dimnames=list(NULL,c("k","beta0", "alfa", "Rb" )))
@@ -310,8 +300,12 @@ partGLFitLRC <- function(
 			as.numeric(abs(quantile(NEEDay.V.n, 0.03)-quantile(NEEDay.V.n, 0.97))),
 			0.1,
 			mean(NEENight.V.n, na.rm=T))   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
+	betaPrior <- theta.V.n[1,2]
 	theta.V.n[2,]<-theta.V.n[1,]/2
 	theta.V.n[3,]<-theta.V.n[1,]*2
+	#twutz: alpha is quite well defined, so try not changing it too much
+	theta.V.n[2,2] <- betaPrior*1.3
+	theta.V.n[3,2] <- betaPrior*0.8
 	#
 	npars<-dim(theta.V.n)[2]
 	nobs<-length(NEEDay.V.n)
@@ -319,31 +313,41 @@ partGLFitLRC <- function(
 	optSSE<-list(opt1=NA, opt2=NA, opt3=NA)
 	optimLRC <- function(theta, isUsingFixedVPD=FALSE, idx=TRUE){
 		# one fit of the light response curve, as function to avoid duplication
+		# TODO: think about uncertainty, 
+		# twutz: need to have a minimum uncertainty, else division by zero for NEE=0
+		Fc_unc0 <- abs(0.05*NEEDay.V.n[idx])
+		Fc_unc <- pmax( Fc_unc0, quantile(Fc_unc0, 0.75) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
 		if( isUsingFixedVPD){
 			resOptim <- optim(theta[-1], .partRHLightResponseCost_NoVPD, 
 					Rg = Rg.V.n[idx], 
 					Fc = NEEDay.V.n[idx], 
-					# TODO Mirco: think about uncertainties use NEE_fsd
-					#Fc_unc = abs(0.0001*NEEday.V.n)/abs(0.0001*NEEday.V.n),  
-					Fc_unc = abs(0.05*NEEDay.V.n[idx]),	  
+					Fc_unc = Fc_unc,	  
 					Temp=Temp_C.V.n[idx],
 					VPD = VPD.V.n[idx],
-					E0 = E_0.n,
-					method="BFGS", hessian=FALSE)
+					E0 = E_0.n
+					,betaPrior = betaPrior
+					,method="BFGS", hessian=FALSE)
 			resOptim$par=c(k=0,resOptim$par)	# add VPD parameter again
 			resOptim
 		} else {
-			optim(theta, .partRHLightResponseCost, 
+			tmp <- optim(theta, .partRHLightResponseCost, 
 					Rg = Rg.V.n[idx], 
 					Fc = NEEDay.V.n[idx], 
-					# TODO: think about uncertainties use NEE_fsd
-					#Fc_unc = abs(0.0001*NEEday.V.n)/abs(0.0001*NEEday.V.n),  
-					Fc_unc = abs(0.05*NEEDay.V.n[idx]),	  
+					Fc_unc = Fc_unc,	  
 					Temp=Temp_C.V.n[idx],
 					VPD = VPD.V.n[idx],
-					E0 = E_0.n,
-					method="BFGS", hessian=FALSE)
+					E0 = E_0.n
+					,betaPrior = betaPrior
+					,method="BFGS", hessian=FALSE)
 		}
+	}
+	.tmp.f <- function(){
+		tmp <- .partRHLightResponseCost(theta,Rg = Rg.V.n[idx], 
+				Fc = NEEDay.V.n[idx], 
+				Fc_unc = Fc_unc,	  
+				Temp=Temp_C.V.n[idx],
+				VPD = VPD.V.n[idx],
+				E0 = E_0.n)
 	}
 	#iparms=1L
 	for(iparms in 1:nrow(theta.V.n)){ 
@@ -357,17 +361,15 @@ partGLFitLRC <- function(
 		}
 		.tmp.plot <- function(){
 			plot(Rg.V.n,-1*NEEDay.V.n)
-			points(Rg.V.n, partRHLightResponse(theta=resOpt$par,
+			thetaB <- resOpt$par
+			#thetaB <-  opt[[iBest <- which.min(optSSE)]]	
+			points(Rg.V.n, tmp <- partRHLightResponse(thetaB,
 							Rg = Rg.V.n, 
-							Fc = NEEDay.V.n, 
-							Fc_unc = abs(0.01*NEEDay.V.n),  
-							Temp=Temp_degK.V.n-273.15,
+							Temp=Temp_C.V.n,
 							VPD = VPD.V.n,
 							E0 = E_0.n,
 							fixVPD = FALSE,
-							#run = 'forward'
-							isInverse=FALSE
-							), col="Red")
+							)$NEP, col="green")
 		}
 	}
 	if( sum(!is.na(optSSE)) == 0L ){
@@ -375,7 +377,7 @@ partGLFitLRC <- function(
 		opt.parms.V <- se.parms.V <- rep(NA_real_, npars)
 		names(opt.parms.V) <- names(se.parms.V) <- colnames(theta.V.n)
 	} else {
-		opt.parms.V<-opt[[iBest <- which.min(optSSE)]]		
+		opt.parms.V<-opt[[iBest <- which.min(optSSE)]]
 		#+++++++ Compute parameters uncertainty Uncertainty by bootstrap
 		unc_parm<-rep(NA,npars)
 		unc_parm_matrix<-matrix(NA, nrow=nBoot.i, ncol=npars, dimnames=list(NULL,names(opt.parms.V)))
@@ -445,16 +447,22 @@ partRHLightResponse <- function(
 
 .partRHLightResponseCost <- function(
 		### Computing residual sum of sqares for predictions vs. data of NEE
-		theta 		##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb))
-		,Fc=NA 		##<< Fc [numeric] ->  NEE time series [umolCO2/m2/s], required for inverse run, else may set to NA
+		theta 		##<< theta [numeric] -> parameter vector with positions as in argument of \code{\link{partRHLightResponse}}
+		,Fc=NA 		##<< Fc [numeric] ->  NEE time series [umolCO2/m2/s]
 		,Fc_unc=NA 	##<< Fc_unc [numeric] -> Uncertainty of fluxes [umolCO2/m2/s]
+		,betaPrior	##<< prior estimate of beta parameter (plateau)
 		,...		##<< other arguments to \code{\link{partRHLightResponse}}
 ) {
 	resPred <- partRHLightResponse(theta, ...)
 	NEP_mod <- resPred$NEP
 	#Converting NEE in NEP
 	NEP<-(-1)*Fc
-	RSS<-sum(((NEP_mod-NEP)/Fc_unc)^2)
+	##details<< the beta parameter is quite well defined. Hence put a prior with a standard deviation of x 
+	misFitPrior <- (((theta[2] - betaPrior))/(0.3*betaPrior))^2
+	misFitObs <- sum(((NEP_mod-NEP)/Fc_unc)^2)
+	RSS <- misFitObs + misFitPrior*length(Fc)
+	#if( !is.finite(RSS) ) recover()	# debugging the fit
+	RSS
 }
 
 .partRHLightResponseCost_NoVPD <- function(
@@ -488,22 +496,26 @@ partGLBoundParameters <- function(
 	opt.parms.V <- resOpt[[1]]
 	se.parms.V <- resOpt[[2]]
 	isGoodParameterSet <- TRUE	# FALSE means parameters are outside range and no computation uncertainties
-	if (opt.parms.V[1] < 0 ){	# k
-		opt.parms.V[1]<-0
+	if( any(is.na(opt.parms.V)) ){
 		isGoodParameterSet <- FALSE
-	}
-	if (opt.parms.V[2] < 0 ){	# beta
-		opt.parms.V[2]<-0
-		isGoodParameterSet <- FALSE
-	}
-	if (opt.parms.V[3] <= 0 | opt.parms.V[3] > 0.22){ #set to alpha values of the latest good parameters set
-		opt.parms.V[3]<-last_good[3]	
-		isGoodParameterSet <- FALSE
-	}
-	#whole par set not used, if beta > 250 or (beta > 100 and sdBeta >= beta) or rb < 0 
-	if ((opt.parms.V[2] > 250 | (opt.parms.V[2] > 100 && se.parms.V[2] >= opt.parms.V[2] ) | opt.parms.V[4] < 0  )){ 
-		opt.parms.V[]<-NA
-		isGoodParameterSet <- FALSE
+	} else {
+		if (opt.parms.V[1] < 0 ){	# k
+			opt.parms.V[1]<-0
+			isGoodParameterSet <- FALSE
+		}
+		if (opt.parms.V[2] < 0 ){	# beta
+			opt.parms.V[2]<-0
+			isGoodParameterSet <- FALSE
+		}
+		if (opt.parms.V[3] <= 0 | opt.parms.V[3] > 0.22){ #set to alpha values of the latest good parameters set
+			opt.parms.V[3]<-last_good[3]	
+			isGoodParameterSet <- FALSE
+		}
+		#whole par set not used, if beta > 250 or (beta > 100 and sdBeta >= beta) or rb < 0 
+		if ((opt.parms.V[2] > 250 | (opt.parms.V[2] > 100 && se.parms.V[2] >= opt.parms.V[2] ) | opt.parms.V[4] < 0  )){ 
+			opt.parms.V[]<-NA
+			isGoodParameterSet <- FALSE
+		}
 	}
 	if( !isGoodParameterSet){
 		se.parms.V[]<-NA                  
@@ -516,7 +528,7 @@ partGLBoundParameters <- function(
 	)
 }
 
-partGPInterpolateFluxes <- function(
+partGLInterpolateFluxes <- function(
 		### Predict REco and GPP by Light respons curve for two neighboring parameter sets and interpolate
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
