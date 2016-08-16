@@ -250,17 +250,20 @@ dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 dsNEE$NEE_fsd <- 0.05*dsNEE$FP_VARday		
 
 
-resLRCEx1 <- structure(list(Start = c(1, 3), End = c(5, 7), Num = c(82L, 63L
-				), MeanH = c(162, 238), iFirstRecInCentralDay = c(49, 145), E_0 = c(185.617678757497, 
-						185.617678757497), E_0_SD = c(144.277836860512, 144.277836860512
-				), R_ref = c(3.20466768712475, 2.62127227871677), R_ref_SD = c(5.03682769387594, 
-						2.22579454449657), a = c(0.185051474696062, 0.164205399828651
-				), a_SD = c(0.302895841389311, 0.137069609955839), b = c(26.3986276489297, 
-						27.0923397859845), b_SD = c(3.59753923232877, 3.16809867732855
-				), k = c(0, 0), k_SD = c(0, 0), parms_out_range = c(0L, 0L)), .Names = c("Start", 
-				"End", "Num", "MeanH", "iFirstRecInCentralDay", "E_0", "E_0_SD", 
-				"R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"
-		), row.names = 1:2, class = "data.frame")
+resLRCEx1 <- structure(list(Start = c(1, 3, 5), End = c(4, 6, 8), Num = c(67L, 
+						63L, 31L), iMeanRec = c(140, 238, 284), iFirstRec = c(49, 145, 
+						241), E_0 = c(185.617678757497, 185.617678757497, 181.749537012645
+				), E_0_SD = c(144.277836860512, 144.277836860512, 152.307507023055
+				), R_ref = c(3.26609560072806, 2.99553120153737, 5.17476500656016
+				), R_ref_SD = c(4.49378869629581, 1.74802623440995, NA), a = c(0.186456450072704, 
+						0.18760006173725, 0.18760006173725), a_SD = c(0.273653710564876, 
+						0.0630307187157329, NA), b = c(29.6535093558917, 29.8061770905044, 
+						25.6054449298359), b_SD = c(2.77484984478018, 3.12933814533094, 
+						NA), k = c(0, 0, 0), k_SD = c(0, 0, NA), parms_out_range = c(0L, 
+						0L, 1L)), .Names = c("Start", "End", "Num", "iMeanRec", "iFirstRec", 
+				"E_0", "E_0_SD", "R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", 
+				"k", "k_SD", "parms_out_range"), row.names = c(NA, 3L), class = "data.frame")
+
 
 
 
@@ -384,6 +387,11 @@ test_that("partGLPartitionFluxes",{
 			expect_true( all(tmp$Reco_DT_u50 < 5))
 			expect_true( all(tmp$Reco_DT_u50 > 0))
 			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.5))	#smooth
+			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.5))	#smooth
+			# reporting good values at first row
+			expect_true( sum( is.finite(tmp$FP_alpha) ) == sum(resLRCEx1$parms_out_range==0L) ) 
+			expect_true( all((tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range==0L] < 1e-2) )
+			#expect_true( all((is.na(tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range!=0L])) )
 			.tmp.plot <- function(){
 				tmp$time <- dsNEE1$sDateTime
 				plot( Reco_DT_u50 ~ time, tmp)
