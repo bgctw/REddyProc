@@ -585,12 +585,18 @@ fCheckColPlausibility <- function(
   # Separated checks for upper and lower limit to have separate warnings
   for (v.i in 1:length(VarName.V.s)) {
     ## 'Rg' - global radiation, W m-2
-    if( grepl('Rg|PotRad', VarName.V.s[v.i]) )
+    if( grepl('Rg', VarName.V.s[v.i]) )
     {
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 1200), SubCallFunc.s)
     }
-    ## 'PPFD' or 'ppfd' - photosynthetic active radiation, umol m-2 s-1
+	## 'PotRad' - potential global radiation, W m-2
+	if( grepl('PotRad', VarName.V.s[v.i]) )
+	{
+		fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
+		fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 3000), SubCallFunc.s)	#TODO plausible upper bound
+	}
+	## 'PPFD' or 'ppfd' - photosynthetic active radiation, umol m-2 s-1
     if( grepl('PPFD', VarName.V.s[v.i], ignore.case=TRUE) )
     {
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)

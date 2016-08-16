@@ -247,6 +247,7 @@ dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 						166.75999, 24.339, 10.433, 2.2341, 0, 0, 0, 0, 0)), .Names = c("sDateTime", 
 				"FP_VARnight", "FP_VARday", "NEW_FP_Temp", "NEW_FP_VPD", "Rg"
 		), row.names = 7249:7584, class = "data.frame")
+dsNEE$NEE_fsd <- 0.05*dsNEE$FP_VARday		
 
 
 resLRCEx1 <- structure(list(Start = c(1, 3), End = c(5, 7), Num = c(82L, 63L
@@ -282,7 +283,7 @@ test_that("partGLFitLRC",{
 			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
 			dssNight <- subset(dss, !is.na(dsNEE$FP_VARnight) )
 			dssDay <- dssDay[ order(dssDay$Rg), ]
-			res <- partGLFitLRC(dssDay$FP_VARday, dssNight$FP_VARnight, dssDay$Rg, dssDay$NEW_FP_Temp, dssDay$NEW_FP_VPD, E_0.n=185)
+			res <- partGLFitLRC(dssDay$FP_VARday, dssDay$NEE_fsd, dssNight$FP_VARnight, dssDay$Rg, dssDay$NEW_FP_Temp, dssDay$NEW_FP_VPD, E_0.n=185)
 			.tmp.plot <- function(){
 				plot( -FP_VARday ~ Rg, dssDay)		# FP_VARnight negative?
 				p <- res$opt.parms.V
@@ -294,7 +295,8 @@ test_that("partGLFitLRC",{
 		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
 			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday			
-			resParms <- partGLFitLRCWindows(dsNEE$FP_VARnight, dsNEE$FP_VARday, Temp.V.n=dsNEE$NEW_FP_Temp
+			resParms <- partGLFitLRCWindows(dsNEE$FP_VARnight, dsNEE$FP_VARday, dsNEE$NEE_fsd
+					, Temp.V.n=dsNEE$NEW_FP_Temp
 					, VPD.V.n=dsNEE$NEW_FP_VPD	
 					, Rg.V.n=dsNEE$Rg
 					, nRecInDay=48L
@@ -311,8 +313,9 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			
 			.tmp.inspectYear <- function(){
 				# generated from inside sPartitionGL
-				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) }) 
-				resY <- partGLFitLRCWindows(dsYear$FP_VARnight, dsYear$FP_VARday, Temp.V.n=dsYear$NEW_FP_Temp
+				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) })
+				resY <- partGLFitLRCWindows(dsYear$FP_VARnight, dsYear$FP_VARday, dsYear$NEE_fsd
+						, Temp.V.n=dsYear$NEW_FP_Temp
 						, VPD.V.n=dsYear$NEW_FP_VPD	
 						, Rg.V.n=dsYear$Rg
 						, nRecInDay=48L
@@ -372,7 +375,7 @@ test_that("partGLPartitionFluxes",{
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			#
 			dsNEE2 <- dsNEE1
-			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "Tair_f", "Tair_fqc","VPD_f", "VPD_fqc"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "Tair_u50_f", "Tair_u50_fqc","VPD_u50_f", "VPD_u50_fqc")
+			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd", "Tair_f", "Tair_fqc","VPD_f", "VPD_fqc"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd", "Tair_u50_f", "Tair_u50_fqc","VPD_u50_f", "VPD_u50_fqc")
 			tmp <- parGLPartitionFluxes( dsNEE2, Suffix.s="u50")
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			expect_true( all(is.finite(tmp$GPP_DT_u50)))

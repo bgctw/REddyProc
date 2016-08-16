@@ -6,6 +6,7 @@ parGLPartitionFluxes=function(
 		,FluxVar.s=paste0('NEE',SuffixDash.s,'_f')       ##<< Variable of net ecosystem fluxes
 		,QFFluxVar.s=paste0('NEE',SuffixDash.s,'_fqc')  ##<< Quality flag of variable
 		,QFFluxValue.n=0         						##<< Value of quality flag for _good_ (original) data
+		,FluxSdVar.s=paste0('NEE',SuffixDash.s,'_fsd')       ##<< Variable of standard deviation of net ecosystem fluxes
 		,TempVar.s=paste0('Tair',SuffixDash.s,'_f')     ##<< Filled air or soil temperature variable (degC)
 		,QFTempVar.s=paste0('Tair',SuffixDash.s,'_fqc') ##<< Quality flag of filled temperature variable
 		,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
@@ -37,8 +38,8 @@ parGLPartitionFluxes=function(
 	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="")
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-	fCheckColNames(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
-	fCheckColNum(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
+	fCheckColNames(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, FluxSdVar.s), 'sGLFluxPartition')
+	fCheckColNum(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, FluxSdVar.s), 'sGLFluxPartition')
 	fCheckColPlausibility(ds, c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
 	Var.V.n <- fSetQF(ds, FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sGLFluxPartition')
 	if( isVerbose ) message('Start daytime flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
@@ -81,7 +82,9 @@ parGLPartitionFluxes=function(
 	dsAns$NEW_FP_VPD <- fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'sGLFluxPartition')
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 	# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
-	resLRC <- tmp <- partGLFitLRCWindows(dsAns$FP_VARnight, dsAns$FP_VARday, Temp.V.n=dsAns$NEW_FP_Temp
+	resLRC <- tmp <- partGLFitLRCWindows(dsAns$FP_VARnight, dsAns$FP_VARday
+			, NEESd.V.n=ds[[FluxSdVar.s]]
+			, Temp.V.n=dsAns$NEW_FP_Temp
 			, VPD.V.n=dsAns$NEW_FP_VPD
 			, Rg.V.n=ds[[RadVar.s]]
 			, CallFunction.s='sGLFluxPartition'
@@ -104,8 +107,9 @@ parGLPartitionFluxes=function(
 
 partGLFitLRCWindows=function(
 		### estimateLRCParms - Estimation of the parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k)
-		NEENight.V.n        ##<< numeric vector of (original) nighttime ecosystem carbon flux, i.e. respiration
-		,NEEDay.V.n         ##<< numeric vector of (original) daytime ecosystem carbon flux, i.e. Net Ecosystem Exchange
+		NEENight.V.n        ##<< numeric vector of ecosystem carbon flux, i.e. respiration with all non-night records set to NA
+		,NEEDay.V.n         ##<< numeric vector of ecosystem carbon flux, i.e. Net Ecosystem Exchange with all non-day records set to NA
+		,NEESd.V.n			##<< numeric vector of estimated standard deviation of NEE
 		,Temp.V.n        	##<< numeric vector of (original) air or soil temperature (degC)
 		,VPD.V.n         	##<< numeric vector of (original) Vapor Pressure Deficit VPD (hPa)
 		,Rg.V.n          	##<< numeric vector of (original) Global Radiation (Wm-2)
@@ -169,8 +173,10 @@ partGLFitLRCWindows=function(
 		MeanHour.i <- round(mean(which(Subset.b))) # the rownumber in the entire dataset representing the center of the period
 		firstRecInCentralDay.i <- which(SubsetDay.b)[1] # the rownumber of the first record of the day of time center
 		NEENightInPeriod.V.n <- subset(NEENight.V.n, Subset.Night.b)
+		#NEESdNightInPeriod.V.n <- subset(NEESd.V.n, Subset.Night.b)
 		NEEDayInPeriod.V.n <- subset(NEEDay.V.n, Subset.b)
-		# note that 
+		NEESdDayInPeriod.V.n <- subset(NEESd.V.n, Subset.b)
+		# 
 		TempInPeriod.V.n <- subset(Temp.V.n, Subset.b)
 		TempInNightPeriod.V.n <- subset(Temp.V.n, Subset.Night.b)
 		TempInPeriod_degK.V.n <- fConvertCtoK(TempInPeriod.V.n)
@@ -198,12 +204,13 @@ partGLFitLRCWindows=function(
 			#}
 			#			
 			#resOptim <- sOptimSingleE0_Lev( NEEnight.V.n, Tempnight_degK.V.n)
+			# TODO: also use uncertainties in fit?
 			resE0 <- partGLEstimateTempSensInBounds(NEENightInPeriod.V.n, TempInNightPeriod_degK.V.n, prevE0=E_0.n)
 			E_0.n <- resE0$E_0
 			#
 			#tryCatch({
 	#if( DayMiddle.i == 113) recover()
-			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEENightInPeriod.V.n, RgInPeriod.V.n, TempInPeriod.V.n, VPDInPeriod.V.n, E_0.n=E_0.n)
+			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEESdDayInPeriod.V.n, NEENightInPeriod.V.n, RgInPeriod.V.n, TempInPeriod.V.n, VPDInPeriod.V.n, E_0.n=E_0.n)
 			.tmp.plot <- function(){
 				plot( -NEEDayInPeriod.V.n ~ RgInPeriod.V.n )
 				tmp <- partRHLightResponse(resOpt$opt.parms.V, RgInPeriod.V.n, VPDInPeriod.V.n, NEEDayInPeriod.V.n, 1, TempInPeriod.V.n,  E_0.n)
@@ -286,6 +293,7 @@ partGLEstimateTempSensInBounds <- function(
 partGLFitLRC <- function(
 		### optimization for three different initial parameter sets
 		NEEDay.V.n			##<< non-na numeric vector of day time fluxes
+		,NEESdDay.V.n		##<< standard deviation of NEEDay
 		, NEENight.V.n		##<< non-na numeric vector of night time fluxes to estimate initial value of Rb
 		, Rg.V.n			##<< solar radion (numeric vector of length of NEEDay)
 		, Temp_C.V.n		##<< temperature in deg Celsius
@@ -315,7 +323,8 @@ partGLFitLRC <- function(
 		# one fit of the light response curve, as function to avoid duplication
 		# TODO: think about uncertainty, 
 		# twutz: need to have a minimum uncertainty, else division by zero for NEE=0
-		Fc_unc0 <- abs(0.05*NEEDay.V.n[idx])
+		Fc_unc0 <- NEESdDay.V.n[idx]
+		#Fc_unc0 <- abs(0.05*NEEDay.V.n[idx])
 		Fc_unc <- pmax( Fc_unc0, quantile(Fc_unc0, 0.75) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
 		if( isUsingFixedVPD){
 			resOptim <- optim(theta[-1], .partRHLightResponseCost_NoVPD, 

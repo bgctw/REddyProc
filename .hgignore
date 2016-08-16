@@ -55,3 +55,6 @@ vignettes/plots$
 syntax: glob
 *vignettes/*.html
 *vignettes/*.md
+
+syntax: regexp
+^last\.dump\.rda$
