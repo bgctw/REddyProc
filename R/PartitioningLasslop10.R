@@ -296,16 +296,16 @@ partGLFitLRCWindows=function(
 	# setup a data.frame for the results
 	##value<< data.frame with columns
 	resDf <- data.frame(
-			Start=startDays.V.i	##<< the starting day of the window
-			, End=NA_integer_		##<< the endding day of the window  
+			Start=startDays.V.i	##<< the starting day of the day-window
+			, End=NA_integer_		##<< the endding day of the day-window  
 			, Num=NA_integer_		##<< the number of records flux records in the window
-			, iMeanRec=NA_real_		##<< the mean across all record numbers in the day-window
+			, iMeanRec=NA_real_		##<< the mean across all valid record numbers in the day-window
 			, iFirstRec=NA_real_	##<< the first record number in the day-window
 			, E_0=NA_real_			##<< temperature sensitivty
 			, E_0_SD=NA_real_		##<< standard deviation of temperature sensitivity
 			, R_ref=NA_real_		##<< respiration at reference temperature
 			, R_ref_SD=NA_real_		##< standard deviation of reference temperature
-			,a=NA_real_, a_SD=NA_real_
+			,a=NA_real_, a_SD=NA_real_	##<< coefficients and associated standard deviation of the light respons curve
 			,b=NA_real_, b_SD=NA_real_
 			,k=NA_real_, k_SD=NA_real_
 			,parms_out_range=NA_integer_	##<< zero if it was a good parameter estimate, 1 if could not fit or fell outside ranges
