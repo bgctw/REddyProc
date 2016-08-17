@@ -86,13 +86,15 @@ parGLPartitionFluxes=function(
 	# Filter night time values only
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E0
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	dsAns$FP_VARnight <- ifelse(ds[,RadVar.s] > 4 | ds[[PotRadVar.s]] != 0, NA,  Var.V.n)
+	isNight <- (ds[,RadVar.s] <= 4 & ds[[PotRadVar.s]] == 0)
+	dsAns$FP_VARnight <- ifelse(isNight, Var.V.n, NA)
 	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
 	attr(dsAns$FP_VARnight, 'units') <- attr(Var.V.n, 'units')
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	dsAns$FP_VARday <- ifelse(ds[,RadVar.s] < 4 | ds[[PotRadVar.s]] == 0, NA,  Var.V.n)
+	isDay=(ds[,RadVar.s] > 4 & ds[[PotRadVar.s]] != 0)
+	dsAns$FP_VARday <- ifelse(isDay, Var.V.n, NA)
 	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_day', sep='')
 	attr(dsAns$FP_VARday, 'units') <- attr(Var.V.n, 'units')
 	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
@@ -101,12 +103,17 @@ parGLPartitionFluxes=function(
 	dsAns$NEW_FP_VPD <- fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'sGLFluxPartition')
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 	# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
-	resLRC <- tmp <- partGLFitLRCWindows(dsAns$FP_VARnight, dsAns$FP_VARday
-			, NEESd.V.n=ds[[FluxSdVar.s]]
-			, Temp.V.n=dsAns$NEW_FP_Temp
-			, VPD.V.n=dsAns$NEW_FP_VPD
-			, Rg.V.n=ds[[RadVar.s]]
-			, CallFunction.s='sGLFluxPartition'
+	# extract the relevant columns in df with defined names (instead of passing many variables)
+	dsR <- data.frame(
+			NEE=Var.V.n
+			,sdNEE=ds[[FluxSdVar.s]]
+			, Temp=dsAns$NEW_FP_Temp
+			, VPD=dsAns$NEW_FP_VPD
+			, Rg=ds[[RadVar.s]]
+			, isDay=isDay
+			, isNight=isNight
+	) 
+	resLRC <- tmp <- partGLFitLRCWindows( dsR
 			, nRecInDay=nRecInDay.i
 			, controlGLPart.l=controlGLPart.l
 	)
@@ -132,16 +139,10 @@ parGLPartitionFluxes=function(
 
 partGLFitLRCWindows=function(
 		### estimateLRCParms - Estimation of the parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k)
-		NEENight.V.n        ##<< numeric vector of ecosystem carbon flux, i.e. respiration with all non-night records set to NA
-		,NEEDay.V.n         ##<< numeric vector of ecosystem carbon flux, i.e. Net Ecosystem Exchange with all non-day records set to NA
-		,NEESd.V.n			##<< numeric vector of estimated standard deviation of NEE
-		,Temp.V.n        	##<< numeric vector of (original) air or soil temperature (degC)
-		,VPD.V.n         	##<< numeric vector of (original) Vapor Pressure Deficit VPD (hPa)
-		,Rg.V.n          	##<< numeric vector of (original) Global Radiation (Wm-2)
+		ds					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, adn boolean columns isNight, isDay
 		,WinSizeDays.i=4L	##<< Window size (days) for daytime fits
 		,WinSizeNight.i=3L*WinSizeDays.i	##<< Window size (days) for nighttime fits  
 		,DayStep.i=WinSizeDays.i %/% 2L     ##<< step in days for shifting the windows
-		,CallFunction.s=''  ##<< Name of function called from
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
 		,nRecInDay.i=48L	##<< number of records within one day (for half-hourly data its 48)
 		,controlGLPart.l=partGLControl()	##<< list of further default parameters
@@ -151,17 +152,20 @@ partGLFitLRCWindows=function(
 	##description<<
 	## Estimation of the parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) as in Lasslop et al., 2010 \code{\link{fLloydTaylor()}} for successive periods
 	'Estimation of the reference respiration Rref of fLloydTaylor() for successive periods'
+	requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
+	iMissing <- which( is.na(match( requiredCols, names(ds) )))
+	if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
 	# Regression settings
 	LMRes.F <- data.frame(NULL) #Results of linear regression
 	# Loop regression periods
 	#DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS #twutz: do not rely on sINFO here, also a -1 is missing 
 	##details<<
 	## All the vectors must have the same length and consist of entire days, with each day having the same number of records
-	nRec <- length(NEENight.V.n) 
+	nRec <- length(ds$NEE) 
 	DayCounter.V.i <- (c(1:nRec)-1L) %/% nRecInDay.i 
 	startDays.V.i <- seq(1, max(DayCounter.V.i), DayStep.i)
 	# setup a data.frame for the results
-	##value<< data.frame with columns
+	##value<< data.frame with a row for each window with columns
 	resDf <- data.frame(
 			Start=startDays.V.i	##<< the starting day of the day-window
 			, End=NA_integer_		##<< the endding day of the day-window  
@@ -190,57 +194,41 @@ partGLFitLRCWindows=function(
 		DayStart.Night.i <- DayStart.i + WinSizeDays.i/2 - WinSizeNight.i/2 
 		DayEnd.Night.i <- DayStart.Night.i-1L+WinSizeNight.i
 		#c(DayStart.i, DayEnd.i, DayStart.Night.i, DayEnd.Night.i)
-		SubsetDay.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i 
-		Subset.b <-  SubsetDay.b & 
-				!is.na(NEEDay.V.n) & !is.na(Temp.V.n) & !is.na(VPD.V.n)
-		Subset.Night.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
-				!is.na(NEENight.V.n)
+		SubsetDayPeriod.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i 
+		SubsetValidDay.b <-  SubsetDayPeriod.b & 
+				ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$VPD)
+		SubsetValidNight.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
+				ds$isNight & !is.na(ds$NEE)
+		dsNight <- ds[SubsetValidNight.b,]
+		dsDay <- ds[SubsetValidDay.b,]
 		##details<<
 		## Each window estimate is associated with a time or equivalently with a record.
 		## The first record, i.e. row number, of the day-window is reported.
 		## Moreover, the mean of all valid records numbers in the daytime window is reported for interpolation.
-		meanRecInDayWindow.i <- round(mean(which(Subset.b))) 
-		firstRecDayWindow.i <- which(SubsetDay.b)[1] # the rownumber of the first record inside the day window
-		NEENightInPeriod.V.n <- subset(NEENight.V.n, Subset.Night.b)
+		meanRecInDayWindow.i <- round(mean(which(SubsetValidDay.b))) 
+		firstRecDayWindow.i <- which(SubsetDayPeriod.b)[1] # the rownumber of the first record inside the day window
+		#NEENightInPeriod.V.n <- subset(ds$NEE, SubsetValidNight.b)
 		#NEESdNightInPeriod.V.n <- subset(NEESd.V.n, Subset.Night.b)
-		NEEDayInPeriod.V.n <- subset(NEEDay.V.n, Subset.b)
-		NEESdDayInPeriod.V.n <- subset(NEESd.V.n, Subset.b)
+		#NEEDayInPeriod.V.n <- subset(ds$NEEDay.V.n, SubsetValidDay.b)
+		#NEESdDayInPeriod.V.n <- subset(NEESd.V.n, SubsetValidDay.b)
 		# 
-		TempInPeriod.V.n <- subset(Temp.V.n, Subset.b)
-		TempInNightPeriod.V.n <- subset(Temp.V.n, Subset.Night.b)
-		TempInPeriod_degK.V.n <- fConvertCtoK(TempInPeriod.V.n)
-		TempInNightPeriod_degK.V.n <- fConvertCtoK(TempInNightPeriod.V.n)
-		VPDInPeriod.V.n <- subset(VPD.V.n, Subset.b)
-		RgInPeriod.V.n  <- subset(Rg.V.n, Subset.b)
+		#TempInPeriod.V.n <- subset(Temp.V.n, SubsetValidDay.b)
+		#TempInNightPeriod.V.n <- subset(Temp.V.n, SubsetValidNight.b)
+		#TempInPeriod_degK.V.n <- fConvertCtoK(TempInPeriod.V.n)
+		#TempInNightPeriod_degK.V.n <- fConvertCtoK(TempInNightPeriod.V.n)
+		#VPDInPeriod.V.n <- subset(ds$VPD, SubsetValidDay.b)
+		#RgInPeriod.V.n  <- subset(Rg.V.n, SubsetValidDay.b)
 		#		
-		if( length(NEEDayInPeriod.V.n) > controlGLPart.l$minNRecInDayWindow ) {
+		if( nrow(dsDay) > controlGLPart.l$minNRecInDayWindow ) {
 			CountRegr.i <- CountRegr.i+1L
-			#Estimation of model parameters
-			#tryCatch({
-			#  LM.L <- lm(R_eco ~ 0 + fLloydTaylor(R_ref, E_0, Temp_degK, T_ref.n=273.15+15), data=as.data.frame(cbind(R_eco=NEEnight.V.n, R_ref=1, E_0=E_0.V.n, Temp_degK=Temp_degK.V.n)))
-			#  LMRes.F <- rbind(LMRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), MeanH=MeanHour.i, 
-			#                                  R_ref=coef(summary(LM.L))[1], R_ref_SD=coef(summary(LM.L))[2]))
-			#! Note on PV-Wave code: trimmed linear regression not used in the end, i.e. in online webtool
-			#  if( F ) { # Plot for testing
-			#    plot(NEEnight.V.n ~ fLloydTaylor(1, E_0.V.n, Temp_degK.V.n, T_ref.n=273.15+15))
-			#    curve(coef(LM.L)[1] * x, add=T, col='green')
-			#  }  
-			#}, error = function(e) {
-			#  LMRes.F <- rbind(LMRes.F, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEnight.V.n), MeanH=MeanHour.i, 
-			#                                  R_ref=NA, R_ref_SD=NA))
-			#}
-			#			
-			#resOptim <- sOptimSingleE0_Lev( NEEnight.V.n, Tempnight_degK.V.n)
-			# TODO: also use uncertainties in fit?
-			resE0 <- partGLEstimateTempSensInBounds(NEENightInPeriod.V.n, TempInNightPeriod_degK.V.n, prevE0=E_0.n)
+			resE0 <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n)
 			E_0.n <- resE0$E_0
 			#
 			#tryCatch({
 	#if( DayMiddle.i == 113) recover()
-			resOpt <- resOpt0 <- partGLFitLRC(NEEDayInPeriod.V.n, NEESdDayInPeriod.V.n, NEENightInPeriod.V.n, RgInPeriod.V.n, TempInPeriod.V.n, VPDInPeriod.V.n
-							, E_0.n=E_0.n, controlGLPart.l=controlGLPart.l)
+			resOpt <- resOpt0 <- partGLFitLRC(dsDay, dsNight$NEE, E_0.n=E_0.n, controlGLPart.l=controlGLPart.l)
 			.tmp.plot <- function(){
-				plot( -NEEDayInPeriod.V.n ~ RgInPeriod.V.n )
+				plot( -NEE ~ Rg, dsDay )
 				tmp <- partRHLightResponse(resOpt$opt.parms.V, RgInPeriod.V.n, VPDInPeriod.V.n, NEEDayInPeriod.V.n, 1, TempInPeriod.V.n,  E_0.n)
 				lines(  tmp ~ RgInPeriod.V.n )
 			}
@@ -254,7 +242,7 @@ partGLFitLRCWindows=function(
 			#
 			# twutz: avoid slow rbind, but write into existing data.frame
 			resDf[iDay, ] <- data.frame(
-					Start=DayStart.i, End=DayEnd.i, Num=length(NEEDayInPeriod.V.n)
+					Start=DayStart.i, End=DayEnd.i, Num=nrow(dsDay)
 					,iMeanRec=meanRecInDayWindow.i
 					,iFirstRec=firstRecDayWindow.i
 					,E_0=E_0.n, E_0_SD=resE0$E_0_SD   
@@ -267,18 +255,6 @@ partGLFitLRCWindows=function(
 				)
 		} # if enough records
 		#! Note on PV-Wave code: trimmed linear regression not used in the end, i.e. in online webtool
-		#if( F ) { # Plot for testing
-		#  plot(NEEday.V.n ~ fRHRF_RdFit(1, E_0.V.n, Temp_degK.V.n, T_ref.n=273.15+15))
-		#  curve(coef(LM.L)[1] * x, add=T, col='green')
-		#}  
-#							}, error = function(e) {
-#								OPTRes.LRC <- rbind(OPTRes.LRC, cbind(Start=DayStart.i, End=DayEnd.i, Num=length(NEEday.V.n), MeanH=MeanHour.i, 
-#												R_ref=NA, R_ref_SD=NA,
-#												a=NA, a_SD=NA,
-#												b=NA, b_SD=NA,
-#												k=NA, k_SD=NA,
-#												parms_out_range=NA))
-#							})  #Spaces between brackets required to avoid replacement on documentation generation
 	} # for i in days
 	if( isVerbose ) message("") # LineFeed
 	# remove those rows where there was not enough data
@@ -320,19 +296,15 @@ partGLEstimateTempSensInBounds <- function(
 
 partGLFitLRC <- function(
 		### optimization of light respons curve against data in one window for three different initial parameter sets
-		NEEDay.V.n			##<< non-na numeric vector of day time fluxes
-		,NEESdDay.V.n		##<< standard deviation of NEEDay
+		dsDay				##<< data.frame with columns NEEDay, Rg, Temp_C, VPD
 		, NEENight.V.n		##<< non-na numeric vector of night time fluxes to estimate initial value of Rb
-		, Rg.V.n			##<< solar radion (numeric vector of length of NEEDay)
-		, Temp_C.V.n		##<< temperature in deg Celsius
-		, VPD.V.n			##<< VPD	
 		, E_0.n				##<< temperature sensitivity of respiration
 		,controlGLPart.l=partGLControl()	##<< further default parameters
 ){
 	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
 	theta.V.n<-matrix(NA, 3,4, dimnames=list(NULL,c("k","beta0", "alfa", "Rb" )))
 	theta.V.n[1,]<-c(0,
-			as.numeric(abs(quantile(NEEDay.V.n, 0.03)-quantile(NEEDay.V.n, 0.97))),
+			as.numeric(abs(quantile(dsDay$NEE, 0.03)-quantile(dsDay$NEE, 0.97))),
 			0.1,
 			mean(NEENight.V.n, na.rm=T))   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
 	betaPrior <- theta.V.n[1,2]
@@ -343,7 +315,7 @@ partGLFitLRC <- function(
 	theta.V.n[3,2] <- betaPrior*0.8
 	#
 	npars<-dim(theta.V.n)[2]
-	nobs<-length(NEEDay.V.n)
+	nobs<-nrow(dsDay)
 	opt<-list(opt1=rep(NA,npars), opt2=rep(NA,npars), opt3=rep(NA,npars))
 	optSSE<-list(opt1=NA, opt2=NA, opt3=NA)
 	##details<< the beta parameter is quite well defined. Hence use a prior with a standard deviation.
@@ -351,70 +323,27 @@ partGLFitLRC <- function(
 	## This uncertainty is set corresponding to 10 times the median relative flux uncertainty.
 	## The prior is weighted n times the observations in the cost.
 	## Hence, overall it is using a weight of 1/10 of the weight of all observations. 
-	optimLRC <- function(theta, isUsingFixedVPD=FALSE, idx=TRUE){
-		# one fit of the light response curve, as function to avoid duplication
-		# TODO: think about uncertainty, 
-		# twutz: need to have a minimum uncertainty, else division by zero for NEE=0
-		Fc_unc0 <- NEESdDay.V.n[idx]
-		#Fc_unc0 <- abs(0.05*NEEDay.V.n[idx])
-		Fc_unc <- pmax( Fc_unc0, quantile(Fc_unc0, 0.75) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
-		medianRelFluxUncertainty <- abs(median(NEEDay.V.n[idx]/Fc_unc))
-		sdBetaPrior <- 10*medianRelFluxUncertainty*betaPrior
-		if( isUsingFixedVPD){
-			resOptim <- optim(theta[-1], .partGLRHLightResponseCost_NoVPD
-					,flux = -NEEDay.V.n[idx] 
-					,sdFlux = Fc_unc	  
-					,betaPrior = betaPrior
-					,sdBetaPrior = sdBetaPrior
-					,Rg = Rg.V.n[idx] 
-					,VPD = VPD.V.n[idx]
-					,Temp=Temp_C.V.n[idx]
-					,E0 = E_0.n
-					,control=list(reltol=0.001)
-					,method="BFGS", hessian=FALSE)
-			resOptim$par=c(k=0,resOptim$par)	# add VPD parameter again
-			resOptim
-		} else {
-			tmp <- optim(theta, .partGLRHLightResponseCost, 
-					,flux = -NEEDay.V.n[idx] 
-					,sdFlux = Fc_unc	  
-					,betaPrior = betaPrior
-					,sdBetaPrior = sdBetaPrior
-					,Rg = Rg.V.n[idx] 
-					,VPD = VPD.V.n[idx]
-					,Temp=Temp_C.V.n[idx]
-					,E0 = E_0.n
-					,control=list(reltol=0.001)
-					,method="BFGS", hessian=FALSE)
-		}
-	}
-	.tmp.f <- function(){
-		tmp <- .partGLRHLightResponseCost(theta,Rg = Rg.V.n[idx], 
-				Fc = NEEDay.V.n[idx], 
-				Fc_unc = Fc_unc,	  
-				Temp=Temp_C.V.n[idx],
-				VPD = VPD.V.n[idx],
-				E0 = E_0.n)
-	}
 	#iparms=1L
 	for(iparms in 1:nrow(theta.V.n)){ 
 		#CHANGE Fc_unc
-		resOpt <- resOpt0 <- optimLRC(theta.V.n[iparms,], isUsingFixedVPD=FALSE)
+		resOpt <- resOpt0 <- .optimLRC(theta.V.n[iparms,], isUsingFixedVPD=FALSE, dsDay
+						, E_0.n, betaPrior )
 		# IF kVPD parameter less than 0 estimate the parameters withouth VPD effect
-		if (resOpt$par[1] <= 0) resOpt <- optimLRC(resOpt0$par, isUsingFixedVPD=TRUE)
+		if (resOpt$par[1] <= 0) resOpt <- .optimLRC(resOpt0$par, isUsingFixedVPD=TRUE, dsDay
+							, E_0.n, betaPrior )
 		#if( resOpt$convergence <= 1L){ # 0: convergence, 1L if maxit reached also report value
 		if( resOpt$convergence == 0L){ 
 			opt[[iparms]] <- resOpt$par
 			optSSE[iparms] <- resOpt$value
 		}
 		.tmp.plot <- function(){
-			plot(Rg.V.n,-1*NEEDay.V.n)
+			plot(dsDay$Rg,-1*dsDay$NEE)
 			thetaB <- resOpt$par
 			#thetaB <-  opt[[iBest <- which.min(optSSE)]]	
 			points(Rg.V.n, tmp <- partRHLightResponse(thetaB,
 							Rg = Rg.V.n, 
 							Temp=Temp_C.V.n,
-							VPD = VPD.V.n,
+							VPD = ds$VPD,
 							E0 = E_0.n,
 							fixVPD = FALSE,
 							)$NEP, col="green")
@@ -433,13 +362,13 @@ partGLFitLRC <- function(
 		#
 		#z <- 1L
 		for (z in c(1:controlGLPart.l$nBootUncertainty)){
-			idx <- sample(length(Rg.V.n), replace=TRUE)
-			try({
-						resOptBoot <- optimLRC(opt.parms.V, isUsingFixedVPD=isUsingFixedVPD, idx=idx)
-						if( resOptBoot$convergence == 0L )	
-							#TODO: also remove the bery bad cases 
-							unc_parm_matrix[z,]<-resOptBoot$par
-					})
+			idx <- sample(nrow(dsDay), replace=TRUE)
+			dsDayB <- dsDay[idx,]
+			resOptBoot <- .optimLRC(opt.parms.V, isUsingFixedVPD=isUsingFixedVPD, dsDayB
+							, E_0.n, betaPrior )
+			if( resOptBoot$convergence == 0L )	
+				#TODO: also remove the bery bad cases 
+				unc_parm_matrix[z,]<-resOptBoot$par
 		}
 		se.parms.V<-apply(unc_parm_matrix, MARGIN=2, FUN=sd, na.rm=TRUE)
 	}
@@ -451,6 +380,57 @@ partGLFitLRC <- function(
 			,initialGuess.parms.V.n=theta.V.n[1,]	##<< the initial guess
 	)
 }
+
+.optimLRC <- function(theta, isUsingFixedVPD=FALSE, dsDay, E_0.n, betaPrior
+		){
+	# one fit of the light response curve, as function to avoid duplication
+	# TODO: think about uncertainty, 
+	# twutz: need to have a minimum uncertainty, else division by zero for NEE=0
+	Fc_unc <- pmax( dsDay$sdNEE, quantile(dsDay$sdNEE, 0.75) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
+	medianRelFluxUncertainty <- abs(median(Fc_unc/dsDay$NEE))
+	sdBetaPrior <- 10*medianRelFluxUncertainty*betaPrior
+	if( isUsingFixedVPD){
+		resOptim <- optim(theta[-1], .partGLRHLightResponseCost_NoVPD
+				,flux = -dsDay$NEE 
+				,sdFlux = Fc_unc	  
+				,betaPrior = betaPrior
+				,sdBetaPrior = sdBetaPrior
+				,Rg = dsDay$Rg 
+				,VPD = dsDay$VPD
+				,Temp=dsDay$Temp
+				,E0 = E_0.n
+				,control=list(reltol=0.001)
+				,method="BFGS", hessian=FALSE)
+		resOptim$par=c(k=0,resOptim$par)	# add VPD parameter again
+		resOptim
+	} else {
+		tmp <- optim(theta, .partGLRHLightResponseCost 
+				,flux = -dsDay$NEE 
+				,sdFlux = Fc_unc	  
+				,betaPrior = betaPrior
+				,sdBetaPrior = sdBetaPrior
+				,Rg = dsDay$Rg 
+				,VPD = dsDay$VPD
+				,Temp=dsDay$Temp
+				,E0 = E_0.n
+				,control=list(reltol=0.001)
+				,method="BFGS", hessian=FALSE)
+	}
+}
+
+.tmp.f <- function(){
+	tmp <- .partGLRHLightResponseCost(theta 
+	,flux = -dsDay$NEE 
+	,sdFlux = Fc_unc	  
+	,betaPrior = betaPrior
+	,sdBetaPrior = sdBetaPrior
+	,Rg = dsDay$Rg 
+	,VPD = dsDay$VPD
+	,Temp=dsDay$Temp
+	,E0 = E_0.n
+	)
+}
+
 
 
 partRHLightResponse <- function(
@@ -504,6 +484,8 @@ partRHLightResponse <- function(
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
 		,useCVersion=TRUE	##<< set to FALSE  to use R instead of fast C version, e.g. for debugging
+		# also tried to pass dsDay data.frame instead of all the variables separately, but accessing data.frame
+		# columns in the cost function was a severe penalty (here double execution time)
 ) {
 	if( useCVersion){
 		RHLightResponseCostC(theta, flux, sdFlux, betaPrior, sdBetaPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		

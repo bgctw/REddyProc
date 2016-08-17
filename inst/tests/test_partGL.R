@@ -308,7 +308,7 @@ test_that("RHLightResponseCostC",{
 			expect_true(tmp - RSSR < 1e-8)	
 		})
 
-.profile_RHLightResponseCostC <- function(){
+.benchmark_RHLightResponseCostC <- function(){
 	#require(rbenchmark)
 	tmp <- benchmark( 
 	 .partGLRHLightResponseCost( theta, flux, sdFlux, betaPrior, sdBetaPrior
@@ -338,25 +338,26 @@ test_that("partGLFitLRC",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
 			dssNight <- subset(dss, !is.na(dsNEE$FP_VARnight) )
-			dssDay <- dssDay[ order(dssDay$Rg), ]
-			res <- partGLFitLRC(dssDay$FP_VARday, dssDay$NEE_fsd, dssNight$FP_VARnight, dssDay$Rg, dssDay$NEW_FP_Temp, dssDay$NEW_FP_VPD, E_0.n=185)
+			dsDay <- data.frame( NEE=dssDay$FP_VARday, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg, Temp=dssDay$NEW_FP_Temp, VPD=dssDay$NEW_FP_VPD)
+			res <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185)
 			.tmp.plot <- function(){
-				plot( -FP_VARday ~ Rg, dssDay)		# FP_VARnight negative?
+				dsDay <- dsDay[ order(dsDay$Rg), ]
+				plot( -NEE ~ Rg, dsDay)		# FP_VARnight negative?
 				p <- res$opt.parms.V
-				pred <- partRHLightResponse(p, Rg=dssDay$Rg, VPD=dssDay$NEW_FP_VPD, Temp=dssDay$NEW_FP_Temp, E0=185)
-				lines(pred$NEP  ~ dssDay$Rg)
+				pred <- partRHLightResponse(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp, E0=185)
+				lines(pred$NEP  ~ dsDay$Rg)
 			}
 		})
 
 		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
-			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday			
-			resParms <- partGLFitLRCWindows(dsNEE$FP_VARnight, dsNEE$FP_VARday, dsNEE$NEE_fsd
-					, Temp.V.n=dsNEE$NEW_FP_Temp
-					, VPD.V.n=dsNEE$NEW_FP_VPD	
-					, Rg.V.n=dsNEE$Rg
-					, nRecInDay=48L
-			)
+			ds <- with(dsNEE, data.frame(NEE=FP_VARnight, Temp=dsNEE1$NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )))
+			ds$NEE[!is.na(dsNEE$FP_VARday)] <- dsNEE$FP_VARday[!is.na(dsNEE$FP_VARday)]
+			ds$sdNEE <- 0.05*ds$NEE
+			ds$isDay <- is.finite(dsNEE$FP_VARday)
+			ds$isNight <- is.finite(dsNEE$FP_VARnight)
+			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday	
+			resParms <- partGLFitLRCWindows(ds, nRecInDay=48L)
 			# check the conditions of Lasslop10 Table A1
 			resValid <- resParms[!is.na(resParms$R_ref),]
 			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
@@ -452,4 +453,17 @@ test_that("partGLPartitionFluxes",{
 				plot( GPP_DT_u50 ~ time, tmp)
 			}
 		})
+
+.profilePartGL <- function(){
+	require(profr)
+	p1 <- profr({
+				for( i in 1:1 ){
+					tmp <- parGLPartitionFluxes( dsNEE1 )
+				}
+			}, 0.01 )
+	plot(p1)
+	
+	
+	
+}
 
