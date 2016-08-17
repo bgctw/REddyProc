@@ -7,8 +7,7 @@ partGLControl <- function(
 ){
 	##author<< TW
 	ctrl <- list(  
-			targetParameterPrecision=targetParameterPrecision
-			,nBootUncertainty=nBootUncertainty
+			nBootUncertainty=nBootUncertainty
 			,minNRecInDayWindow=minNRecInDayWindow 
 	)
 	#display warning message for the following variables that we advise not to be changed
@@ -362,35 +361,35 @@ partGLFitLRC <- function(
 		medianRelFluxUncertainty <- abs(median(NEEDay.V.n[idx]/Fc_unc))
 		sdBetaPrior <- 10*medianRelFluxUncertainty*betaPrior
 		if( isUsingFixedVPD){
-			resOptim <- optim(theta[-1], .partRHLightResponseCost_NoVPD, 
-					Rg = Rg.V.n[idx], 
-					Flux.V.n = -NEEDay.V.n[idx], 
-					sdFlux.V.n = Fc_unc,	  
-					Temp=Temp_C.V.n[idx],
-					VPD = VPD.V.n[idx],
-					E0 = E_0.n
+			resOptim <- optim(theta[-1], .partGLRHLightResponseCost_NoVPD
+					,flux = -NEEDay.V.n[idx] 
+					,sdFlux = Fc_unc	  
 					,betaPrior = betaPrior
 					,sdBetaPrior = sdBetaPrior
+					,Rg = Rg.V.n[idx] 
+					,VPD = VPD.V.n[idx]
+					,Temp=Temp_C.V.n[idx]
+					,E0 = E_0.n
 					,control=list(reltol=0.001)
 					,method="BFGS", hessian=FALSE)
 			resOptim$par=c(k=0,resOptim$par)	# add VPD parameter again
 			resOptim
 		} else {
-			tmp <- optim(theta, .partRHLightResponseCost, 
-					Rg = Rg.V.n[idx], 
-					Flux.V.n = -NEEDay.V.n[idx], 
-					sdFlux.V.n = Fc_unc,	  
-					Temp=Temp_C.V.n[idx],
-					VPD = VPD.V.n[idx],
-					E0 = E_0.n
+			tmp <- optim(theta, .partGLRHLightResponseCost, 
+					,flux = -NEEDay.V.n[idx] 
+					,sdFlux = Fc_unc	  
 					,betaPrior = betaPrior
 					,sdBetaPrior = sdBetaPrior
+					,Rg = Rg.V.n[idx] 
+					,VPD = VPD.V.n[idx]
+					,Temp=Temp_C.V.n[idx]
+					,E0 = E_0.n
 					,control=list(reltol=0.001)
 					,method="BFGS", hessian=FALSE)
 		}
 	}
 	.tmp.f <- function(){
-		tmp <- .partRHLightResponseCost(theta,Rg = Rg.V.n[idx], 
+		tmp <- .partGLRHLightResponseCost(theta,Rg = Rg.V.n[idx], 
 				Fc = NEEDay.V.n[idx], 
 				Fc_unc = Fc_unc,	  
 				Temp=Temp_C.V.n[idx],
@@ -494,35 +493,40 @@ partRHLightResponse <- function(
 	)
 }
 
-.partRHLightResponseCost <- function(
+.partGLRHLightResponseCost <- function(
 		### Computing residual sum of sqares for predictions vs. data of NEE
 		theta 		##<< theta [numeric] -> parameter vector with positions as in argument of \code{\link{partRHLightResponse}}
-		,Flux.V.n=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s]
-		,sdFlux.V.n=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s]
+		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s]
+		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s]
 		,betaPrior		##<< prior estimate of beta parameter (range of values)
 		,sdBetaPrior	##<< standard deviation of betaPrior
 		,...			##<< other arguments to \code{\link{partRHLightResponse}}
+		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
+		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,useCVersion=TRUE	##<< set to FALSE  to use R instead of fast C version, e.g. for debugging
 ) {
-	resPred <- partRHLightResponse(theta, ...)
-	NEP_mod <- resPred$NEP
-	misFitPrior <- (((theta[2] - betaPrior))/(sdBetaPrior))^2
-	misFitObs <- sum(((NEP_mod-Flux.V.n)/sdFlux.V.n)^2)
-	RSS <- misFitObs + misFitPrior*length(Flux.V.n)
-	#if( !is.finite(RSS) ) recover()	# debugging the fit
-	RSS
+	if( useCVersion){
+		RHLightResponseCostC(theta, flux, sdFlux, betaPrior, sdBetaPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		
+	} else {
+		resPred <- partRHLightResponse(theta, ..., VPD0=VPD0, fixVPD=fixVPD)
+		NEP_mod <- resPred$NEP
+		misFitPrior <- (((theta[2] - betaPrior))/(sdBetaPrior))^2
+		misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
+		RSS <- misFitObs + misFitPrior*length(flux)
+		#if( !is.finite(RSS) ) recover()	# debugging the fit
+		RSS
+	}
 }
 
-.partRHLightResponseCost_NoVPD <- function(
+.partGLRHLightResponseCost_NoVPD <- function(
 		### calling \code{\link{fRHRF_VPDRdFit}} with a parameter vector that omits first component, which is assumed zero 
 		theta	##<< parameter vector with first component omitted
 		,...	##<< further parameters to \code{\link{fRHRF_VPDRdFit}}
 ){
 	##details<<
 	## necessary for fitting only a subset of parameters, with fixing the first parameter to zero
-	.partRHLightResponseCost( c(0,theta), ..., fixVPD=TRUE)
+	.partGLRHLightResponseCost( c(0,theta), ..., fixVPD=TRUE)
 }
-
-
 
 partGLBoundParameters <- function(
 		### Check if parameters are in the range and correct to bounds

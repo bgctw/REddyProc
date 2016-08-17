@@ -266,7 +266,6 @@ resLRCEx1 <- structure(list(Start = c(1, 3, 5), End = c(4, 6, 8), Num = c(67L,
 
 
 
-
 test_that("estimating temperature sensitivity outputs are in accepted range",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 
 							& !is.na(dsNEE$FP_VARnight))
@@ -279,6 +278,60 @@ test_that("estimating temperature sensitivity outputs are in accepted range",{
 				lines( fLloydTaylor(p[1], p[2], dss$NEW_FP_Temp+273.15) ~ dss$NEW_FP_Temp)#
 			}
 		})
+
+.tmp.f <- function(){
+	x <- 1:10
+	expect_that( whichValueGreaterEqualC(x, 5L, 3L), equals(5L) )
+}
+
+test_that("RHLightResponseCostC",{
+			.tmp.reloadDll <- function(){
+				library.dynam.unload("REddyProc", file.path(.libPaths()[1],"REddyProc") )
+				installPkg()
+				library.dynam("REddyProc","REddyProc", .libPaths()[1] )
+			}
+			#
+			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
+			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
+			theta <- c(k=0, beta0=28.6, alfa=0.18,  Rb=2.87)
+			flux <- dssDay$FP_VARday
+			sdFlux <- 0.05*dssDay$FP_VARday
+			betaPrior <- 26
+			sdBetaPrior <- 0.3*betaPrior
+			predR <- partRHLightResponse(theta
+				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, 10.0, FALSE)
+			RSSR <- .partGLRHLightResponseCost( theta, flux, sdFlux, betaPrior, sdBetaPrior
+					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, useCVersion=FALSE)
+			tmp <- RHLightResponseCostC( theta, flux, sdFlux, betaPrior, sdBetaPrior
+					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, 10.0, FALSE)
+			#(predR$NEP - tmp)					
+			expect_true(tmp - RSSR < 1e-8)	
+		})
+
+.profile_RHLightResponseCostC <- function(){
+	#require(rbenchmark)
+	tmp <- benchmark( 
+	 .partGLRHLightResponseCost( theta, flux, sdFlux, betaPrior, sdBetaPrior
+			 ,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, useCVersion=FALSE)
+,
+RHLightResponseCostC( theta, flux, sdFlux, betaPrior, sdBetaPrior
+		,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, 10.0, FALSE)
+,replications = 10000
+			)
+tmp			#speedup of only 2 :(
+
+tmp <- benchmark( 
+		.partGLRHLightResponseCost( theta, flux, sdFlux, betaPrior, sdBetaPrior
+				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, useCVersion=FALSE)
+		,
+		.partGLRHLightResponseCost( theta, flux, sdFlux, betaPrior, sdBetaPrior
+				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0)
+		,replications = 10000
+)
+tmp			#speedup of only about 1.8 :(
+
+}
+
 
 
 test_that("partGLFitLRC",{
@@ -323,6 +376,7 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 						, Rg.V.n=dsYear$Rg
 						, nRecInDay=48L
 				)
+				#resParms <- resY
 				head(resY)				
 				plot( R_ref ~ Start, resY)
 				plot( b ~ Start, resY)
