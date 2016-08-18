@@ -253,18 +253,20 @@ dsNEE$NEE_fsd <- 0.05*dsNEE$FP_VARday
 resLRCEx1 <- structure(list(Start = c(1, 3, 5, 7), End = c(4, 6, 8, 10), Num = c(65L, 
 						63L, 50L, 16L), iMeanRec = c(87L, 190L, 257L, 308L), iCentralRec = c(96, 
 						192, 288, 312), iFirstRec = c(1L, 97L, 193L, 289L), E_0 = c(185.617678757497, 
-						185.617678757497, 185.617678757497, 186.364680711518), E_0_SD = c(144.277836860512, 
-						144.277836860512, 144.277836860512, 150.159915893184), R_ref = c(5.28522545470226, 
-						2.63063174703717, 2.69960581039343, 4.89830328375773), R_ref_SD = c(NA, 
-						3.05467160999949, 1.19728927210984, NA), a = c(0.1, 0.200992147298077, 
-						0.168438011114202, 0.168438011114202), a_SD = c(NA, 0.177171416019645, 
-						0.0172286288341799, NA), b = c(29.9762970803964, 27.9237370358272, 
-						28.938695151296, 22.8257645840181), b_SD = c(NA, 2.54544838860353, 
-						2.07201853946396, NA), k = c(0, 0, 0, 0), k_SD = c(NA, 0, 0, 
+						185.617678757497, 185.617678757497, 186.3567923302), E_0_SD = c(144.277836860512, 
+						144.277836860512, 144.277836860512, 150.158937619651), R_ref12 = c(8.68483981783771, 
+						8.68483981783771, 8.68483981783771, 8.61826241156938), R_ref = c(5.25123720627394, 
+						2.66667015931066, 2.64784014922737, 5.90142950802317), R_ref_SD = c(NA, 
+						0.06698036348965, 0.0434092867462795, NA), a = c(0.1, 0.202126543105333, 
+						0.164920536374815, 0.164920536374815), a_SD = c(NA, 0.00349781580184152, 
+						0.00287539424735713, NA), b = c(29.8754259765605, 27.8978227000626, 
+						29.1953881742957, 23.067778338065), b_SD = c(NA, 0.119627942143246, 
+						0.175883928900153, NA), k = c(0, 0, 0, 0), k_SD = c(NA, 0, 0, 
 						NA), parms_out_range = c(1L, 0L, 0L, 1L)), .Names = c("Start", 
 				"End", "Num", "iMeanRec", "iCentralRec", "iFirstRec", "E_0", 
-				"E_0_SD", "R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", "k", 
-				"k_SD", "parms_out_range"), row.names = c(NA, 4L), class = "data.frame")
+				"E_0_SD", "R_ref12", "R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", 
+				"k", "k_SD", "parms_out_range"), row.names = c(NA, 4L), class = "data.frame")
+
 
 
 
@@ -344,7 +346,9 @@ test_that("partGLFitLRC",{
 			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
 			dssNight <- subset(dss, !is.na(dsNEE$FP_VARnight) )
 			dsDay <- data.frame( NEE=dssDay$FP_VARday, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg, Temp=dssDay$NEW_FP_Temp, VPD=dssDay$NEW_FP_VPD)
-			res <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE))
+			res <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
+					,controlGLPart.l=partGLControl(nBootUncertainty=10L)
+			)
 			.tmp.plot <- function(){
 				dsDay <- dsDay[ order(dsDay$Rg), ]
 				plot( -NEE ~ Rg, dsDay)		# FP_VARnight negative?
@@ -352,7 +356,19 @@ test_that("partGLFitLRC",{
 				pred <- partRHLightResponse(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp, E0=185)
 				lines(pred$NEP  ~ dsDay$Rg)
 			}
+			# testing sd from fit
+			resH <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
+				,controlGLPart.l=partGLControl(nBootUncertainty=0L)
+			)
+			# testing increasing number of bootstrap samples
+			.tmp.f <- function(){
+				(res60 <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
+						,controlGLPart.l=partGLControl(nBootUncertainty=100L)
+				))
+			}		
 		})
+
+
 
 		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
@@ -362,17 +378,21 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			ds$isDay <- is.finite(dsNEE$FP_VARday)
 			ds$isNight <- is.finite(dsNEE$FP_VARnight)
 			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday	
-			resParms <- partGLFitLRCWindows(ds, nRecInDay=48L)
-			#dput(resParms)
+			resParms <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=10L))
+			.tmp.f <- function(){
+				# in order to replicate, use nBoot=0L 
+				resParms0 <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=0L))
+				dput(resParms0)
+			}
 			# check the conditions of Lasslop10 Table A1
-			resValid <- resParms
+			resY <- resParms
 			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
-			expect_true( all(resValid$R_Ref > 0) )
-			expect_true( all(resValid$a >= 0 & resValid$a < 0.22) )
-			expect_true( all(resValid$b >= 0 & resValid$b < 250) )
-			expect_true( all(ifelse(resValid$b > 100, resValid$b_SD < resValid$b, TRUE) ))
-			expect_true( all(resValid$k >= 0) )
-			expect_true( !all(is.na(resValid$R_ref_SD)))
+			expect_true( all(resY$R_Ref > 0) )
+			expect_true( all(resY$a >= 0 & resY$a < 0.22) )
+			expect_true( all(resY$b >= 0 & resY$b < 250) )
+			expect_true( all(ifelse(resY$b > 100, resY$b_SD < resY$b, TRUE) ))
+			expect_true( all(resY$k >= 0) )
+			expect_true( !all(is.na(resY$R_ref_SD)))
 			expect_true( all(resParms$iMeanRec < nrow(ds)) )
 			expect_true( all(resParms$iCentralRec < nrow(ds)) )
 			
@@ -380,17 +400,30 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 				# dsYear generated from inside sPartitionGL
 				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) })
 				dsYear2 <- with(dsYear, data.frame(NEE=NEE_f, sdNEE=NEE_fsd, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )
-					,isDay=!is.na(FP_VARday), isNight=!is.na(FP_VARnight) 				
-				))
-				resY <- partGLFitLRCWindows(dsYear2	, nRecInDay=48L	)
-				resValid <- resY
+								,isDay=!is.na(FP_VARday), isNight=!is.na(FP_VARnight) 				
+						))
+				resY <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=30L)	)
 				#resParms <- resY
 				head(resY)				
-				plot( R_ref ~ Start, resValid)
-				points( R_ref12 ~ Start, resValid, pch="+")
-				points( R_ref12 ~ Start, resValid[!is.na(resValid$R_ref),], pch="+")
-				plot( b ~ Start, resValid)
-				plot( E_0 ~ Start, resValid )
+				plot( R_ref ~ Start, resY)
+				with(resY, segments(Start,R_ref-R_ref_SD,Start, R_ref+R_ref_SD))
+				points( R_ref12 ~ Start, resY, pch="+")
+				points( R_ref12 ~ Start, resY, pch="+")
+				points( R_ref12 ~ Start, resY[!is.na(resY$R_ref),], pch="+")
+				plot( b ~ Start, resY)
+				plot( E_0 ~ Start, resY )
+
+				#resY2 <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=10L) )
+				resY2 <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=0L) )
+				plot( R_ref ~ Start, resY)
+				with(resY, segments(Start,R_ref-R_ref_SD,Start, R_ref+R_ref_SD))
+				points( R_ref ~ I(Start+0.3), resY2, col="green")
+				with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
+				#
+				plot(resY2$R_ref ~ resY$R_ref); abline(0,1)			
+				summary(lm( resY2$R_ref  ~ resY$R_ref-1 ))
+				plot(resY2$R_ref_SD ~ resY$R_ref_SD); abline(0,1)			
+				summary(lm( resY2$R_ref_SD  ~ resY$R_ref_SD-1 ))
 			}
 })
 
@@ -444,7 +477,7 @@ test_that("partGLPartitionFluxes",{
 			#
 			dsNEE2 <- dsNEE1
 			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd", "Tair_f", "Tair_fqc","VPD_f", "VPD_fqc"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd", "Tair_u50_f", "Tair_u50_fqc","VPD_u50_f", "VPD_u50_fqc")
-			tmp <- parGLPartitionFluxes( dsNEE2, Suffix.s="u50")
+			tmp <- parGLPartitionFluxes( dsNEE2, Suffix.s="u50", controlGLPart.l=partGLControl(nBootUncertainty=0L) )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			expect_true( all(is.finite(tmp$GPP_DT_u50)))
 			expect_true( all(tmp$GPP_DT_u50 >= 0))
