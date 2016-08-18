@@ -250,19 +250,24 @@ dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 dsNEE$NEE_fsd <- 0.05*dsNEE$FP_VARday		
 
 
-resLRCEx1 <- structure(list(Start = c(1, 3, 5), End = c(4, 6, 8), Num = c(67L, 
-						63L, 31L), iMeanRec = c(140, 238, 284), iFirstRec = c(49, 145, 
-						241), E_0 = c(185.617678757497, 185.617678757497, 181.749537012645
-				), E_0_SD = c(144.277836860512, 144.277836860512, 152.307507023055
-				), R_ref = c(3.26609560072806, 2.99553120153737, 5.17476500656016
-				), R_ref_SD = c(4.49378869629581, 1.74802623440995, NA), a = c(0.186456450072704, 
-						0.18760006173725, 0.18760006173725), a_SD = c(0.273653710564876, 
-						0.0630307187157329, NA), b = c(29.6535093558917, 29.8061770905044, 
-						25.6054449298359), b_SD = c(2.77484984478018, 3.12933814533094, 
-						NA), k = c(0, 0, 0), k_SD = c(0, 0, NA), parms_out_range = c(0L, 
-						0L, 1L)), .Names = c("Start", "End", "Num", "iMeanRec", "iFirstRec", 
-				"E_0", "E_0_SD", "R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", 
-				"k", "k_SD", "parms_out_range"), row.names = c(NA, 3L), class = "data.frame")
+resLRCEx1 <- structure(list(Start = c(1, 3, 5, 7), End = c(4, 6, 8, 10), Num = c(65L, 
+						63L, 50L, 16L), iMeanRec = c(87L, 190L, 257L, 308L), iCentralRec = c(96, 
+						192, 288, 312), iFirstRec = c(1L, 97L, 193L, 289L), E_0 = c(185.617678757497, 
+						185.617678757497, 185.617678757497, 186.364680711518), E_0_SD = c(144.277836860512, 
+						144.277836860512, 144.277836860512, 150.159915893184), R_ref = c(5.28522545470226, 
+						2.63063174703717, 2.69960581039343, 4.89830328375773), R_ref_SD = c(NA, 
+						3.05467160999949, 1.19728927210984, NA), a = c(0.1, 0.200992147298077, 
+						0.168438011114202, 0.168438011114202), a_SD = c(NA, 0.177171416019645, 
+						0.0172286288341799, NA), b = c(29.9762970803964, 27.9237370358272, 
+						28.938695151296, 22.8257645840181), b_SD = c(NA, 2.54544838860353, 
+						2.07201853946396, NA), k = c(0, 0, 0, 0), k_SD = c(NA, 0, 0, 
+						NA), parms_out_range = c(1L, 0L, 0L, 1L)), .Names = c("Start", 
+				"End", "Num", "iMeanRec", "iCentralRec", "iFirstRec", "E_0", 
+				"E_0_SD", "R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", "k", 
+				"k_SD", "parms_out_range"), row.names = c(NA, 4L), class = "data.frame")
+
+
+
 
 
 
@@ -339,7 +344,7 @@ test_that("partGLFitLRC",{
 			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
 			dssNight <- subset(dss, !is.na(dsNEE$FP_VARnight) )
 			dsDay <- data.frame( NEE=dssDay$FP_VARday, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg, Temp=dssDay$NEW_FP_Temp, VPD=dssDay$NEW_FP_VPD)
-			res <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185)
+			res <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE))
 			.tmp.plot <- function(){
 				dsDay <- dsDay[ order(dsDay$Rg), ]
 				plot( -NEE ~ Rg, dsDay)		# FP_VARnight negative?
@@ -351,15 +356,16 @@ test_that("partGLFitLRC",{
 
 		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
-			ds <- with(dsNEE, data.frame(NEE=FP_VARnight, Temp=dsNEE1$NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )))
+			ds <- with(dsNEE, data.frame(NEE=FP_VARnight, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )))
 			ds$NEE[!is.na(dsNEE$FP_VARday)] <- dsNEE$FP_VARday[!is.na(dsNEE$FP_VARday)]
 			ds$sdNEE <- 0.05*ds$NEE
 			ds$isDay <- is.finite(dsNEE$FP_VARday)
 			ds$isNight <- is.finite(dsNEE$FP_VARnight)
 			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday	
 			resParms <- partGLFitLRCWindows(ds, nRecInDay=48L)
+			#dput(resParms)
 			# check the conditions of Lasslop10 Table A1
-			resValid <- resParms[!is.na(resParms$R_ref),]
+			resValid <- resParms
 			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
 			expect_true( all(resValid$R_Ref > 0) )
 			expect_true( all(resValid$a >= 0 & resValid$a < 0.22) )
@@ -367,21 +373,24 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			expect_true( all(ifelse(resValid$b > 100, resValid$b_SD < resValid$b, TRUE) ))
 			expect_true( all(resValid$k >= 0) )
 			expect_true( !all(is.na(resValid$R_ref_SD)))
+			expect_true( all(resParms$iMeanRec < nrow(ds)) )
+			expect_true( all(resParms$iCentralRec < nrow(ds)) )
 			
 			.tmp.inspectYear <- function(){
-				# generated from inside sPartitionGL
+				# dsYear generated from inside sPartitionGL
 				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) })
-				resY <- partGLFitLRCWindows(dsYear$FP_VARnight, dsYear$FP_VARday, dsYear$NEE_fsd
-						, Temp.V.n=dsYear$NEW_FP_Temp
-						, VPD.V.n=dsYear$NEW_FP_VPD	
-						, Rg.V.n=dsYear$Rg
-						, nRecInDay=48L
-				)
+				dsYear2 <- with(dsYear, data.frame(NEE=NEE_f, sdNEE=NEE_fsd, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )
+					,isDay=!is.na(FP_VARday), isNight=!is.na(FP_VARnight) 				
+				))
+				resY <- partGLFitLRCWindows(dsYear2	, nRecInDay=48L	)
+				resValid <- resY
 				#resParms <- resY
 				head(resY)				
-				plot( R_ref ~ Start, resY)
-				plot( b ~ Start, resY)
-				plot( E_0 ~ Start, resY )
+				plot( R_ref ~ Start, resValid)
+				points( R_ref12 ~ Start, resValid, pch="+")
+				points( R_ref12 ~ Start, resValid[!is.na(resValid$R_ref),], pch="+")
+				plot( b ~ Start, resValid)
+				plot( E_0 ~ Start, resValid )
 			}
 })
 
@@ -390,6 +399,7 @@ test_that(".partGPAssociateSpecialRows correct next lines",{
 					res <- .partGPAssociateSpecialRows(integer(0),9)
 			)
 			res <- .partGPAssociateSpecialRows(c(3,6,7,9),12)
+			expect_true( all(res$wBefore+res$wAfter == 1)) 
 			# special rows
 			expect_equal( c(iRec=3,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[3,])) 
 			expect_equal( c(iRec=6,iBefore=6, iAfter=6, wBefore=0.5, wAfter=0.5), unlist(res[6,]))
@@ -399,8 +409,8 @@ test_that(".partGPAssociateSpecialRows correct next lines",{
 			# weights after and before special row 6
 			expect_equal( rep(3,2), unlist(res[4:5,"iBefore"])) 
 			expect_equal( rep(6,2), unlist(res[4:5,"iAfter"])) 
-			expect_equal( 1/(1:2), unlist(res[4:5,"wBefore"])) 
-			expect_equal( 1/(2:1), unlist(res[4:5,"wAfter"])) 
+			expect_equal( (2:1)/3, unlist(res[4:5,"wBefore"])) 
+			expect_equal( (1:2)/3, unlist(res[4:5,"wAfter"])) 
 			# test last row is special
 			res <- .partGPAssociateSpecialRows(c(3,6,7,9),9)
 		})
@@ -439,10 +449,9 @@ test_that("partGLPartitionFluxes",{
 			expect_true( all(is.finite(tmp$GPP_DT_u50)))
 			expect_true( all(tmp$GPP_DT_u50 >= 0))
 			expect_true( all(tmp$GPP_DT_u50 < 250))
-			expect_true( all(tmp$Reco_DT_u50 < 5))
+			expect_true( all(tmp$Reco_DT_u50 < 6))
 			expect_true( all(tmp$Reco_DT_u50 > 0))
-			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.5))	#smooth
-			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.5))	#smooth
+			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
 			# reporting good values at first row
 			expect_true( sum( is.finite(tmp$FP_alpha) ) == sum(resLRCEx1$parms_out_range==0L) ) 
 			expect_true( all((tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range==0L] < 1e-2) )
@@ -450,9 +459,12 @@ test_that("partGLPartitionFluxes",{
 			.tmp.plot <- function(){
 				tmp$time <- dsNEE1$sDateTime
 				plot( Reco_DT_u50 ~ time, tmp)
+				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
 				plot( GPP_DT_u50 ~ time, tmp)
 			}
 		})
+
+
 
 .profilePartGL <- function(){
 	require(profr)

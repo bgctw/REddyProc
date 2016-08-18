@@ -1,14 +1,19 @@
 partGLControl <- function(
 		### Default list of parameters for Lasslop 2010 daytime flux partitioning
-		targetParameterPrecision=1e-2	##<< required numeric precision of the estimated parameters. Decrease to speed up
+		LRCFitConvergenceTolerance=1e-3	##<< convergence criterion for LRC fit. 
+			##<< If relative improvement of reducing residual sum of squares between predictions and observations is less than this criterion, assume convergence.
+			##<< Decrease to get more precise parameter estimates, Increase for speedup.
 		#TODO: increase default of nBoot after testing, option to use Hessian
 		,nBootUncertainty=10L			##<< number of bootstrap samples for estimating uncertainty. Set to zero to derive uncertainty from curvature of a single fit
 		,minNRecInDayWindow = 2L 		##<< Minimum number of data points for regression #TODO CHECK IN GITTA'S CODE MINIMUM NUMBERS OF DAYS
+		,isAssociateParmsToMeanOfValids=FALSE	##<< set to TRUE to associate parameters to record of  mean across non-NA records inside a window instead of the central records of the window
 ){
 	##author<< TW
 	ctrl <- list(  
-			nBootUncertainty=nBootUncertainty
+			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
+			,nBootUncertainty=nBootUncertainty
 			,minNRecInDayWindow=minNRecInDayWindow 
+			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -42,7 +47,7 @@ parGLPartitionFluxes=function(
 		##<< where noon is exactly at 12:00. Set this to TRUE to compare to code that uses local winter time
 		##end<< 
 		)      
-		,controlGLPart.l=partGLControl()	##<< further default parameters
+		,controlGLPart.l=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,isVerbose=TRUE			 ##<< set to FALSE to suppress output messages
 		,nRecInDay.i=48L		 ##<< number of records within one day (for half-hourly data its 48)
 )
@@ -122,7 +127,7 @@ parGLPartitionFluxes=function(
 	iGood <- which(resLRC$parms_out_range == 0L)	 	
 	dsAns[resLRC$iFirstRec[iGood],c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k")] <- resLRC[iGood,c("E_0","R_ref","a","b","k")]
 	#	
-	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC	)
+	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC, controlGLPart.l=controlGLPart.l	)
 	dsAns[[REcoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[REcoDTVar.s]], 'varnames') <- REcoDTVar.s
 	attr(dsAns[[REcoDTVar.s]], 'units') <- attr(Var.V.n, 'units')
@@ -162,7 +167,7 @@ partGLFitLRCWindows=function(
 	##details<<
 	## All the vectors must have the same length and consist of entire days, with each day having the same number of records
 	nRec <- length(ds$NEE) 
-	DayCounter.V.i <- (c(1:nRec)-1L) %/% nRecInDay.i 
+	DayCounter.V.i <- ((c(1:nRec)-1L) %/% nRecInDay.i)+1L 	# specifying the day for each record assuming equidistand records
 	startDays.V.i <- seq(1, max(DayCounter.V.i), DayStep.i)
 	# setup a data.frame for the results
 	##value<< data.frame with a row for each window with columns
@@ -170,10 +175,12 @@ partGLFitLRCWindows=function(
 			Start=startDays.V.i	##<< the starting day of the day-window
 			, End=NA_integer_		##<< the endding day of the day-window  
 			, Num=NA_integer_		##<< the number of records flux records in the window
-			, iMeanRec=NA_real_		##<< the mean across all valid record numbers in the day-window
-			, iFirstRec=NA_real_	##<< the first record number in the day-window
+			, iMeanRec=NA_integer_	##<< the mean across all valid record numbers in the day-window
+			, iCentralRec=NA_integer_	##<< the record in the centre of the day-window (including NA-records)
+			, iFirstRec=NA_integer_	##<< the first record number in the day-window
 			, E_0=NA_real_			##<< temperature sensitivty
 			, E_0_SD=NA_real_		##<< standard deviation of temperature sensitivity
+			, R_ref12=NA_real_		##<< respiration at reference temperature estimated from night time data
 			, R_ref=NA_real_		##<< respiration at reference temperature
 			, R_ref_SD=NA_real_		##< standard deviation of reference temperature
 			,a=NA_real_, a_SD=NA_real_	##<< coefficients and associated standard deviation of the light respons curve
@@ -194,7 +201,7 @@ partGLFitLRCWindows=function(
 		DayStart.Night.i <- DayStart.i + WinSizeDays.i/2 - WinSizeNight.i/2 
 		DayEnd.Night.i <- DayStart.Night.i-1L+WinSizeNight.i
 		#c(DayStart.i, DayEnd.i, DayStart.Night.i, DayEnd.Night.i)
-		SubsetDayPeriod.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i 
+		SubsetDayPeriod.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i # could be done faster with direct row-computation but so its more clear 
 		SubsetValidDay.b <-  SubsetDayPeriod.b & 
 				ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$VPD)
 		SubsetValidNight.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
@@ -205,8 +212,8 @@ partGLFitLRCWindows=function(
 		## Each window estimate is associated with a time or equivalently with a record.
 		## The first record, i.e. row number, of the day-window is reported.
 		## Moreover, the mean of all valid records numbers in the daytime window is reported for interpolation.
-		meanRecInDayWindow.i <- round(mean(which(SubsetValidDay.b))) 
-		firstRecDayWindow.i <- which(SubsetDayPeriod.b)[1] # the rownumber of the first record inside the day window
+		meanRecInDayWindow.i <- as.integer(round(mean(which(SubsetValidDay.b)))) 
+		firstRecInDayWindow.i <- which(SubsetDayPeriod.b)[1] # the rownumber of the first record inside the day window
 		#NEENightInPeriod.V.n <- subset(ds$NEE, SubsetValidNight.b)
 		#NEESdNightInPeriod.V.n <- subset(NEESd.V.n, Subset.Night.b)
 		#NEEDayInPeriod.V.n <- subset(ds$NEEDay.V.n, SubsetValidDay.b)
@@ -221,12 +228,12 @@ partGLFitLRCWindows=function(
 		#		
 		if( nrow(dsDay) > controlGLPart.l$minNRecInDayWindow ) {
 			CountRegr.i <- CountRegr.i+1L
-			resE0 <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n)
-			E_0.n <- resE0$E_0
+			resNightFit <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n)
+			E_0.n <- resNightFit$E_0
 			#
 			#tryCatch({
 	#if( DayMiddle.i == 113) recover()
-			resOpt <- resOpt0 <- partGLFitLRC(dsDay, dsNight$NEE, E_0.n=E_0.n, controlGLPart.l=controlGLPart.l)
+			resOpt <- resOpt0 <- partGLFitLRC(dsDay, dsNight$NEE, E_0.n=E_0.n, R_refNight.n=resNightFit$R_ref, controlGLPart.l=controlGLPart.l)
 			.tmp.plot <- function(){
 				plot( -NEE ~ Rg, dsDay )
 				tmp <- partRHLightResponse(resOpt$opt.parms.V, RgInPeriod.V.n, VPDInPeriod.V.n, NEEDayInPeriod.V.n, 1, TempInPeriod.V.n,  E_0.n)
@@ -239,13 +246,16 @@ partGLFitLRCWindows=function(
 			resOptBounded <- partGLBoundParameters( resOpt, lastGoodParameters.V.n)
 			if( resOptBounded$isGoodParameterSet )
 				lastGoodParameters.V.n <- resOptBounded$opt.parms.V
+			if( isTRUE(as.vector(resOptBounded$opt.parms.V["Rb"] < 0))) stop("encountered negative basal respiration")			
 			#
 			# twutz: avoid slow rbind, but write into existing data.frame
 			resDf[iDay, ] <- data.frame(
 					Start=DayStart.i, End=DayEnd.i, Num=nrow(dsDay)
 					,iMeanRec=meanRecInDayWindow.i
-					,iFirstRec=firstRecDayWindow.i
-					,E_0=E_0.n, E_0_SD=resE0$E_0_SD   
+					,iCentralRec=NA_integer_	# faster to compute outside the loop
+					,iFirstRec=firstRecInDayWindow.i
+					,E_0=E_0.n, E_0_SD=resNightFit$E_0_SD   
+					,R_refNight=resNightFit$R_ref
 					,R_ref=resOptBounded$opt.parms.V[4], R_ref_SD=resOptBounded$se.parms.V[4],
 					a=resOptBounded$opt.parms.V[3], a_SD=resOptBounded$se.parms.V[3],
 					b=resOptBounded$opt.parms.V[2], b_SD=resOptBounded$se.parms.V[2],
@@ -257,6 +267,10 @@ partGLFitLRCWindows=function(
 		#! Note on PV-Wave code: trimmed linear regression not used in the end, i.e. in online webtool
 	} # for i in days
 	if( isVerbose ) message("") # LineFeed
+	# central record in each window
+	resDf$iCentralRec <- ((startDays.V.i-1L)+WinSizeDays.i/2)*nRecInDay.i	# assuming equidistant records
+	# last window might be shorter, take the average between start record and end of all records
+	resDf$iCentralRec[nrow(resDf)] <- ((resDf$Start[nrow(resDf)]-1L)*nRecInDay.i + nrow(dss))/2	    
 	# remove those rows where there was not enough data
 	OPTRes.LRC <- resDf[!is.na(resDf$End),]
 #	#! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
@@ -278,18 +292,22 @@ partGLEstimateTempSensInBounds <- function(
 			data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
 			,control=nls.control(maxiter = 20))
 	E_0Bounded.V.n <- E_0.V.n <- coef(resFit)['E_0']
+	R_ref <- R_ref0 <- coef(resFit)['R_ref'] 
 	E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
+	# resFit$convInfo$isConv
 	if( (E_0.V.n < 50) || (E_0.V.n > 400)){
 		E_0Bounded.V.n <- if( is.na(prevE0) ){
 					min(400,max(50,E_0.V.n))
 				} else {
 					prevE0
 				}
+		R_ref <- mean(REco.V.n, na.rm=T)
 	}
 	##value<< list with entries
 	list(
 			E_0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
 			,E_0_SD=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
+			,R_ref=R_ref			##<< numeric scalar of estimated respiration at reference temperature
 			,resFit=resFit				##<< the fit-object
 	)
 }
@@ -299,6 +317,7 @@ partGLFitLRC <- function(
 		dsDay				##<< data.frame with columns NEEDay, Rg, Temp_C, VPD
 		, NEENight.V.n		##<< non-na numeric vector of night time fluxes to estimate initial value of Rb
 		, E_0.n				##<< temperature sensitivity of respiration
+		, R_refNight.n		##<< basal respiration estimated from night time data 
 		,controlGLPart.l=partGLControl()	##<< further default parameters
 ){
 	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
@@ -306,7 +325,9 @@ partGLFitLRC <- function(
 	theta.V.n[1,]<-c(0,
 			as.numeric(abs(quantile(dsDay$NEE, 0.03)-quantile(dsDay$NEE, 0.97))),
 			0.1,
-			mean(NEENight.V.n, na.rm=T))   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
+			#mean(NEENight.V.n, na.rm=T)
+			R_refNight.n
+	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
 	betaPrior <- theta.V.n[1,2]
 	theta.V.n[2,]<-theta.V.n[1,]/2
 	theta.V.n[3,]<-theta.V.n[1,]*2
@@ -532,25 +553,25 @@ partGLBoundParameters <- function(
 	if( any(is.na(opt.parms.V)) ){
 		isGoodParameterSet <- FALSE
 	} 
-	# isTRUE returns FALSE also for NA
-	if ( isTRUE(opt.parms.V[1] < 0) ){	# k		
+	# isTRUE(as.vector()) returns FALSE also for NA
+	if ( isTRUE((opt.parms.V[1] < 0)) ){	# k		
 		opt.parms.V[1]<-0
 		isGoodParameterSet <- FALSE
 	}
-	if ( isTRUE(opt.parms.V[2] < 0) ){	# beta
+	if ( isTRUE(as.vector(opt.parms.V[2] < 0)) ){	# beta
 		opt.parms.V[2]<-0
 		isGoodParameterSet <- FALSE
 	}
-	if ( isTRUE(opt.parms.V[3] <= 0 || opt.parms.V[3] > 0.22)){ #set to alpha values of the latest good parameters set
+	if ( isTRUE(as.vector(opt.parms.V[3] <= 0 || opt.parms.V[3] > 0.22))){ #set to alpha values of the latest good parameters set
 		opt.parms.V[3]<-last_good[3]	
 		isGoodParameterSet <- FALSE
 	}
 	#whole par set not used, if beta > 250 or (beta > 100 and sdBeta >= beta) or rb < 0
-	if ( isTRUE(opt.parms.V[2] > 250 || (opt.parms.V[2] > 100 && se.parms.V[2] >= opt.parms.V[2] ) )){ 
+	if ( isTRUE(as.vector(opt.parms.V[2] > 250 || (opt.parms.V[2] > 100 && se.parms.V[2] >= opt.parms.V[2] ) ))){ 
 		opt.parms.V[]<-NA
 		isGoodParameterSet <- FALSE
 	}
-	if ( isTRUE(opt.parms.V[4] < 0 )){ 
+	if ( isTRUE(as.vector(opt.parms.V[4] < 0 ))){ 
 		opt.parms.V[]<-NA
 		isGoodParameterSet <- FALSE
 	}
@@ -571,6 +592,7 @@ partGLInterpolateFluxes <- function(
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
 		,resLRC	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+		,controlGLPart.l=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 ){
 	##details<< 
 	## \code{resLRC$iFirstRecInCentralDay} must denote the row for which the LRC parameters are representative, 
@@ -580,10 +602,11 @@ partGLInterpolateFluxes <- function(
 	nRec <- length(Rg) 
 	Temp_Kelvin <- Temp+273.15
 	# for each original record merge parameters assicated with previous fit or next fit respectively
-	dsAssoc <- .partGPAssociateSpecialRows(resLRC$iMeanRec,nRec)	
-	dsBefore <- merge( data.frame(iMeanRec=dsAssoc$iBefore), resLRC[,c("iMeanRec","R_ref","E_0","a","b","k")])
-	dsAfter <- merge( data.frame(iMeanRec=dsAssoc$iAfter), resLRC[,c("iMeanRec","R_ref","E_0","a","b","k")])
-	if( nrow(dsBefore) != nrow(dsAssoc) ) stop("error in merging parameters to original records.")
+	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
+	dsAssoc <- .partGPAssociateSpecialRows(resLRC[[colNameAssoc]],nRec)
+	dsBefore <- merge( structure(data.frame(dsAssoc$iBefore),names=colNameAssoc), resLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
+	dsAfter <- merge( structure(data.frame(dsAssoc$iAfter),names=colNameAssoc), resLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
+	if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
 	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
 		tmp <- fLloydTaylor(dsi$R_ref, dsi$E_0, Temp_Kelvin, T_ref.n=273.15+15)
 	})
@@ -592,9 +615,10 @@ partGLInterpolateFluxes <- function(
 				theta <- as.matrix(dsi[,c("k","b","a","R_ref")])
 				tmp <- partRHLightResponse(theta, Rg, VPD, Temp=Temp, E0=dsi$E_0)$GPP
 		})
-	# interpolate between previous and next fit
-	Reco <- (dsAssoc$wBefore*Reco2[[1]] + dsAssoc$wAfter*Reco2[[2]]) / (dsAssoc$wBefore+dsAssoc$wAfter)  
-	GPP <- (dsAssoc$wBefore*GPP2[[1]] + dsAssoc$wAfter*GPP2[[2]]) / (dsAssoc$wBefore+dsAssoc$wAfter)
+	# interpolate between previous and next fit, weights already sum to 1
+	Reco <- (dsAssoc$wBefore*Reco2[[1]] + dsAssoc$wAfter*Reco2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)  
+	GPP <- (dsAssoc$wBefore*GPP2[[1]] + dsAssoc$wAfter*GPP2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)
+#recover()  # to inspect the deviations between successive estimates	
 	ans <- data.frame(
 			Reco_DT = Reco
 			,GPP_DT = GPP
@@ -646,14 +670,17 @@ partGLInterpolateFluxes <- function(
 		nextRec <- if( iS==nRecS) currRec else iRowsSpecial[iS+1L]
 		#c(prevRec,currRec,nextRec)
 		##details<<
-		## the weight is inversely proportional to the distance in rows
-		if( currRec-prevRec > 1L){
-			ans[(prevRec+1L):(currRec-1L),"iAfter"] <- currRec 
-			ans[(prevRec+1L):(currRec-1L),"wAfter"] <- 1/((currRec-prevRec-1L):1)  #...,3,2,1	 
+		## The weight is inversely proportional to the distance in rows
+		## The two weights wBefore and wAfter always sum to 1 
+		distPrev <- currRec-prevRec 
+		if( distPrev > 1L){
+			ans[(prevRec+1L):(currRec-1L),"iAfter"] <- currRec
+			ans[(prevRec+1L):(currRec-1L),"wAfter"] <- (1:(distPrev-1))/distPrev  	 
 		}
-		if( nextRec-currRec > 1L){
+		distNext <- nextRec-currRec
+		if( distNext > 1L){
 			ans[(currRec+1L):(nextRec-1L),"iBefore"] <- currRec
-			ans[(currRec+1L):(nextRec-1L),"wBefore"] <- 1/(1:(nextRec-currRec-1))  #1,2,3,...
+			ans[(currRec+1L):(nextRec-1L),"wBefore"] <- ((distNext-1):1)/distNext  	
 		} 	
 	}
 	##details<<
