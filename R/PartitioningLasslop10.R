@@ -7,6 +7,7 @@ partGLControl <- function(
 		,nBootUncertainty=10L			##<< number of bootstrap samples for estimating uncertainty. Set to zero to derive uncertainty from curvature of a single fit
 		,minNRecInDayWindow = 2L 		##<< Minimum number of data points for regression #TODO CHECK IN GITTA'S CODE MINIMUM NUMBERS OF DAYS
 		,isAssociateParmsToMeanOfValids=FALSE	##<< set to TRUE to associate parameters to record of  mean across non-NA records inside a window instead of the central records of the window
+		,isLasslopPriorsApplied=FALSE	##<< set to TRUE to apply strong fixed priors on LRC fitting	
 ){
 	##author<< TW
 	ctrl <- list(  
@@ -14,6 +15,7 @@ partGLControl <- function(
 			,nBootUncertainty=nBootUncertainty
 			,minNRecInDayWindow=minNRecInDayWindow 
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
+			,isLasslopPriorsApplied=isLasslopPriorsApplied
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -271,7 +273,7 @@ partGLFitLRCWindows=function(
 	# central record in each window
 	resDf$iCentralRec <- ((startDays.V.i-1L)+WinSizeDays.i/2)*nRecInDay.i	# assuming equidistant records
 	# last window might be shorter, take the average between start record and end of all records
-	resDf$iCentralRec[nrow(resDf)] <- ((resDf$Start[nrow(resDf)]-1L)*nRecInDay.i + nrow(dss))/2	    
+	resDf$iCentralRec[nrow(resDf)] <- ((resDf$Start[nrow(resDf)]-1L)*nRecInDay.i + nrow(ds))/2	    
 	# remove those rows where there was not enough data
 	OPTRes.LRC <- resDf[!is.na(resDf$End),]
 #	#! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
@@ -328,25 +330,24 @@ partGLFitLRC <- function(
 	namesPars <- c("k","beta0", "alfa", "Rb" )
 	nPar <- length(namesPars)
 	theta.V.n<-matrix(NA, 3,nPar, dimnames=list(NULL,namesPars))
-	theta.V.n[1,]<-c(0,
-			as.numeric(abs(quantile(dsDay$NEE, 0.03)-quantile(dsDay$NEE, 0.97))),
-			0.1,
-			#mean(NEENight.V.n, na.rm=T)
-			R_refNight.n
+	parameterPrior <- theta.V.n[1,]<-c(k=0
+			,beta=as.numeric(abs(quantile(dsDay$NEE, 0.03)-quantile(dsDay$NEE, 0.97)))
+			,alpha=0.1
+			#,R_ref=mean(NEENight.V.n, na.rm=T)
+			,R_ref=R_refNight.n
 	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
-	betaPrior <- theta.V.n[1,2]
-	theta.V.n[2,]<-theta.V.n[1,]/2
-	theta.V.n[3,]<-theta.V.n[1,]*2
-	#twutz: alpha is quite well defined, so try not changing it too much
-	theta.V.n[2,2] <- betaPrior*1.3
-	theta.V.n[3,2] <- betaPrior*0.8
+	theta.V.n[2,]<-parameterPrior/2
+	theta.V.n[3,]<-parameterPrior*2
+	#twutz: beta is quite well defined, so try not changing it too much
+	theta.V.n[2,2] <- parameterPrior[2]*1.3
+	theta.V.n[3,2] <- parameterPrior[2]*0.8
 	#
 	resOpt3 <- apply( theta.V.n, 1, function(theta0){
 				resOpt <- resOpt0 <- .optimLRC(theta0, isUsingFixedVPD=FALSE, dsDay
-						, E_0.n, betaPrior, controlGLPart.l )
+						, E_0.n, parameterPrior, controlGLPart.l )
 				# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
 				if (resOpt$par[1] <= 0) resOpt <- .optimLRC(resOpt0$par, isUsingFixedVPD=TRUE, dsDay
-							, E_0.n, betaPrior, controlGLPart.l )
+							, E_0.n, parameterPrior, controlGLPart.l )
 				resOpt
 			} )
 	.tmp.plot <- function(){
@@ -374,8 +375,9 @@ partGLFitLRC <- function(
 			if( length(seParmsHess) == 3L) seParmsHess <- c(k=0, seParmsHess0)
 			se.parms.V <- seParmsHess
 		} else {
-			resBoot  <- .bootStrapLRCFit(resOpt$par, dsDay, E_0.n, betaPrior, controlGLPart.l)
-			opt.parms.V <- apply(resBoot, 2, median, na.rm=TRUE)
+			resBoot  <- .bootStrapLRCFit(resOpt$par, dsDay, E_0.n, parameterPrior, controlGLPart.l)
+			#better not to average parameters
+			#opt.parms.V <- apply(resBoot, 2, median, na.rm=TRUE)
 			se.parms.V <- apply(resBoot, 2, sd, na.rm=TRUE)
 		}
 	}
@@ -390,7 +392,7 @@ partGLFitLRC <- function(
 
 .bootStrapLRCFit <- function(
 		### Compute parameters uncertainty by bootstrap
-		theta0, dsDay, E_0.n, betaPrior, controlGLPart.l
+		theta0, dsDay, E_0.n, parameterPrior, controlGLPart.l
 ){
 	##value<<
 	## matrix with each row a parameter estimate on a different bootstrap sample
@@ -401,7 +403,7 @@ partGLFitLRC <- function(
 		idx <- sample(nrow(dsDay), replace=TRUE)
 		dsDayB <- dsDay[idx,]
 		resOptBoot <- .optimLRC(theta0, isUsingFixedVPD=isUsingFixedVPD, dsDayB
-				, E_0.n, betaPrior, controlGLPart.l )
+				, E_0.n, parameterPrior, controlGLPart.l )
 		if( resOptBoot$convergence == 0L )	
 			#TODO: also remove the bery bad cases? 
 			ans [iBoot,]<-resOptBoot$par
@@ -414,7 +416,7 @@ partGLFitLRC <- function(
 
 .optimLRC <- function(
 		###<< one fit of the light response curve
-		theta, isUsingFixedVPD=FALSE, dsDay, E_0.n, betaPrior, ctrl
+		theta, isUsingFixedVPD=FALSE, dsDay, E_0.n, parameterPrior, ctrl
 ){
 	# TODO: think about uncertainty,
 	##details<<
@@ -433,15 +435,20 @@ partGLFitLRC <- function(
 	#
 	# different optimization funcitons are used depending on whether fitting 3 or 4 parameters
 	# This is important for computing uncertainty from Hessian
-	medianRelFluxUncertainty <- abs(median(Fc_unc/dsDay$NEE))
-	sdBetaPrior <- 10*medianRelFluxUncertainty*betaPrior
+	sdParameterPrior <- if(ctrl$isLasslopPriorsApplied){
+		c(k=50, beta=600, alpha=10, Rb=80)
+	} else {
+		medianRelFluxUncertainty <- abs(median(Fc_unc/dsDay$NEE))
+		sdBetaPrior <- 10*medianRelFluxUncertainty*parameterPrior[2]/sqrt(nrow(dsDay))
+		c(k=NA, beta=sdBetaPrior, alpha=NA, Rb=NA)
+	}
 	isUsingHessian <- (ctrl$nBootUncertainty==0L)
 	if( isUsingFixedVPD){
 		resOptim <- optim(theta[-1], .partGLRHLightResponseCost_NoVPD
 				,flux = -dsDay$NEE 
 				,sdFlux = Fc_unc	  
-				,betaPrior = betaPrior
-				,sdBetaPrior = sdBetaPrior
+				,parameterPrior = parameterPrior
+				,sdParameterPrior = sdParameterPrior
 				,Rg = dsDay$Rg 
 				,VPD = dsDay$VPD
 				,Temp=dsDay$Temp
@@ -454,8 +461,8 @@ partGLFitLRC <- function(
 		tmp <- optim(theta, .partGLRHLightResponseCost 
 				,flux = -dsDay$NEE 
 				,sdFlux = Fc_unc	  
-				,betaPrior = betaPrior
-				,sdBetaPrior = sdBetaPrior
+				,parameterPrior = parameterPrior
+				,sdParameterPrior = sdParameterPrior
 				,Rg = dsDay$Rg 
 				,VPD = dsDay$VPD
 				,Temp=dsDay$Temp
@@ -525,8 +532,8 @@ partRHLightResponse <- function(
 		theta 		##<< theta [numeric] -> parameter vector with positions as in argument of \code{\link{partRHLightResponse}}
 		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s]
 		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s]
-		,betaPrior		##<< prior estimate of beta parameter (range of values)
-		,sdBetaPrior	##<< standard deviation of betaPrior
+		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
+		,sdParameterPrior	##<< standard deviation of parameterPrior
 		,...			##<< other arguments to \code{\link{partRHLightResponse}}
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
@@ -534,14 +541,15 @@ partRHLightResponse <- function(
 		# also tried to pass dsDay data.frame instead of all the variables separately, but accessing data.frame
 		# columns in the cost function was a severe penalty (here double execution time)
 ) {
+	#if( FALSE ){
 	if( useCVersion){
-		RHLightResponseCostC(theta, flux, sdFlux, betaPrior, sdBetaPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		
+		RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		
 	} else {
 		resPred <- partRHLightResponse(theta, ..., VPD0=VPD0, fixVPD=fixVPD)
 		NEP_mod <- resPred$NEP
-		misFitPrior <- (((theta[2] - betaPrior))/(sdBetaPrior))^2
+		misFitPrior <- (((theta - parameterPrior))/(sdParameterPrior))^2
 		misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
-		RSS <- misFitObs + misFitPrior*length(flux)
+		RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE)
 		#if( !is.finite(RSS) ) recover()	# debugging the fit
 		RSS
 	}

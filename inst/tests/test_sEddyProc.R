@@ -104,8 +104,8 @@ test_that("Test sGetData",{
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 test_that("Test sMDSGapFill",{
-  EddyDataWithPosix.F <- cbind(EddyDataWithPosix.F, QF=c(1,0,1,0,1,0,0,0,0,0))
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'))
+  EddyDataWithPosix2.F <- cbind(EddyDataWithPosix.F, QF=c(1,0,1,0,1,0,0,0,0,0))
+  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'))
   expect_error( #Not existing variable
     EddyProc.C$sMDSGapFill('fee','QF', 0, Verbose.b=F)
   )
@@ -119,11 +119,26 @@ test_that("Test sMDSGapFill",{
   expect_that(Results.F[1,'NEE_fnum'], equals(54)) #Equal to 53 with old MR PV-Wave congruent settings
   expect_that(Results.F[1,'Tair_fnum'], equals(173)) #Equal to 96 with old MR PV-Wave congruent settings
   # Shorter version for hourly  
-  EddyHour.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS.n=24)
+  EddyHour.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2.F[c(F,T),][1:(24*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS.n=24)
   EddyHour.C$sMDSGapFill('Tair','QF', 0, Verbose.b=F)
   Results.F <- EddyHour.C$sExportResults()
   expect_that(Results.F[1,'Tair_fnum'], equals(124)) #Equal to 68 with old MR PV-Wave congruent settings
 })
+
+.profileGapFill <- function(){
+	require(profr)
+	EddyDataWithPosix2.F <- cbind(EddyDataWithPosix.F, QF=c(1,0,1,0,1,0,0,0,0,0))
+	EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix2.F[1:(48*3*30),], c('NEE','Rg', 'Tair', 'VPD', 'QF'))
+	p1 <- profr({
+				#for( i in 1:1 ){
+					EddyProc.C$sMDSGapFill('NEE', Verbose.b=F, FillAll.b=TRUE)
+				#}
+			}, 0.01 )
+	plot(p1)
+	plot(subset(p1, start>1 & start <2))
+	plot(subset(p1, start>1.6 & start <1.8))
+	
+}
 
 test_that("Test sMDSGapFillAfterUStar default case",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))

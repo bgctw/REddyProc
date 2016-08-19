@@ -6,7 +6,7 @@ using namespace Rcpp;
 double square(double x){ return(x*x); }
 
 // [[Rcpp::export]]
-NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector betaPrior, NumericVector sdBetaPrior
+NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior
 		, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector E0, NumericVector VPD0, LogicalVector fixVPD
 		) {
 	double _kVPD  = theta[0L];	// index starting from zero
@@ -16,15 +16,17 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	double _VPD0 = VPD0[0L];
 	double _E0 = E0[0L];
 	bool _fixVPD = fixVPD[0L];
-	double _betaPrior = betaPrior[0L];
-	double _sdBetaPrior = sdBetaPrior[0L];
 	int _nRec=flux.size();
 	//
 	double _Amax, _Reco, _GPP;
 	double _misFitPrior, _misFitObs, _RSS;
 	double _NEP;
 	//NumericVector NEP(_nRec);
-	_misFitPrior = square( (_beta0 - _betaPrior)/(_sdBetaPrior) );
+	_misFitPrior = 0;
+	for( int i=0; i<parameterPrior.size(); i++){
+		if( !R_IsNA(sdParameterPrior[i]) )
+			_misFitPrior += square( (theta[i] - parameterPrior[i])/(sdParameterPrior[i]) );
+	}
 	_misFitObs = 0;
 	for( int i=0; i < _nRec; i++){
 		_Amax = _beta0;
@@ -39,6 +41,6 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	}
 	//return( NumericVector::create(_beta0, VPD[0], _VPD0, _Rref, _E0, Temp[0L], NEP[0]) );
 	//return NEP;
-	_RSS = _misFitObs + _misFitPrior*_nRec;
+	_RSS = _misFitObs + _misFitPrior;
 	return( NumericVector::create(_RSS) );
 }
