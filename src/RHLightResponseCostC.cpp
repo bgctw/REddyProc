@@ -7,14 +7,17 @@ double square(double x){ return(x*x); }
 
 // [[Rcpp::export]]
 NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior
-		, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector E0, NumericVector VPD0, LogicalVector fixVPD
+		, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector VPD0, LogicalVector fixVPD
 		) {
+	if( theta.size() != 5L ) throw std::range_error("theta must have 5 entries.");
 	double _kVPD  = theta[0L];	// index starting from zero
 	double _beta0  = theta[1L];
 	double _alfa  = theta[2L];
 	double _Rref  = theta[3L];
+	double _E0 = theta[4L];
+	if( !VPD0.size() || !fixVPD.size() )
+		throw std::range_error("VPD0 and fixVPD must have one entry.");
 	double _VPD0 = VPD0[0L];
-	double _E0 = E0[0L];
 	bool _fixVPD = fixVPD[0L];
 	int _nRec=flux.size();
 	//
@@ -22,12 +25,16 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	double _misFitPrior, _misFitObs, _RSS;
 	double _NEP;
 	//NumericVector NEP(_nRec);
+	if( parameterPrior.size() != sdParameterPrior.size() )
+		throw std::range_error("length of parameterPrior must match the length of sdParameterPrior.");
 	_misFitPrior = 0;
 	for( int i=0; i<parameterPrior.size(); i++){
 		if( !R_IsNA(sdParameterPrior[i]) )
 			_misFitPrior += square( (theta[i] - parameterPrior[i])/(sdParameterPrior[i]) );
 	}
 	_misFitObs = 0;
+	if( sdFlux.size() != _nRec || Rg.size() != _nRec ||Temp.size() != _nRec ||VPD.size() != _nRec )
+		throw std::range_error("flux, sdFlux, Rg, Temp, VPD must be of the same length.");
 	for( int i=0; i < _nRec; i++){
 		_Amax = _beta0;
 		if( !_fixVPD && (VPD[i] > _VPD0)){

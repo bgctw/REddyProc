@@ -250,28 +250,99 @@ dsNEE <- structure(list(sDateTime = structure(c(1117584900, 1117586700,
 dsNEE$NEE_fsd <- 0.05*dsNEE$FP_VARday		
 
 
-resLRCEx1 <- structure(list(Start = c(1, 3, 5, 7), End = c(4, 6, 8, 10), Num = c(65L, 
-						63L, 50L, 16L), iMeanRec = c(87L, 190L, 257L, 308L), iCentralRec = c(96, 
-						192, 288, 312), iFirstRec = c(1L, 97L, 193L, 289L), E_0 = c(185.617678757497, 
-						185.617678757497, 185.617678757497, 186.3567923302), E_0_SD = c(144.277836860512, 
-						144.277836860512, 144.277836860512, 150.158937619651), R_ref12 = c(8.68483981783771, 
-						8.68483981783771, 8.68483981783771, 8.61826241156938), R_ref = c(5.25123720627394, 
-						2.66667015931066, 2.64784014922737, 5.90142950802317), R_ref_SD = c(NA, 
-						0.06698036348965, 0.0434092867462795, NA), a = c(0.1, 0.202126543105333, 
-						0.164920536374815, 0.164920536374815), a_SD = c(NA, 0.00349781580184152, 
-						0.00287539424735713, NA), b = c(29.8754259765605, 27.8978227000626, 
-						29.1953881742957, 23.067778338065), b_SD = c(NA, 0.119627942143246, 
-						0.175883928900153, NA), k = c(0, 0, 0, 0), k_SD = c(NA, 0, 0, 
-						NA), parms_out_range = c(1L, 0L, 0L, 1L)), .Names = c("Start", 
-				"End", "Num", "iMeanRec", "iCentralRec", "iFirstRec", "E_0", 
-				"E_0_SD", "R_ref12", "R_ref", "R_ref_SD", "a", "a_SD", "b", "b_SD", 
-				"k", "k_SD", "parms_out_range"), row.names = c(NA, 4L), class = "data.frame")
+#from test_that("partGLFitLRCWindows outputs are in accepted range"
+resLRCEx1 <- structure(list(resOptList = list(structure(list(opt.parms.V = structure(c(0, 
+														28.1552114607447, 0.264181937859435, 5.16758715278128, 185.617678757497
+												), .Names = c("k", "beta0", "alfa", "Rb", "E0")), iOpt = 1:5, 
+										initialGuess.parms.V.n = structure(c(0, 24.6042824, 0.1, 
+														8.68483981783771, 185.617678757497), .Names = c("k", "beta0", 
+														"alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 0, 
+														0, 0, 0.0164521595788231, 0.000150948115388241, 0.00470082516700928, 
+														0, 0, 0.000150948115388242, 4.46655799736124e-05, 0.000745966808293157, 
+														0, 0, 0.00470082516700926, 0.000745966808293157, 0.0135164099818451, 
+														0, 0, 0, 0, 0, 20816.0942091486), .Dim = c(5L, 5L), .Dimnames = list(
+														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", 
+																"alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
+										"initialGuess.parms.V.n", "covParms")), structure(list(opt.parms.V = structure(c(0, 
+														25.964317012826, 0.171170666057465, 2.1061767282917, 185.617678757497
+												), .Names = c("k", "beta0", "alfa", "Rb", "E0")), iOpt = 1:5, 
+										initialGuess.parms.V.n = structure(c(0, 23.6355054, 0.1, 
+														8.68483981783771, 185.617678757497), .Names = c("k", "beta0", 
+														"alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 0, 
+														0, 0, 0.0249811161375782, -0.000150194670672609, -0.000908018269739324, 
+														0, 0, -0.00015019467067261, 1.28730683402289e-05, 0.000229359136707699, 
+														0, 0, -0.000908018269739337, 0.000229359136707699, 0.00480458219392517, 
+														0, 0, 0, 0, 0, 20816.0942091486), .Dim = c(5L, 5L), .Dimnames = list(
+														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", 
+																"alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
+										"initialGuess.parms.V.n", "covParms")), structure(list(opt.parms.V = structure(c(0, 
+														28.1975014240472, 0.147048891270042, 2.3663375897427, 185.617678757497
+												), .Names = c("k", "beta0", "alfa", "Rb", "E0")), iOpt = 1:5, 
+										initialGuess.parms.V.n = structure(c(0, 24.33727084, 0.1, 
+														8.68483981783771, 185.617678757497), .Names = c("k", "beta0", 
+														"alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 0, 
+														0, 0, 0.0538604094839747, -0.000431982958065247, -0.0063804899129617, 
+														0, 0, -0.00043198295806524, 8.38000915150449e-06, 0.000127379438091679, 
+														0, 0, -0.00638048991296168, 0.000127379438091679, 0.0019417927403693, 
+														0, 0, 0, 0, 0, 20816.0942091486), .Dim = c(5L, 5L), .Dimnames = list(
+														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", 
+																"alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
+										"initialGuess.parms.V.n", "covParms")), structure(list(opt.parms.V = structure(c(0, 
+														28.0941328298213, 0.1, 1.6281561256414, 186.3567923302), .Names = c("k", 
+														"beta0", "alfa", "Rb", "E0")), iOpt = c(1L, 2L, 4L, 5L), initialGuess.parms.V.n = structure(c(0, 
+														18.2353459, 0.1, 8.61826241156938, 186.3567923302), .Names = c("k", 
+														"beta0", "alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 
+														0, 0, 0, 0.147906649803781, 0, 0.000411411419094437, 0, 0, 0, 
+														0, 0, 0, 0, 0.000411411419094437, 0, 5.66748908042254e-06, 0, 
+														0, 0, 0, 0, 22547.7065470622), .Dim = c(5L, 5L), .Dimnames = list(
+														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", "alfa", 
+																"Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", "initialGuess.parms.V.n", 
+										"covParms"))), summary = structure(list(Start = c(1, 3, 5, 7), 
+								End = c(4, 6, 8, 10), Num = c(65L, 63L, 50L, 16L), iMeanRec = c(87L, 
+										190L, 257L, 308L), iCentralRec = c(96, 192, 288, 312), iFirstRec = c(1L, 
+										97L, 193L, 289L), E_0 = c(185.617678757497, 185.617678757497, 
+										185.617678757497, 186.3567923302), E_0_SD = c(144.277836860512, 
+										144.277836860512, 144.277836860512, 150.158937619651), R_ref12 = c(8.68483981783771, 
+										8.68483981783771, 8.68483981783771, 8.61826241156938), R_ref = c(5.16758715278128, 
+										2.1061767282917, 2.3663375897427, 1.6281561256414), R_ref_SD = c(0.11626009625768, 
+										0.0693150935505765, 0.0440657774284001, 0.00238064887802098
+								), a = c(0.264181937859435, 0.171170666057465, 0.147048891270042, 
+										0.1), a_SD = c(0.00668323125244162, 0.00358790584327807, 
+										0.00289482454589298, NA), b = c(28.1552114607447, 25.964317012826, 
+										28.1975014240472, 28.0941328298213), b_SD = c(0.128265972022291, 
+										0.158054155711193, 0.232078455449821, 0.384586335955636), 
+								k = c(0, 0, 0, 0), k_SD = c(0, 0, 0, 0), parms_out_range = c(1L, 
+										1L, 1L, 1L)), .Names = c("Start", "End", "Num", "iMeanRec", 
+								"iCentralRec", "iFirstRec", "E_0", "E_0_SD", "R_ref12", "R_ref", 
+								"R_ref_SD", "a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"
+						), row.names = c(NA, 4L), class = "data.frame")), .Names = c("resOptList", 
+				"summary"))
 
 
-
-
-
-
+test_that("partGL_RHLightResponseGrad matches numerical estimates",{
+			ds <- with(dss, data.frame(NEE=FP_VARnight, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )))
+			ds$NEE[!is.na(dsNEE$FP_VARday)] <- dsNEE$FP_VARday[!is.na(dsNEE$FP_VARday)]
+			ds$sdNEE <- 0.05*ds$NEE
+			#str(ds)
+			theta0 <- structure(c(0, 27.3333395589509, 0.162207578338878, 2.59392002410639, 185
+					), .Names = c("k", "beta0", "alfa", "Rb","E0"))
+			res <- partGL_RHLightResponseGrad(theta0, Rg=ds$Rg, VPD=ds$VPD, Temp=ds$Temp)
+			.numDerivLRC <- function(theta, eps=0.0001, ...){
+				ans <- matrix( NA, nrow=length(list(...)[[1]]), ncol=length(theta), dimnames=list(NULL,names(theta)))
+				i <- 1L
+				for( i in seq_along(theta)){
+							thetaMinus <- theta; thetaMinus[i] <- theta[i]-eps
+							thetaPlus <- theta; thetaPlus[i] <- theta[i]+eps
+							fMinus <- partGL_RHLightResponse(thetaMinus, ...)$NEP
+							fPlus <- partGL_RHLightResponse(thetaPlus, ...)$NEP
+							ans[,i] <- derivI <- (fPlus - fMinus)/(2*eps)
+						}
+				ans
+			}
+			res2 <- .numDerivLRC(theta=theta0, Rg=ds$Rg, VPD=ds$VPD, Temp=ds$Temp)
+			expect_true( all(abs(res$NEP - res2) < 1e-2))
+			#plot( res$NEP[,4L] ~ res2[,4L])
+		})
 
 test_that("estimating temperature sensitivity outputs are in accepted range",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 
@@ -286,11 +357,6 @@ test_that("estimating temperature sensitivity outputs are in accepted range",{
 			}
 		})
 
-.tmp.f <- function(){
-	x <- 1:10
-	expect_that( whichValueGreaterEqualC(x, 5L, 3L), equals(5L) )
-}
-
 test_that("RHLightResponseCostC",{
 			.tmp.reloadDll <- function(){
 				library.dynam.unload("REddyProc", file.path(.libPaths()[1],"REddyProc") )
@@ -300,19 +366,19 @@ test_that("RHLightResponseCostC",{
 			#
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
-			theta <- c(k=0, beta0=28.6, alfa=0.18,  Rb=2.87)
+			theta <- c(k=0, beta0=28.6, alfa=0.18,  Rb=2.87, E0=185)
 			flux <- dssDay$FP_VARday
 			sdFlux <- 0.05*dssDay$FP_VARday
 			betaPrior <- 26
 			sdBetaPrior <- 0.3*betaPrior / sqrt(length(flux))
-			parameterPrior <- c(0,betaPrior,8,15)
-			sdParameterPrior <- c(NA,sdBetaPrior,NA,NA)
-			predR <- partRHLightResponse(theta
-				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, 10.0, FALSE)
-			RSSR <- .partGLRHLightResponseCost( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, useCVersion=FALSE)
+			parameterPrior <- c(0,betaPrior,8,15, 185)
+			sdParameterPrior <- c(NA,sdBetaPrior,NA,NA, NA)
+			predR <- partGL_RHLightResponse(theta
+				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 10.0, FALSE)
+			RSSR <- .partGLRHLightResponseCost( theta, theta, seq_along(theta), flux, sdFlux, parameterPrior, sdParameterPrior
+					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, useCVersion=FALSE)
 			tmp <- RHLightResponseCostC( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, 10.0, FALSE)
+					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 10.0, FALSE)
 			#(predR$NEP - tmp)					
 			expect_true(tmp - RSSR < 1e-8)	
 		})
@@ -320,25 +386,24 @@ test_that("RHLightResponseCostC",{
 .benchmark_RHLightResponseCostC <- function(){
 	#require(rbenchmark)
 	tmp <- benchmark( 
-	 .partGLRHLightResponseCost( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-			 ,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, useCVersion=FALSE)
-,
-RHLightResponseCostC( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-		,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, 10.0, FALSE)
-,replications = 10000
-			)
-tmp			#speedup of only 2 :(
-
-tmp <- benchmark( 
-		.partGLRHLightResponseCost( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0, useCVersion=FALSE)
+	 .partGLRHLightResponseCost( theta[1:4], theta, 1:4, flux, sdFlux, parameterPrior, sdParameterPrior
+			 ,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, useCVersion=FALSE)
 		,
-		.partGLRHLightResponseCost( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 280.0)
+		RHLightResponseCostC( theta, flux, sdFlux, parameterPrior, sdParameterPrior
+				,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, 10.0, FALSE)
 		,replications = 10000
-)
-tmp			#speedup of only about 1.8 :(
+					)
+	tmp			#speedup of only 2 :(
 
+	tmp <- benchmark( 
+			.partGLRHLightResponseCost( theta[1:4], theta, 1:4, flux, sdFlux, parameterPrior, sdParameterPrior
+					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp, useCVersion=FALSE)
+			,
+			.partGLRHLightResponseCost( theta[1:4], theta, 1:4, flux, sdFlux, parameterPrior, sdParameterPrior
+					,dssDay$Rg, dssDay$NEW_FP_VPD, dssDay$NEW_FP_Temp)
+			,replications = 10000
+	)
+	tmp			#speedup of only about 1.8 :(
 }
 
 
@@ -348,26 +413,24 @@ test_that("partGLFitLRC",{
 			dssDay <- subset(dss, !is.na(dsNEE$FP_VARday) )
 			dssNight <- subset(dss, !is.na(dsNEE$FP_VARnight) )
 			dsDay <- data.frame( NEE=dssDay$FP_VARday, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg, Temp=dssDay$NEW_FP_Temp, VPD=dssDay$NEW_FP_VPD)
-			res <- resNewPrior <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
+			res <- resNewPrior <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, sdE_0.n=.05*185,R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE), lastGoodParameters.V.n=NA_real_
 					,controlGLPart.l=partGLControl(nBootUncertainty=10L)
 			)
-			res <- resGLPrior <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
-					,controlGLPart.l=partGLControl(nBootUncertainty=10L, isLasslopPriorsApplied=TRUE)
+			#testing Lasslop compliency: different priors, covariance from fit
+			res <- resGLPrior <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, sdE_0.n=.05*185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE),lastGoodParameters.V.n=NA_real_
+					,controlGLPart.l=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
 			)
+			#dput(res$opt.parms.V)
 			.tmp.plot <- function(){
 				dsDay <- dsDay[ order(dsDay$Rg), ]
 				plot( -NEE ~ Rg, dsDay)		# FP_VARnight negative?
 				p <- res$opt.parms.V
-				pred <- partRHLightResponse(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp, E0=185)
+				pred <- partGL_RHLightResponse(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp, E0=185)
 				lines(pred$NEP  ~ dsDay$Rg)
 			}
-			# testing sd from fit
-			resH <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
-				,controlGLPart.l=partGLControl(nBootUncertainty=0L)
-			)
 			# testing increasing number of bootstrap samples
 			.tmp.f <- function(){
-				(res60 <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
+				(res60 <- partGLFitLRC(dsDay, dssNight$FP_VARnight, E_0.n=185, sdE_0.n=.05*185, R_refNight.n=mean(dssNight$FP_VARnight, na.rm=TRUE)
 						,controlGLPart.l=partGLControl(nBootUncertainty=100L)
 				))
 			}		
@@ -383,23 +446,25 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			ds$isDay <- is.finite(dsNEE$FP_VARday)
 			ds$isNight <- is.finite(dsNEE$FP_VARnight)
 			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday	
-			resParms <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=10L))
+			resFits <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=10L))
+			expect_equal( nrow(resFits$summary), length(resFits$resOptList) )
 			.tmp.f <- function(){
 				# in order to replicate, use nBoot=0L 
 				resParms0 <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=0L))
 				dput(resParms0)
 			}
 			# check the conditions of Lasslop10 Table A1
-			resY <- resParms
-			expect_true( all(resParms$E_0 >= 50 & resParms$E_0 <= 400) )
-			expect_true( all(resY$R_Ref > 0) )
-			expect_true( all(resY$a >= 0 & resY$a < 0.22) )
-			expect_true( all(resY$b >= 0 & resY$b < 250) )
-			expect_true( all(ifelse(resY$b > 100, resY$b_SD < resY$b, TRUE) ))
-			expect_true( all(resY$k >= 0) )
-			expect_true( !all(is.na(resY$R_ref_SD)))
-			expect_true( all(resParms$iMeanRec < nrow(ds)) )
-			expect_true( all(resParms$iCentralRec < nrow(ds)) )
+			resSummary <- resFits$summary
+			expect_true( all(resSummary$E_0 >= 50 & resSummary$E_0 <= 400) )
+			expect_true( all(resSummary$R_ref > 0) )
+			expect_true( all(resSummary$a >= 0 ) )
+			expect_true( all(resSummary$a[-1] < 0.22) )	# first value may be greater, due to previous estimate
+			expect_true( all(resSummary$b >= 0 & resSummary$b < 250) )
+			expect_true( all(ifelse(resSummary$b > 100, resSummary$b_SD < resSummary$b, TRUE) ))
+			expect_true( all(resSummary$k >= 0) )
+			expect_true( !all(is.na(resSummary$R_ref_SD)))
+			expect_true( all(resSummary$iMeanRec < nrow(ds)) )
+			expect_true( all(resSummary$iCentralRec < nrow(ds)) )
 			
 			.tmp.inspectYear <- function(){
 				# dsYear generated from inside sPartitionGL
@@ -407,27 +472,26 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 				dsYear2 <- with(dsYear, data.frame(NEE=NEE_f, sdNEE=NEE_fsd, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )
 								,isDay=!is.na(FP_VARday), isNight=!is.na(FP_VARnight) 				
 						))
-				resY <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=30L)	)
+				resY <- resY1 <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=30L)	)
+				#resY <- resYL <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(isLasslopPriorsApplied=TRUE, nBootUncertainty=0L)	)
+				resSummary <- resY$summary
 				#resParms <- resY
-				head(resY)				
-				plot( R_ref ~ Start, resY)
-				with(resY, segments(Start,R_ref-R_ref_SD,Start, R_ref+R_ref_SD))
-				points( R_ref12 ~ Start, resY, pch="+")
-				plot( b ~ Start, resY)
-				plot( E_0 ~ Start, resY )
-
-				#resY2 <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart.l=partGLControl(nBootUncertainty=10L) )
-				resY2 <- partGLFitLRCWindows(dsYear2, nRecInDay=48L
-					, controlGLPart.l=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE) )
-				plot( R_ref ~ Start, resY)
-				with(resY, segments(Start,R_ref-R_ref_SD,Start, R_ref+R_ref_SD))
-				points( R_ref ~ I(Start+0.3), resY2, col="green")
-				with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
+				head(resSummary)				
+				plot( R_ref ~ Start, resSummary)
+				#points( R_ref ~ Start, resSummary, col="red")
+				#points( R_ref ~ Start, resSummary, col="blue")
+				with(resSummary, segments(Start,R_ref-R_ref_SD,Start, R_ref+R_ref_SD))
+				points( R_ref12 ~ Start, resSummary, pch="+")
+				plot( b ~ Start, resSummary)
+				plot( E_0 ~ Start, resSummary )
 				#
-				plot(resY2$R_ref ~ resY$R_ref); abline(0,1)			
-				summary(lm( resY2$R_ref  ~ resY$R_ref-1 ))
-				plot(resY2$R_ref_SD ~ resY$R_ref_SD); abline(0,1)			
-				summary(lm( resY2$R_ref_SD  ~ resY$R_ref_SD-1 ))
+				iStarts <- intersect(resYL$summary$Start, resY1$summary$Start)
+				sumL <- subset(resYL$summary, Start %in% iStarts)
+				sum1 <- subset(resY1$summary, Start %in% iStarts)
+				plot(sumL$R_ref ~ sum1$R_ref); abline(0,1)			
+				summary(lm( sumL$R_ref  ~ sum1$R_ref-1 ))
+				plot(sumL$R_ref_SD ~ sum1$R_ref_SD); abline(0,1)			
+				summary(lm( sumL$R_ref_SD  ~ sum1$R_ref_SD-1 ))	# Lasslop sd is smaller
 			}
 })
 
@@ -438,14 +502,16 @@ test_that(".partGPAssociateSpecialRows correct next lines",{
 			res <- .partGPAssociateSpecialRows(c(3,6,7,9),12)
 			expect_true( all(res$wBefore+res$wAfter == 1)) 
 			# special rows
-			expect_equal( c(iRec=3,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[3,])) 
-			expect_equal( c(iRec=6,iBefore=6, iAfter=6, wBefore=0.5, wAfter=0.5), unlist(res[6,]))
+			expect_equal( c(iRec=3,iSpecialBefore=1L,iSpecialAfter=1L,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[3,])) 
+			expect_equal( c(iRec=6,iSpecialBefore=2L,iSpecialAfter=2L,iBefore=6, iAfter=6, wBefore=0.5, wAfter=0.5), unlist(res[6,]))
 			# first rows and last rows
-			expect_equal( c(iRec=1,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[1,])) 
-			expect_equal( c(iRec=12,iBefore=9, iAfter=9, wBefore=0.5, wAfter=0.5), unlist(res[12,])) 
+			expect_equal( c(iRec=1,iSpecialBefore=1L,iSpecialAfter=1L,iBefore=3, iAfter=3, wBefore=0.5, wAfter=0.5), unlist(res[1,])) 
+			expect_equal( c(iRec=12,iSpecialBefore=4L,iSpecialAfter=4L,iBefore=9, iAfter=9, wBefore=0.5, wAfter=0.5), unlist(res[12,])) 
 			# weights after and before special row 6
 			expect_equal( rep(3,2), unlist(res[4:5,"iBefore"])) 
 			expect_equal( rep(6,2), unlist(res[4:5,"iAfter"])) 
+			expect_equal( rep(1,2), unlist(res[4:5,"iSpecialBefore"])) 
+			expect_equal( rep(2,2), unlist(res[4:5,"iSpecialAfter"])) 
 			expect_equal( (2:1)/3, unlist(res[4:5,"wBefore"])) 
 			expect_equal( (1:2)/3, unlist(res[4:5,"wAfter"])) 
 			# test last row is special
@@ -461,6 +527,12 @@ test_that("partGLInterpolateFluxes runs",{
 				plot( Reco_DT ~ time, tmp)
 				plot( GPP_DT ~ time, tmp)
 			}
+			expect_true( all(c("GPP","Reco") %in% names(tmp) ))
+			tmp <- partGLInterpolateFluxes( dsNEE$Rg, dsNEE$NEW_FP_VPD, dsNEE$NEW_FP_Temp, resLRCEx1
+							,controlGLPart.l=partGLControl(isSdPredComputed=TRUE))
+			expect_equal( nrow(dsNEE), nrow(tmp) )
+			expect_true( all(c("GPP","Reco") %in% names(tmp) ))
+			expect_true( all(c("sdGPP","sdReco") %in% names(tmp) ))
 		})
 
 test_that("partGLPartitionFluxes",{
@@ -488,6 +560,8 @@ test_that("partGLPartitionFluxes",{
 			expect_true( all(tmp$GPP_DT_u50 < 250))
 			expect_true( all(tmp$Reco_DT_u50 < 6))
 			expect_true( all(tmp$Reco_DT_u50 > 0))
+			expect_true( all(tmp$Reco_DT_u50_SD > 0))
+			expect_true( all(tmp$GPP_DT_u50_SD >= 0))
 			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
 			# reporting good values at first row
 			expect_true( sum( is.finite(tmp$FP_alpha) ) == sum(resLRCEx1$parms_out_range==0L) ) 

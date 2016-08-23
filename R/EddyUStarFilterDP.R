@@ -787,7 +787,7 @@ usGetYearOfSeason <- function(
 	# 
 	# cannot generate C function with dot
 	# Rcpp::compileAttributes() generates a function without leading dot, need to adjust by hand afterwards 
-	.whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
+	whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
 	##value<< 
 	## Scalar integer: first index in x, that is >= iStart, and whose value x[i] is >= threshold.
 	## If no index was found, returns NA

@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // RHLightResponseCostC
-NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector E0, NumericVector VPD0, LogicalVector fixVPD);
-RcppExport SEXP REddyProc_RHLightResponseCostC(SEXP thetaSEXP, SEXP fluxSEXP, SEXP sdFluxSEXP, SEXP parameterPriorSEXP, SEXP sdParameterPriorSEXP, SEXP RgSEXP, SEXP VPDSEXP, SEXP TempSEXP, SEXP E0SEXP, SEXP VPD0SEXP, SEXP fixVPDSEXP) {
+NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector VPD0, LogicalVector fixVPD);
+RcppExport SEXP REddyProc_RHLightResponseCostC(SEXP thetaSEXP, SEXP fluxSEXP, SEXP sdFluxSEXP, SEXP parameterPriorSEXP, SEXP sdParameterPriorSEXP, SEXP RgSEXP, SEXP VPDSEXP, SEXP TempSEXP, SEXP VPD0SEXP, SEXP fixVPDSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -19,10 +19,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type Rg(RgSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type VPD(VPDSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Temp(TempSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type E0(E0SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type VPD0(VPD0SEXP);
     Rcpp::traits::input_parameter< LogicalVector >::type fixVPD(fixVPDSEXP);
-    __result = Rcpp::wrap(RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior, Rg, VPD, Temp, E0, VPD0, fixVPD));
+    __result = Rcpp::wrap(RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior, Rg, VPD, Temp, VPD0, fixVPD));
     return __result;
 END_RCPP
 }
