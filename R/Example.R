@@ -52,6 +52,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
 		#plot( EddyProc.C$sTEMP$GPP_DT ~ EddyProc.C$sTEMP$GPP_f); abline(0,1)
 		#plot( EddyProc.C$sTEMP$Reco_DT ~ EddyProc.C$sTEMP$Reco ); abline(0,1)
+		#names(EddyProc.C$sTEMP)
 		# there are some constraints, that might be too strict for some datasets
 		# e.g. in the tropics the required temperature range might be too large.
 		# Its possible to change these constraints
@@ -76,6 +77,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		colnames(EddyProc.C$sExportResults()) # Note the collumns with suffix _WithUstar	
 		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
 		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar')  # Note suffix
+		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='WithUstar')  # Note suffix
 		
 		#+++ Export gap filled and partitioned data to standard data frame
 		FilledEddyData.F <- EddyProc.C$sExportResults()
@@ -94,6 +96,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		
 		#+++ Initialize new sEddyProc processing class
 		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+		EddySetups.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 		
 		#+++ When running several processing setup, a string suffix declaration is needed
 		#+++ Here: Gap filling with and without ustar threshold
@@ -101,13 +104,15 @@ attr(sEddyProc.example,'ex') <- function( ){
 		EddySetups.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.3, UstarSuffix.s='Thres1')
 		EddySetups.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.4, UstarSuffix.s='Thres2')
 		EddySetups.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
+		EddySetups.C$sMDSGapFill('VPD', FillAll.b=FALSE)    # Gap-filled VPD needed for daytime partitioning
 		colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
 		
 		#+++ Flux partitioning of the different gap filling setups
-		EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='NoUstar')
-		EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres1')
-		EddySetups.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1, Suffix.s='Thres2')
-		colnames(EddySetups.C$sExportResults())	# Note the suffix in output columns also in GPP and Reco
+		EddySetups.C$sMRFluxPartition(Suffix.s='NoUstar')
+		EddySetups.C$sMRFluxPartition(Suffix.s='Thres1')
+		EddySetups.C$sMRFluxPartition(Suffix.s='Thres2')
+		EddySetups.C$sGLFluxPartition(Suffix.s='NoUstar')
+		colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns also of GPP, Reco, GPP_DT, and Reco_DT
 		
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		# Example 2 for advanced users: Extended usage of the gap filling algorithm

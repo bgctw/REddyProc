@@ -28,7 +28,8 @@ Then the data can be processed in an R5 reference class framework:
 Functions \code{\link{sEstUstarThreshold}} and \code{\link{sEstUstarThresholdDistribution}} }.
 \item{ Gap filling: \code{\link{sMDSGapFill}} and  \code{\link{sMDSGapFillAfterUstar}}. 
 }
-\item{ Flux partitioning: \code{\link{sMRFluxPartition}} }
+\item{ Flux partitioning based on Night-Time: \code{\link{sMRFluxPartition}} }
+\item{ Flux partitioning based on Day-Time: \code{\link{sGLFluxPartition}} }
 }%itemize
 
 Before or after processing, the data can be plotted:

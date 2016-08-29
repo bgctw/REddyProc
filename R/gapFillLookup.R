@@ -7,9 +7,10 @@ gfGapFillLookupTable = function(
 		toFill				##<< numeric vector to be filled 
 		,winExt=3L*48L		##<< scalar integer: number of records to extend window in both directions, Window size in records is then 2*winExtDays+1L
 		,covM				##<< numeric data.frame or matrix with covariates in columns and no other columns
-		,fTolerance=function(target){tolerance}	##<< function that returns tolerance vector depending on target vector of covariates
-			##<< It specifies for each entriy in target, on how much the covariates can deviate from it and still regarded as similar.
-			##<< the order of entries must correspond to the columns in covM.
+		,fTolerance=		##<< function that returns tolerance vector depending on target vector of covariates
+				## It specifies for each entriy in target, on how much the covariates can deviate from it and still regarded as similar.
+				## The order of entries must correspond to the columns in covM.
+				function(target) return(tolerance)	
 		,tolerance			##<< numeric vector: alternative way to specify a constant tolerance, returned by the default fTolerance function
 		,isFillAll=FALSE	##<< logical scalar: set to TRUE to get fill statistics for all records instead of gaps only
 		,isVerbose=TRUE     ##<< logical scalar: set to FALSE to avoid print status information to screen

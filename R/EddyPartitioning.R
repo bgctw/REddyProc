@@ -16,8 +16,8 @@ sEddyProc$methods(
 				## sGLFluxPartition - Flux partitioning after Lasslop et al. (2010)
 				##description<<
 				## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
-				...		##<< arguments to \code{\link{parGLPartitionFluxes}} additional to the dataset \code{ds}
-						##<< such as \code{Suffix.s}
+				...		##<< arguments to \code{\link{partitionNEEGL}} additional to the dataset \code{ds}
+					## such as \code{Suffix.s}
 				,debug.l=list(		     ##<< List with debugging control.
 						##describe<< 
 						useLocaltime.b=FALSE	##<< if TRUE use local time zone instead of geo-solar time to compute potential radiation 	
@@ -32,7 +32,7 @@ sEddyProc$methods(
 			## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
 			## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187–208
 			.self$sCalcPotRadiation(useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )	
-			dsAns <- parGLPartitionFluxes( cbind(sDATA, sTEMP), ...
+			dsAns <- partitionNEEGL( cbind(sDATA, sTEMP), ...
 					, nRecInDay=sINFO$DTS
 							)
 			iExisting <- na.omit(match( colnames(dsAns), colnames(sTEMP)  ))
@@ -44,8 +44,7 @@ sEddyProc$methods(
 			return(invisible(NULL))
 			##value<< 
 			## Flux partitioning results are in sTEMP data frame of the class.
-		}
-)
+		})
 
 sEddyProc$methods(
 		sMRFluxPartition = function(

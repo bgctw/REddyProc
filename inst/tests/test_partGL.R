@@ -320,7 +320,7 @@ resLRCEx1 <- structure(list(resOptList = list(structure(list(opt.parms.V = struc
 
 
 test_that("partGL_RHLightResponseGrad matches numerical estimates",{
-			ds <- with(dss, data.frame(NEE=FP_VARnight, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )))
+			ds <- with(dsNEE, data.frame(NEE=FP_VARnight, Temp=NEW_FP_Temp, VPD=NEW_FP_VPD, Rg=ifelse( Rg >= 0, Rg, 0 )))
 			ds$NEE[!is.na(dsNEE$FP_VARday)] <- dsNEE$FP_VARday[!is.na(dsNEE$FP_VARday)]
 			ds$sdNEE <- 0.05*ds$NEE
 			#str(ds)
@@ -548,12 +548,12 @@ test_that("partGLPartitionFluxes",{
 			DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
 			Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
 			dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0 )
-			tmp <- parGLPartitionFluxes( dsNEE1 )
+			tmp <- partitionNEEGL( dsNEE1 )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			#
 			dsNEE2 <- dsNEE1
-			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd", "Tair_f", "Tair_fqc","VPD_f", "VPD_fqc"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd", "Tair_u50_f", "Tair_u50_fqc","VPD_u50_f", "VPD_u50_fqc")
-			tmp <- parGLPartitionFluxes( dsNEE2, Suffix.s="u50", controlGLPart.l=partGLControl(nBootUncertainty=0L) )
+			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
+			tmp <- partitionNEEGL( dsNEE2, Suffix.s="u50", controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE) )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			expect_true( all(is.finite(tmp$GPP_DT_u50)))
 			expect_true( all(tmp$GPP_DT_u50 >= 0))
@@ -581,7 +581,7 @@ test_that("partGLPartitionFluxes",{
 	require(profr)
 	p1 <- profr({
 				for( i in 1:1 ){
-					tmp <- parGLPartitionFluxes( dsNEE1 )
+					tmp <- partitionNEEGL( dsNEE1 )
 				}
 			}, 0.01 )
 	plot(p1)
