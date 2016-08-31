@@ -44,6 +44,7 @@ VPD was not given with the original dataset and is calculated from Tair and rH.
 ```{r}
 		DEGebExample$VPD <- fCalcVPDfromRHandTair(DEGebExample$rH, DEGebExample$Tair)
 		EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
+		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.1, Long_deg.n=10.9, TimeZone_h.n=1)  #Location of Gebesee
 ```
 
 Defining Seasons with different surface friction conditions 
@@ -107,9 +108,9 @@ The season factor has already been stored with the class when calling `EddyProc.
 Uncertainty introduced by the uStar Threshold estimate: bootstrap  
 -----------------------------------------------------------------
 
-With a lower estimate of uStar threshold, more records with lower NEE a kept in 
+With a lower estimate of uStar threshold, more records with lower NEE are kept in 
 the dataset instead of marked as gaps. Therefore annual estimate of NEE will decrease
-with decreasing uStar Threshold. Also the partitioning of the net-flux to GPP and REco is 
+with lower uStar Threshold. Also the partitioning of the net-flux to GPP and Reco is 
 sensitive to inclusion of data at dawn period with conditions of low uStar.
 
 In order to quantify this uncertainty, a lower, median and upper estimates of uStar 
@@ -135,13 +136,13 @@ Additional output columns are produced for each uStar quantile.
 	grep("^NEE.*_f$", colnames( EddyProc.C$sExportResults()), value=TRUE )
 ```		
 		
-In order to feed results of different uStar Threshold estimates into the Gap-Filling, the 
+In order to provide results of different uStar Threshold estimates to the NEE Flux-partitioning, the 
 argument suffix.s is used. The output columns of the Gap-Filling carry the same suffix.
 
 ```{r DEGeb_fluxPart1, cache=TRUE}
 	EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 	for( suffix in c('U10', 'U90')){
-		EddyProc.C$sMRFluxPartition(Lat_deg.n=51.1, Long_deg.n=10.9, TimeZone_h.n=1, Suffix.s = suffix)
+		EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
 	}
 	grep("U10", colnames(EddyProc.C$sExportResults()), value = TRUE) 	
 ```
@@ -152,7 +153,7 @@ Using change point detection instead of moving point method for UStar Threshold 
 The package also provides another method of estimating the point where NEE saturates with increasing uStar.
 With the ChangePointDetection (CPT) method, the data is not binned by classes of uStar but the changepoint
 is estimated based on the entire subset within one seasons and one temperature class.
-The user selects this method by specifying argument `ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)`
+The user invokes this method by specifying argument `ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT = TRUE)`
 to `EstUstarThreshold` or `sEstUstarThresholdDistribution`.
 
 The CPT method is usually yields higher thresholds and marks more data as Gap. 
