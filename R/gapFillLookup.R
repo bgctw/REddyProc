@@ -2,11 +2,11 @@
 
 gfGapFillMDS <- function(
 		### Series of Gap-Filling with different quality based on Rg, VPD, Tair, and diurnal cycle
-		ds					##<< data.frame with variables to fill and columns Rg, VPD, Tair
+		ds					##<< data.frame with variables to fill and covariates
 		,fillVarName="NEE"	##<< scalar string: name of variable to fill
-		,covarVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold meteo conditions
+		,covarVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold covariates to determine similar conditions
 		,tolerance=c(Rg=50, VPD=5, Tair=2.5)	##<< numeric vector of tolerances with named components for each entry in meteoVarNames
-		,filledVarName=paste0(fillVarName,"_f")	##<< scalar string: name of variable that holds the filled values
+		#,filledVarName=paste0(fillVarName,"_f")	##<< scalar string: name of variable that holds the filled values
 		,RgVarNames=c("Rg")	##<< string vector: column names for which radiation relative tolerance bounds is to be applied (see \code{\link{gfCreateRgToleranceFunction}})
 		,nRecInDay=48L		##<< integer scalar: number of records within one day, default corresponds to half-hourly records
 		,isFillAll=FALSE	##<< set to TRUE to compute filled values for all records
@@ -26,11 +26,12 @@ gfGapFillMDS <- function(
 			, iRgColumns=na.omit(match(colNamesMeteo[1L], RgVarNames)) )
 	Met.n <- length(iColsMeteo)
 	##value<< a data.frame with columns of sta
-	## \item{fmean}{mean of similar values, or original estimate if this finite}
+	## \item{fmean}{mean of similar values}
 	## \item{fnum}{number of similar values}
 	## \item{fsd}{standard deviation of similar values}
 	## \item{fmeth}{method of determining similar values; 1 = at least 3 covariates, 2 = at least one covariate, 3 = mean diurnal course}
 	## \item{fqc}{quality flag;  0 = original, 1 = most reliable, 2 = medium, 3 = least reliable}
+	## \item{filled}{if orignial value is finite, original value, else fmean}
 	gapStats <- matrix(NA_real_, nrow=nrow(ds), ncol=5L, dimnames=list(NULL,c('fmean','fnum','fsd','fmeth','fqc')))
 	if( !isTRUE(isFillAll))	gapStats[,"fmean"] <- ds[[fillVarName]]
 	iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
@@ -123,11 +124,13 @@ gfGapFillMDS <- function(
 		gapStats[ans[,"index"], "fqc"] <- 3L
 		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
 	} 
+	gapStats <- as.data.frame(gapStats) 
+	iFinite <- is.finite(ds[[fillVarName]])
+	gapStats$filled <- gapStats$fmean 
 	# replace means of non-gaps by original values
-	iFinite <- is.finite(ds[[fillVarName]]) 
-	gapStats[iFinite,"fmean"] <- ds[iFinite, fillVarName]  # mean not needed, even with isFillAll=TRUE
-	gapStats[iFinite,"fqc"] <- 0
-	as.data.frame(gapStats)
+	gapStats$filled[iFinite] <- ds[iFinite, fillVarName]  
+	gapStats$fqc[iFinite] <- 0
+	gapStats
 }
 
 .checkMeteoConditions <- function(
