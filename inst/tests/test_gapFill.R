@@ -273,16 +273,10 @@ test_that("gfGapFillLookupTable",{
 			dsCov$Temp[2] <- NA
 			fTol = gfCreateRgToleranceFunction(tolerance=c(Rg=50, VPD=5, Temp=2.5), iRgColumns=1L)
 			res <- gfGapFillLookupTable(dsTest$NEE, 3L*48L, dsCov,  fTolerance=fTol )
-			dsTest2 <- cbind(dsTest, data.frame(NEE_f=dsTest$NEE, NEE_fsd=NA_real_ ))
-			dsTest2[res[,1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]
-			.tmp.plot <- function(){
-				plot( NEE_f ~ sDateTime, dsTest2)
-				points( NEE ~ sDateTime, dsTest2, col="green", pch="+")
-				#with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
-				with( dsTest2, lines(sDateTime,NEE_f + NEE_fsd, col="grey"))
-				with( dsTest2, lines(sDateTime,NEE_f - NEE_fsd, col="grey"))
-			}
-			res <- resAll <- gfGapFillLookupTable(dsTest$NEE, 3L*48L, dsCov, fTolerance=fTol, isFillAll=TRUE )
+			#dsTest2 <- cbind(dsTest, data.frame(NEE_f=dsTest$NEE, NEE_fsd=NA_real_ ))
+			dsTestTair <- cbind(dsTest, data.frame(NEE_f=NA_real_, NEE_fsd=NA_real_ ))
+			dsTestTair[res[,1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]
+			res <- resAll <- gfGapFillLookupTable(dsTest$NEE, 3L*48L, dsCov, fTolerance=fTol, iRecsGap=1:nrow(dsTest) )
 		})
 
 test_that("gfGapFillLookupTable warning on wrong tolerance",{
@@ -298,16 +292,46 @@ test_that("gfGapFillLookupTable warning on wrong tolerance",{
 
 test_that("gfGapFillMeanDiurnalCourse",{
 			res <- gfGapFillMeanDiurnalCourse(dsTest$NEE )
-			dsTest2 <- cbind(dsTest, data.frame(NEE_f=dsTest$NEE, NEE_fsd=NA_real_ ))
-			dsTest2[res[,1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]
-			.tmp.plot <- function(){
-				plot( NEE_f ~ sDateTime, dsTest2)
-				points( NEE ~ sDateTime, dsTest2, col="green", pch="+")
-				#with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
-				with( dsTest2, lines(sDateTime,NEE_f + NEE_fsd, col="grey"))
-				with( dsTest2, lines(sDateTime,NEE_f - NEE_fsd, col="grey"))
-			}
-			res <- resAll <- gfGapFillMeanDiurnalCourse(dsTest$NEE, isFillAll=TRUE )
+			dsTestTair <- cbind(dsTest, data.frame(NEE_f=NA_real_, NEE_fsd=NA_real_ ))
+			dsTestTair[res[,1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]
+			res <- resAll <- gfGapFillMeanDiurnalCourse(dsTest$NEE, iRecsGap=1:nrow(dsTest) )
 		})
 
+test_that(".checkMeteoConditions",{
+			res <- .checkMeteoConditions(dsTest, meteoVarNames=c("Rg","Temp","VPD"))
+			expect_equal( 3L, length(res) )
+			# missing Tair
+			expect_warning(res <- .checkMeteoConditions(dsTest)) 
+			expect_equal( names(res), c("Rg","VPD"))
+			expect_equal( as.vector(res["Rg"]), match("Rg", names(dsTest)))
+			#
+			dsTestTair <- dsTest
+			dsTestTair$Rg <- NA
+			expect_warning(res <- .checkMeteoConditions(dsTestTair)) 
+			expect_equal( res, c(VPD=7), )
+		})
+
+test_that("gfGapFillMDS",{
+			# missing Tair
+			#expect_warning(res <- gfGapFillMDS(dsTest))
+			dsTestTair <- within(dsTest, Tair <- Temp) 
+			#res <- gfGapFillMDS(dsTestTair)
+			res <- gfGapFillMDS(dsTestTair, isFillAll=TRUE)
+			#res <- gfGapFillMDS(dsTestTair, isFillAll=TRUE, isVerbose=FALSE)
+			expect_equal( nrow(res), nrow(dsTestTair) )
+			iFinite <- is.finite(dsTestTair$NEE) 
+			expect_equal( res[iFinite,"fmean"], dsTestTair$NEE[iFinite] )						
+			expect_true( all( res[iFinite,"fqc"] == 0 ))
+		})
+
+.tmp.plot <- function(){
+	dsTest2 <- cbind(dsTest, data.frame(NEE_f=NA_real_, NEE_fsd=NA_real_ ))
+	#dsTest2[res[1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]	# results of gfGapLookupTable
+	dsTest2[,c("NEE_f","NEE_fsd")] <- res[,c("fmean","fsd")]	# results of gfGapFillMDS
+	plot( NEE ~ sDateTime, dsTest2)
+	points( NEE_f ~ sDateTime, dsTest2, col="green", pch="+")
+	#with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
+	with( dsTest2, lines(sDateTime,NEE_f + 1.96*NEE_fsd, col="grey"))
+	with( dsTest2, lines(sDateTime,NEE_f - 1.96*NEE_fsd, col="grey"))
+}
 

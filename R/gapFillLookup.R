@@ -1,40 +1,161 @@
-# generalizing Antje's GapFilling Code to arbitrary Covariates 
+# generalizing Antje's GapFilling Code to arbitrary Covariates and arbitraty time spacing (nRecInDay)
 
 gfGapFillMDS <- function(
 		### Series of Gap-Filling with different quality based on Rg, VPD, Tair, and diurnal cycle
 		ds					##<< data.frame with variables to fill and columns Rg, VPD, Tair
 		,fillVarName="NEE"	##<< scalar string: name of variable to fill
+		,covarVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold meteo conditions
+		,tolerance=c(Rg=50, VPD=5, Tair=2.5)	##<< numeric vector of tolerances with named components for each entry in meteoVarNames
+		,filledVarName=paste0(fillVarName,"_f")	##<< scalar string: name of variable that holds the filled values
+		,RgVarNames=c("Rg")	##<< string vector: column names for which radiation relative tolerance bounds is to be applied (see \code{\link{gfCreateRgToleranceFunction}})
+		,nRecInDay=48L		##<< integer scalar: number of records within one day, default corresponds to half-hourly records
+		,isFillAll=FALSE	##<< set to TRUE to compute filled values for all records
+		,isVerbose=TRUE		##<< set to FALSE to suppress progress messages
+		,...				##<< further arguments to \code{\link{gfGapFillLookupTable}}, such as \code{minNSimilar}
 ){
 	##value<< data.frame of the same length as ds with variables <fillVarname>_f, 
-	
+	iTol <- match(covarVarNames, names(tolerance))
+	if( any(is.na(iTol))) stop("no tolerance given for meteoVarNames ",paste(covarVarNames[is.na(iTol)],collapse=","))
+	iColsMeteo <- .checkMeteoConditions(ds,covarVarNames)
+	colNamesMeteo <- names(ds)[iColsMeteo]
+	fTol = gfCreateRgToleranceFunction(
+			tolerance=tolerance[colNamesMeteo]
+			, iRgColumns=na.omit(match(colNamesMeteo,RgVarNames)) )
+	fTol1 = gfCreateRgToleranceFunction(
+			tolerance=tolerance[colNamesMeteo[1L] ]
+			, iRgColumns=na.omit(match(colNamesMeteo[1L], RgVarNames)) )
+	Met.n <- length(iColsMeteo)
+	##value<< a data.frame with columns of sta
+	## \item{fmean}{mean of similar values, or original estimate if this finite}
+	## \item{fnum}{number of similar values}
+	## \item{fsd}{standard deviation of similar values}
+	## \item{fmeth}{method of determining similar values; 1 = at least 3 covariates, 2 = at least one covariate, 3 = mean diurnal course}
+	## \item{fqc}{quality flag;  0 = original, 1 = most reliable, 2 = medium, 3 = least reliable}
+	gapStats <- matrix(NA_real_, nrow=nrow(ds), ncol=5L, dimnames=list(NULL,c('fmean','fnum','fsd','fmeth','fqc')))
+	if( !isTRUE(isFillAll))	gapStats[,"fmean"] <- ds[[fillVarName]]
+	iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	if( length(iRecsGap) && (Met.n >= 3L) ){
+		if( isVerbose ) message("LUT of all covariates with +-7 days")
+		# Step 1: Look-up table (method 1) with window size +-7 days
+		ans <- gfGapFillLookupTable(ds[[fillVarName]], 7L*nRecInDay, ds[,iColsMeteo], fTol
+						,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+		gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+		gapStats[ans[,"index"], "fmeth"] <- 1L 
+		gapStats[ans[,"index"], "fqc"] <- 1L
+		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	}
+	if( length(iRecsGap) && (Met.n >= 1L) ){
+		# Step 2: Look-up table (method 1) with window size +-14 days
+		if( isVerbose ) message("LUT of all covariates with +-14 days")
+		ans <- gfGapFillLookupTable(ds[[fillVarName]], 14L*nRecInDay, ds[,iColsMeteo], fTol
+				,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+		gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+		gapStats[ans[,"index"], "fmeth"] <- 1L
+		gapStats[ans[,"index"], "fqc"] <- 2L
+		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	}
+	if( length(iRecsGap) && (Met.n >= 1L)  ){
+		# Step 3: Look-up table, Rg only (method 2) with window size +-7 days,
+		if( isVerbose ) message("LUT of only first covariates with +-7 days")
+		ans <- gfGapFillLookupTable(ds[[fillVarName]], 7L*nRecInDay, ds[,iColsMeteo[1L] ], fTol1 
+				,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+		gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+		gapStats[ans[,"index"], "fmeth"] <- 2L
+		gapStats[ans[,"index"], "fqc"] <- 1L
+		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	} 
+	if( length(iRecsGap) ){
+		# Step 4: Mean diurnal course (method 3) with window size 0 (same day)
+		# need to include hours of this day
+		if( isVerbose ) message("MDC +- half a day")
+		ans <- gfGapFillMeanDiurnalCourse(ds[[fillVarName]], winExt=round(nRecInDay*0.75), nRecInDay = nRecInDay
+				,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+		gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+		gapStats[ans[,"index"], "fmeth"] <- 3L
+		#if( lVAR_fwin.n <= 1 ) lVAR_fqc.n <- 1
+		#if( lVAR_fwin.n >  1 & lVAR_fwin.n <= 5 ) lVAR_fqc.n <- 2  
+		#if( lVAR_fwin.n >  5 ) lVAR_fqc.n <- 3	
+		gapStats[ans[,"index"], "fqc"] <- 1L
+		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	}
+	# Step 5: Mean diurnal course (method 3) with window size +-1, +-2 days
+	# +0.75: also include this day, i.e. +-1/2 day and adjacent hours
+	for( winExtIDays in (1:2)+0.75){
+		if( !length(iRecsGap) ) break
+		if( isVerbose ) message("MDC with +-",winExtIDays,"days")
+		ans <- gfGapFillMeanDiurnalCourse(ds[[fillVarName]], winExt=round(nRecInDay*(winExtIDays+0.75)), nRecInDay = nRecInDay
+				,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+		gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+		gapStats[ans[,"index"], "fmeth"] <- 3L
+		gapStats[ans[,"index"], "fqc"] <- 2L
+		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	}
+	# Step 6: Look-up table (method 1) with window size +-21, +-28, ..., +-70
+	if( Met.n >= 3 ) for( winExtIDays in seq(21,70,7) ){
+			if( !length(iRecsGap) ) break
+			if( isVerbose ) message("LUT of all covariates with +-",winExtIDays," days")
+			ans <- gfGapFillLookupTable(ds[[fillVarName]], nRecInDay*winExtIDays, ds[,iColsMeteo], fTol
+					,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+			gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+			gapStats[ans[,"index"], "fmeth"] <- 1L 
+			gapStats[ans[,"index"], "fqc"] <- if( winExtIDays*2L > 56L ) 3L else 2L
+			iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+		}
+	# Step 7: Look-up table (method 2, Rg only) with window size +-14, +-21, ..., +-70  
+	if( Met.n >= 1) for( winExtIDays in seq(14,70,7) ){
+			if( !length(iRecsGap) ) break
+			if( isVerbose ) message("LUT with only first covariates with +-",winExtIDays," days")
+			ans <- gfGapFillLookupTable(ds[[fillVarName]], winExtIDays*nRecInDay, ds[,iColsMeteo[1L] ], fTol1 
+					,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+			gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+			gapStats[ans[,"index"], "fmeth"] <- 1L
+			gapStats[ans[,"index"], "fqc"] <- 3L 
+			iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+		} 
+	# Step 8: Mean diurnal course (method 3) with window size +-7, +-14, ..., +-210 days 
+	for( winExtIDays in seq(7,210,7) ){
+		if( !length(iRecsGap) ) break
+		if( isVerbose ) message("MDC with +-",winExtIDays,"days")
+		ans <- gfGapFillMeanDiurnalCourse(ds[[fillVarName]], winExt=round(nRecInDay*(winExtIDays+0.75)), nRecInDay = nRecInDay
+				,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
+		gapStats[ans[,"index"], 1:3] <- ans[,2:4]
+		gapStats[ans[,"index"], "fmeth"] <- 3L
+		gapStats[ans[,"index"], "fqc"] <- 3L
+		iRecsGap <- which(!is.finite(gapStats[,"fmean"]))
+	} 
+	# replace means of non-gaps by original values
+	iFinite <- is.finite(ds[[fillVarName]]) 
+	gapStats[iFinite,"fmean"] <- ds[iFinite, fillVarName]  # mean not needed, even with isFillAll=TRUE
+	gapStats[iFinite,"fqc"] <- 0
+	as.data.frame(gapStats)
 }
 
 .checkMeteoConditions <- function(
 		### Check availablility of meteorological data for LUT
 		ds 					##<< data.frame
-		,fillVarName="NEE"	##<< scalar string denoting the column in ds to fill
 		,meteoVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold meteo conditions
 ){
 	namesDs <- names(ds)
-	iColMeteo0 <- structure( match( meteoVarNames, namesDs), names=meteoVarNames)
-	if( any(is.na(iColMeteo0))) warning(
+	iColsMeteo0 <- structure( match( meteoVarNames, namesDs), names=meteoVarNames)
+	if( any(is.na(iColsMeteo0))) warning(
 				"The following meteo columns are missing in provided dataset: "
-				,paste(namesDs[iColMeteo0][is.na(iColMeteo0)]),col=",")
-	iColMeteo1 <-na.omit(iColMeteo0)
-	hasRecords <- ( sapply( iColMeteo1, function(iCol){ sum(!is.na(ds[,iCol])) } ) != 0 )
+				,paste(meteoVarNames[is.na(iColsMeteo0)],collapse=","))
+	iColsMeteo1 <-na.omit(iColsMeteo0)
+	hasRecords <- ( sapply( iColsMeteo1, function(iCol){ sum(!is.na(ds[,iCol])) } ) != 0 )
 	if( any(!hasRecords) ) warning(
 				"The following meteo columns are have only missings: "
-				,paste(namesDs[iColMeteo1][!hasRecords]),col=",")
-	iColMeteo <- iColMeteo1[hasRecords]
-	##value<< the meteoNames that are valid int he dataSet, issues warning for invalid columns among meteoVarNames
-	namesDs[iColMeteo]
+				,paste(namesDs[iColsMeteo1][!hasRecords]),col=",")
+	iColsMeteo <- iColsMeteo1[hasRecords]
+	##value<< integer vector of column indices in  ds that hold valid meteorological conditions.
+	## Issues warning for invalid columns among meteoVarNames
+	iColsMeteo
 }
 
 gfGapFillLookupTable = function(
 		###  Gap filling with Look-Up Table (LUT)
 		##description<<
 		## Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size
-		toFill				##<< numeric vector to be filled 
+		toFill				##<< numeric vector to be filled (with NA also for gaps that have been already filled with a narrower window) 
 		,winExt=3L*48L		##<< scalar integer: number of records to extend window in both directions, Window size in records is then 2*winExtDays+1L
 		,covM				##<< numeric data.frame or matrix with covariates in columns and no other columns
 		,fTolerance=		##<< function that returns tolerance vector depending on target vector of covariates
@@ -42,7 +163,10 @@ gfGapFillLookupTable = function(
 				## The order of entries must correspond to the columns in covM.
 				function(target) return(tolerance)	
 		,tolerance			##<< numeric vector: alternative way to specify a constant tolerance, returned by the default fTolerance function
-		,isFillAll=FALSE	##<< logical scalar: set to TRUE to get fill statistics for all records instead of gaps only
+		,iRecsGap = which(!is.finite(toFill))	##<< integer vector of positions of gaps to fill.
+			## Set to a subset if some of gaps were filled before.
+			## Set to seq_along(toFill) to estimate uncertainty for all records.
+		#,isFillAll=FALSE	##<< logical scalar: set to TRUE to get fill statistics for all records instead of gaps only
 		,isVerbose=TRUE     ##<< logical scalar: set to FALSE to avoid print status information to screen
 		,minNSimilar=2L		##<< integer scalar: number of records of similar conditions to fill gap
 		,isCovNAInTolerance=FALSE	##<< logical scalar: set to TRUE to assume that covariates with NA are within tolerance (default to assume its not)
@@ -64,8 +188,6 @@ gfGapFillLookupTable = function(
 	nRec <- ncol(covT)
 	nCov <- nrow(covT)
 	isFiniteToFill <- is.finite(toFill)	# compute once and subset afterwards is faster than computing it for every window
-	#toFillAll <- if( isFillAll ) numeric(nRec) else toFill
-	iRecsGap <- if( isFillAll) 1:nRec else which(!isFiniteToFill)
 	# for each gap the start and end record index of the window
 	iRecsStart <- pmax(1L, iRecsGap - winExt)	# little speedup by vectorizing instead of max in each loop
 	iRecsEnd <- pmin(nRec, iRecsGap + winExt)
@@ -76,7 +198,7 @@ gfGapFillLookupTable = function(
 	## A matrix with with rows with statistics of values in similar conditions
 	## index: rownumber of filled record, mean: mean across all similar records in period, fnum: number of similar records, fsd: standard deviation of the mean 
 	gapStats <- matrix(NA_real_, nrow=length(iRecsGap), ncol=4L, dimnames=list(NULL,c('index','mean','fnum','fsd')))
-	if( length(iRecsGap) == 0 ) return(gapStats[FALSE,] )
+	if( length(iRecsGap) == 0 ) return(gapStats)
 	iGap <- 1L	# loop variable cycling the positions in iRecsGap
 	for( iGap in seq_along(iRecsGap) ) {
 		# Set window size
@@ -108,8 +230,10 @@ gfGapFillLookupTable = function(
 		}
 		if( isVerbose && iGap%%100 == 0 ) message('.', appendLF=(iGap%%6000 == 0))
 	}
-	ans <- gapStats[is.finite(gapStats[,1]),]	# skip the rows that were not filled 
-	if( isVerbose ) message('Filled ', nrow(ans),' of ',nrow(gapStats),' gaps.')
+	ans <- gapStats[is.finite(gapStats[,1]),]	# skip the rows that could not filled (due to not enough data)
+	if( isVerbose ){
+		message('GapStats of ', nrow(ans),' of ',nrow(gapStats),' gap-records.')
+	}   
 	ans
 }
 
@@ -174,7 +298,7 @@ gfComputeQualityFlags <- function(
 gfGapFillMeanDiurnalCourse = function(
 		###  Gap filling with Mean Diurnal Course (MDC)
 		toFill				##<< numeric vector to be filled
-		,...				##<< other arguments to \code{\link{gfGapFillLookupTable}}, such as \code{winExt},\code{minNSimilar}, or\code{isFillAll}
+		,...				##<< other arguments to \code{\link{gfGapFillLookupTable}}, such as \code{winExt},\code{minNSimilar}, or\code{iRecsGap}
 		,nRecInDay=48L		##<< integer scalar: number of records within one day, default corresponds to half-hourly records
 		,toleranceInHours=1 ##<< numeric scalar: maximum difference in "hour since daystart" to select similar values 	
 ){
