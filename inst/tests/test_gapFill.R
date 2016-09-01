@@ -320,7 +320,7 @@ test_that("gfGapFillMDS",{
 			#res <- gfGapFillMDS(dsTestTair, isFillAll=TRUE, isVerbose=FALSE)
 			expect_equal( nrow(res), nrow(dsTestTair) )
 			iFinite <- is.finite(dsTestTair$NEE) 
-			expect_equal( res[iFinite,"fmean"], dsTestTair$NEE[iFinite] )						
+			expect_equal( res[iFinite,"filled"], dsTestTair$NEE[iFinite] )						
 			expect_true( all( res[iFinite,"fqc"] == 0 ))
 		})
 
