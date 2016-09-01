@@ -1,4 +1,34 @@
-# for Thomas to understand Antje's GapFilling Code without R5, which is hard to debug
+# generalizing Antje's GapFilling Code to arbitrary Covariates 
+
+gfGapFillMDS <- function(
+		### Series of Gap-Filling with different quality based on Rg, VPD, Tair, and diurnal cycle
+		ds					##<< data.frame with variables to fill and columns Rg, VPD, Tair
+		,fillVarName="NEE"	##<< scalar string: name of variable to fill
+){
+	##value<< data.frame of the same length as ds with variables <fillVarname>_f, 
+	
+}
+
+.checkMeteoConditions <- function(
+		### Check availablility of meteorological data for LUT
+		ds 					##<< data.frame
+		,fillVarName="NEE"	##<< scalar string denoting the column in ds to fill
+		,meteoVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold meteo conditions
+){
+	namesDs <- names(ds)
+	iColMeteo0 <- structure( match( meteoVarNames, namesDs), names=meteoVarNames)
+	if( any(is.na(iColMeteo0))) warning(
+				"The following meteo columns are missing in provided dataset: "
+				,paste(namesDs[iColMeteo0][is.na(iColMeteo0)]),col=",")
+	iColMeteo1 <-na.omit(iColMeteo0)
+	hasRecords <- ( sapply( iColMeteo1, function(iCol){ sum(!is.na(ds[,iCol])) } ) != 0 )
+	if( any(!hasRecords) ) warning(
+				"The following meteo columns are have only missings: "
+				,paste(namesDs[iColMeteo1][!hasRecords]),col=",")
+	iColMeteo <- iColMeteo1[hasRecords]
+	##value<< the meteoNames that are valid int he dataSet, issues warning for invalid columns among meteoVarNames
+	namesDs[iColMeteo]
+}
 
 gfGapFillLookupTable = function(
 		###  Gap filling with Look-Up Table (LUT)
@@ -14,7 +44,7 @@ gfGapFillLookupTable = function(
 		,tolerance			##<< numeric vector: alternative way to specify a constant tolerance, returned by the default fTolerance function
 		,isFillAll=FALSE	##<< logical scalar: set to TRUE to get fill statistics for all records instead of gaps only
 		,isVerbose=TRUE     ##<< logical scalar: set to FALSE to avoid print status information to screen
-		,minNSimilar=1L		##<< integer scalar: number of records of similar conditions to fill gap
+		,minNSimilar=2L		##<< integer scalar: number of records of similar conditions to fill gap
 		,isCovNAInTolerance=FALSE	##<< logical scalar: set to TRUE to assume that covariates with NA are within tolerance (default to assume its not)
 ){
 	##author<< TW
@@ -36,7 +66,11 @@ gfGapFillLookupTable = function(
 	isFiniteToFill <- is.finite(toFill)	# compute once and subset afterwards is faster than computing it for every window
 	#toFillAll <- if( isFillAll ) numeric(nRec) else toFill
 	iRecsGap <- if( isFillAll) 1:nRec else which(!isFiniteToFill)
-	# make sure tol is of correct lenght, later accessed by tol[] <- 
+	# for each gap the start and end record index of the window
+	iRecsStart <- pmax(1L, iRecsGap - winExt)	# little speedup by vectorizing instead of max in each loop
+	iRecsEnd <- pmin(nRec, iRecsGap + winExt)
+	# make sure tol is of correct lenght, later accessed by tol[] <-
+	if( length(fTolerance(covT[,1L])) != nCov ) warning("provided vector of tolerances is not of length as number of provided covariates.")
 	tol <- numeric(nCov)
 	##value<< 
 	## A matrix with with rows with statistics of values in similar conditions
@@ -47,23 +81,21 @@ gfGapFillLookupTable = function(
 	for( iGap in seq_along(iRecsGap) ) {
 		# Set window size
 		iRec   <- iRecsGap[iGap]
-		iRecStart <- max(1, iRec - (winExt))
-		iRecEnd   <- min(nRec, iRec + (winExt))
-		seqWin <- (iRecStart:iRecEnd)
+		seqWin <- (iRecsStart[iGap]:iRecsEnd[iGap])
 		target <- covT[,iRec]		# vector of covariates at target
-		covWin <- covT[,seqWin]		# matrix of covariates in window
+		covWin <- covT[,seqWin,drop=FALSE]		# matrix of covariates in window
 		# Set LUT fill condition
 		deviationCov <- covWin - target
 		tol[] <- fTolerance(target)		
-		isInTolerance <- abs(deviationCov) < tol	# matrix (nCov x nRec) 
+		isInTolerance <- abs(deviationCov) <= tol	# matrix (nCov x nRec) 
 		isInTolerance[ is.na(isInTolerance) ] <- isCovNAInTolerance	# some assumption for NA values	of covariates
 		isAllVarsInTolerance <- apply( isInTolerance, 2, all)	# for each record in window, if all variables are within tolerance
 		# not itself the target record & finite value of fill variable & and covariates in tolerance range
 		isSimilar <- (seqWin != iRec) & isFiniteToFill[seqWin] & isAllVarsInTolerance
 		similarVals <- toFill[seqWin][isSimilar]
 		# If enough available data, fill gap
-		if( length(similarVals) > minNSimilar ){
-			nSimilarVals <- length(similarVals)
+		nSimilarVals <- length(similarVals)
+		if( nSimilarVals >= minNSimilar ){
 			meanSimilarVals <- sum(similarVals)/nSimilarVals
 			resMean <- similarVals-meanSimilarVals
 			sdSimilarVals <- sqrt(sum(resMean*resMean)/(nSimilarVals-1L))
@@ -74,12 +106,10 @@ gfGapFillLookupTable = function(
 							,fsd=sdSimilarVals
 						)
 		}
-		if( isVerbose && iGap%%100 == 0 ){
-			message('.', appendLF=(iGap%%6000 == 0))
-		}  
+		if( isVerbose && iGap%%100 == 0 ) message('.', appendLF=(iGap%%6000 == 0))
 	}
-	if( isVerbose ) message('', nrow(gapStats))
-	ans <- gapStats[is.finite(gapStats[,1]),]	# skip the rows that were not filled because of too few data
+	ans <- gapStats[is.finite(gapStats[,1]),]	# skip the rows that were not filled 
+	if( isVerbose ) message('Filled ', nrow(ans),' of ',nrow(gapStats),' gaps.')
 	ans
 }
 
@@ -139,6 +169,28 @@ gfComputeQualityFlags <- function(
 	ans[,'fqc'] <- qualityFlags[2]
 	ans[,'fwin'] <- winWidthDays
 }
+
+
+gfGapFillMeanDiurnalCourse = function(
+		###  Gap filling with Mean Diurnal Course (MDC)
+		toFill				##<< numeric vector to be filled
+		,...				##<< other arguments to \code{\link{gfGapFillLookupTable}}, such as \code{winExt},\code{minNSimilar}, or\code{isFillAll}
+		,nRecInDay=48L		##<< integer scalar: number of records within one day, default corresponds to half-hourly records
+		,toleranceInHours=1 ##<< numeric scalar: maximum difference in "hour since daystart" to select similar values 	
+){
+	##author<< TW
+	##description<<
+	## Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days.
+	#
+	# create covariate hourInDay and use it for LookupTable
+	recHours <- (1:nRecInDay)*(24/nRecInDay)
+	covM <- matrix(recHours, nrow=length(toFill), ncol=1, dimnames=list(NULL,"hourInDay"))
+	##value<< 
+	## result of \code{\link{gfGapFillLookupTable}}
+	ans <- gfGapFillLookupTable(toFill, ..., covM=covM, tolerance=toleranceInHours )
+	ans
+}
+
 
 
 

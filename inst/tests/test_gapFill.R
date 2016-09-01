@@ -285,3 +285,29 @@ test_that("gfGapFillLookupTable",{
 			res <- resAll <- gfGapFillLookupTable(dsTest$NEE, 3L*48L, dsCov, fTolerance=fTol, isFillAll=TRUE )
 		})
 
+test_that("gfGapFillLookupTable warning on wrong tolerance",{
+			dsCov <- dsTest[,c("Rg","Temp","VPD","VPD")]
+			dsCov$Temp[2] <- NA
+			fTol = gfCreateRgToleranceFunction(tolerance=c(Rg=50, VPD=5), iRgColumns=1L)
+			expect_warning( res <- gfGapFillLookupTable(dsTest$NEE, 3L*48L, dsCov,  fTolerance=fTol ) )
+			#
+			dsCov <- dsTest[,c("Rg","Temp","VPD")]
+			dsCov$Temp[2] <- NA
+			expect_warning( res <- gfGapFillLookupTable(dsTest$NEE, 3L*48L, dsCov,  tolerance=5 ) )
+		})
+
+test_that("gfGapFillMeanDiurnalCourse",{
+			res <- gfGapFillMeanDiurnalCourse(dsTest$NEE )
+			dsTest2 <- cbind(dsTest, data.frame(NEE_f=dsTest$NEE, NEE_fsd=NA_real_ ))
+			dsTest2[res[,1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]
+			.tmp.plot <- function(){
+				plot( NEE_f ~ sDateTime, dsTest2)
+				points( NEE ~ sDateTime, dsTest2, col="green", pch="+")
+				#with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
+				with( dsTest2, lines(sDateTime,NEE_f + NEE_fsd, col="grey"))
+				with( dsTest2, lines(sDateTime,NEE_f - NEE_fsd, col="grey"))
+			}
+			res <- resAll <- gfGapFillMeanDiurnalCourse(dsTest$NEE, isFillAll=TRUE )
+		})
+
+

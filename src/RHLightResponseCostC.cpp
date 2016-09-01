@@ -9,16 +9,16 @@ double square(double x){ return(x*x); }
 NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior
 		, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector VPD0, LogicalVector fixVPD
 		) {
-	if( theta.size() != 5L ) throw std::range_error("theta must have 5 entries.");
-	double _kVPD  = theta[0L];	// index starting from zero
-	double _beta0  = theta[1L];
-	double _alfa  = theta[2L];
-	double _Rref  = theta[3L];
-	double _E0 = theta[4L];
+	if( theta.size() != 5 ) throw std::range_error("theta must have 5 entries.");
+	double _kVPD  = theta[0];	// index starting from zero
+	double _beta0  = theta[1];
+	double _alfa  = theta[2];
+	double _Rref  = theta[3];
+	double _E0 = theta[4];
 	if( !VPD0.size() || !fixVPD.size() )
 		throw std::range_error("VPD0 and fixVPD must have one entry.");
-	double _VPD0 = VPD0[0L];
-	bool _fixVPD = fixVPD[0L];
+	double _VPD0 = VPD0[0];
+	bool _fixVPD = fixVPD[0];
 	int _nRec=flux.size();
 	//
 	double _Amax, _Reco, _GPP;
@@ -46,7 +46,7 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 		_NEP = _GPP -_Reco;
 		_misFitObs += square( (_NEP-flux[i])/sdFlux[i] );
 	}
-	//return( NumericVector::create(_beta0, VPD[0], _VPD0, _Rref, _E0, Temp[0L], NEP[0]) );
+	//return( NumericVector::create(_beta0, VPD[0], _VPD0, _Rref, _E0, Temp[0], NEP[0]) );
 	//return NEP;
 	_RSS = _misFitObs + _misFitPrior;
 	return( NumericVector::create(_RSS) );
