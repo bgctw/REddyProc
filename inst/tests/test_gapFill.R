@@ -291,10 +291,10 @@ test_that("gfGapFillLookupTable warning on wrong tolerance",{
 		})
 
 test_that("gfGapFillMeanDiurnalCourse",{
-			res <- gfGapFillMeanDiurnalCourse(dsTest$NEE )
+			res <- gfGapFillMeanDiurnalCourse(dsTest$NEE, 2L )
 			dsTestTair <- cbind(dsTest, data.frame(NEE_f=NA_real_, NEE_fsd=NA_real_ ))
 			dsTestTair[res[,1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]
-			res <- resAll <- gfGapFillMeanDiurnalCourse(dsTest$NEE, iRecsGap=1:nrow(dsTest) )
+			res <- resAll <- gfGapFillMeanDiurnalCourse(dsTest$NEE, 1, iRecsGap=1:nrow(dsTest) )
 		})
 
 test_that(".checkMeteoConditions",{
@@ -308,7 +308,7 @@ test_that(".checkMeteoConditions",{
 			dsTestTair <- dsTest
 			dsTestTair$Rg <- NA
 			expect_warning(res <- .checkMeteoConditions(dsTestTair)) 
-			expect_equal( res, c(VPD=7), )
+			expect_equal( res, c(VPD=7) )
 		})
 
 test_that("gfGapFillMDS",{
@@ -328,6 +328,7 @@ test_that("gfGapFillMDS",{
 	dsTest2 <- cbind(dsTest, data.frame(NEE_f=NA_real_, NEE_fsd=NA_real_ ))
 	#dsTest2[res[1],c("NEE_f","NEE_fsd")] <- res[,c("mean","fsd")]	# results of gfGapLookupTable
 	dsTest2[,c("NEE_f","NEE_fsd")] <- res[,c("fmean","fsd")]	# results of gfGapFillMDS
+	#
 	plot( NEE ~ sDateTime, dsTest2)
 	points( NEE_f ~ sDateTime, dsTest2, col="green", pch="+")
 	#with(resY2, segments(I(Start+0.3),R_ref-R_ref_SD,I(Start+0.3), R_ref+R_ref_SD, col="green"))
