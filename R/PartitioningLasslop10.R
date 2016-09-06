@@ -24,7 +24,7 @@ partitionNEEGL=function(
 ## MM, TW
 ##references<<
 ## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
-## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187–208
+## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187208
 {
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
@@ -244,6 +244,8 @@ partGLFitLRCWindows=function(
 		##seealso<< \code{\link{partGLEstimateTempSensInBounds}}
 		resNightFit <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n, prevR_ref=R_refNight.n)
 		E_0.n <- resNightFit$E_0
+		# if no temperature - respiration relationship could be found, indicate no-fit
+		if( is.na(E_0.n) ){     next    }    
 		sdE_0.n <- resNightFit$E_0_SD
 		R_refNight.n <- resNightFit$R_ref
 		#
@@ -308,11 +310,15 @@ partGLEstimateTempSensInBounds <- function(
 	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
 	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
 	#		,control=nls.lm.control(maxiter = 20))
-	resFit <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-			data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n))
-			, start=list(R_ref=as.vector({if(is.finite(prevR_ref)) prevR_ref else mean(REco.V.n,na.rm=TRUE)})
-						,E_0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
-			,control=nls.control(maxiter = 20))
+  resFit <- try(nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+                    data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n))
+                    , start=list(R_ref=as.vector({if(is.finite(prevR_ref)) prevR_ref else mean(REco.V.n,na.rm=TRUE)})
+                                 ,E_0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
+                    ,control=nls.control(maxiter = 20)), silent=TRUE)
+  if( inherits(resFit, "try-error")){
+    return(list(E_0=NA))
+    #stop("debug partGLEstimateTempSensInBounds")
+  }
 	E_0Bounded.V.n <- E_0.V.n <- coef(resFit)['E_0']
 	R_ref <- R_ref0 <- coef(resFit)['R_ref'] 
 	E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
@@ -772,10 +778,10 @@ partGLBoundParameters <- function(
 	## vector positions: 1: k, 2: beta, 3: alpha, 4: rb
 	#
 	# Table A1 Initial guess; Valid Range; If outside range 
-	# E_0.n  100;	50–400;	Set to value of previous window, if no previous window exists estimates <50 were set to 50, estimates >400 were set to 400
+	# E_0.n  100;	50400;	Set to value of previous window, if no previous window exists estimates <50 were set to 50, estimates >400 were set to 400
 	# rb	Mean of nighttime NEE	>0;	Whole parameter set is not used
 	# alpha	0.01;	?0,<0.22;	Set to value of previous window, if no previous window exists and <0, set to zero
-	# beta0	Abs (0.03quantile – 0.97quantile) of NEE	?0; <250; If >100 then ? (?)<?	If negative set to zero, else the whole parameter set is not used
+	# beta0	Abs (0.03quantile  0.97quantile) of NEE	?0; <250; If >100 then ? (?)<?	If negative set to zero, else the whole parameter set is not used
 	# kVPD	;0	?0; 	Set to zero
 	#parms_out_range<-0 #IF set to 1 means that the parameters are outside range and no computation uncertainties
 	opt.parms.V <- resOpt[[1]]
