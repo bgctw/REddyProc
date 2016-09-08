@@ -308,11 +308,14 @@ partGLEstimateTempSensInBounds <- function(
 	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
 	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
 	#		,control=nls.lm.control(maxiter = 20))
-	resFit <- nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+	resFit <- try( nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
 			data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n))
 			, start=list(R_ref=as.vector({if(is.finite(prevR_ref)) prevR_ref else mean(REco.V.n,na.rm=TRUE)})
 						,E_0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
-			,control=nls.control(maxiter = 20))
+			,control=nls.control(maxiter = 20)), silent=TRUE)
+	if( inherits(x, "try-error") ){
+		stop("debug fitting error in partGLEstimateTempSensInBounds")
+	}
 	E_0Bounded.V.n <- E_0.V.n <- coef(resFit)['E_0']
 	R_ref <- R_ref0 <- coef(resFit)['R_ref'] 
 	E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
