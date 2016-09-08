@@ -317,6 +317,7 @@ partGLEstimateTempSensInBounds <- function(
 					,control=nls.control(maxiter = 20)), silent=TRUE)
 	if( inherits(resFit, "try-error")){
 		#stop("debug partGLEstimateTempSensInBounds")
+		#plot( REco.V.n	~ temperatureKelvin.V.n )
 		E_0Bounded.V.n <- E_0.V.n <- NA
 		R_ref <- R_ref0 <- NA
 		E_0_SD.V.n <- NA
@@ -329,14 +330,14 @@ partGLEstimateTempSensInBounds <- function(
 	##details<<
 	## If E_0 is out of bounds [50,400] then report E_0 of estimate from previous window and R_ref as mean of the respiration.
 	## If no previous estimate is available, report lower bound of 50 or upper bound of 400 respectively.
-	## Standard deviation of E_0 when out of bounds is set to upper bound of E_0: 400
+	## Standard deviation of E_0 when out of bounds is set 1/2*E0
 	if( is.na(E_0.V.n) || (E_0.V.n < 50) || (E_0.V.n > 400)){
 		E_0Bounded.V.n <- if( is.na(prevE0) ){
 					min(400,max(50,E_0.V.n))
 				} else {
 					prevE0
 				}
-		E_0_SD.V.n <- 400	
+		E_0_SD.V.n <- 0.5*E_0Bounded.V.n
 		R_ref <- mean(REco.V.n, na.rm=T)
 	}
 	##value<< list with entries
