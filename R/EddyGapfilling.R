@@ -191,9 +191,6 @@ sEddyProc$methods(
         
         # If enough available data, fill gap
         if( length(lLUT.V.n) > 1 ){
-			if( Gap.i == 15167  ) recover()		
-			
-	#recover()	
           lVAR_index.i <- Gap.i
           lVAR_mean.n <- mean(lLUT.V.n)
           lVAR_fnum.n <- length(lLUT.V.n)
@@ -282,7 +279,7 @@ sEddyProc$methods(
         lMDC.V.n <- subset(sTEMP$VAR_orig[Index.V.i], !is.na(sTEMP$VAR_orig[Index.V.i]))
         
         if( length(lMDC.V.n) > 1 ){
-if( Gap.i == 15167  ) recover()		
+#if( Gap.i == 15167  ) recover()		
 			
           lVAR_index.i <- Gap.i
           lVAR_mean.n <- mean(lMDC.V.n)

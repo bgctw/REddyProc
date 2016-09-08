@@ -778,10 +778,10 @@ partGLBoundParameters <- function(
 	## vector positions: 1: k, 2: beta, 3: alpha, 4: rb
 	#
 	# Table A1 Initial guess; Valid Range; If outside range 
-	# E_0.n  100;	50400;	Set to value of previous window, if no previous window exists estimates <50 were set to 50, estimates >400 were set to 400
+	# E_0.n  100;	50-400;	Set to value of previous window, if no previous window exists estimates <50 were set to 50, estimates >400 were set to 400
 	# rb	Mean of nighttime NEE	>0;	Whole parameter set is not used
 	# alpha	0.01;	?0,<0.22;	Set to value of previous window, if no previous window exists and <0, set to zero
-	# beta0	Abs (0.03quantile  0.97quantile) of NEE	?0; <250; If >100 then ? (?)<?	If negative set to zero, else the whole parameter set is not used
+	# beta0	Abs (0.03quantile - 0.97quantile) of NEE	?0; <250; If >100 then ? (?)<?	If negative set to zero, else the whole parameter set is not used
 	# kVPD	;0	?0; 	Set to zero
 	#parms_out_range<-0 #IF set to 1 means that the parameters are outside range and no computation uncertainties
 	opt.parms.V <- resOpt[[1]]

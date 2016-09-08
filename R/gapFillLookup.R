@@ -9,13 +9,14 @@
 # by default checks on diff < tol, but with with specifying a differnent fIsInDistance
 # also diff <= tol is possible.
 
-# despite the generalization achieved a speedup of about 5
+# despite the generalization achieved a speedup of about 5 compared to the Reference class implementation
 
 gfGapFillMDS <- function(
 		### Successive Gap-Filling with increasing window sizes and omitting covariates based on Rg, VPD, Tair, and diurnal cycle
 		ds					##<< data.frame with variables to fill and covariates
 		,fillVarName="NEE"	##<< scalar string: name of variable to fill
-		,covarVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold covariates to determine similar conditions
+		,covarVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold covariates to determine similar conditions.
+			##<< the first covariate is most important because its used alone, if no similar conditions were found based on all covariates
 		,tolerance=c(Rg=50, VPD=5, Tair=2.5)	##<< numeric vector of tolerances with named components for each entry in meteoVarNames
 		#,filledVarName=paste0(fillVarName,"_f")	##<< scalar string: name of variable that holds the filled values
 		,RgVarNames=c("Rg")	##<< string vector: column names for which radiation relative tolerance bounds is to be applied (see \code{\link{gfCreateRgToleranceFunction}})
@@ -128,8 +129,8 @@ gfGapFillMDS <- function(
 			ans <- gfGapFillLookupTable(toFill, winExtInDays*nRecInDay, ds[,iColsMeteo[1L] ], fTol1 
 					,isVerbose=isVerbose, ..., iRecsGap = iRecsGap )
 			gapStats[ans[,"index"], 1:3] <- ans[,2:4]
-			gapStats[ans[,"index"], "fmeth"] <- 1L
-			gapStats[ans[,"index"], "fqc"] <- 3L 
+			gapStats[ans[,"index"], "fmeth"] <- 2L
+			gapStats[ans[,"index"], "fqc"] <- if( winExtInDays*2L <= 28L ) 2L else 3L 
 			iRecsGap <- which(isToFill & !is.finite(gapStats[,"fmean"]))
 		} 
 	# Step 8: Mean diurnal course (method 3) with window size +-7, +-14, ..., +-210 days 
@@ -260,15 +261,13 @@ gfGapFillLookupTable = function(
 		isFiniteAndSimilar <- isFiniteToFill[seqWin] & isSimilar
 		iRecSimilar <- seqWin[isFiniteAndSimilar]
 		similarVals <- toFillInWindow[isFiniteAndSimilar]
-		# If enough available data, fill gap
+		# If enough available data, record statistics
 		nSimilarVals <- length(similarVals)
 		if( nSimilarVals >= minNSimilar ){
-			#if( iRec == 15167  ) recover()		
-			#if( iRec == 888  ) recover()		
+#if( iRec==10540) recover()			
 			meanSimilarVals <- sum(similarVals)/nSimilarVals
 			resMean <- similarVals-meanSimilarVals
 			sdSimilarVals <- sqrt(sum(resMean*resMean)/(nSimilarVals-1L))
-			#sdSimilarVals2 <- sd(similarVals)	# to check compuation
 			gapStats[iGap,1:4] <- c(index=iRec
 							,mean=meanSimilarVals
 							,fnum=nSimilarVals
@@ -279,7 +278,7 @@ gfGapFillLookupTable = function(
 	}
 	ans <- gapStats[is.finite(gapStats[,1]),,drop=FALSE]	# skip the rows that could not filled (due to not enough data)
 	if( isVerbose ){
-		message('GapStats of ', nrow(ans),' of ',nrow(gapStats),' gap-records.')
+		message('filled ', nrow(ans),' of ',nrow(gapStats),' gaps.')
 	}   
 	ans
 }
