@@ -847,6 +847,15 @@ partGLInterpolateFluxes <- function(
 	nLRC <- nrow(summaryLRC)
 	nRec <- length(Rg) 
 	Temp_Kelvin <- Temp+273.15
+	if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ){
+	  # there might be several rows with the same iMeanRec, omit those rows unless the first of each reoccuring iMeanRec
+    tabMeanRec <- table(summaryLRC$iMeanRec) 
+    iRecsDouble <- as.integer(names(tabMeanRec[ tabMeanRec > 1L ]))
+    iRecsOmit <- do.call(c, lapply( iRecsDouble, function(iRecDouble){
+      which(summaryLRC$iMeanRec==iRecDouble)[-1L]
+    }))
+    if( length(iRecsOmit)) summaryLRC <- summaryLRC[-iRecsOmit,]
+	}
 	##details<<
 	## Parameter estimates are reported for the first record of the window, or
 	## if \code{isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids)} for the mean time of all valid records within the window
