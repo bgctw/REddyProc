@@ -6,7 +6,7 @@ library(scales) # for plotting (function alpha())
 path  <- "M:/work_3/REddyProcRelease/Eval_GL_Partitioning/"
 
 
-flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")[-c(2,4)]
+flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")
 sites <- substr(flist,1,6)
 
 latLongSites <- rbind( 
@@ -26,7 +26,7 @@ vars          <- c("GPP","Reco")
 NT_vs_DT_REddy <- DT_REddy_vs_pvwave <- array(NA,dim=c(length(sites),length(metrics),length(aggregation),length(vars)),
                                               dimnames=list(sites,metrics,aggregation,vars))
 
-
+check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 
 ###########################
 #---- Reading data
@@ -36,10 +36,8 @@ NT_vs_DT_REddy <- DT_REddy_vs_pvwave <- array(NA,dim=c(length(sites),length(metr
 # gapfilling according to Reichstein_2005
 
 ## Plot options
-par(mfrow=c(2,3),oma=c(1,1,1,1))
 transp <- 0.15  # transparency
 
-counter <- 0
 for ( s in seq_along(sites)) {
   
   fname        <- flist[s]
@@ -70,7 +68,7 @@ for ( s in seq_along(sites)) {
   # START - RUN THE REddyProc DT partitioning 
   df.REddy <- partitionNEEGL(dfall,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
                              TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
-						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="")
+						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE))
 
   
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -78,9 +76,8 @@ for ( s in seq_along(sites)) {
   df.Pvwave <- cbind(dfall, dfall.Lass.PVwave[,c(6:17)])
   
   ## save data frames resulting from Pvwave and df.REddy
-  #save(df.Pvwave,file=paste0(path,"Results/",sites[s],"_df.Pvwave.RData"))
-  
-  #save(df.REddy,file=paste0(path,"Results/",sites[s],"_df.REddy.RData"))
+  #save(df.REddy,file=paste0(path,"Results/",sites[s],"_df.REddy.RData"))  # RData
+  write.table(df.Pvwave,file=paste0(path,"Results/",sites[s],"_df.Pvwave.txt"),row.names=F,col.names=T)
   write.table(df.REddy,file=paste0(path,"Results/",sites[s],"_df.REddy.txt"),row.names=F,col.names=T)
   
   #+++++++++++++++++++++
@@ -98,10 +95,17 @@ for ( s in seq_along(sites)) {
   
 
   #+++++++++++++++++++++++++++++
+  ## add a few columns to the data frames for evaluation purposes 
+  ## the _agg columns are used for aggregation in aggregate() funciton below
+  df.Pvwave$julday_agg <- c(1,df.Pvwave$julday[1:(nrow(df.Pvwave)-1)])
+  df.Pvwave$Month_agg  <- c(1,df.Pvwave$Month[1:(nrow(df.Pvwave)-1)])
+  df.Pvwave$Year_agg   <- c(df.Pvwave$Year[1],df.Pvwave$Year[1:(nrow(df.Pvwave)-1)])
+
+
   # Aggregation daily
   if(nrow(df.REddy) != nrow(df.Pvwave)) stop("REddy vs Pvwave: row numbers do not match!")
-  df.Pvwave.dd <- aggregate(df.Pvwave,by=list(df.Pvwave$julday),mean,na.rm=T)
-  df.REddy.dd  <- aggregate(df.REddy,by=list(df.Pvwave$julday),mean,na.rm=T)
+  df.Pvwave.dd <- aggregate(df.Pvwave,by=list(df.Pvwave$julday_agg),mean,na.rm=T)
+  df.REddy.dd  <- aggregate(df.REddy,by=list(df.Pvwave$julday_agg),mean,na.rm=T)
 
   DT_REddy_vs_pvwave[s,,"daily","GPP"]  <- c(unlist(modeval(df.Pvwave.dd$GPP_HBLR, df.REddy.dd$GPP_DT)))
   DT_REddy_vs_pvwave[s,,"daily","Reco"] <- c(unlist(modeval(df.Pvwave.dd$Reco_HBLR, df.REddy.dd$Reco_DT)))
@@ -109,8 +113,8 @@ for ( s in seq_along(sites)) {
 
   #+++++++++++++++++++++++++++++
   # Aggregation Monthly per site
-  df.Pvwave.mm <- aggregate(df.Pvwave,by=list(df.Pvwave$Month),mean,na.rm=T)
-  df.REddy.mm  <- aggregate(df.REddy,by=list(df.Pvwave$Month),mean,na.rm=T)
+  df.Pvwave.mm <- aggregate(df.Pvwave,by=list(df.Pvwave$Month_agg),mean,na.rm=T)
+  df.REddy.mm  <- aggregate(df.REddy,by=list(df.Pvwave$Month_agg),mean,na.rm=T)
 
   df.Pvwave.mm <- cbind(sites[s],df.Pvwave.mm[,-1]); colnames(df.Pvwave.mm)[1] <- "Site"
   df.REddy.mm  <- cbind(sites[s],df.REddy.mm[,-1]); colnames(df.REddy.mm)[1] <- "Site"
@@ -129,8 +133,8 @@ for ( s in seq_along(sites)) {
 
   #+++++++++++++++++++++++++++++
   # Aggregation Annual
-  df.Pvwave.yy <- aggregate(df.Pvwave,by=list(df.Pvwave$Year),mean,na.rm=T)
-  df.REddy.yy  <- aggregate(df.REddy,by=list(df.Pvwave$Year),mean,na.rm=T)
+  df.Pvwave.yy <- aggregate(df.Pvwave,by=list(df.Pvwave$Year_agg),mean,na.rm=T)
+  df.REddy.yy  <- aggregate(df.REddy,by=list(df.Pvwave$Year_agg),mean,na.rm=T)
 
   df.Pvwave.yy <- cbind(sites[s],df.Pvwave.yy[,-1]); colnames(df.Pvwave.yy)[1] <- "Site"
   df.REddy.yy  <- cbind(sites[s],df.REddy.yy[,-1]); colnames(df.REddy.yy)[1] <- "Site"
@@ -144,55 +148,53 @@ for ( s in seq_along(sites)) {
   }
 
 
-  #+++++++++++++++++++++++++++++
+  #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   ### Plots
-  #NEE quality check
-  plot(df.Pvwave$NEE_f,xlab="timestep",ylab="NEE_f",las=1,main=sites[s],pch=1,col="black")
-  
-  if (s %% 6 == 0){
-    counter <- counter + 1
-    dev.copy2pdf(file=paste0(path,"Plots/NEE_f",counter,".pdf"),
-                 width=10,height=8,pointsize=11)
+  #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ## 1) data quality check
+  if (check_quality){
+    par(mfrow=c(2,2),oma=c(2,2,1,1),mar=c(4,4,1,1)) 
+    cex <- 0.9
+    plot(df.Pvwave$NEE_f,xlab="timestep",ylab="NEE_f (umol m-2 s-1)",las=1,pch=1,col="black",cex=cex)
+    plot(df.Pvwave$Tair_f,xlab="timestep",ylab="Tair_f (degC)",las=1,pch=1,col="black",cex=cex)
+    plot(df.Pvwave$Rg_f,xlab="timestep",ylab="Rg_f (W m-2)",las=1,pch=1,col="black",cex=cex)
+    plot(df.Pvwave$VPD_f,xlab="timestep",ylab="VPD_f (hPa)",las=1,pch=1,col="black",cex=cex)
+    
+    dev.copy2pdf(file=paste0(path,"Plots/",sites[s],"_quality_check.pdf"),width=10,height=8,pointsize=11)
   }
 
-  
-  ## Scatterplots
+
+  ## 2) Scatterplots
+  par(mfrow=c(1,3))
   # halfhourly
   plot(df.Pvwave$GPP_HBLR ~ df.REddy$GPP_DT,xlab="GPP_DT_REddyProc",ylab="GPP_DT_PVwave",las=1,
-       main=sites[s],pch=20,col=alpha("black",transp),cex=1.2)
-  legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","GPP"],2)),bty="n",cex=0.9)
+       main="halfhourly",pch=20,col=alpha("black",transp),cex=1.2)
+  legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","halfhourly","GPP"],2)),bty="n",cex=0.9)
   curve(1*x,from=-20,to=100,col="red",add=T)
   
-  if (s %% 6 == 0){
-    counter <- counter + 1
-    dev.copy2pdf(file=paste0(path,"Plots/GPP_DT_REddyProc_PVwave_",counter,".pdf"),
-                 width=10,height=8,pointsize=11)
-  }
-  
-  # daily
-  plot(df.Pvwave.dd$GPP_HBLR ~ df.REddy.dd$GPP_DT,xlab="GPP_DT_REddyProc_daily",ylab="GPP_DT_PVwave_daily",las=1,
-       main=sites[s],pch=20,col=alpha("black",transp),cex=1.2)
-  #legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","GPP"],2)),bty="n",cex=0.9)
-  curve(1*x,from=-20,to=100,col="red",add=T)
-  
-  if (s %% 6 == 0){
-    counter <- counter + 1
-    dev.copy2pdf(file=paste0(path,"Plots/GPP_DT_REddyProc_PVwave_daily",counter,".pdf"),
-                 width=10,height=8,pointsize=11)
-  }
 
+  # daily
+  plot(df.Pvwave.dd$GPP_HBLR ~ df.REddy.dd$GPP_DT,xlab="GPP_DT_REddyProc",ylab="GPP_DT_PVwave",las=1,
+       main="daily",pch=20,col=alpha("black",transp),cex=1.2)
+  legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","daily","GPP"],2)),bty="n",cex=0.9)
+  curve(1*x,from=-20,to=100,col="red",add=T)
+  
   
   # monthly
-  plot(df.Pvwave.mm$GPP_HBLR ~ df.REddy.mm$GPP_DT,xlab="GPP_DT_REddyProc_monthly",ylab="GPP_DT_PVwave_monthly",las=1,
-       main=sites[s],pch=1,col="black")
-  #legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","GPP"],2)),bty="n",cex=0.9)
+  plot(df.Pvwave.mm$GPP_HBLR ~ df.REddy.mm$GPP_DT,xlab="GPP_DT_REddyProc",ylab="GPP_DT_PVwave",las=1,
+       main="monthly",pch=1,col="black")
+  legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","monthly","GPP"],2)),bty="n",cex=0.9)
   curve(1*x,from=-20,to=100,col="red",add=T)
   
-  if (s %% 6 == 0){
-    counter <- counter + 1
-    dev.copy2pdf(file=paste0(path,"Plots/GPP_DT_REddyProc_PVwave_monthly",counter,".pdf"),
-                 width=10,height=8,pointsize=11)
-  }
+  # write to file
+  dev.copy2pdf(file=paste0(path,"Plots/",sites[s],"_GPP_DT_PVwave_REddyProc.pdf"),
+               width=8,height=5,pointsize=11)
+
+  
+  ## 3) Timeseries of the parameters
+  
+
+
 
 
 } # end site loop
@@ -217,4 +219,12 @@ save(NT_vs_DT_REddy,DT_REddy_vs_pvwave,file=paste0(path,"Results/eval_metrics.RD
 save(Pvwave.mm.all,REddy.mm.all,file=paste0(path,"Results/all_sites_monthly.RData"))   # 2) monthly aggregated results for all sites
 save(Pvwave.yy.all,REddy.yy.all,file=paste0(path,"Results/all_sites_annual.RData"))    # 3) annual aggregated results for all sites
 
+
+
+### analysis for CA-TP3
+# par(mfrow=c(1,1))
+# plot(df.REddy.dd$GPP_DT/df.Pvwave.dd$GPP_HBLR ~ c(1:365),ylim=c(0,10),xlab="DOY")
+# abline(h=1,col="blue")
+#plot(df.Pvwave$Reco_HBLR)
+plot(df.REddy$Reco_DT)
 
