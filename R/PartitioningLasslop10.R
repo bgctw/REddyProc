@@ -264,6 +264,14 @@ partGLFitLRCWindows=function(
 			}
 		}
 		if( is.finite(resOpt$opt.parms.V[1]) ){
+			# check that R_ref estimated from daytime is not larger than twice the estimate from nighttime
+			# else this indicates a bad fit
+			if( resOpt$opt.parms.V[4L] > 2*resNightFit$R_ref){
+				resOpt$opt.parms.V[] <- NA
+			}
+		}
+		if( is.finite(resOpt$opt.parms.V[1]) ){
+			#recover()			
 			lastGoodParameters.V.n <- resOpt$opt.parms.V
 			# record valid fits results
 			resOptList[[iDay]] <- resOpt
@@ -313,11 +321,20 @@ partGLEstimateTempSensInBounds <- function(
 	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
 	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
 	#		,control=nls.lm.control(maxiter = 20))
-	resFit <- try(nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-					data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n))
-					, start=list(R_ref=as.vector({if(is.finite(prevR_ref)) prevR_ref else mean(REco.V.n,na.rm=TRUE)})
+	##details<<
+	## For robustness, data is trimmed to conditions at temperature > 1°C and respiration is set to minimum zero.
+	isNotFreezing <- temperatureKelvin.V.n > 273.15-1
+	REcoPositive <- pmax(0,REco.V.n)	# make sure to use positive values for respiration
+	resFit <- try(
+			nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+					data=as.data.frame(cbind(R_eco=REcoPositive[isNotFreezing],Temp=temperatureKelvin.V.n[isNotFreezing]))
+					, start=list(R_ref=as.vector({if(is.finite(prevR_ref)) prevR_ref else mean(REcoPositive[isNotFreezing],na.rm=TRUE)})
 							,E_0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
-					,control=nls.control(maxiter = 20)), silent=TRUE)
+					,control=nls.control(maxiter = 20L)
+			)
+			, silent=TRUE)
+	#plot( REco.V.n ~ I(temperatureKelvin.V.n-273.15) )
+	#plot( REcoPositive[isNotFreezing] ~ I(temperatureKelvin.V.n-273.15)[isNotFreezing] )
 	if( inherits(resFit, "try-error")){
 		#stop("debug partGLEstimateTempSensInBounds")
 		#plot( REco.V.n	~ temperatureKelvin.V.n )
@@ -341,7 +358,7 @@ partGLEstimateTempSensInBounds <- function(
 					prevE0
 				}
 		E_0_SD.V.n <- 0.5*E_0Bounded.V.n
-		R_ref <- mean(REco.V.n, na.rm=T)
+		R_ref <- mean(REcoPositive[isNotFreezing], na.rm=T)
 	}
 	##value<< list with entries
 	list(

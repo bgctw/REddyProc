@@ -37,6 +37,7 @@ check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 transp <- 0.15  # transparency
 
 #s <- grep("BR-Sa1",sites)[1]
+#s <- grep("CA-TP3",sites)[1]
 for ( s in seq_along(sites)) {
   
   fname        <- flist[s]
@@ -69,7 +70,13 @@ for ( s in seq_along(sites)) {
                              TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
 						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
 								 		,controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE))
-
+  .tmp.debug <- function(){
+	  df.REddy$DateTime <- dfall_posix$DateTime
+	  iParRecs <- which( is.finite(df.REddy$FP_qc))
+	  head(df.REddy[iParRecs,], 20)
+	  plot( Reco_DT ~ DateTime, df.REddy)
+	  #trace(partGLFitLRC, recover)	#untrace(partGLFitLRC)
+  }
   
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Binding Data frame PVWave tool (all data frame and GL partitioning)
