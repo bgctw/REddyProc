@@ -230,6 +230,8 @@ partGLFitLRCWindows=function(
 				ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$VPD)
 		SubsetValidNight.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
 				ds$isNight & !is.na(ds$NEE)
+		# check that there are enough night and enough day-values for fitting, else continue with next window
+		if( min(sum(SubsetValidNight.b),sum(SubsetValidDay.b)) < controlGLPart.l$minNRecInDayWindow ) next
 		dsNight <- ds[SubsetValidNight.b,]
 		dsDay <- ds[SubsetValidDay.b,]
 		##details<<
@@ -378,7 +380,7 @@ partGLFitLRC <- function(
 			,beta=as.vector(abs(quantile(dsDay$NEE, 0.03, na.rm=TRUE)-quantile(dsDay$NEE, 0.97, na.rm=TRUE)))
 			,alpha=0.1
 			#,R_ref=mean(NEENight.V.n, na.rm=T)
-			,R_ref=as.vector(R_refNight.n)
+			,R_ref=if( is.finite(R_refNight.n) ) as.vector(R_refNight.n) else mean(NEENight.V.n, na.rm=T)
 			,E_0=as.vector(E_0.n)
 	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
 	#twutz: beta is quite well defined, so try not changing it too much
@@ -567,6 +569,7 @@ parmGLOptimLRCBounds <- function(
 		, parameterPrior		##<< prior parameter estimates
 		, ctrl					##<< list of further controls
 ){
+	if( !all(is.finite(theta))) stop("need to provide finite starting values.")
 	##details<<
 	## Only those records are used for optimization where both NEE and sdNEE are finite.
 	dsDayFinite <- dsDay[ is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
@@ -598,6 +601,7 @@ parmGLOptimLRCBounds <- function(
 			if(  isUsingFixedVPD &  isUsingFixedAlpha ) c(2L,4L) 
 	sdParameterPrior[-iOpt] <- NA
 	resOptim <- optim(theta[iOpt], .partGLRHLightResponseCost
+		#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
 				,theta=theta
 				,iOpt=iOpt
 				,flux = -dsDayFinite$NEE 

@@ -1,11 +1,9 @@
 #Script for testing the new partitioning GL for REddyProc
-library(sirad)
 library(REddyProc)
+library(sirad)
 library(scales) # for plotting (function alpha())
 
 path  <- "M:/work_3/REddyProcRelease/Eval_GL_Partitioning/"
-
-
 flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")
 sites <- substr(flist,1,6)
 
@@ -38,6 +36,7 @@ check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 ## Plot options
 transp <- 0.15  # transparency
 
+#s <- grep("BR-Sa1",sites)[1]
 for ( s in seq_along(sites)) {
   
   fname        <- flist[s]
