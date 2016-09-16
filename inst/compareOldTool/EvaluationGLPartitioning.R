@@ -67,7 +67,8 @@ for ( s in seq_along(sites)) {
   # START - RUN THE REddyProc DT partitioning 
   df.REddy <- partitionNEEGL(dfall,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
                              TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
-						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE))
+						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
+								 		,controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE))
 
   
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

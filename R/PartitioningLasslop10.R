@@ -53,7 +53,8 @@ partitionNEEGL=function(
 		#TODO Mirco: add descriptions to meaning of LRC parameters
 			,FP_alpha=NA_real_			##<< 
 			,FP_beta=NA_real_			##<< 
-			,FP_k=NA_real_				##<< 
+			,FP_k=NA_real_				##<<
+			,FP_qc=NA_integer_			##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit
 	)
 	## \item{}{Light response curve parameters \code{FP_X} are estimated for windows, and are reported with the first record of the window}
 	##end<<
@@ -93,9 +94,9 @@ partitionNEEGL=function(
 			, controlGLPart.l=controlGLPart.l
 	)
 	#dput(resLRC)
-	# append good parameter fits to the first record of day window
-	iGood <- which(resLRC$sumary$parms_out_range == 0L)	 	
-	dsAns[resLRC$summary$iFirstRec[iGood],c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k")] <- resLRC$summary[iGood,c("E_0","R_ref","a","b","k")]
+	# append parameter fits to the central record of day window
+	#iGood <- which(resLRC$summary$parms_out_range == 0L)	 	
+	dsAns[resLRC$summary$iCentralRec,c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("E_0","R_ref","a","b","k","parms_out_range")]
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
 	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC, controlGLPart.l=controlGLPart.l	)
@@ -277,7 +278,7 @@ partGLFitLRCWindows=function(
 					,a=resOpt$opt.parms.V[3], a_SD=sdParms[3]
 					,b=resOpt$opt.parms.V[2], b_SD=sdParms[2]
 					,k=resOpt$opt.parms.V[1], k_SD=sdParms[1]
-					,parms_out_range=as.integer(!identical(resOpt$iOpt,1:4))
+					,parms_out_range=as.integer(!identical(resOpt$iOpt,1:5))
 			)
 		} # is.finite(resOpt$opt.parms.V[1])
 	} # for i in days

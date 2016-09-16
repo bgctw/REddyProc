@@ -257,66 +257,69 @@ resLRCEx1 <- structure(list(resOptList = list(structure(list(opt.parms.V = struc
 										initialGuess.parms.V.n = structure(c(0, 24.6042824, 0.1, 
 														8.68483981783771, 185.617678757497), .Names = c("k", "beta0", 
 														"alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 0, 
-														0, 0, 0.0164521595788231, 0.000150948115388241, 0.00470082516700928, 
-														0, 0, 0.000150948115388242, 4.46655799736124e-05, 0.000745966808293157, 
-														0, 0, 0.00470082516700926, 0.000745966808293157, 0.0135164099818451, 
-														0, 0, 0, 0, 0, 20816.0942091486), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", 
-																"alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
-										"initialGuess.parms.V.n", "covParms")), structure(list(opt.parms.V = structure(c(0, 
-														25.964317012826, 0.171170666057465, 2.1061767282917, 185.617678757497
-												), .Names = c("k", "beta0", "alfa", "Rb", "E0")), iOpt = 1:5, 
-										initialGuess.parms.V.n = structure(c(0, 23.6355054, 0.1, 
-														8.68483981783771, 185.617678757497), .Names = c("k", "beta0", 
-														"alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 0, 
-														0, 0, 0.0249811161375782, -0.000150194670672609, -0.000908018269739324, 
-														0, 0, -0.00015019467067261, 1.28730683402289e-05, 0.000229359136707699, 
-														0, 0, -0.000908018269739337, 0.000229359136707699, 0.00480458219392517, 
-														0, 0, 0, 0, 0, 20816.0942091486), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", 
-																"alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
-										"initialGuess.parms.V.n", "covParms")), structure(list(opt.parms.V = structure(c(0, 
-														28.1975014240472, 0.147048891270042, 2.3663375897427, 185.617678757497
-												), .Names = c("k", "beta0", "alfa", "Rb", "E0")), iOpt = 1:5, 
-										initialGuess.parms.V.n = structure(c(0, 24.33727084, 0.1, 
-														8.68483981783771, 185.617678757497), .Names = c("k", "beta0", 
-														"alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 0, 
-														0, 0, 0.0538604094839747, -0.000431982958065247, -0.0063804899129617, 
-														0, 0, -0.00043198295806524, 8.38000915150449e-06, 0.000127379438091679, 
-														0, 0, -0.00638048991296168, 0.000127379438091679, 0.0019417927403693, 
-														0, 0, 0, 0, 0, 20816.0942091486), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", 
-																"alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
+														0, 0, 10.1263936411162, 0.00203419039548361, 1.9530587566685, 
+														302.677248216052, 0, 0.00203419039548361, 0.0353419141722226, 
+														0.465583705889037, -13.5018120703479, 0, 1.9530587566685, 
+														0.465583705889037, 6.90125138125316, -134.246125468951, 0, 
+														302.677248216052, -13.5018120703479, -134.246125468951, 16093.0900607113
+												), .Dim = c(5L, 5L), .Dimnames = list(c("k", "beta0", "alfa", 
+																"Rb", "E0"), c("k", "beta0", "alfa", "Rb", "E0")))), .Names = c("opt.parms.V", 
+										"iOpt", "initialGuess.parms.V.n", "covParms")), structure(list(
+										opt.parms.V = structure(c(0, 25.964317012826, 0.171170666057465, 
+														2.1061767282917, 185.617678757497), .Names = c("k", "beta0", 
+														"alfa", "Rb", "E0")), iOpt = 1:5, initialGuess.parms.V.n = structure(c(0, 
+														23.6355054, 0.1, 8.68483981783771, 185.617678757497), .Names = c("k", 
+														"beta0", "alfa", "Rb", "E0")), covParms = structure(c(0, 
+														0, 0, 0, 0, 0, 16.2572512776885, 0.281526997185823, 9.40312425764525, 
+														-154.638297203783, 0, 0.281526997185823, 0.0213516695155928, 
+														0.398539053956144, -3.50476638312365, 0, 9.40312425764525, 
+														0.398539053956144, 9.10688330487501, -103.779114976627, 0, 
+														-154.638297203783, -3.50476638312365, -103.779114976627, 
+														26652.4043243547), .Dim = c(5L, 5L), .Dimnames = list(c("k", 
+																"beta0", "alfa", "Rb", "E0"), c("k", "beta0", "alfa", "Rb", 
+																"E0")))), .Names = c("opt.parms.V", "iOpt", "initialGuess.parms.V.n", 
+										"covParms")), structure(list(opt.parms.V = structure(c(0, 28.1975014240472, 
+														0.147048891270042, 2.3663375897427, 185.617678757497), .Names = c("k", 
+														"beta0", "alfa", "Rb", "E0")), iOpt = 1:5, initialGuess.parms.V.n = structure(c(0, 
+														24.33727084, 0.1, 8.68483981783771, 185.617678757497), .Names = c("k", 
+														"beta0", "alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 
+														0, 0, 0, 16.7589590951065, -0.190240470429791, -2.16697446692423, 
+														97.0463653527275, 0, -0.190240470429791, 0.00606356266007764, 
+														0.0722875283338701, -2.11699398251994, 0, -2.16697446692423, 
+														0.0722875283338701, 1.02642130239048, 13.564920187408, 0, 97.0463653527275, 
+														-2.11699398251994, 13.564920187408, 21636.4416909531), .Dim = c(5L, 
+														5L), .Dimnames = list(c("k", "beta0", "alfa", "Rb", "E0"), c("k", 
+																"beta0", "alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
 										"initialGuess.parms.V.n", "covParms")), structure(list(opt.parms.V = structure(c(0, 
 														28.0941328298213, 0.1, 1.6281561256414, 186.3567923302), .Names = c("k", 
 														"beta0", "alfa", "Rb", "E0")), iOpt = c(1L, 2L, 4L, 5L), initialGuess.parms.V.n = structure(c(0, 
 														18.2353459, 0.1, 8.61826241156938, 186.3567923302), .Names = c("k", 
 														"beta0", "alfa", "Rb", "E0")), covParms = structure(c(0, 0, 0, 
-														0, 0, 0, 0.147906649803781, 0, 0.000411411419094437, 0, 0, 0, 
-														0, 0, 0, 0, 0.000411411419094437, 0, 5.66748908042254e-06, 0, 
-														0, 0, 0, 0, 22547.7065470622), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta0", "alfa", "Rb", "E0"), c("k", "beta0", "alfa", 
-																"Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", "initialGuess.parms.V.n", 
-										"covParms"))), summary = structure(list(Start = c(1, 3, 5, 7), 
-								End = c(4, 6, 8, 10), Num = c(65L, 63L, 50L, 16L), iMeanRec = c(87L, 
-										190L, 257L, 308L), iCentralRec = c(96, 192, 288, 312), iFirstRec = c(1L, 
-										97L, 193L, 289L), E_0 = c(185.617678757497, 185.617678757497, 
-										185.617678757497, 186.3567923302), E_0_SD = c(144.277836860512, 
+														0, 0, 0, 69.6655727895336, 0, 30.0624568683454, 340.056185445785, 
+														0, 0, 0, 0, 0, 0, 30.0624568683454, 0, 15.8310549425827, 142.964708389306, 
+														0, 340.056185445785, 0, 142.964708389306, 11001.3771770293), .Dim = c(5L, 
+														5L), .Dimnames = list(c("k", "beta0", "alfa", "Rb", "E0"), c("k", 
+																"beta0", "alfa", "Rb", "E0")))), .Names = c("opt.parms.V", "iOpt", 
+										"initialGuess.parms.V.n", "covParms"))), summary = structure(list(
+								Start = c(1, 3, 5, 7), End = c(4, 6, 8, 10), Num = c(65L, 
+										63L, 50L, 16L), iMeanRec = c(87L, 190L, 257L, 308L), iCentralRec = c(96, 
+										192, 288, 312), iFirstRec = c(1L, 97L, 193L, 289L), E_0 = c(185.617678757497, 
+										185.617678757497, 185.617678757497, 186.3567923302), E_0_SD = c(144.277836860512, 
 										144.277836860512, 144.277836860512, 150.158937619651), R_ref12 = c(8.68483981783771, 
 										8.68483981783771, 8.68483981783771, 8.61826241156938), R_ref = c(5.16758715278128, 
-										2.1061767282917, 2.3663375897427, 1.6281561256414), R_ref_SD = c(0.11626009625768, 
-										0.0693150935505765, 0.0440657774284001, 0.00238064887802098
-								), a = c(0.264181937859435, 0.171170666057465, 0.147048891270042, 
-										0.1), a_SD = c(0.00668323125244162, 0.00358790584327807, 
-										0.00289482454589298, NA), b = c(28.1552114607447, 25.964317012826, 
-										28.1975014240472, 28.0941328298213), b_SD = c(0.128265972022291, 
-										0.158054155711193, 0.232078455449821, 0.384586335955636), 
-								k = c(0, 0, 0, 0), k_SD = c(0, 0, 0, 0), parms_out_range = c(1L, 
-										1L, 1L, 1L)), .Names = c("Start", "End", "Num", "iMeanRec", 
-								"iCentralRec", "iFirstRec", "E_0", "E_0_SD", "R_ref12", "R_ref", 
-								"R_ref_SD", "a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"
-						), row.names = c(NA, 4L), class = "data.frame")), .Names = c("resOptList", 
-				"summary"))
+										2.1061767282917, 2.3663375897427, 1.6281561256414), R_ref_SD = c(2.6270232928646, 
+										3.01776130680924, 1.01312452462196, 3.9788258246099), a = c(0.264181937859435, 
+										0.171170666057465, 0.147048891270042, 0.1), a_SD = c(0.187994452503851, 
+										0.146122104815092, 0.0778688812047383, NA), b = c(28.1552114607447, 
+										25.964317012826, 28.1975014240472, 28.0941328298213), b_SD = c(3.18219949737854, 
+										4.03202818413866, 4.09377076728858, 8.34659048890825), k = c(0, 
+										0, 0, 0), k_SD = c(0, 0, 0, 0), parms_out_range = c(0L, 0L, 
+										0L, 1L)), .Names = c("Start", "End", "Num", "iMeanRec", "iCentralRec", 
+								"iFirstRec", "E_0", "E_0_SD", "R_ref12", "R_ref", "R_ref_SD", 
+								"a", "a_SD", "b", "b_SD", "k", "k_SD", "parms_out_range"), row.names = c(NA, 
+								4L), class = "data.frame")), .Names = c("resOptList", "summary"
+		))
+
 
 
 test_that("partGL_RHLightResponseGrad matches numerical estimates",{
@@ -465,6 +468,7 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			expect_true( !all(is.na(resSummary$R_ref_SD)))
 			expect_true( all(resSummary$iMeanRec < nrow(ds)) )
 			expect_true( all(resSummary$iCentralRec < nrow(ds)) )
+			#dput(resFits)
 			
 			.tmp.inspectYear <- function(){
 				# dsYear generated from inside sPartitionGL
@@ -563,9 +567,9 @@ test_that("partGLPartitionFluxes",{
 			expect_true( all(tmp$Reco_DT_u50_SD > 0))
 			expect_true( all(tmp$GPP_DT_u50_SD >= 0))
 			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
-			# reporting good values at first row
-			expect_true( sum( is.finite(tmp$FP_alpha) ) == sum(resLRCEx1$parms_out_range==0L) ) 
-			expect_true( all((tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range==0L] < 1e-2) )
+			# reporting good values at central records
+			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resLRCEx1$summary) ) 
+			expect_true( all((tmp$FP_alpha[resLRCEx1$iCentralRec] - resLRCEx1$a)[resLRCEx1$parms_out_range==0L] < 1e-2) )
 			#expect_true( all((is.na(tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range!=0L])) )
 			.tmp.plot <- function(){
 				tmp$time <- dsNEE1$sDateTime
