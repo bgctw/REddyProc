@@ -580,6 +580,55 @@ test_that("partGLPartitionFluxes",{
 		})
 
 
+test_that("partGLPartitionFluxes sparse data",{
+			dsNEE1 <- dsNEE
+			dsNEE1$NEE_f <- dsNEE1$FP_VARnight
+			dsNEE1$NEE_f[!is.na(dsNEE1$FP_VARday)] <- dsNEE1$FP_VARday[!is.na(dsNEE1$FP_VARday)]
+			dsNEE1$NEE_fqc <- ifelse( is.finite(dsNEE1$NEE_f),0L,1L )
+			dsNEE1$Tair_f <- dsNEE1$NEW_FP_Temp
+			dsNEE1$Tair_fqc <- ifelse( is.finite(dsNEE1$Tair_f),0L,1L )
+			dsNEE1$VPD_f <- dsNEE1$NEW_FP_VPD
+			dsNEE1$VPD_fqc <- ifelse( is.finite(dsNEE1$VPD_f),0L,1L )
+			dsNEE1$Rg <- ifelse( dsNEE1$Rg >= 0, dsNEE1$Rg, 0 )
+			DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
+			Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
+			dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0 )
+			#TODO: set all data except one day to NA to associate the same data with several windows
+			dsNEE1$NEE_f[ (dsNEE$sDateTime > "2005-06-03 00:00:00 GMT") & (dsNEE$sDateTime < "2005-06-05 00:00:00 GMT" | dsNEE$sDateTime >= "2005-06-06 00:00:00 GMT") ] <- NA
+			#plot( NEE_f ~ sDateTime, dsNEE1 )
+			#
+			ds <- dsNEE1
+			ds$isNight <- (ds$Rg <= 4 & ds$PotRad_NEW == 0)
+			ds$isDay=(ds$Rg > 4 & ds$PotRad_NEW != 0)
+			ds$NEE <- ds$NEE_f
+			ds$sdNEE <- ds$NEE_fsd
+			ds$Temp <- ds$Tair_f
+			ds$VPD <- ds$VPD_f
+			#
+			resLRC <- partGLFitLRCWindows(ds)
+			expect_true( resLRC$summary$iMeanRec[2] == resLRC$summary$iMeanRec[3])
+			#
+			tmp <- partitionNEEGL( dsNEE1 )
+			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			#
+			expect_true( all(is.finite(tmp$GPP_DT)))
+			expect_true( all(tmp$GPP_DT >= 0))
+			expect_true( all(tmp$GPP_DT < 250))
+			expect_true( all(tmp$Reco_DT < 6))
+			expect_true( all(tmp$Reco_DT > 0))
+			expect_true( all(tmp$Reco_DT_SD > 0))
+			expect_true( all(tmp$GPP_DT_SD >= 0))
+			#TODO expect_true( all(abs(diff(tmp$Reco_DT)) < 0.6))	#smooth
+			# reporting good values at first row
+			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resLRC$summary) ) 
+			expect_true( all((is.na(tmp$FP_alpha[resLRC$iCentralRec] - resLRC$a)[resLRC$parms_out_range!=0L])) )
+			.tmp.plot <- function(){
+				tmp$time <- dsNEE1$sDateTime
+				plot( Reco_DT_u50 ~ time, tmp)
+				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
+				plot( GPP_DT_u50 ~ time, tmp)
+			}
+		})
 
 .profilePartGL <- function(){
 	require(profr)
