@@ -74,8 +74,8 @@ partitionNEEGL=function(
 	attr(dsAns$FP_VARday, 'units') <- attr(Var.V.n, 'units')
 	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
 	# Apply quality flag for temperature and VPD
-	dsAns$NEW_FP_Temp <- fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'sGLFluxPartition')
-	dsAns$NEW_FP_VPD <- fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'sGLFluxPartition')
+	dsAns$NEW_FP_Temp <- if( isTRUE(controlGLPart.l$isFilterMeteoQualityFlag) ) fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'partitionNEEGL') else ds[[TempVar.s]]
+	dsAns$NEW_FP_VPD <- if( isTRUE(controlGLPart.l$isFilterMeteoQualityFlag) ) fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'partitionNEEGL') else ds[[VPDVar.s]]
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 	# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
 	# extract the relevant columns in df with defined names (instead of passing many variables)
@@ -138,7 +138,9 @@ partGLControl <- function(
 			## Returned parameter estimates claimed valid for some case where not enough data was available 
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
 			## of Reco and GPP for small performance increase 	
-){
+		,isFilterMeteoQualityFlag=FALSE	##<< set to TRUE to use only records where quality flag 
+			## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled 	
+	){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
@@ -151,6 +153,7 @@ partGLControl <- function(
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
 			,isSdPredComputed=isSdPredComputed
+			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")

@@ -628,7 +628,43 @@ test_that("partGLPartitionFluxes sparse data",{
 				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
 				plot( GPP_DT_u50 ~ time, tmp)
 			}
-		})
+})
+	
+test_that("partGLPartitionFluxes filter Meteo flag",{
+		dsNEE1 <- dsNEE
+		dsNEE1$NEE_f <- dsNEE1$FP_VARnight
+		dsNEE1$NEE_f[!is.na(dsNEE1$FP_VARday)] <- dsNEE1$FP_VARday[!is.na(dsNEE1$FP_VARday)]
+		dsNEE1$NEE_fqc <- ifelse( is.finite(dsNEE1$NEE_f),0L,1L )
+		dsNEE1$Tair_f <- dsNEE1$NEW_FP_Temp
+		dsNEE1$Tair_fqc <- ifelse( is.finite(dsNEE1$Tair_f),0L,1L )
+		dsNEE1$VPD_f <- dsNEE1$NEW_FP_VPD
+		dsNEE1$VPD_fqc <- ifelse( is.finite(dsNEE1$VPD_f),0L,1L )
+		dsNEE1$Rg <- ifelse( dsNEE1$Rg >= 0, dsNEE1$Rg, 0 )
+		DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
+		Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
+		dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0 )
+		#
+		# test setting VPD_fqc to other than zero, for omitting those rows
+		dsNEE1$VPD_fqc[ (dsNEE$sDateTime > "2005-06-03 00:00:00 GMT") & (dsNEE$sDateTime < "2005-06-05 00:00:00 GMT" | dsNEE$sDateTime >= "2005-06-06 00:00:00 GMT") ] <- 1L
+		#plot( VPD_fqc ~ sDateTime, dsNEE1 )
+		ds <- dsNEE1
+		ds$isNight <- (ds$Rg <= 4 & ds$PotRad_NEW == 0)
+		ds$isDay=(ds$Rg > 4 & ds$PotRad_NEW != 0)
+		ds$NEE <- ds$NEE_f
+		ds$sdNEE <- ds$NEE_fsd
+		ds$Temp <- ds$Tair_f
+		ds$VPD <- ds$VPD_f
+		#
+		.tmp.f <- function(){
+			tmp0 <- partitionNEEGL( dsNEE1, controlGLPart.l=partGLControl(isFilterMeteoQualityFlag=TRUE) )
+			tmpPar0 <- tmp0[is.finite(tmp0$FP_beta),]
+		}
+		tmp <- partitionNEEGL( dsNEE1, controlGLPart.l=partGLControl(isFilterMeteoQualityFlag=TRUE) )
+		expect_equal( nrow(dsNEE1), nrow(tmp) )
+		tmpPar <- tmp[is.finite(tmp$FP_beta),]
+		expect_true( nrow(tmpPar) == 3L )	# only three estimates instead of four
+})
+		
 
 .profilePartGL <- function(){
 	require(profr)
