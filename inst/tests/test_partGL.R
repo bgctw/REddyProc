@@ -554,6 +554,7 @@ test_that("partGLPartitionFluxes",{
 			dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0 )
 			tmp <- partitionNEEGL( dsNEE1 )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			#tmp[ is.finite(tmp$FP_beta), ]	# note FP_dRecPar is not zero, because iCentralRec != iMeanRec
 			#
 			dsNEE2 <- dsNEE1
 			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")

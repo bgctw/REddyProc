@@ -54,7 +54,8 @@ partitionNEEGL=function(
 			,FP_alpha=NA_real_			##<< 
 			,FP_beta=NA_real_			##<< 
 			,FP_k=NA_real_				##<<
-			,FP_qc=NA_integer_			##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit
+			,FP_qc=NA_integer_			##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away
+			,FP_dRecPar=NA_integer_		##<< records until or after closest record that has a parameter estimate associated
 	)
 	## \item{}{Light response curve parameters \code{FP_X} are estimated for windows, and are reported with the first record of the window}
 	##end<<
@@ -96,10 +97,23 @@ partitionNEEGL=function(
 	#dput(resLRC)
 	# append parameter fits to the central record of day window
 	#iGood <- which(resLRC$summary$parms_out_range == 0L)	 	
+	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAns[resLRC$summary$iCentralRec,c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("E_0","R_ref","a","b","k","parms_out_range")]
+	matchFP_qc <- NA_integer_; matchFP_qc[resLRC$summary[[colNameAssoc]] ] <- resLRC$summary$parms_out_range	# here maybe indexed by meanRec
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
-	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC, controlGLPart.l=controlGLPart.l	)
+	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC
+					, controlGLPart.l=controlGLPart.l
+			)
+	# compute difference to next record that has a parameter set associated 
+	dRecPars <- sapply( resLRC$summary[[colNameAssoc]], function(iAssocRec){ iAssocRec - 1:nrow(dsAns) })
+	iEstClosest <- apply(abs(dRecPars), 1, which.min)
+	dsAns$FP_dRecPar <- dRecPars[cbind(1:length(iEstClosest),iEstClosest)]
+	dDaysPar <- round(dsAns$FP_dRecPar / nRecInDay.i)
+	#
+	dsAns$FP_qc <- matchFP_qc[ 1:nrow(dsAns) + dsAns$FP_dRecPar ] # associate quality flag of parameter estimate to each record
+	dsAns$FP_qc[ dDaysPar > 14] <- 2L	# set quality flag to 2 for records where next estimate is more than 14 days away
+	#
 	dsAns[[RecoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[RecoDTVar.s]], 'varnames') <- RecoDTVar.s
 	attr(dsAns[[RecoDTVar.s]], 'units') <- attr(Var.V.n, 'units')
@@ -927,6 +941,12 @@ partGLInterpolateFluxes <- function(
 		sdReco <- sqrt(dsAssoc$wBefore^2*varPred2[[1]][,"varReco"] + dsAssoc$wAfter^2*varPred2[[1]][,"varReco"])   
 		ans <- cbind(ansPred, data.frame(sdGPP=sdGPP, sdReco=sdReco))
 	}
+	# compute differences in rows to next parameter estimate
+	dRecBefore <- dsBefore[[colNameAssoc]] - 1:nrow(dsBefore)  
+	dRecAfter <- dsAfter[[colNameAssoc]] - 1:nrow(dsBefore)
+	isBeforeCloser <- abs(dRecBefore) <= abs(dRecAfter)
+	ans$dRecNextEstimate <- ifelse(isBeforeCloser, dRecBefore, dRecAfter)
+	##value<< data.frame with nrow() rows and columns  GPP, Reco, varGPP, varReco, and dRecNextEstimate
 	ans
 }
 
