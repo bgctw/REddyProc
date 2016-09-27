@@ -3,8 +3,11 @@ library(REddyProc)
 library(sirad)
 library(scales) # for plotting (function alpha())
 
+## TO DO
+# add months in mm.all dataframes
+
 path  <- "M:/work_3/REddyProcRelease/Eval_GL_Partitioning/"
-flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")
+flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")[-31]
 sites <- substr(flist,1,6)
 
 latLongSites <- rbind( 
@@ -36,7 +39,6 @@ check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 ## Plot options
 transp <- 0.15  # transparency
 
-#s <- grep("BR-Sa1",sites)[1]
 #s <- grep("CA-TP3",sites)[1]
 for ( s in seq_along(sites)) {
   
@@ -53,7 +55,7 @@ for ( s in seq_along(sites)) {
   names(dfall.Lass.PVwave) <- title[[1]]
   
   #+++ Add time stamp in POSIX time format
-  dfall$PotRad <- fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"])
+  dfall$PotRad <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"]))
   dfall$day    <- (1 - dfall$night)*100
   dfall_posix  <- fConvertTimeToPosix(dfall, 'YMDH', Year.s = 'Year', Month.s='Month', Day.s = 'Day', Hour.s = 'Hr')
   
@@ -81,6 +83,12 @@ for ( s in seq_along(sites)) {
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # Binding Data frame PVWave tool (all data frame and GL partitioning)
   df.Pvwave <- cbind(dfall, dfall.Lass.PVwave[,c(6:17)])
+  
+  # the columns "qcLE" and "qcH" exist only in DE-Tha. They are deleted here so that
+  # the data frame can be merged with the other sites (below)
+  if (sites[s] == "DE-Tha"){
+    df.Pvwave <- df.Pvwave[,-c(which(colnames(df.Pvwave) %in% c("qcLE","qcH")))]
+  }
   
   ## save data frames resulting from Pvwave and df.REddy
   #save(df.REddy,file=paste0(path,"Results/",sites[s],"_df.REddy.RData"))  # RData
@@ -160,32 +168,38 @@ for ( s in seq_along(sites)) {
   #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   ## 1) data quality check
   if (check_quality){
-    par(mfrow=c(2,2),oma=c(2,2,1,1),mar=c(4,4,1,1)) 
+    par(mfrow=c(2,2),oma=c(2,2,3,1),mar=c(4,4,1,1)) 
     cex <- 0.9
     plot(df.Pvwave$NEE_f,xlab="timestep",ylab="NEE_f (umol m-2 s-1)",las=1,pch=1,col="black",cex=cex)
+    points(df.Pvwave$NEEorig,col="blue")
+    legend("topleft",legend="NEEorig",col="blue",pch=1,bty="n",x.intersp=0.5,pt.lwd=2)
     plot(df.Pvwave$Tair_f,xlab="timestep",ylab="Tair_f (degC)",las=1,pch=1,col="black",cex=cex)
     plot(df.Pvwave$Rg_f,xlab="timestep",ylab="Rg_f (W m-2)",las=1,pch=1,col="black",cex=cex)
     plot(df.Pvwave$VPD_f,xlab="timestep",ylab="VPD_f (hPa)",las=1,pch=1,col="black",cex=cex)
+    mtext(side=3,line=1,sites[s],cex=1.2,outer=T)
     
     dev.copy2pdf(file=paste0(path,"Plots/",sites[s],"_quality_check.pdf"),width=10,height=8,pointsize=11)
   }
 
 
-  ## 2) Scatterplots
-  par(mfrow=c(1,3))
+  ## 2) Scatterplots --> the good quality data are added on top of the others in a different color
+  par(mfrow=c(1,3),oma=c(0.5,0.5,3.5,0.5),mar=c(4,5,1,1))
+  col.good <- "green2" # color for the good quality data points
+  
   # halfhourly
   plot(df.Pvwave$GPP_HBLR ~ df.REddy$GPP_DT,xlab="GPP_DT_REddyProc",ylab="GPP_DT_PVwave",las=1,
        main="halfhourly",pch=20,col=alpha("black",transp),cex=1.2)
+  #points(df.Pvwave$GPP_HBLR[df.REddy$FP_qc < 1] ~ df.REddy$GPP_DT[df.REddy$FP_qc < 1],pch=20,col=alpha(col.good,transp))
   legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","halfhourly","GPP"],2)),bty="n",cex=0.9)
   curve(1*x,from=-20,to=100,col="red",add=T)
   
-
   # daily
   plot(df.Pvwave.dd$GPP_HBLR ~ df.REddy.dd$GPP_DT,xlab="GPP_DT_REddyProc",ylab="GPP_DT_PVwave",las=1,
        main="daily",pch=20,col=alpha("black",transp),cex=1.2)
+  #points(df.Pvwave.dd$GPP_HBLR[df.REddy.dd$FP_qc < 1] ~ df.REddy.dd$GPP_DT[df.REddy.dd$FP_qc < 1],pch=20,col=alpha(col.good,transp))
   legend("topleft",legend=paste0("R^2 = ",round(DT_REddy_vs_pvwave[s,"R2","daily","GPP"],2)),bty="n",cex=0.9)
   curve(1*x,from=-20,to=100,col="red",add=T)
-  
+  mtext(side=3,line=2.2,sites[s],cex=1.1)
   
   # monthly
   plot(df.Pvwave.mm$GPP_HBLR ~ df.REddy.mm$GPP_DT,xlab="GPP_DT_REddyProc",ylab="GPP_DT_PVwave",las=1,
@@ -198,26 +212,123 @@ for ( s in seq_along(sites)) {
                width=8,height=5,pointsize=11)
 
   
-  ## 3) Timeseries of the parameters
+  ## 3) Timeseries of the parameters (Pvwave and REddy)
+  graphics.off()
+  par(mfrow=c(2,3),mar=c(5,5,1,1),oma=c(0.5,0.5,3,0.5))
+  col.pvwave <- "green"  
+  col.reddy  <- "black"
+
+  pars_pvwave <- df.Pvwave[,c("rb","beta","k","E0","alpha")]
+  pars_pvwave[pars_pvwave < -9000] <- NA
+  # str(df.REddy)
+
+  # R_ref
+  plot(df.REddy$FP_R_ref,col=col.reddy,xlab="timestep",ylab="R_ref",las=1,ylim=c(min(pars_pvwave$rb,df.REddy$FP_R_ref,na.rm=T),
+                                                                                 max(pars_pvwave$rb,df.REddy$FP_R_ref,na.rm=T) + 0.2*max(pars_pvwave$rb,df.REddy$FP_R_ref,na.rm=T))) # leave some extra space for legend 
+  points(pars_pvwave$rb,col=col.pvwave)
+  legend("topleft",legend=c("REddyProc","Pvwave"),col=c(col.reddy,col.pvwave),bty="n",pch=1,x.intersp=0.5)
+
+  # E0
+  plot(df.REddy$FP_E0,col=col.reddy,xlab="timestep",ylab="E0",las=1,ylim=c(min(pars_pvwave$E0,df.REddy$FP_E0,na.rm=T),
+                                                                           max(pars_pvwave$E0,df.REddy$FP_E0,na.rm=T)))
+  points(pars_pvwave$E0,col=col.pvwave)
+
+
+  # alpha
+  plot(df.REddy$FP_alpha,col=col.reddy,xlab="timestep",ylab="alpha",las=1,ylim=c(min(pars_pvwave$alpha,df.REddy$FP_alpha,na.rm=T),
+                                                                                 max(pars_pvwave$alpha,df.REddy$FP_alpha,na.rm=T))) 
+  points(pars_pvwave$alpha,col=col.pvwave)
+
+
+  # beta
+  plot(df.REddy$FP_beta,col=col.reddy,xlab="timestep",ylab="beta",las=1,ylim=c(min(pars_pvwave$beta,df.REddy$FP_beta,na.rm=T),
+                                                                               max(pars_pvwave$beta,df.REddy$FP_beta,na.rm=T))) 
+  points(pars_pvwave$beta,col=col.pvwave)
+
+
+  # k
+  plot(df.REddy$FP_k,col=col.reddy,xlab="timestep",ylab="k",las=1,ylim=c(min(pars_pvwave$k,df.REddy$FP_k,na.rm=T),
+                                                                       max(pars_pvwave$k,df.REddy$FP_k,na.rm=T)))
+  points(pars_pvwave$k,col=col.pvwave)
+
+  mtext(side=3,line=1,sites[s],cex=1.2,outer=T)
+
+
+  # write to file
+  dev.copy2pdf(file=paste0(path,"Plots/",sites[s],"_Parameters_Timeseries.pdf"),
+               width=9,height=6.5,pointsize=11)
+
+
+
+
+  ## 4) Scattterplot of the parameters (Pvwave and REddy)
+  graphics.off()
+  par(mfrow=c(2,3),mar=c(5,5,1,1),oma=c(0.5,0.5,3,0.5),mgp=c(3,0.5,0))
+  
+  pars_pvwave <- df.Pvwave[,c("rb","beta","k","E0","alpha")]
+  pars_pvwave[pars_pvwave < -9000] <- NA
+  
+  # the parameter values of REddyProc and Pvwave are shifted one value towards each other
+  # temporary fix is to shift the Pvwave values one timestep forward (by deleting the first value):
+  pars_pvwave <- rbind(pars_pvwave[-1,],NA)
   
 
+  # R_ref
+  plot(df.REddy$FP_R_ref ~ pars_pvwave$rb,xlab="Rb_Pvwave",ylab="Rb_REddy",las=1)
+  curve(1*x,from=-1000,to=1000,col="red",add=T)
+  
+  # E0
+  plot(df.REddy$FP_E0 ~ pars_pvwave$E0,xlab="E0_Pvwave",ylab="E0_REddy",las=1)
+  curve(1*x,from=-1000,to=1000,col="red",add=T)
 
-
+  # alpha
+  plot(df.REddy$FP_alpha ~ pars_pvwave$alpha,xlab="alpha_Pvwave",ylab="alpha_REddy",las=1)
+  curve(1*x,from=-1000,to=1000,col="red",add=T)
+  
+  # beta
+  plot(df.REddy$FP_beta ~ pars_pvwave$beta,xlab="beta_Pvwave",ylab="beta_REddy",las=1)
+  curve(1*x,from=-1000,to=1000,col="red",add=T)
+  
+  # k
+  plot(df.REddy$FP_k ~ pars_pvwave$k,xlab="k_Pvwave",ylab="k_REddy",las=1)
+  curve(1*x,from=-1000,to=1000,col="red",add=T)
+  
+  mtext(side=3,line=1,sites[s],cex=1.2,outer=T)
+  
+  
+  # write to file
+  dev.copy2pdf(file=paste0(path,"Plots/",sites[s],"_Parameters_Scatterplot.pdf"),
+               width=9,height=6.5,pointsize=11)
 
 } # end site loop
 
-## time series of parameter!
 
 
 #+++++++++++++++++++++++++++++
 # Evaluation Monthly All
-plot(Pvwave.mm.all$GPP_HBLR ~ REddy.mm.all$GPP_DT)
+graphics.off()
+par(mfrow=c(2,1),mar=c(4,4,1,1),mgp=c(1.8,0.4,0))
 
+r2_monthly <- round(summary(lm(Pvwave.mm.all$GPP_HBLR ~ REddy.mm.all$GPP_DT))$r.squared,3)
+plot(Pvwave.mm.all$GPP_HBLR ~ REddy.mm.all$GPP_DT,xlab="GPP_REddyProc",ylab="GPP_Pvwave",
+     pch=20,col=alpha("black",transp),las=1,tcl=-0.2,xlim=c(0,20),ylim=c(0,20),cex=1.3)
+curve(1*x,from=-10,to=100,col="red",add=T)
+legend("bottomright","monthly",bty="n")
+legend("topleft",paste0("R^2 = ",r2_monthly),bty="n")
 
 
 #++++++++++++++++++++++++++++
 # Evaluation Annual
-plot(Pvwave.yy.all$GPP_HBLR ~ REddy.yy.all$GPP_DT)
+r2_yearly <- round(summary(lm(Pvwave.yy.all$GPP_HBLR ~ REddy.yy.all$GPP_DT))$r.squared,3)
+plot(Pvwave.yy.all$GPP_HBLR ~ REddy.yy.all$GPP_DT,xlab="GPP_REddyProc",ylab="GPP_Pvwave",
+     pch=20,col=alpha("black",transp),las=1,tcl=-0.2,xlim=c(0,11),ylim=c(0,11),cex=1.3)
+curve(1*x,from=-10,to=100,col="red",add=T)
+legend("bottomright","yearly",bty="n")
+legend("topleft",paste0("R^2 = ",r2_yearly),bty="n")
+
+dev.copy2pdf(file=paste0(path,"Plots/all_sites_monthly_yearly.pdf"),
+             width=7.5,height=8,pointsize=11)
+
 
 
 
@@ -226,12 +337,4 @@ save(NT_vs_DT_REddy,DT_REddy_vs_pvwave,file=paste0(path,"Results/eval_metrics.RD
 save(Pvwave.mm.all,REddy.mm.all,file=paste0(path,"Results/all_sites_monthly.RData"))   # 2) monthly aggregated results for all sites
 save(Pvwave.yy.all,REddy.yy.all,file=paste0(path,"Results/all_sites_annual.RData"))    # 3) annual aggregated results for all sites
 
-
-
-### analysis for CA-TP3
-# par(mfrow=c(1,1))
-# plot(df.REddy.dd$GPP_DT/df.Pvwave.dd$GPP_HBLR ~ c(1:365),ylim=c(0,10),xlab="DOY")
-# abline(h=1,col="blue")
-#plot(df.Pvwave$Reco_HBLR)
-plot(df.REddy$Reco_DT)
 
