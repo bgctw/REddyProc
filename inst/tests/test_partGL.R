@@ -496,6 +496,8 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 				summary(lm( sumL$R_ref  ~ sum1$R_ref-1 ))
 				plot(sumL$R_ref_SD ~ sum1$R_ref_SD); abline(0,1)			
 				summary(lm( sumL$R_ref_SD  ~ sum1$R_ref_SD-1 ))	# Lasslop sd is smaller
+				#
+				plot( R_ref ~ R_ref12, resSummary)
 			}
 })
 
@@ -572,11 +574,14 @@ test_that("partGLPartitionFluxes",{
 			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resLRCEx1$summary) ) 
 			expect_true( all((tmp$FP_alpha[resLRCEx1$iCentralRec] - resLRCEx1$a)[resLRCEx1$parms_out_range==0L] < 1e-2) )
 			#expect_true( all((is.na(tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range!=0L])) )
+			expect_true( length(is.finite(tmp$FP_R_refNight)) > 0 )
 			.tmp.plot <- function(){
 				tmp$time <- dsNEE1$sDateTime
 				plot( Reco_DT_u50 ~ time, tmp)
 				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
 				plot( GPP_DT_u50 ~ time, tmp)
+				plot( FP_R_refNight ~ time, tmp)
+				plot( FP_R_ref ~ FP_R_refNight, tmp)
 			}
 		})
 

@@ -48,8 +48,9 @@ partitionNEEGL=function(
 			,FP_VARday=NA_real_		##<< NEE filtered for daytime recores (others NA)
 			,NEW_FP_Temp=NA_real_	##<< temperature after filtering for quality flag degree Celsius
 			,NEW_FP_VPD=NA_real_	##<< vapour pressure deficit after filtering for quality flag, hPa
-			,FP_E0=NA_real_			##<< temperature sensitivity estimated from nighttime NEE window  in Kelvin (degK) 
+			,FP_R_refNight=NA_real_		##<< basal respiration estimated from LRC of daytime window  (W/m2)
 			,FP_R_ref=NA_real_		##<< basal respiration estimated from LRC of daytime window  (W/m2)
+			,FP_E0=NA_real_			##<< temperature sensitivity estimated from nighttime NEE window  in Kelvin (degK) 
 		#TODO Mirco: add descriptions to meaning of LRC parameters
 			,FP_alpha=NA_real_			##<< 
 			,FP_beta=NA_real_			##<< 
@@ -98,7 +99,7 @@ partitionNEEGL=function(
 	# append parameter fits to the central record of day window
 	#iGood <- which(resLRC$summary$parms_out_range == 0L)	 	
 	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
-	dsAns[resLRC$summary$iCentralRec,c("FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("E_0","R_ref","a","b","k","parms_out_range")]
+	dsAns[resLRC$summary$iCentralRec,c("FP_R_refNight","FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("R_ref12","E_0","R_ref","a","b","k","parms_out_range")]
 	matchFP_qc <- NA_integer_; matchFP_qc[resLRC$summary[[colNameAssoc]] ] <- resLRC$summary$parms_out_range	# here maybe indexed by meanRec
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
