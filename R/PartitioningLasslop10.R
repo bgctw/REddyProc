@@ -165,7 +165,7 @@ partGLControl <- function(
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
 	## For highest compatibility to Lasslop10 use 
-	## \code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE}
+	## \code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE }
 	ctrl <- list(  
 			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
 			,nBootUncertainty=nBootUncertainty
