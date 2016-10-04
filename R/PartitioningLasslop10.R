@@ -97,7 +97,7 @@ partitionNEEGL=function(
 	)
 	#dput(resLRC)
 	# append parameter fits to the central record of day window
-	#iGood <- which(resLRC$summary$parms_out_range == 0L)	 	
+	#iGood <- which(resLRC$summary$parms_out_range == 0L)
 	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAns[resLRC$summary$iCentralRec,c("FP_R_refNight","FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("R_ref12","E_0","R_ref","a","b","k","parms_out_range")]
 	matchFP_qc <- NA_integer_; matchFP_qc[resLRC$summary[[colNameAssoc]] ] <- resLRC$summary$parms_out_range	# here maybe indexed by meanRec
@@ -105,7 +105,7 @@ partitionNEEGL=function(
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
 	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s]
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
-					, dsAns[[VPDVar.s]], dsAns[[TempVar.s]]		# do prediction also using gap-Filled values
+					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction also using gap-Filled values
 					, resLRC
 					, controlGLPart.l=controlGLPart.l
 			)
@@ -157,7 +157,9 @@ partGLControl <- function(
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
 			## of Reco and GPP for small performance increase 	
 		,isFilterMeteoQualityFlag=FALSE	##<< set to TRUE to use only records where quality flag 
-			## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled 	
+			## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled
+		,isBoundLowerNEEUncertainty=TRUE	##<< set to FALSE to avoid adjustment of very low uncertainties before
+			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 	){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -172,6 +174,7 @@ partGLControl <- function(
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
 			,isSdPredComputed=isSdPredComputed
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
+			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -249,9 +252,9 @@ partGLFitLRCWindows=function(
 		#c(DayStart.i, DayEnd.i, DayStart.Night.i, DayEnd.Night.i)
 		SubsetDayPeriod.b <- DayCounter.V.i >= DayStart.i & DayCounter.V.i <= DayEnd.i # could be done faster with direct row-computation but so its more clear 
 		SubsetValidDay.b <-  SubsetDayPeriod.b & 
-				ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$VPD)
+				!is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$VPD) 
 		SubsetValidNight.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
-				ds$isNight & !is.na(ds$NEE)
+				!is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE) 
 		# check that there are enough night and enough day-values for fitting, else continue with next window
 		if( min(sum(SubsetValidNight.b),sum(SubsetValidDay.b)) < controlGLPart.l$minNRecInDayWindow ) next
 		dsNight <- ds[SubsetValidNight.b,]
@@ -441,7 +444,7 @@ partGLFitLRC <- function(
 	#
 	##seealso<< \code{\link{parmGLOptimLRCBounds}}
 	resOpt3 <- apply( theta.V.n, 1, function(theta0){
-				resOpt <- parmGLOptimLRCBounds(theta0, parameterPrior, dsDay, controlGLPart.l, lastGoodParameters.V.n=lastGoodParameters.V.n )
+				resOpt <- parmGLOptimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart.l, lastGoodParameters.V.n=lastGoodParameters.V.n )
 		})
 	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
 	resOpt3Valid <- resOpt3[iValid]
@@ -499,15 +502,21 @@ partGLFitLRC <- function(
 
 .tmp.plot <- function(){
 	plot(dsDay$Rg,-1*dsDay$NEE)
-	thetaB <- opt.parms.V
+	thetaB <- resOpt$theta
+	#thetaB <- opt.parms.V
 	#thetaB <-  opt[[iBest <- which.min(optSSE)]]
-	#thetaB <- resOpt$theta
+	#
 	#thetaB <- resOpt$par
-	points(dsDay$Rg, tmp <- partGL_RHLightResponse(thetaB
+	#thetaB <- c(resOpt3[[1]]$par, E_0=as.vector(E_0.n))
+	#thetaB <- theta
+	#thetaB <- thetaOrig
+	points(
+			#lines(
+			dsDay$Rg, tmp <- partGL_RHLightResponse(thetaB
 					,Rg = dsDay$Rg 
 					,Temp=dsDay$Temp
 					,VPD = dsDay$VPD
-					,E0 = E_0.n
+					#,E0 = E_0.n
 					,fixVPD = FALSE
 			)$NEP, col="red")
 	points(dsDay$Rg, tmp <- partGL_RHLightResponse(thetaB
@@ -530,6 +539,7 @@ parmGLOptimLRCBounds <- function(
 ){
 	##author<< TW, MM
 	##seealso<< \code{\link{partGLFitLRC}}
+	if( !is.finite(lastGoodParameters.V.n[3L]) ) lastGoodParameters.V.n[3L] <- 0.22	# twutz 161014: default alpha 	
 	isAlphaFix <- FALSE
 	isKFix <- FALSE
 	resOpt <- resOpt0 <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
@@ -538,28 +548,30 @@ parmGLOptimLRCBounds <- function(
 	##details<<
 	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
 	## to values from fit of previous window.
+	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
+	#dsDay <- list(...)$dsDay
 	if (resOpt$theta[1L] < 0){
 		isKFix <- TRUE
-		resOpt$theta[1L] <- 0
-		resOpt <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+		theta0Adj[1L] <- 0
+		resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
 		# check alpha, if less than zero estimate parameters with fixed alpha of last window 
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
 			isAlphaFix <- TRUE
-			theta0[3L] <- lastGoodParameters.V.n[3L] 
-			resOpt <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+			theta0Adj[3L] <- lastGoodParameters.V.n[3L] 
+			resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
 		}
 	} else {
 		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
 		# if not last window exists, let alpha > 0.22
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
 			isAlphaFix <- TRUE
-			resOpt$theta[3L] <- lastGoodParameters.V.n[3L]
-			resOpt <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+			theta0Adj[3L] <- lastGoodParameters.V.n[3L]
+			resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
 			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
 			if (resOpt$theta[1L] < 0){
 				isKFix <- TRUE
-				theta0[1L] <- 0
-				resOpt <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+				theta0Adj[1L] <- 0
+				resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
 			}
 		}
 	} 
@@ -627,11 +639,16 @@ parmGLOptimLRCBounds <- function(
 	dsDayFinite <- dsDay[ is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
 	##details<<
 	## Optimization of Light-response curve parameters takes into account the uncertainty of the flux values.
-	## In order to avoid very strong leverage, values with a very low uncertainty (< 75% percentile) are assigned
-	## the 75% percentile of the uncertainty.
+	## In order to avoid very strong leverage, values with a very low uncertainty (< median) are assigned
+	## the median of the uncertainty.
 	## This procedure downweighs records with a high uncertainty, but does not apply a large leverage for
-	## records wiht a very low uncertainty.
-	Fc_unc <- pmax( dsDayFinite$sdNEE, quantile(dsDayFinite$sdNEE, 0.5) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
+	## records with a very low uncertainty. Avoid this correction by suppyling setting \code{ctrl$isBoundLowerNEEUncertainty = FALSE}
+	Fc_unc <- if( isTRUE(ctrl$isBoundLowerNEEUncertainty) ){
+		pmax( dsDayFinite$sdNEE, quantile(dsDayFinite$sdNEE, 0.3) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
+	} else {
+		dsDayFinite$sdNEE
+	}
+	#plot( Fc_unc ~ dsDayFinite$sdNEE)
 	##details<< 
 	## The beta parameter is quite well defined. Hence use a prior with a standard deviation.
 	## The specific results are sometimes a bit sensitive to the uncertainty of the beta prior. 
@@ -652,9 +669,51 @@ parmGLOptimLRCBounds <- function(
 			if( !isUsingFixedVPD &  isUsingFixedAlpha ) c(1L,2L,4L) else
 			if(  isUsingFixedVPD &  isUsingFixedAlpha ) c(2L,4L) 
 	sdParameterPrior[-iOpt] <- NA
-	resOptim <- optim(theta[iOpt], .partGLRHLightResponseCost
+	# encountered the case where fit ran into a local optimum at very low (even negative) beta
+	# hence first do a fit with log(beta) or a fit with very strong prior on beta and alpha
+	# and relax priors afterwards.
+#	thetaLog <- theta; thetaLog[2] <- log(theta[2])
+#	parameterPriorLog <- parameterPrior; parameterPriorLog[2] <- log(parameterPrior[2])
+#	# for the log-Fit assume a strong prior on beta to avoid local minimum at beta=0
+#	sdParameterPriorLog <- sdParameterPrior  #; sdParameterPriorLog[2] <- log(parameterPrior[2]) - log(parameterPrior[2] - sdParameterPrior[2])
+#	resOptimLog <- optim(thetaLog[iOpt], .partGLRHLightResponseCostLogBeta
+#			#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
+#			,theta=thetaLog
+#			,iOpt=iOpt
+#			,flux = -dsDayFinite$NEE 
+#			,sdFlux = Fc_unc	  
+#			,parameterPrior = parameterPriorLog
+#			,sdParameterPrior = sdParameterPriorLog
+#			,Rg = dsDayFinite$Rg 
+#			,VPD = dsDayFinite$VPD
+#			,Temp=dsDayFinite$Temp
+#			#,E0 = E_0.n
+#			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
+#			,method="BFGS", hessian=isUsingHessian)
+#	thetaOrig <- theta; thetaOrig[iOpt] <- resOptimLog$par; thetaOrig[2] <- exp(thetaOrig[2])	
+	#
+	thetaOrig <- theta
+	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 0.5
+	resOptimStrongPrior <- optim(thetaOrig[iOpt], .partGLRHLightResponseCost
 		#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
-				,theta=theta
+		,theta=thetaOrig
+		,iOpt=iOpt
+		,flux = -dsDayFinite$NEE 
+		,sdFlux = Fc_unc	  
+		,parameterPrior = parameterPrior
+		,sdParameterPrior = sdStrongPrior
+		,Rg = dsDayFinite$Rg 
+		,VPD = dsDayFinite$VPD
+		,Temp=dsDayFinite$Temp
+		#,E0 = E_0.n
+		,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
+		,method="BFGS", hessian=isUsingHessian)
+	thetaOrig[iOpt] <- resOptimStrongPrior$par	
+	#
+	resOptim <- optim(thetaOrig[iOpt], .partGLRHLightResponseCost
+			#resOptim <- optim(theta, .partGLRHLightResponseCost
+			#tmp <- .partGLRHLightResponseCost( theta[iOpt] 
+				,theta=thetaOrig
 				,iOpt=iOpt
 				,flux = -dsDayFinite$NEE 
 				,sdFlux = Fc_unc	  
@@ -723,7 +782,8 @@ partGL_RHLightResponse <- function(
 	Amax <- if( isTRUE(fixVPD) ) beta0 else {
 				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
 			} 
-	Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
+	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
+	Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
 	NEP <- GPP - Reco
 	## a data.frame of length of Rg of computed  
@@ -771,7 +831,8 @@ partGL_RHLightResponseGrad <- function(
 			} 
 	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
 	#ex <- expression( Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("Rref","E0"))
-	.expr7 <- 1/(273.15 + 10 - 227.13) - 1/(Temp + 273.15 - 227.13)
+	#.expr7 <- 1/(273.15 + 10 - 227.13) - 1/(Temp + 273.15 - 227.13)
+	.expr7 <- 1/(273.15 + 15 - 227.13) - 1/(Temp + 273.15 - 227.13)
 	.expr9 <- exp(E0 * .expr7)
 	gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("Rref","E0")))
 	gradReco[,"Rref"] <- dReco_dRRef <- .expr9
@@ -822,6 +883,39 @@ partGL_RHLightResponseGrad <- function(
 		resPred <- partGL_RHLightResponse(theta, ..., VPD0=VPD0, fixVPD=fixVPD)
 		NEP_mod <- resPred$NEP
 		misFitPrior <- (((theta - parameterPrior))/(sdParameterPrior))^2
+		misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
+		RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE)
+		#if( !is.finite(RSS) ) recover()	# debugging the fit
+		RSS
+	}
+}
+
+.partGLRHLightResponseCostLogBeta <- function(
+		### Computing residual sum of sqares for predictions vs. data of NEE, with parameter beta given at log-Scale
+		thetaOpt 	##<< parameter vecotr with components of theta0 that are optimized 
+		,theta		##<< parameter vector with positions as in argument of \code{\link{partGL_RHLightResponse}} 
+		,iOpt		##<< position in theta0 that are optimized 
+		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s], should not contain NA
+		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
+		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
+		,sdParameterPrior	##<< standard deviation of parameterPrior
+		,...			##<< other arguments to \code{\link{partGL_RHLightResponse}}
+		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
+		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,useCVersion=TRUE	##<< set to FALSE  to use R instead of fast C version, e.g. for debugging
+# also tried to pass dsDay data.frame instead of all the variables separately, but accessing data.frame
+# columns in the cost function was a severe penalty (here double execution time)
+) {
+	thetaOrig <- theta
+	thetaOrig[iOpt] <- thetaOpt
+	thetaOrig[2] <- exp(thetaOrig[2])
+	#if( FALSE ){
+	if( useCVersion){
+		RHLightResponseCostC(thetaOrig, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		
+	} else {
+		resPred <- partGL_RHLightResponse(thetaOrig, ..., VPD0=VPD0, fixVPD=fixVPD)
+		NEP_mod <- resPred$NEP
+		misFitPrior <- (((thetaOrig - parameterPrior))/(sdParameterPrior))^2
 		misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
 		RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE)
 		#if( !is.finite(RSS) ) recover()	# debugging the fit

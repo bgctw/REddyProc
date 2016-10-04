@@ -40,7 +40,8 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 		if( !_fixVPD && (VPD[i] > _VPD0)){
 			_Amax = _beta0 * exp( -_kVPD*(VPD[i]-_VPD0));
 		}
-		_Reco = _Rref*exp(_E0*(1/((273.15+10)-227.13)-1/(Temp[i]+273.15-227.13)));
+		//_Reco = _Rref*exp(_E0*(1/((273.15+10)-227.13)-1/(Temp[i]+273.15-227.13)));
+		_Reco = _Rref*exp(_E0*(1/((273.15+15)-227.13)-1/(Temp[i]+273.15-227.13)));
 		_GPP = (_Amax*_alfa*Rg[i])/(_alfa*Rg[i]+_Amax);
 		//NEP[i] = _GPP -_Reco;
 		_NEP = _GPP -_Reco;
