@@ -360,6 +360,18 @@ test_that("estimating temperature sensitivity outputs are in accepted range",{
 			}
 		})
 
+test_that("estimating temperature sensitivity on record with all Temperature below minus one",{
+			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 
+							& !is.na(dsNEE$FP_VARnight))
+			dss <- dss[ order(dss$NEW_FP_Temp), ]
+			dss$NEW_FP_Temp <- dss$NEW_FP_Temp - 12  
+			res <- partGLEstimateTempSensInBounds(dss$FP_VARnight, dss$NEW_FP_Temp+273.15)
+			expect_equal( NA_real_, res$E_0)
+			expect_equal( NA_real_, res$E_0_SD)
+			expect_equal( mean(dss$FP_VARnight,na.rm=TRUE), res$R_ref)
+		})
+
+
 test_that("RHLightResponseCostC",{
 			.tmp.reloadDll <- function(){
 				library.dynam.unload("REddyProc", file.path(.libPaths()[1],"REddyProc") )
