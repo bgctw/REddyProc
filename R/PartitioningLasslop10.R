@@ -103,7 +103,10 @@ partitionNEEGL=function(
 	matchFP_qc <- NA_integer_; matchFP_qc[resLRC$summary[[colNameAssoc]] ] <- resLRC$summary$parms_out_range	# here maybe indexed by meanRec
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
-	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s], dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp, resLRC
+	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s]
+					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
+					, dsAns[[VPDVar.s]], dsAns[[TempVar.s]]		# do prediction also using gap-Filled values
+					, resLRC
 					, controlGLPart.l=controlGLPart.l
 			)
 	# compute difference to next record that has a parameter set associated 
