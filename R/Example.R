@@ -52,7 +52,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
 		#EddyProc.C$sGLFluxPartition(controlGLPart.l=partGLControl(isBoundLowerNEEUncertainty=FALSE))	# day time partitioning -> Reco_DT, GPP_DT
 		#plot( EddyProc.C$sTEMP$GPP_DT ~ EddyProc.C$sTEMP$GPP_f); abline(0,1)
-		#plot( EddyProc.C$sTEMP$Reco_DT ~ EddyProc.C$sTEMP$Reco ); abline(0,1)
+		#plot( -EddyProc.C$sTEMP$GPP_DT + EddyProc.C$sTEMP$Reco_DT ~ EddyProc.C$sTEMP$NEE_f ); abline(0,1)
 		#names(EddyProc.C$sTEMP)
 		# there are some constraints, that might be too strict for some datasets
 		# e.g. in the tropics the required temperature range might be too large.

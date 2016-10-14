@@ -800,19 +800,17 @@ test_that("estimating temperature sensitivity outputs are in accepted range",{
 			expect_true( res$E_0 >= 50 && res$E_0 < 400 )
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
-				p <- coef(res$resFit)
-				lines( fLloydTaylor(p[1], p[2], dss$Temp+273.15, T_ref.n=273.15+15) ~ dss$Temp)#
+				lines( fLloydTaylor(res$R_ref, res$E_0, dss$Temp+273.15, T_ref.n=273.15+15) ~ dss$Temp)#
 			}
 		})
 
 test_that("estimating temperature sensitivity on record with all Temperature below minus one",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
 			dss <- dss[ order(dss$Temp), ]
-			dss$Temp <- dss$Temp - 37  
+			dss$Temp <- dss$Temp - (max(dss$Temp)+1)  
 			res <- partGLEstimateTempSensInBounds(dss$NEE_f, dss$Temp+273.15)
-			expect_equal( NA_real_, res$E_0)
-			expect_equal( NA_real_, res$E_0_SD)
-			expect_equal( mean(dss$NEE_f,na.rm=TRUE), res$R_ref)
+			expect_true( res$E_0 >= 50 && res$E_0 < 400 )
+			expect_true( res$R_ref> mean(dss$NEE_f,na.rm=TRUE) )
 		})
 
 

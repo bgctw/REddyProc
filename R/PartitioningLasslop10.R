@@ -334,7 +334,7 @@ partGLFitLRCWindows=function(
 
 partGLEstimateTempSensInBounds <- function(
 		### Estimate temperature sensitivity E_0 and R_ref of ecosystem respiration, and apply bounds or previous estimate
-		REco.V.n	##<< numeric vector: night time NEE, i.e. ecosytem respiration
+		REco.V.n					##<< numeric vector: night time NEE, i.e. ecosytem respiration
 		,temperatureKelvin.V.n		##<< temperature in K
 		,prevE0	= NA				##<< numeric scalar: the previous guess of Temperature Sensitivity
 		,prevR_ref= NA				##<< nuermic scalar: previous guess of 
@@ -346,19 +346,21 @@ partGLEstimateTempSensInBounds <- function(
 	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
 	#		,control=nls.lm.control(maxiter = 20))
 	##details<<
-	## For robustness, data is trimmed to conditions at temperature > 1°C and respiration is set to minimum zero.
+	## For robustness, data is trimmed to conditions at temperature > 1°C 
+	## If trimmed data is less than 5 records, all data is used
 	isNotFreezing <- temperatureKelvin.V.n > 273.15-1
-	REcoPositive <- pmax(0,REco.V.n)	# make sure to use positive values for respiration
-	REcoFitting <- REcoPositive[isNotFreezing]
+	isUsedInFitting <- if( sum(isNotFreezing) > 5L ) isNotFreezing else TRUE
+	REcoFitting <- REco.V.n[isUsedInFitting] 
 	##details<< 
 	## Basal respiration is reported for temperature of 15 degree Celsius. However during the fit
 	## a reference temperature of the median of the dataset is used. This is done to avoid
 	## strong correlations between estimated parameters E0 and R_ref, that occure if reference temperature 
 	## is outside the center of the data.
-	TRefFit <- median(temperatureKelvin.V.n[isNotFreezing], na.rm=TRUE)	# formerly 273.15+15
+	TRefFit <- median(temperatureKelvin.V.n[isUsedInFitting], na.rm=TRUE)	# formerly 273.15+15
+	TRef15 <- 273.15+15	# 15 degC in Kelvin
 	resFit <- try(
 			nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=TRefFit), algorithm='default', trace=FALSE,
-					data=as.data.frame(cbind(R_eco=REcoFitting,Temp=temperatureKelvin.V.n[isNotFreezing]))
+					data=as.data.frame(cbind(R_eco=REcoFitting,Temp=temperatureKelvin.V.n[isUsedInFitting]))
 					, start=list(R_ref=as.vector({if(is.finite(prevR_ref)) prevR_ref else mean(REcoFitting,na.rm=TRUE)})
 							,E_0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
 					,control=nls.control(maxiter = 20L)
@@ -369,16 +371,13 @@ partGLEstimateTempSensInBounds <- function(
 	if( inherits(resFit, "try-error")){
 		#stop("debug partGLEstimateTempSensInBounds")
 		#plot( REco.V.n	~ temperatureKelvin.V.n )
-		E_0Bounded.V.n <- E_0.V.n <- NA
-		R_ref <- R_ref0 <- NA
+		E_0.V.n <- NA
+		RRefFit <- NA
 		E_0_SD.V.n <- NA
 	} else {
-		E0 <- coef(resFit)['E_0']
+		E_0.V.n <- coef(resFit)['E_0']
 		RRefFit <- coef(resFit)['R_ref']
 		# report basal respiration at 15degC instead of respiration at mean temperature used in the fitting
-		RRef15 <- fLloydTaylor( RRefFit, E0, 273.15+15, T_ref.n=TRefFit)
-		E_0Bounded.V.n <- E_0.V.n <- E0
-		R_ref <- R_ref0 <- RRef15 
 		E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
 	}
 	# resFit$convInfo$isConv
@@ -389,20 +388,38 @@ partGLEstimateTempSensInBounds <- function(
 	## On out of bounds parameters (or error in fitting) R_Ref is set to the mean of respiration in the dataset, or zero if the mean is negative. 
 	if( is.na(E_0.V.n) || (E_0.V.n < 50) || (E_0.V.n > 400)){
 		E_0Bounded.V.n <- if( is.na(prevE0) ){
-					min(400,max(50,E_0.V.n))
+					if( is.na(E_0.V.n)) 100 else min(400,max(50,E_0.V.n))
 				} else {
 					prevE0
 				}
 		E_0_SD.V.n <- 0.5*E_0Bounded.V.n
-		#R_ref <- mean(REcoFitting, na.rm=T)	 #REcoFitting might be empty if all night temperatures below minus on degree
-		R_ref <- max(0,mean(REco.V.n, na.rm=T))		
+		RRefFit <- median(REco.V.n, na.rm=T)		
+	} else {
+		E_0Bounded.V.n <- E_0.V.n
 	}
+	# refit R_Ref with bounded E0 for 15 degC, instead of calling fLoydAndTaylor do a simple regression 
+#   starting value from forward model
+#	RRef15 <- fLloydTaylor( RRefFit, E_0Bounded.V.n, TRef15, T_ref.n=TRefFit)
+#	resFit15 <-	nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=TRef15), algorithm='default', trace=FALSE,
+#					data=as.data.frame(cbind(R_eco=REcoFitting,Temp=temperatureKelvin.V.n[isNotFreezing], E_0=E_0Bounded.V.n))
+#					, start=list(R_ref=RRef15)
+#					,control=nls.control(maxiter = 20L)
+#			)
+#	(R_ref_ <- coef(resFit15)[1])
+	R_ref <- if( length(REcoFitting) >= 3L ){
+		T_0.n=227.13         ##<< Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
+		TFacLloydTaylor <-  exp(E_0Bounded.V.n * ( 1/(TRef15-T_0.n) - 1/(temperatureKelvin.V.n[isUsedInFitting]-T_0.n) ) )
+		lm15 <- lm(REcoFitting ~ TFacLloydTaylor -1)
+		coef(lm15)
+	} else 
+		fLloydTaylor( RRefFit, E_0Bounded.V.n, TRef15, T_ref.n=TRefFit)
+	R_refBounded <- max(0, R_ref)
 	##value<< list with entries
 	list(
 			E_0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
 			,E_0_SD=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
-			,R_ref=R_ref			##<< numeric scalar of estimated respiration at reference temperature
-			,resFit=resFit			##<< the fit-object, maybe of class try-error
+			,R_ref=R_refBounded	##<< numeric scalar of estimated respiration at reference temperature
+			#,resFit=resFit			##<< the fit-object, maybe of class try-error
 	)
 }
 
@@ -782,7 +799,7 @@ partGL_RHLightResponse <- function(
 	Amax <- if( isTRUE(fixVPD) ) beta0 else {
 				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
 			} 
-	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
+	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))	# formerly at 10degC
 	Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
 	NEP <- GPP - Reco
