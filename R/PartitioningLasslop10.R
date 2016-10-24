@@ -100,10 +100,12 @@ partitionNEEGL=function(
 	# append parameter fits to the central record of day window
 	#iGood <- which(resLRC$summary$parms_out_range == 0L)
 	# resLRC provides parameters only for a subset of rows. For each row in the original data.frame
-	# The parameter estimates are associated either to the central record of the window, 
+	# The parameter estimates are associated for interpolation of predicted fluxes 
+	# either to the central record of the window, 
 	# or the record with the time corresponding to the mean of all valid records in the window
 	# default is isAssociateParmsToMeanOfValids=TRUE (double check partGLControl argument)
-	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
+	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec"
+	# for the output, always report at central record
 	dsAns[resLRC$summary$iCentralRec,c("FP_R_refNight","FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("R_ref12","E_0","R_ref","a","b","k","parms_out_range")]
 	matchFP_qc <- NA_integer_; matchFP_qc[resLRC$summary[[colNameAssoc]] ] <- resLRC$summary$parms_out_range	# here maybe indexed by meanRec
 	#	
@@ -115,6 +117,9 @@ partitionNEEGL=function(
 					, controlGLPart.l=controlGLPart.l
 			)
 	# compute difference to next record that has a parameter set associated 
+	# create a matrix (nrow(dsAns), nrow(resLRC)) with diffenrence between 
+	# iParRec (iMeanRec or ICentralRec in resLRC)
+	# and iRec (each row in dsAns)
 	dRecPars <- sapply( resLRC$summary[[colNameAssoc]], function(iAssocRec){ iAssocRec - 1:nrow(dsAns) })
 	iEstClosest <- apply(abs(dRecPars), 1, which.min)
 	dsAns$FP_dRecPar <- dRecPars[cbind(1:length(iEstClosest),iEstClosest)]
@@ -162,7 +167,8 @@ partGLControl <- function(
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
 			## of Reco and GPP for small performance increase 	
 		,isFilterMeteoQualityFlag=FALSE	##<< set to TRUE to use only records where quality flag 
-			## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled
+			## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled for parameter estimation.
+			## For prediction, the gap-filled value is used always, to produce predictions also for gaps.
 		,isBoundLowerNEEUncertainty=TRUE	##<< set to FALSE to avoid adjustment of very low uncertainties before
 			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 	){
@@ -223,7 +229,7 @@ partGLFitLRCWindows=function(
 	startDays.V.i <- seq(1, max(DayCounter.V.i), DayStep.i)
 	nWindow = length(startDays.V.i)
 	# setup a data.frame for the results
-	##value<< a list with first entry a list with all optimization results, 
+	##value<< a list with first entry a list with all optimization result objects, 
 	## and a second entry a summary data.frame with a row for each window with columns
 	resDf <- data.frame(
 			Start=startDays.V.i	##<< the starting day of the day-window
@@ -278,6 +284,7 @@ partGLFitLRCWindows=function(
 		E_0.n <- resNightFit$E_0
 		# if no temperature - respiration relationship could be found, indicate no-fit
 		if( is.na(E_0.n) ){     next    }    
+# if( DayStart.i > 72 ) recover()		
 		sdE_0.n <- resNightFit$E_0_SD
 		R_refNight.n <- resNightFit$R_ref
 		#
@@ -295,6 +302,7 @@ partGLFitLRCWindows=function(
 		if( is.finite(resOpt$opt.parms.V[1]) ){
 			# check that R_ref estimated from daytime is not larger than twice the estimate from nighttime
 			# else this indicates a bad fit
+			# this is additional to Table A1 in Lasslop 2010
 			if( resOpt$opt.parms.V[4L] > 2*resNightFit$R_ref){
 				resOpt$opt.parms.V[] <- NA
 			}
@@ -333,7 +341,6 @@ partGLFitLRCWindows=function(
 			,summary = ansDf
 		)
 #	#! New code: Omit regressions with R_ref <0, in PV-Wave smaller values are set to 0.000001, not mentioned in paper
-#	#TODO later: Flag for long distances between R_refs, especially if long distance in the beginning - twutz: may make use of resDf$End == NA 
 #	#TODO later: Provide some kind of uncertainty estimate from R_ref_SD
 }
 
@@ -423,7 +430,7 @@ partGLEstimateTempSensInBounds <- function(
 	list(
 			E_0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
 			,E_0_SD=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
-			,R_ref=R_refBounded	##<< numeric scalar of estimated respiration at reference temperature
+			,R_ref=R_refBounded		##<< numeric scalar of estimated respiration at reference temperature
 			#,resFit=resFit			##<< the fit-object, maybe of class try-error
 	)
 }
@@ -1002,7 +1009,7 @@ partGLBoundParameters <- function(
 }
 
 partGLInterpolateFluxes <- function(
-		### Interpolate ecoystem respiraiton (Reco) and Gross primary production (GPP) and associated uncertainty from two neighboring parameter sets of Light respons curves 
+		### Interpolate ecoystem respiration (Reco) and Gross primary production (GPP) and associated uncertainty from two neighboring parameter sets of Light response curves 
 		Rg   	##<< photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temperature [degC] 
@@ -1034,7 +1041,11 @@ partGLInterpolateFluxes <- function(
 	# for each original record merge parameters assicated with previous fit or next fit respectively
 	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAssoc <- .partGPAssociateSpecialRows(summaryLRC[[colNameAssoc]],nRec)
-	dsBefore <- merge( structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
+	# now we have iBefore and iAfter
+	dsBefore <- merge( 
+			structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
+			, summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")]
+			)
 	dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
 	if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
 	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
@@ -1061,6 +1072,7 @@ partGLInterpolateFluxes <- function(
 					#iRec <- 1L
 					for( iRec in 1:nrow(dsi)){
 						iParRec <- dsi$iParRec[iRec]
+						# get the fitting object, TODO better document
 						resOpt <- resLRC$resOptList[[ iParRec ]]
 						gradGPP <- grad$GPP[iRec,]
 						gradReco <- grad$Reco[iRec,]
@@ -1104,15 +1116,16 @@ partGLInterpolateFluxes <- function(
 		,nRec			##<< integer scalar of number of rows in the full data.frame 
 ){
 	##details<< 
-	## When only for a subset of rows some more data available, this function creates
+	## When only for a subset of rows some more data available, i.e parameter estimates for 
+	## only a subset of rows, this function creates
 	## columns that refer to the previous and next row that are in the subset.
 	## E.g. if some more data is available for rows 3 and 7, then rows 4:6 will indicate 
 	## \code{iBefore=3, iAfter=7}.
 	##value<< a dataframe with index of previous and next rows inside the subset
 	ans <- data.frame(
 			iRec=1:nRec				##<< the original row number
-			, iSpecialBefore=NA_integer_	##<< index within \code{iRec} 
-			, iSpecialAfter=NA_integer_		##<< index within \code{iRec}
+			, iSpecialBefore=NA_integer_	##<< index within \code{iRowsSpecial} 
+			, iSpecialAfter=NA_integer_		##<< index within \code{iRowsSpecial}
 			, iBefore=NA_integer_	##<< index of the previous special row 
 			, iAfter=NA_integer_	##<< index of the next special row
 			, wBefore=NA_real_		##<< weight of the previous, inverse of the distance in records

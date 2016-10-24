@@ -1,5 +1,29 @@
 #Script for testing the new partitioning GL for REddyProc
 library(REddyProc)
+# alternative
+.tmp.f <- function(){
+	library(Rcpp)
+	library(plyr)
+	source("R/GeoFunctions.R")
+	source("R/FileHandling.R")
+	source("R/DataFunctions.R")
+	source("R/PartitioningLasslop10.R")
+	pkg <- 'REddyProc'
+	loadDll <- function (dynFilenameLocal = file.path( system.file(package=pkg), "libs", "x64"
+							, paste0(pkg, .Platform$dynlib.ext)), pkg = pkg, isWarningDllNotFound = TRUE
+	){
+		if (file.exists(dynFilenameLocal)) {
+			dyn.load(dynFilenameLocal)
+		}
+		else if (isWarningDllNotFound) {
+			warning(paste("dynLib", dynFilenameLocal, "not found."))
+		}
+	}
+	loadDll(pkg=pkg)
+	source("R/RcppExports.R")
+	
+	
+}
 library(sirad)
 library(scales) # for plotting (function alpha())
 
@@ -62,9 +86,9 @@ for ( s in seq_along(sites)) {
   
   #+++ Initalize R5 reference class sEddyProc for processing of eddy data
   #+++ with all variables needed for processing later
-  EddyProc.C <- sEddyProc$new(sites[s], dfall_posix, 
-                              c('NEE', 'NEE_f', 'NEE_fqc', 'Rg', 'Rg_f', 'Rg_fqc','Tair','Tair_fqc','Tsoil', 
-                                'VPD','VPD_f', 'VPD_fqc','Ustar', "night","day","PotRad"))
+  #EddyProc.C <- sEddyProc$new(sites[s], dfall_posix, 
+  #                            c('NEE', 'NEE_f', 'NEE_fqc', 'Rg', 'Rg_f', 'Rg_fqc','Tair','Tair_fqc','Tsoil', 
+  #                              'VPD','VPD_f', 'VPD_fqc','Ustar', "night","day","PotRad"))
   # EddyProc.C$sDATA$night
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # START - RUN THE REddyProc DT partitioning 
