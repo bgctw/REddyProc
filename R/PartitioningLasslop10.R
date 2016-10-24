@@ -76,6 +76,7 @@ partitionNEEGL=function(
 	attr(dsAns$FP_VARday, 'units') <- attr(Var.V.n, 'units')
 	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
 	# Apply quality flag for temperature and VPD
+	# TODO: docu meteo filter, standard FALSE
 	dsAns$NEW_FP_Temp <- if( isTRUE(controlGLPart.l$isFilterMeteoQualityFlag) ) fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'partitionNEEGL') else ds[[TempVar.s]]
 	dsAns$NEW_FP_VPD <- if( isTRUE(controlGLPart.l$isFilterMeteoQualityFlag) ) fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'partitionNEEGL') else ds[[VPDVar.s]]
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
@@ -98,6 +99,10 @@ partitionNEEGL=function(
 	#dput(resLRC)
 	# append parameter fits to the central record of day window
 	#iGood <- which(resLRC$summary$parms_out_range == 0L)
+	# resLRC provides parameters only for a subset of rows. For each row in the original data.frame
+	# The parameter estimates are associated either to the central record of the window, 
+	# or the record with the time corresponding to the mean of all valid records in the window
+	# default is isAssociateParmsToMeanOfValids=TRUE (double check partGLControl argument)
 	colNameAssoc <- if( isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAns[resLRC$summary$iCentralRec,c("FP_R_refNight","FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- resLRC$summary[,c("R_ref12","E_0","R_ref","a","b","k","parms_out_range")]
 	matchFP_qc <- NA_integer_; matchFP_qc[resLRC$summary[[colNameAssoc]] ] <- resLRC$summary$parms_out_range	# here maybe indexed by meanRec
