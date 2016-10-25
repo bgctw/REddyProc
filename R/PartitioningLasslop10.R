@@ -329,7 +329,8 @@ partGLFitLRCWindows=function(
 	} # for i in days
 	if( isVerbose ) message("") # LineFeed
 	# central record in each window
-	resDf$iCentralRec <- ((startDays.V.i-1L)+WinSizeDays.i/2)*nRecInDay.i	# assuming equidistant records
+	resDf$iCentralRec <- ((startDays.V.i-1L)+WinSizeDays.i/2)*nRecInDay.i -1L	# assuming equidistant records
+	# -1L to be conform to Gittas code
 	# last window might be shorter, take the average between start record and end of all records
 	resDf$iCentralRec[nrow(resDf)] <- ((resDf$Start[nrow(resDf)]-1L)*nRecInDay.i + nrow(ds))/2	    
 	# remove those rows where there was not enough data
