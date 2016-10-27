@@ -993,7 +993,7 @@ test_that("partGLInterpolateFluxes runs",{
 		})
 
 #resLRCEx1
-test_that("partGLPartitionFluxes",{
+test_that("partitionNEEGL",{
 			dsNEE1 <- dsNEE
 			#DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
 			#Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60

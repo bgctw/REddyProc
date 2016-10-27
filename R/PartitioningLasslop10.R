@@ -91,6 +91,12 @@ partitionNEEGL=function(
 			, isDay=isDay
 			, isNight=isNight
 	) 
+	##seealso<< \code{\link{partGLFitNightWindows}}
+	resNight <- tmp <- partGLFitNightWindows( dsR
+			, nRecInDay=nRecInDay.i
+			, controlGLPart.l=controlGLPart.l
+	)
+recover()
 	##seealso<< \code{\link{partGLFitLRCWindows}}
 	resLRC <- tmp <- partGLFitLRCWindows( dsR
 			, nRecInDay=nRecInDay.i
@@ -192,6 +198,104 @@ attr(partGLControl,"ex") <- function(){
 }
 
 
+partGLFitNightWindows=function(
+		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
+		ds					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
+		,WinSizeDays.i=4L	##<< Window size in days for daytime fits
+		,WinSizeNight.i=3L*WinSizeDays.i	##<< Window size in days for nighttime fits  
+		,DayStep.i=floor(WinSizeDays.i / 2L)##<< step in days for shifting the windows
+		,isVerbose=TRUE		##<< set to FALSE to suppress messages
+		,nRecInDay.i=48L	##<< number of records within one day (for half-hourly data its 48)
+		,controlGLPart.l=partGLControl()	##<< list of further default parameters
+){
+	##author<<
+	## MM, TW
+	##seealso<< \code{\link{partitionNEEGL}}
+	##description<<
+	## Estimation of respiration at reference temperature (R_Ref) and temperature (E_0) for successive periods, i.e. windows.
+	'Estimation of the reference respiration Rref of fLloydTaylor() for successive periods'
+	requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
+	iMissing <- which( is.na(match( requiredCols, names(ds) )))
+	if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
+	##details<<
+	## All the vectors must have the same length and consist of entire days, with each day having the same number of records
+	nRec <- length(ds$NEE) 
+	DayCounter.V.i <- ((c(1:nRec)-1L) %/% nRecInDay.i)+1L 	# specifying the day for each record assuming equidistand records
+	startDays.V.i <- seq(1, max(DayCounter.V.i), DayStep.i)
+	nWindow = length(startDays.V.i)
+	# setup a data.frame for the results
+	##value<< a list with first entry a list with all optimization result objects, 
+	## and a second entry a summary data.frame with a row for each window with columns
+	resDf <- data.frame(
+			Start=startDays.V.i	##<< the starting day of the day-window
+			, Num=NA_integer_		##<< the number of records flux records in the window
+			, E_0=NA_real_			##<< temperature sensitivty
+			, E_0_SD=NA_real_		##<< standard deviation of temperature sensitivity
+			#,isGoodParameterSet=FALSE	##<< TRUE if the fit was successful
+	)
+	resOptList <- vector("list", nWindow)
+	E_0.n <- R_refNight.n <- NA		# there are no previous estimates yet
+	CountRegr.i <- 0L
+	#iDay<-1L
+	for (iDay in 1:nWindow) {   #not sure is correct to me should be
+		DayStart.i <- startDays.V.i[iDay]
+		#DayMiddle.i <- DayStart.i-1L + WinSizeDays.i/2
+		if( isVerbose ) message(",",DayStart.i, appendLF = FALSE)
+		DayStart.Night.i <- DayStart.i + WinSizeDays.i/2 - WinSizeNight.i/2 
+		DayEnd.Night.i <- DayStart.Night.i-1L+WinSizeNight.i
+		#c(DayStart.i, DayEnd.i, DayStart.Night.i, DayEnd.Night.i)
+		SubsetValidNight.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
+				!is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE) 
+		# check that there are enough night and enough day-values for fitting, else continue with next window
+		if( sum(SubsetValidNight.b) < controlGLPart.l$minNRecInDayWindow ) next
+		dsNight <- ds[SubsetValidNight.b,]
+		CountRegr.i <- CountRegr.i+1L
+		##seealso<< \code{\link{partGLEstimateTempSensInBounds}}
+		#TODO here only E0 is of interest, do not need to reestimate RRef
+		resNightFit <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n, prevR_ref=R_refNight.n)
+		E_0.n <- resNightFit$E_0
+		# if no temperature - respiration relationship could be found, indicate no-fit
+		if( is.na(E_0.n) )  next        
+		# record valid fits results
+		resOptList[[iDay]] <- resNightFit
+		resDf[iDay, ] <- data.frame(
+				Start=DayStart.i
+				,Num=nrow(dsNight)
+				, E_0=E_0.n
+				, E_0_SD= resNightFit$E_0_SD   
+		)
+	} # for i in days
+	if( isVerbose ) message("") # LineFeed
+	# remove those rows where there was not enough data
+	iNoFit <- is.na(resDf$Num)
+	ansDf <- resDf[!iNoFit,]
+	ansOpt <- resOptList[!iNoFit]
+	list(
+			resOptList = ansOpt
+			,summary = ansDf
+	)
+}
+
+.tmp.testGPFitResp <- function(){
+	# from recover after fitting night time E0
+	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
+	plot(fit3)
+}
+
+.tmp.testGPFit <- function(){
+	x = seq(0, 1, length.out = 20)
+	z = x + rnorm(length(x), sd = 0.1 * x)
+	# single nugget estimate (homoscedastic)
+	fit1 = mlegp(x, z, nugget = mean((0.1 * x)^2))	
+	plot(fit1)
+	# used actual heteroscedastic variance as start estimate scaling factor
+	fit2 = mlegp(x, z, nugget = (0.1 * x)^2)	
+	plot(fit2)
+	# prescribe fixed heteroscedastic noise
+	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
+	plot(fit3)
+}
+
 
 
 partGLFitLRCWindows=function(
@@ -213,10 +317,6 @@ partGLFitLRCWindows=function(
 	requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
 	iMissing <- which( is.na(match( requiredCols, names(ds) )))
 	if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	# Regression settings
-	LMRes.F <- data.frame(NULL) #Results of linear regression
-	# Loop regression periods
-	#DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS #twutz: do not rely on sINFO here, also a -1 is missing 
 	##details<<
 	## All the vectors must have the same length and consist of entire days, with each day having the same number of records
 	nRec <- length(ds$NEE) 
@@ -271,8 +371,6 @@ partGLFitLRCWindows=function(
 		## Moreover, the mean of all valid records numbers in the daytime window is reported for interpolation.
 		meanRecInDayWindow.i <- as.integer(round(mean(which(SubsetValidDay.b)))) 
 		firstRecInDayWindow.i <- which(SubsetDayPeriod.b)[1] # the rownumber of the first record inside the day window
-		countFiniteNEE <- sum(is.finite(dsDay$NEE)) 
-		if( countFiniteNEE < controlGLPart.l$minNRecInDayWindow) next
 		CountRegr.i <- CountRegr.i+1L
 		##seealso<< \code{\link{partGLEstimateTempSensInBounds}}
 		resNightFit <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n, prevR_ref=R_refNight.n)
