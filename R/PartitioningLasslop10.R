@@ -300,10 +300,13 @@ partGLFitLRCWindows=function(
 			}
 		}
 		if( is.finite(resOpt$opt.parms.V[1]) ){
-			# check that R_ref estimated from daytime is not larger than twice the estimate from nighttime
+			# check that R_ref estimated from daytime is not both:
+			# larger than twice the estimate from nighttime and more than 0.7 in absolute terms  
 			# else this indicates a bad fit
 			# this is additional to Table A1 in Lasslop 2010
-			if( resOpt$opt.parms.V[4L] > 2*resNightFit$R_ref){
+			if( (resOpt$opt.parms.V[4L] > 2*resNightFit$R_ref) 		&& 
+				((resOpt$opt.parms.V[4L]-resNightFit$R_ref) > 0.7) 
+			){
 				resOpt$opt.parms.V[] <- NA
 			}
 		}
