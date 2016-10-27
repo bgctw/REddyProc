@@ -2,6 +2,16 @@ Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
 # note: use \code{fFilterAttr} to subset rows while keeping the units attributes
 
+DTS.n=48L
+.tmp.TestHourlyData <- function(){
+	# take only rows of full hour, to test if this causes problems
+	# seems ok
+	head(EddyData.F)
+	EddyData.F <- EddyData.F[ (EddyData.F$Hour %% 1 < 1e-5), ]
+	DTS.n=24L
+	head(EddyData.F)
+}
+
 #+++ If not provided, calculate VPD from Tair and rH
 EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
 
@@ -10,7 +20,7 @@ EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day
 
 #+++ Initalize R5 reference class sEddyProc for processing of eddy data
 #+++ with all variables needed for processing later
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'), DTS.n=DTS.n)
 EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 
 #+++ Fill gaps in variables with MDS gap filling algorithm (without prior ustar filtering)

@@ -116,17 +116,12 @@ partitionNEEGL=function(
 					, resLRC
 					, controlGLPart.l=controlGLPart.l
 			)
-	# compute difference to next record that has a parameter set associated 
-	# create a matrix (nrow(dsAns), nrow(resLRC)) with diffenrence between 
-	# iParRec (iMeanRec or ICentralRec in resLRC)
-	# and iRec (each row in dsAns)
-	dRecPars <- sapply( resLRC$summary[[colNameAssoc]], function(iAssocRec){ iAssocRec - 1:nrow(dsAns) })
-	iEstClosest <- apply(abs(dRecPars), 1, which.min)
-	dsAns$FP_dRecPar <- dRecPars[cbind(1:length(iEstClosest),iEstClosest)]
+	# set quality flag to 2 where next parameter estimate is more than 14 days away 
+	dsAns$FP_dRecPar <- dsAnsFluxes$dRecNextEstimate
 	dDaysPar <- round(dsAns$FP_dRecPar / nRecInDay.i)
-	#
 	dsAns$FP_qc <- matchFP_qc[ 1:nrow(dsAns) + dsAns$FP_dRecPar ] # associate quality flag of parameter estimate to each record
 	dsAns$FP_qc[ dDaysPar > 14] <- 2L	# set quality flag to 2 for records where next estimate is more than 14 days away
+	#dsAns[is.finite(dsAns$FP_beta),]
 	#
 	dsAns[[RecoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[RecoDTVar.s]], 'varnames') <- RecoDTVar.s
