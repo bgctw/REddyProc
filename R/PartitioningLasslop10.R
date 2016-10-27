@@ -92,11 +92,11 @@ partitionNEEGL=function(
 			, isNight=isNight
 	) 
 	##seealso<< \code{\link{partGLFitNightWindows}}
-	resNight <- tmp <- partGLFitNightWindows( dsR
-			, nRecInDay=nRecInDay.i
-			, controlGLPart.l=controlGLPart.l
-	)
-recover()
+#	resNight <- tmp <- partGLFitNightWindows( dsR
+#			, nRecInDay=nRecInDay.i
+#			, controlGLPart.l=controlGLPart.l
+#	)
+#recover()
 	##seealso<< \code{\link{partGLFitLRCWindows}}
 	resLRC <- tmp <- partGLFitLRCWindows( dsR
 			, nRecInDay=nRecInDay.i
@@ -425,8 +425,8 @@ partGLFitLRCWindows=function(
 	} # for i in days
 	if( isVerbose ) message("") # LineFeed
 	# central record in each window
-	resDf$iCentralRec <- ((startDays.V.i-1L)+WinSizeDays.i/2)*nRecInDay.i -1L	# assuming equidistant records
-	# -1L to be conform to Gittas code
+	resDf$iCentralRec <- ((startDays.V.i-1L)+WinSizeDays.i/2)*nRecInDay.i +1L	# assuming equidistant records
+	# +1L to be conform to Gittas code
 	# last window might be shorter, take the average between start record and end of all records
 	resDf$iCentralRec[nrow(resDf)] <- ((resDf$Start[nrow(resDf)]-1L)*nRecInDay.i + nrow(ds))/2	    
 	# remove those rows where there was not enough data
