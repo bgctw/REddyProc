@@ -264,6 +264,7 @@ partGLFitLRCWindows=function(
 			,E0Win = E0Smooth
 			,controlGLPart=controlGLPart	
 	)
+recover()	
 	E0Smooth$RRef <- resRef15$summary$RRef
 	#
 	##seealso<< \code{\link{partGLFitLRCOneWindow}}
@@ -518,7 +519,7 @@ partGLSmoothTempSens <- function(
 ){
 	#return(E0Win)
 	#E0Win$E0[1] <- NA
-	E0Win$E0[c(FALSE,(diff(E0Win$E0) == 0))] <- NA	# TODO return NA in the first place
+	E0Win$E0[c(FALSE,(diff(E0Win$E0) == 0))] <- NA	# TODO return NA in the first place where the previous window was used
 	isFiniteE0 <- is.finite(E0Win$E0)
 	E0WinFinite <- E0Win[ isFiniteE0, ]
 	output <- capture.output(
@@ -531,15 +532,6 @@ partGLSmoothTempSens <- function(
 	nugget[isFiniteE0] <- gpFit$nugget
 	E0Win$E0 <- pred1$fit
 	E0Win$sdE0 <- pred1$se.fit + sqrt(nugget) 
-			
-	E0Win$E0[isFiniteE0] <- gpFit$cv[,1]
-	E0Win$sdE0[isFiniteE0] <- sqrt(gpFit$cv[,2])
-	if( !all(isFiniteE0) ){
-		nuggetNewObs <- quantile(gpFit$nugget, 0.9)
-		pred <- predict(gpFit, matrix(E0Win$iCentralRec[!isFiniteE0], ncol=1), se.fit=TRUE)
-		E0Win$E0[!isFiniteE0] <- pred$fit
-		E0Win$sdE0[!isFiniteE0] <- pred$se.fit + sqrt(nuggetNewObs) 
-	}
 	##value<< dataframe E0Win with updated columns E0 and sdE0
 	return(E0Win)
 }
@@ -551,6 +543,7 @@ partGLSmoothTempSens <- function(
 	E0Win$day <- (E0Win$iCentralRec-1) / 48 +1
 	E0WinFinite$day <- (E0WinFinite$iCentralRec-1) / 48 +1
 	plot( E0WinFinite$E0 ~ E0WinFinite$day )
+	plot( E0Win$E0Fit ~ E0Win$day )
 	points( E0Win$E0 ~ E0Win$day, col="blue", type="b", lty="dotted" )
 	#points( E0Win$E0 ~ E0Win$day, col="blue" )
 	#arrows( E0Win$day, E0Win$E0Fit, y1=E0Win$E0, col="grey", length=0.1)
