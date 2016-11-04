@@ -632,24 +632,98 @@ test_that("partGL_RHLightResponseGrad matches numerical estimates",{
 			#plot( res$NEP[,4L] ~ res2[,4L])
 		})
 
-test_that("estimating temperature sensitivity outputs are in accepted range",{
+test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
 			dss <- dss[ order(dss$Temp), ]
-			res <- partGLEstimateTempSensInBounds(dss$NEE_f, dss$Temp+273.15)
-			expect_true( res$E_0 >= 50 && res$E_0 < 400 )
+			dss$NEE <- dss$NEE_f
+			resE0 <- partGLEstimateTempSensInBoundsE0Only(dss$NEE_f, dss$Temp+273.15)
+			expect_true( resE0$E0 >= 50 && resE0$E0 < 400 )
+			medianResp <- median(dss$NEE_f,na.rm=TRUE)
+			expect_true( abs(resE0$RRefFit - medianResp)/medianResp < 0.2 )
+			E0Win <- as.data.frame(resE0)
+			res <- partGLFitNightRespRefOneWindow( dss, data.frame(iWindow=1L), E0Win=E0Win)
+			RRef <- res[[2]]$RRef[1]
+			expect_true( RRef >= 0)
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
-				lines( fLloydTaylor(res$R_ref, res$E_0, dss$Temp+273.15, T_ref.n=273.15+15) ~ dss$Temp)#
+				lines( fLloydTaylor(RRef, resE0$E0, dss$Temp+273.15, T_ref.n=273.15+15) ~ dss$Temp)#
 			}
 		})
 
-test_that("estimating temperature sensitivity on record with all Temperature below minus one",{
+test_that("estimating temperature sensitivity on record with some freezing temperatures",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
+			dss$NEE <- dss$NEE_f
 			dss <- dss[ order(dss$Temp), ]
-			dss$Temp <- dss$Temp - (max(dss$Temp)+1)  
-			res <- partGLEstimateTempSensInBounds(dss$NEE_f, dss$Temp+273.15)
-			expect_true( res$E_0 >= 50 && res$E_0 < 400 )
-			expect_true( res$R_ref> mean(dss$NEE_f,na.rm=TRUE) )
+			dss$Temp <- dss$Temp - dss$Temp[ nrow(dss)-14L ] -1	# only the last 13 records will have temperature above -1degC
+			isValid <- isValidNightRecord(dss)
+			expect_true(sum(isValid) >= 13 && sum(isValidNightRecord(dss)) < nrow(dss) )
+			#
+			resE0 <- partGLEstimateTempSensInBoundsE0Only(dss$NEE_f[isValid], dss$Temp[isValid]+273.15)
+			expect_true( resE0$E0 >= 50 && resE0$E0 <= 400 )
+			medianResp <- median(dss$NEE_f[isValid],na.rm=TRUE)
+			expect_true( abs(resE0$RRefFit - medianResp)/medianResp < 0.2 )
+			E0Win <- as.data.frame(resE0)
+			res <- partGLFitNightRespRefOneWindow( dss, data.frame(iWindow=1L), E0Win=E0Win)
+			RRef <- res[[2]]$RRef[1]
+			expect_true( RRef >= 0 )
+			.tmp.plot <- function(){
+				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
+				points( NEE_f ~ Temp, dss[isValid,], col="red")
+				lines( fLloydTaylor(RRef, resE0$E0, dss$Temp+273.15, T_ref.n=273.15+15) ~ dss$Temp)#
+			}
+		})
+
+test_that("applyWindows",{
+			nRec <- nrow(dsNEE)
+			nRecInDay <- 10L
+			ds <- within(dsNEE, {
+						iRec <-1:nRec
+						iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 			# specifying the day for each record assuming equidistand records
+					})
+			fReportTime <- function(dss,winInfo, prevRes){
+				nRecS <- nrow(dss)
+				list( res1=dss$iRec[1], res2=data.frame(
+								startRec=dss$iRec[1]	
+								,endRec=dss$iRec[nRecS]
+								,startDay=dss$iDayOfRec[1]
+								,endDay=dss$iDayOfRec[nRecS]
+						)
+						,prevRes=within(prevRes, sum <- sum +1L)
+				)
+			}
+			prevRes <- list(sum=0)
+			fReportTime(ds,0,prevRes)
+			resApply <- applyWindows( ds, fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			#resApply <- applyWindows( ds[1:41,], fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			res <- resApply[[2L]]
+			nRecRes <- nrow(res)
+			expect_equal( res$dayStart, res$startDay )	
+			expect_equal( res$dayEnd, res$endDay )	
+			expect_equal( res$iRecStart, res$startRec )	
+			expect_equal( res$iRecEnd, res$endRec )	
+			#
+			expect_true( all(diff(res$startDay[-1])==2L))	# shifted starting day
+			# day boundary before startRec
+			expect_true( all((ds$iDayOfRec[res$startRec[-1]] - ds$iDayOfRec[res$startRec[-1]-1])==1L))   
+			# day boundary after endRec
+			expect_true( all((ds$iDayOfRec[res$startRec[-nRecRes]]+1 - ds$iDayOfRec[res$startRec[-nRecRes]])==1L))
+			# prevRes accumulated
+			expect_equal( resApply[[3]]$sum, nrow(res) )
+		})
+
+
+
+test_that("estimating temperature sensitivity windows outputs are in accepted range",{
+			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:12, ]
+			dss$NEE <- dss$NEE_f
+			dss <- dss[ order(dss$Temp), ]
+			res <- applyWindows(dss, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
+					, winSizeInDays=12L
+			#,controlGLPart=controlGLPart	
+			)
+			#res <- partGLEstimateTempSensInBounds(dss$NEE_f, dss$Temp+273.15)
+			expect_true( res$summary$E0 >= 50 && res$summary$E0 <= 400 )
+			expect_true( res$summary$RRefFit > 0 )
 		})
 
 
@@ -733,44 +807,6 @@ test_that("partGLFitLRC",{
 		})
 
 
-test_that("applyWindows",{
-			nRec <- nrow(dsNEE)
-			nRecInDay <- 10L
-			ds <- within(dsNEE, {
-						iRec <-1:nRec
-						iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 			# specifying the day for each record assuming equidistand records
-					})
-			fReportTime <- function(dss,winInfo, prevRes){
-				nRecS <- nrow(dss)
-				list( res1=dss$iRec[1], res2=data.frame(
-									startRec=dss$iRec[1]	
-									,endRec=dss$iRec[nRecS]
-									,startDay=dss$iDayOfRec[1]
-									,endDay=dss$iDayOfRec[nRecS]
-					)
-					,prevRes=within(prevRes, sum <- sum +1L)
-				)
-			}
-			prevRes <- list(sum=0)
-			fReportTime(ds,0,prevRes)
-			resApply <- applyWindows( ds, fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
-			#resApply <- applyWindows( ds[1:41,], fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
-			res <- resApply[[2L]]
-			nRecRes <- nrow(res)
-			expect_equal( res$dayStart, res$startDay )	
-			expect_equal( res$dayEnd, res$endDay )	
-			expect_equal( res$iRecStart, res$startRec )	
-			expect_equal( res$iRecEnd, res$endRec )	
-			#
-			expect_true( all(diff(res$startDay[-1])==2L))	# shifted starting day
-			# day boundary before startRec
-			expect_true( all((ds$iDayOfRec[res$startRec[-1]] - ds$iDayOfRec[res$startRec[-1]-1])==1L))   
-			# day boundary after endRec
-			expect_true( all((ds$iDayOfRec[res$startRec[-nRecRes]]+1 - ds$iDayOfRec[res$startRec[-nRecRes]])==1L))
-			# prevRes accumulated
-			expect_equal( resApply[[3]]$sum, nrow(res) )
-		})
-		
 test_that("partGLFitLRCWindows outputs are in accepted range",{
 			ds <- with(dsNEE, data.frame(NEE=NEE_f, Temp=Temp, VPD=VPD_f, Rg=ifelse( Rg_f >= 0, Rg_f, 0 )
 			, sdNEE=NEE_fsd, isDay=isDay, isNight=isNight))
@@ -787,7 +823,6 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 				}
 				# regression result for resLRCEx1
 				dput(resParms0)
-					
 			}
 			# check the conditions of Lasslop10 Table A1
 			resSummary <- resFits$summary
@@ -801,8 +836,6 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			expect_true( !all(is.na(resSummary$R_ref_SD)))
 			expect_true( all(resSummary$iMeanRec < nrow(ds)) )
 			expect_true( all(resSummary$iCentralRec < nrow(ds)) )
-			#dput(resFits)
-			
 			.tmp.inspectYear <- function(){
 				# dsYear generated from inside sPartitionGL
 				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) })

@@ -92,63 +92,18 @@ partitionNEEGL=function(
 			, isDay=isDay
 			, isNight=isNight
 	) 
-	#if( exists("debugREddyProc") && isTRUE(debugREddyProc) ){ # do not interfere with current functioning version
-	#}
-		##seealso<< \code{\link{partGLFitNightWindows}}
-		if( isVerbose ) message("  Estimating temperature sensitivity from night time NEE ", appendLF = FALSE)
-		resNight <- applyWindows(dsR, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
-				, winSizeInDays=12L
-				,isVerbose=isVerbose		
-				,nRecInDay=nRecInDay
-				#
-				,controlGLPart=controlGLPart	
-						)
-		# remember E0 and sdE0 before overidden by smoothing						
-		resNight$summary$E0Fit <- resNight$summary$E0
-		resNight$summary$sdE0Fit <- resNight$summary$sdE0
-		E0Smooth <- if( isTRUE(controlGLPart$smoothTempSensEstimateTime) ){
-			partGLSmoothTempSens( resNight$summary )
-		}else resNight$summary
-		if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperatre sensitivity from night time NEE ", appendLF = FALSE)
-		resRef15 <- applyWindows(dsR, partGLFitNightRespRefOneWindow
-				, winSizeInDays=12L
-				,isVerbose=isVerbose		
-				,nRecInDay=nRecInDay
-				#
-				,E0Win = E0Smooth
-				,controlGLPart=controlGLPart	
-		)
-		E0Smooth$RRef <- resRef15$summary$RRef
-		#
-		##seealso<< \code{\link{partGLFitLRCOneWindow}}
-		if( isVerbose ) message("  Estimating light response curve parameters from day time NEE ", appendLF = FALSE)
-		resLRC <- applyWindows(dsR, partGLFitLRCOneWindow, prevRes<-list(lastGoodParameters=rep(NA_real_, 5L))
-				, winSizeInDays=4L
-				,isVerbose=isVerbose		
-				,nRecInDay=nRecInDay
-				#
-				,E0Win = E0Smooth
-				,controlGLPart=controlGLPart	
-		)
-		resParms <- resLRC
-		resParms$summary$R_ref_night <- E0Smooth$RRef
-		resParms$summary$iMeanRec <- resParms$summary$iRecStart-1L + resParms$summary$iMeanRec
-		# omit records where NULL was returned
-		iWinNoFit <- which( is.na(resParms$summary$parms_out_range) )	
-		if( length(iWinNoFit) ){
-			resParms$summary <- resParms$summary[-iWinNoFit, ]
-			resParms$resOptList <- resParms$resOptList[-iWinNoFit] 
-		}
-		#resLRCOld$summary
-		#recover()
+	##seealso<< \code{\link{partGLFitLRCWindows}}
+	resParms <- partGLFitLRCWindows( dsR
+			, nRecInDay=nRecInDay
+			, controlGLPart=controlGLPart
+	)
 	if( FALSE ){
-		resLRCOld <- tmp <- partGLFitLRCWindows( dsR
+		resLRCOld <- tmp <- .depr.partGLFitLRCWindows( dsR
 				, nRecInDay=nRecInDay
 				, controlGLPart.l=controlGLPart
 		)
 		resParms <- resLRCOld
 	}
-	#dput(resLRC)
 	# append parameter fits to the central record of day window
 	#iGood <- which(resLRC$summary$parms_out_range == 0L)
 	# resLRC provides parameters only for a subset of rows. For each row in the original data.frame
@@ -202,7 +157,6 @@ partGLControl <- function(
 			## If relative improvement of reducing residual sum of squares between predictions and 
 			## observations is less than this criterion, assume convergence.
 			## Decrease to get more precise parameter estimates, Increase for speedup.
-		#TODO: increase default of nBoot after testing, option to use Hessian
 		,nBootUncertainty=30L			##<< number of bootstrap samples for estimating uncertainty. 
 			## Set to zero to derive uncertainty from curvature of a single fit
 		,minNRecInDayWindow = 12L 		##<< Minimum number of data points for regression 
@@ -219,12 +173,17 @@ partGLControl <- function(
 			## For prediction, the gap-filled value is used always, to produce predictions also for gaps.
 		,isBoundLowerNEEUncertainty=TRUE	##<< set to FALSE to avoid adjustment of very low uncertainties before
 			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
+		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
+			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 	){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
 	## For highest compatibility to Lasslop10 use 
-	## \code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE }
+	## \code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE
+	##		, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE
+	##		, smoothTempSensEstimateAcrossTime=FALSE
+	##      }
 	ctrl <- list(  
 			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
 			,nBootUncertainty=nBootUncertainty
@@ -234,6 +193,7 @@ partGLControl <- function(
 			,isSdPredComputed=isSdPredComputed
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
+			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -243,6 +203,151 @@ partGLControl <- function(
 attr(partGLControl,"ex") <- function(){
 	partGLControl(nBootUncertainty=40L)
 }
+
+
+partGLFitLRCWindows=function(
+		### Estimate temperature sensitivity and parameters of Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
+		ds					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
+		,WinSizeDays.i=4L	##<< Window size in days for daytime fits
+		,WinSizeNight.i=3L*WinSizeDays.i	##<< Window size in days for nighttime fits  
+		,DayStep.i=floor(WinSizeDays.i / 2L)##<< step in days for shifting the windows
+		,isVerbose=TRUE		##<< set to FALSE to suppress messages
+		,nRecInDay=48L		##<< number of records within one day (for half-hourly data its 48)
+		,controlGLPart=partGLControl()		##<< list of further default parameters
+){
+	##seealso<< \code{\link{partGLFitNightTempSensOneWindow}}
+	if( isVerbose ) message("  Estimating temperature sensitivity from night time NEE ", appendLF = FALSE)
+	resNight <- applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
+			, winSizeInDays=12L
+			,isVerbose=isVerbose		
+			,nRecInDay=nRecInDay
+			#
+			,controlGLPart=controlGLPart	
+	)
+	#
+	##seealso<< \code{\link{partGLSmoothTempSens}}
+	# remember E0 and sdE0 before overidden by smoothing						
+	resNight$summary$E0Fit <- resNight$summary$E0
+	resNight$summary$sdE0Fit <- resNight$summary$sdE0
+	E0Smooth <- if( isTRUE(controlGLPart$smoothTempSensEstimateAcrossTime) ){
+				partGLSmoothTempSens( resNight$summary )
+			}else resNight$summary
+	#
+	##seealso<< \code{\link{partGLFitNightRespRefOneWindow}}
+	if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperatre sensitivity from night time NEE ", appendLF = FALSE)
+	resRef15 <- applyWindows(ds, partGLFitNightRespRefOneWindow
+			, winSizeInDays=12L
+			,isVerbose=isVerbose		
+			,nRecInDay=nRecInDay
+			#
+			,E0Win = E0Smooth
+			,controlGLPart=controlGLPart	
+	)
+	E0Smooth$RRef <- resRef15$summary$RRef
+	#
+	##seealso<< \code{\link{partGLFitLRCOneWindow}}
+	if( isVerbose ) message("  Estimating light response curve parameters from day time NEE ", appendLF = FALSE)
+	resLRC <- applyWindows(ds, partGLFitLRCOneWindow, prevRes<-list(lastGoodParameters=rep(NA_real_, 5L))
+			, winSizeInDays=4L
+			,isVerbose=isVerbose		
+			,nRecInDay=nRecInDay
+			#
+			,E0Win = E0Smooth
+			,controlGLPart=controlGLPart	
+	)
+	resParms <- resLRC
+	resParms$summary$R_ref_night <- E0Smooth$RRef
+	resParms$summary$iMeanRec <- resParms$summary$iRecStart-1L + resParms$summary$iMeanRec
+	# omit records where NULL was returned
+	iWinNoFit <- which( is.na(resParms$summary$parms_out_range) )	
+	if( length(iWinNoFit) ){
+		resParms$summary <- resParms$summary[-iWinNoFit, ]
+		resParms$resOptList <- resParms$resOptList[-iWinNoFit] 
+	}
+	resParms
+}
+
+applyWindows <- function(
+		### apply a function to several windows of a data.frame
+		ds						##<< dataframe to iterate
+		,FUN					##<< function to apply to subsets of the data.frame
+		## taking a subset of the data.frame as first argument
+		## the second: a one-row data.frame with window information (iWindow, dayStart, dayEnd, iRecStart, iRecEnd, iCentralRec)
+		## the third a list that can transport values from previous fits, i.e. the third item of its return value 
+		## with first item a list (objects that cannot be rowbound) 
+		## second item a single row data.frame (summary that can be row-bound)
+		## third item a list that is will be provided to the call of this function on the next window as the second argument
+		,prevRes=list()						##<< initial values for the list that is carried between windows
+		,winSizeInDays=winSizeRefInDays		##<< Window size in days   
+		,winSizeRefInDays=4L				##<< Window size in days for reference window (e.g. day-Window for night time)
+		,strideInDays=floor(winSizeRefInDays/2L)	##<< step in days for shifting the window, for alligning usually a factor of winSizeRef
+		,isVerbose=TRUE			##<< set to FALSE to suppress messages
+		,nRecInDay=48L			##<< number of records within one day (for half-hourly data its 48)
+		,...	##<< further arguments to FUN
+){
+	##details<<
+	## Assumes equidistant rows with nRecInDay records forming one day and reporting full days
+	## i.e. all of the nRecInDay records are in the first day.
+	##details<<
+	## In order to have a common reference winSizeRefInDays is given so that results by a different window
+	## size correspond to each window of shifting a window of winSizeRefInDays
+	## Each window is anchord so that the center equals the center of the reference window.
+	## This becomes important when selecting records at the edges of the series.
+	nRec <- nrow(ds) 
+	nDay <- ceiling( nRec / nRecInDay) 
+	nDayLastWindow <- nDay - (winSizeRefInDays/2)			# center of the reference window still in records  
+	#iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 		# specifying the day for each record assuming equidistand records
+	startDaysRef <- seq(1, nDayLastWindow, strideInDays)	# starting days for each reference window
+	iCentralRec <- ((startDaysRef-1L)+winSizeRefInDays/2)*nRecInDay+1L	# assuming equidistant records
+	nWindow <- length(startDaysRef)
+	# precomputing the starting and end records for all periods in vectorized way
+	dayStart0 <- as.integer(startDaysRef + winSizeRefInDays/2 - winSizeInDays/2)	# may become negative, negative needed for computation of dayEnd 
+	dayStart <- pmax(1L, dayStart0)
+	dayEnd <- pmin(nDay, dayStart0-1L+winSizeInDays)
+	iRecStart0 <- iCentralRec -winSizeInDays/2*nRecInDay	# may become negative, negative needed for computation of iRecEnd
+	iRecStart <- pmax(1L, iRecStart0 )
+	iRecEnd <- pmin(nRec, iCentralRec-1L +winSizeInDays/2*nRecInDay ) 
+	# central record in each window, only last record, refers to reference window of size winSizeRefInDays 
+	dsRec <- data.frame(
+			iWindow=1:nWindow
+			,dayStart = dayStart
+			,dayEnd=dayEnd
+			,iRecStart=iRecStart
+			,iRecEnd=iRecEnd
+			,iCentralRec=iCentralRec
+	)
+	res1 <- vector("list",nWindow)
+	res2List <- vector("list",nWindow)	# each will hold a data.frame to be row-bound afterwards (dont know the columns yet)
+	for( iWindow in 1:nWindow){
+		if( isVerbose ) message(",",startDaysRef[iWindow], appendLF = FALSE)
+		startRec <- iRecStart[iWindow]
+		endRec <- iRecEnd[iWindow]
+		# range( which(iDayOfRec >= startDay & iDayOfRec <= endDay))	# slower but check for startRec and endRec
+		dsWin <- ds[startRec:endRec,]
+		resFun <- FUN(dsWin, dsRec[iWindow,], prevRes, ...)
+		if( length(resFun) ){
+			res1[[iWindow]] <- resFun[[1]]
+			res2List[[iWindow]] <- resFun[[2]]
+			prevRes <- resFun[[3]]
+		}
+	}
+	if( isVerbose ) message("") # LineFeed
+	#tmp <- res2List
+	#res2List <- tmp
+	# rbind res2List, but keep NULL results, therefore add dummy dataframe, and delete dummy column afterward
+	res2List[ sapply(res2List, is.null) ] <- list(data.frame(..DUMMY=1))
+	res2 <- rbind.fill(res2List)	# maybe later upgrade to dplyr
+	res2$..DUMMY <- NULL
+	dsSummary <- cbind(dsRec, res2)
+	##value<< a list with components that correspond to the three result components of FUN
+	return(list(
+					resOptList=res1			##<< a list with restults of length nrow(ds)
+					,summary=dsSummary	##<< a data.frame with nrow(ds) rows, also including window information (iWindow, dayStart, dayEnd, iRecStart, iRecEnd, iCentralRec)
+					, prevRes=prevRes)	##<< last result of the values carried over between windows
+	)
+}
+
+
 
 
 partGLFitNightTempSensOneWindow=function(
@@ -273,8 +378,8 @@ partGLFitNightTempSensOneWindow=function(
 		, prevE0=prevRes$prevE0)
 	return(list(
 					resNightFit
-					,data.frame(E0=resNightFit$E_0, sdE0=resNightFit$E_0_SD, TRefFit=resNightFit$TRefFit, RRefFit=resNightFit$RRefFit)
-					,list(prevE0=resNightFit$E_0)
+					,data.frame(E0=resNightFit$E0, sdE0=resNightFit$sdE0, TRefFit=resNightFit$TRefFit, RRefFit=resNightFit$RRefFit)
+					,list(prevE0=resNightFit$E0)
 		))
 }
 
@@ -350,8 +455,8 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	}
 	##value<< list with entries
 	return(list(
-					E_0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
-					,E_0_SD=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
+					E0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
+					,sdE0=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
 					,TRefFit=TRefFit		##<< numeric scalar reference temperature used in the E0 fit
 					,RRefFit=RRefFit		##<< numeric scalar respiration at TRefFit
 	))
@@ -367,11 +472,41 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 #	(R_ref_ <- coef(resFit15)[1])
 }
 
+.tmp.testGPFitResp <- function(){
+	# from recover after fitting night time E0
+	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
+	plot(fit3)
+}
+
+.tmp.testGPFit <- function(){
+	x = seq(0, 1, length.out = 20)
+	z = x + rnorm(length(x), sd = 0.1 * x)
+	# single nugget estimate (homoscedastic)
+	fit1 = mlegp(x, z, nugget = mean((0.1 * x)^2))	
+	plot(fit1)
+	# used actual heteroscedastic variance as start estimate scaling factor
+	fit2 = mlegp(x, z, nugget = (0.1 * x)^2)	
+	plot(fit2)
+	# prescribe fixed heteroscedastic noise
+	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
+	plot(fit3)
+}
+
+partGLSmoothTempSens <- function(
+		### Smoothes time development of E0
+		E0Win				##<< data.frame with columns E0 and sdE0, RRefFit, and TRefFit with one row for each window
+){
+#recover()
+	# TODO implement GP fit and prediction
+	##value<< dataframe E0Win with updated columns E0 and sdE0
+	return(E0Win)
+}
+
 partGLFitNightRespRefOneWindow=function(
-		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
-		dss					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
+		### Estimate Reference temperature from nicht-time and given temperature sensitivity E0  
+		dss					##<< data.frame with numeric columns NEE, isNight, Temp, Rg
 		,winInfo			##<< one-row data.frame with window information, including iWindow 
-		,prevRes			##<< component prevRes from previous result, here with item prevE0
+		,prevRes=list()		##<< component prevRes from previous result, here not used.
 		,E0Win				##<< data.frame with columns E0 and sdE0, RRefFit, and TRefFit with one row for each window
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
 		,nRecInDay=48L	##<< number of records within one day (for half-hourly data its 48)
@@ -407,212 +542,6 @@ partGLFitNightRespRefOneWindow=function(
 					,data.frame(RRef=R_refBounded)
 					,prevRes
 			))
-}
-
-
-
-
-
-
-
-
-partGLFitNightWindows=function(
-		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
-		ds					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
-		,WinSizeDays.i=4L	##<< Window size in days for daytime fits
-		,WinSizeNight.i=3L*WinSizeDays.i	##<< Window size in days for nighttime fits  
-		,DayStep.i=floor(WinSizeDays.i / 2L)##<< step in days for shifting the windows
-		,isVerbose=TRUE		##<< set to FALSE to suppress messages
-		,nRecInDay.i=48L	##<< number of records within one day (for half-hourly data its 48)
-		,controlGLPart.l=partGLControl()	##<< list of further default parameters
-){
-	##author<<
-	## MM, TW
-	##seealso<< \code{\link{partitionNEEGL}}
-	##description<<
-	## Estimation of respiration at reference temperature (R_Ref) and temperature (E_0) for successive periods, i.e. windows.
-	'Estimation of the reference respiration Rref of fLloydTaylor() for successive periods'
-	requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
-	iMissing <- which( is.na(match( requiredCols, names(ds) )))
-	if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	#
-	##details<<
-	## All the vectors must have the same length and consist of entire days, with each day having the same number of records
-	nRec <- length(ds$NEE) 
-	DayCounter.V.i <- ((c(1:nRec)-1L) %/% nRecInDay.i)+1L 	# specifying the day for each record assuming equidistand records
-	startDays.V.i <- seq(1, max(DayCounter.V.i), DayStep.i)
-	nWindow = length(startDays.V.i)
-	# setup a data.frame for the results
-	##value<< a list with first entry a list with all optimization result objects, 
-	## and a second entry a summary data.frame with a row for each window with columns
-	resDf <- data.frame(
-			Start=startDays.V.i	##<< the starting day of the day-window
-			, Num=NA_integer_		##<< the number of records flux records in the window
-			, E_0=NA_real_			##<< temperature sensitivty
-			, E_0_SD=NA_real_		##<< standard deviation of temperature sensitivity
-			#,isGoodParameterSet=FALSE	##<< TRUE if the fit was successful
-	)
-	resOptList <- vector("list", nWindow)
-	E_0.n <- R_refNight.n <- NA		# there are no previous estimates yet
-	CountRegr.i <- 0L
-	#iDay<-1L
-	for (iDay in 1:nWindow) {   #not sure is correct to me should be
-		DayStart.i <- startDays.V.i[iDay]
-		#DayMiddle.i <- DayStart.i-1L + WinSizeDays.i/2
-		if( isVerbose ) message(",",DayStart.i, appendLF = FALSE)
-		DayStart.Night.i <- DayStart.i + WinSizeDays.i/2 - WinSizeNight.i/2 
-		DayEnd.Night.i <- DayStart.Night.i-1L+WinSizeNight.i
-		#c(DayStart.i, DayEnd.i, DayStart.Night.i, DayEnd.Night.i)
-		SubsetValidNight.b <- DayCounter.V.i >= DayStart.Night.i & DayCounter.V.i <= DayEnd.Night.i & 
-				!is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE) 
-		# check that there are enough night and enough day-values for fitting, else continue with next window
-		if( sum(SubsetValidNight.b) < controlGLPart.l$minNRecInDayWindow ) next
-		dsNight <- ds[SubsetValidNight.b,]
-		CountRegr.i <- CountRegr.i+1L
-		##seealso<< \code{\link{partGLEstimateTempSensInBounds}}
-		#TODO here only E0 is of interest, do not need to reestimate RRef
-		resNightFit <- partGLEstimateTempSensInBounds(dsNight$NEE, fConvertCtoK(dsNight$Temp), prevE0=E_0.n, prevR_ref=R_refNight.n)
-		E_0.n <- resNightFit$E_0
-		# if no temperature - respiration relationship could be found, indicate no-fit
-		if( is.na(E_0.n) )  next        
-		# record valid fits results
-		resOptList[[iDay]] <- resNightFit
-		resDf[iDay, ] <- data.frame(
-				Start=DayStart.i
-				,Num=nrow(dsNight)
-				, E_0=E_0.n
-				, E_0_SD= resNightFit$E_0_SD   
-		)
-	} # for i in days
-	if( isVerbose ) message("") # LineFeed
-	list(
-			resOptList = ansOpt
-			,summary = ansDf
-	)
-}
-
-.tmp.testGPFitResp <- function(){
-	# from recover after fitting night time E0
-	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
-	plot(fit3)
-}
-
-.tmp.testGPFit <- function(){
-	x = seq(0, 1, length.out = 20)
-	z = x + rnorm(length(x), sd = 0.1 * x)
-	# single nugget estimate (homoscedastic)
-	fit1 = mlegp(x, z, nugget = mean((0.1 * x)^2))	
-	plot(fit1)
-	# used actual heteroscedastic variance as start estimate scaling factor
-	fit2 = mlegp(x, z, nugget = (0.1 * x)^2)	
-	plot(fit2)
-	# prescribe fixed heteroscedastic noise
-	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
-	plot(fit3)
-}
-
-partGLSmoothTempSens <- function(
-		### Smoothes time development of E0
-		E0		##<< numeric vector of temperature sensitivities for each window, may contain gaps as NA
-		,sdE0	##<< numcric vector of standard deviation of E0 estimate
-){
-	# TODO implement GP fit and prediction
-	##value<< a dataframe with updated E0 and sdE0
-	ans <- data.frame(
-			E0 = E0
-			,sdE0 = sdE0
-			)
-	return(ans)
-}
-
-partGLEstimateReferenceRespirationForFixedTempSens <- function(
-		### Estimate Reference temperature from night time data using fixed temperature sensitivity E0
-		E0	##<< numeric vector of 
-		,TRefInKelvin=2
-){
-	# TODO factor now duplicated code for application to window 
-	##value<< numeric vector of respiration at reference temperature
-	stop("not yet implemented")
-}
-
-applyWindows <- function(
-		### apply a function to several windows of a data.frame
-		ds						##<< dataframe to iterate
-		,FUN					##<< function to apply to subsets of the data.frame
-			## taking a subset of the data.frame as first argument
-			## the second: a one-row data.frame with window information (iWindow, dayStart, dayEnd, iRecStart, iRecEnd, iCentralRec)
-			## the third a list that can transport values from previous fits, i.e. the third item of its return value 
-			## with first item a list (objects that cannot be rowbound) 
-			## second item a single row data.frame (summary that can be row-bound)
-			## third item a list that is will be provided to the call of this function on the next window as the second argument
-		,prevRes=list()						##<< initial values for the list that is carried between windows
-		,winSizeInDays=winSizeRefInDays		##<< Window size in days   
-		,winSizeRefInDays=4L				##<< Window size in days for reference window (e.g. day-Window for night time)
-		,strideInDays=floor(winSizeRefInDays/2L)	##<< step in days for shifting the window, for alligning usually a factor of winSizeRef
-		,isVerbose=TRUE			##<< set to FALSE to suppress messages
-		,nRecInDay=48L			##<< number of records within one day (for half-hourly data its 48)
-		,...	##<< further arguments to FUN
-){
-	##details<<
-	## Assumes equidistant rows with nRecInDay records forming one day and reporting full days
-	## i.e. all of the nRecInDay records are in the first day.
-	##details<<
-	## In order to have a common reference winSizeRefInDays is given so that results by a different window
-	## size correspond to each window of shifting a window of winSizeRefInDays
-	## Each window is anchord so that the center equals the center of the reference window.
-	## This becomes important when selecting records at the edges of the series.
-	nRec <- nrow(ds) 
-	nDay <- ceiling( nRec / nRecInDay) 
-	nDayLastWindow <- nDay - (winSizeRefInDays/2)			# center of the reference window still in records  
-	#iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 		# specifying the day for each record assuming equidistand records
-	startDaysRef <- seq(1, nDayLastWindow, strideInDays)	# starting days for each reference window
-	iCentralRec <- ((startDaysRef-1L)+winSizeRefInDays/2)*nRecInDay+1L	# assuming equidistant records
-	nWindow <- length(startDaysRef)
-	# precomputing the starting and end records for all periods in vectorized way
-	dayStart0 <- as.integer(startDaysRef + winSizeRefInDays/2 - winSizeInDays/2)	# may become negative, negative needed for computation of dayEnd 
-	dayStart <- pmax(1L, dayStart0)
-	dayEnd <- pmin(nDay, dayStart0-1L+winSizeInDays)
-	iRecStart0 <- iCentralRec -winSizeInDays/2*nRecInDay	# may become negative, negative needed for computation of iRecEnd
-	iRecStart <- pmax(1L, iRecStart0 )
-	iRecEnd <- pmin(nRec, iCentralRec-1L +winSizeInDays/2*nRecInDay ) 
-	# central record in each window, only last record, refers to reference window of size winSizeRefInDays 
-	dsRec <- data.frame(
-			   iWindow=1:nWindow
-			   ,dayStart = dayStart
-	   		   ,dayEnd=dayEnd
-	   		   ,iRecStart=iRecStart
-	   		   ,iRecEnd=iRecEnd
-	   		   ,iCentralRec=iCentralRec
-			)
-	res1 <- vector("list",nWindow)
-	res2List <- vector("list",nWindow)	# each will hold a data.frame to be row-bound afterwards (dont know the columns yet)
-	for( iWindow in 1:nWindow){
-		if( isVerbose ) message(",",startDaysRef[iWindow], appendLF = FALSE)
-		startRec <- iRecStart[iWindow]
-		endRec <- iRecEnd[iWindow]
-		# range( which(iDayOfRec >= startDay & iDayOfRec <= endDay))	# slower but check for startRec and endRec
-		dsWin <- ds[startRec:endRec,]
-		resFun <- FUN(dsWin, dsRec[iWindow,], prevRes, ...)
-		if( length(resFun) ){
-			res1[[iWindow]] <- resFun[[1]]
-			res2List[[iWindow]] <- resFun[[2]]
-			prevRes <- resFun[[3]]
-		}
-	}
-	if( isVerbose ) message("") # LineFeed
-	#tmp <- res2List
-	#res2List <- tmp
-	# rbind res2List, but keep NULL results, therefore add dummy dataframe, and delete dummy column afterward
-	res2List[ sapply(res2List, is.null) ] <- list(data.frame(..DUMMY=1))
-	res2 <- rbind.fill(res2List)	# maybe later upgrade to dplyr
-	res2$..DUMMY <- NULL
-	dsSummary <- cbind(dsRec, res2)
-	##value<< a list with components that correspond to the three result components of FUN
-	return(list(
-					resOptList=res1			##<< a list with restults of length nrow(ds)
-					,summary=dsSummary	##<< a data.frame with nrow(ds) rows, also including window information (iWindow, dayStart, dayEnd, iRecStart, iRecEnd, iCentralRec)
-					, prevRes=prevRes)	##<< last result of the values carried over between windows
-	)
 }
 
 partGLFitLRCOneWindow=function(
@@ -688,7 +617,6 @@ partGLFitLRCOneWindow=function(
 	)
 	return(ans)
 }
-
 
 
 
