@@ -839,7 +839,7 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			.tmp.inspectYear <- function(){
 				# dsYear generated from inside sPartitionGL
 				dsYear <- local({ load("tmp/dsTestPartitioningLasslop10.RData"); get(ls()[1]) })
-				dsYear2 <- with(dsYear, data.frame(NEE=NEE_f, sdNEE=NEE_fsd, Temp=Temp, VPD=VPD_f, Rg=ifelse( Rg >= 0, Rg, 0 )
+				dsYear2 <- with(dsYear, data.frame(NEE=NEE_f, sdNEE=NEE_fsd, Temp=Tair_f, VPD=VPD_f, Rg=ifelse( Rg >= 0, Rg, 0 )
 								,isDay=!is.na(FP_VARday), isNight=!is.na(FP_VARnight) 				
 						))
 				resY <- resY1 <- partGLFitLRCWindows(dsYear2, nRecInDay=48L, controlGLPart=partGLControl(nBootUncertainty=30L)	)
@@ -847,17 +847,17 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 				resSummary <- resY$summary
 				#resParms <- resY
 				head(resSummary)				
-				plot( R_ref ~ Start, resSummary)
+				plot( R_ref ~ dayStart, resSummary)
 				#points( R_ref ~ Start, resSummary, col="red")
 				#points( R_ref ~ Start, resSummary, col="blue")
-				with(resSummary, segments(Start,R_ref-R_ref_SD,Start, R_ref+R_ref_SD))
-				points( R_ref12 ~ Start, resSummary, pch="+")
-				plot( b ~ Start, resSummary)
-				plot( E_0 ~ Start, resSummary )
+				with(resSummary, segments(dayStart,R_ref-R_ref_SD,dayStart, R_ref+R_ref_SD))
+				points( R_ref_night ~ dayStart, resSummary, pch="+", col="blue")
+				plot( b ~ dayStart, resSummary)
+				plot( E_0 ~ dayStart, resSummary )
 				#
 				iStarts <- intersect(resYL$summary$Start, resY1$summary$Start)
-				sumL <- subset(resYL$summary, Start %in% iStarts)
-				sum1 <- subset(resY1$summary, Start %in% iStarts)
+				sumL <- subset(resYL$summary, dayStart %in% iStarts)
+				sum1 <- subset(resY1$summary, dayStart %in% iStarts)
 				plot(sumL$R_ref ~ sum1$R_ref); abline(0,1)			
 				summary(lm( sumL$R_ref  ~ sum1$R_ref-1 ))
 				plot(sumL$R_ref_SD ~ sum1$R_ref_SD); abline(0,1)			

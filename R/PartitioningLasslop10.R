@@ -221,20 +221,41 @@ partGLFitLRCWindows=function(
 			, winSizeInDays=12L
 			,isVerbose=isVerbose		
 			,nRecInDay=nRecInDay
+			,isNAAllowed=TRUE
 			#
 			,controlGLPart=controlGLPart	
 	)
+	iNoFit <- which( is.na(resNight$summary$E0) )
+	iExtend <- 1
+	winExtendSizes <- c(24L,48L)
+	while( length(iNoFit) && (iExtend <= length(winExtendSizes)) ){
+		if( isVerbose ) message("    increase window size to ",winExtendSizes[iExtend], appendLF = FALSE)
+		resNightExtend <- applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
+				,winSizeInDays=winExtendSizes[iExtend]
+				,isVerbose=isVerbose		
+				,nRecInDay=nRecInDay
+				,isNAAllowed= (iExtend < length(winExtendSizes))
+				#
+				,controlGLPart=controlGLPart	
+		)
+		resNight$resOptList[iNoFit] <- resNightExtend$resOptList[iNoFit]
+		resNight$summary[iNoFit,] <- resNightExtend$summary[iNoFit,]
+		#all(resNight$summary$iCentralRec == resNight24$summary$iCentralRec)
+		iNoFit <- which( is.na(resNight$summary$E0) )
+		iExtend <- iExtend + 1L
+	}
 	#
 	##seealso<< \code{\link{partGLSmoothTempSens}}
 	# remember E0 and sdE0 before overidden by smoothing						
 	resNight$summary$E0Fit <- resNight$summary$E0
 	resNight$summary$sdE0Fit <- resNight$summary$sdE0
 	E0Smooth <- if( isTRUE(controlGLPart$smoothTempSensEstimateAcrossTime) ){
+				if( isVerbose ) message("  Smoothing temperature sensitivity estimates")
 				partGLSmoothTempSens( resNight$summary )
 			}else resNight$summary
 	#
 	##seealso<< \code{\link{partGLFitNightRespRefOneWindow}}
-	if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperatre sensitivity from night time NEE ", appendLF = FALSE)
+	if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperature sensitivity from night time NEE ", appendLF = FALSE)
 	resRef15 <- applyWindows(ds, partGLFitNightRespRefOneWindow
 			, winSizeInDays=12L
 			,isVerbose=isVerbose		
@@ -358,6 +379,7 @@ partGLFitNightTempSensOneWindow=function(
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
 		,nRecInDay.i=48L	##<< number of records within one day (for half-hourly data its 48)
 		,controlGLPart.l=partGLControl()	##<< list of further default parameters
+		,isNAAllowed=FALSE		##<< set to TRUE to allow returning NA instead of bounding
 ){
 	##author<<
 	## TW
@@ -375,7 +397,7 @@ partGLFitNightTempSensOneWindow=function(
 	#resNightFitOld <- partGLEstimateTempSensInBounds(dssNight$NEE, fConvertCtoK(dssNight$Temp)
 	#			, prevE0=prevRes$prevE0)
 	resNightFit <- partGLEstimateTempSensInBoundsE0Only(dssNight$NEE, fConvertCtoK(dssNight$Temp)
-		, prevE0=prevRes$prevE0)
+		, prevE0=prevRes$prevE0, isNAAllowed = isNAAllowed)
 	return(list(
 					resNightFit
 					,data.frame(E0=resNightFit$E0, sdE0=resNightFit$sdE0, TRefFit=resNightFit$TRefFit, RRefFit=resNightFit$RRefFit)
@@ -402,6 +424,7 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 		REco					##<< numeric vector: night time NEE, i.e. ecosytem respiration
 		,temperatureKelvin		##<< numeric vector: temperature in Kelvin of same length as REco
 		,prevE0	= NA			##<< numeric scalar: the previous guess of Temperature Sensitivity
+		,isNAAllowed=FALSE		##<< set to TRUE to allow returning NA instead of bounding
 ){
 	##author<< MM, TW
 	##seealso<< \code{\link{partGLFitLRCWindows}}
@@ -428,13 +451,15 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	if( inherits(resFit, "try-error")){
 		#stop("debug partGLEstimateTempSensInBounds")
 		#plot( REco.V.n	~ temperatureKelvin.V.n )
-		E_0.V.n <- NA
-		E_0_SD.V.n <- NA
+		E0 <- NA
+		sdE0 <- NA
 		RRefFit <- NA 
 	} else {
-		E_0.V.n <- coef(resFit)['E_0']
-		E_0_SD.V.n <- coef(summary(resFit))['E_0',2]
+		E0 <- coef(resFit)['E_0']
+		sdE0 <- coef(summary(resFit))['E_0',2]
 		RRefFit <- coef(resFit)['R_ref']
+		
+#if( E0 < 100 ) recover()
 	}
 	# resFit$convInfo$isConv
 	##details<<
@@ -442,21 +467,27 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	## If no previous estimate is available, report lower bound of 50 or upper bound of 400 respectively.
 	## Standard deviation of E_0 when out of bounds is set 1/2*E0
 	## On out of bounds parameters (or error in fitting) R_Ref is set to the mean of respiration in the dataset, or zero if the mean is negative. 
-	if( is.na(E_0.V.n) || (E_0.V.n < 50) || (E_0.V.n > 400)){
-		E_0Bounded.V.n <- if( is.na(prevE0) ){
-					if( is.na(E_0.V.n)) 100 else min(400,max(50,E_0.V.n))
-				} else {
-					prevE0
-				}
-		E_0_SD.V.n <- 0.5*E_0Bounded.V.n
-		RRefFit <- median(REco)
+	if( is.na(E0) || (E0 < 50) || (E0 > 400)){
+		if( isNAAllowed ){
+			E0Bounded <- NA
+			sdE0 <- NA
+			RRefFit <- NA 
+		} else {
+			E0Bounded <- if( is.na(prevE0) ){
+						if( is.na(E0)) 100 else min(400,max(50,E0))
+					} else {
+						prevE0
+					}
+			sdE0 <- 0.5*E0Bounded
+			RRefFit <- median(REco)
+		}
 	} else {
-		E_0Bounded.V.n <- E_0.V.n
+		E0Bounded <- E0
 	}
 	##value<< list with entries
 	return(list(
-					E0=E_0Bounded.V.n		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
-					,sdE0=E_0_SD.V.n		##<< numeric scalar of standard deviation of E0
+					E0=E0Bounded		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
+					,sdE0=sdE0		##<< numeric scalar of standard deviation of E0
 					,TRefFit=TRefFit		##<< numeric scalar reference temperature used in the E0 fit
 					,RRefFit=RRefFit		##<< numeric scalar respiration at TRefFit
 	))
@@ -472,34 +503,70 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 #	(R_ref_ <- coef(resFit15)[1])
 }
 
-.tmp.testGPFitResp <- function(){
-	# from recover after fitting night time E0
-	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
-	plot(fit3)
+.tmp.plotTempResp <- function(){
+	# from recover at fitting E0
+	temp <- temperatureKelvin - 273.15
+	plot( REco ~ temp )
+	lines( fLloydTaylor(RRefFit, E0, temperatureKelvin, T_ref.n=TRefFit) ~ temp)
 }
 
-.tmp.testGPFit <- function(){
-	x = seq(0, 1, length.out = 20)
-	z = x + rnorm(length(x), sd = 0.1 * x)
-	# single nugget estimate (homoscedastic)
-	fit1 = mlegp(x, z, nugget = mean((0.1 * x)^2))	
-	plot(fit1)
-	# used actual heteroscedastic variance as start estimate scaling factor
-	fit2 = mlegp(x, z, nugget = (0.1 * x)^2)	
-	plot(fit2)
-	# prescribe fixed heteroscedastic noise
-	fit3 = mlegp(x, z, nugget.known = 1, nugget = (0.1 * x)^2)	
-	plot(fit3)
-}
+
 
 partGLSmoothTempSens <- function(
 		### Smoothes time development of E0
 		E0Win				##<< data.frame with columns E0 and sdE0, RRefFit, and TRefFit with one row for each window
 ){
-#recover()
-	# TODO implement GP fit and prediction
+	#return(E0Win)
+	#E0Win$E0[1] <- NA
+	E0Win$E0[c(FALSE,(diff(E0Win$E0) == 0))] <- NA	# TODO return NA in the first place
+	isFiniteE0 <- is.finite(E0Win$E0)
+	E0WinFinite <- E0Win[ isFiniteE0, ]
+	output <- capture.output(
+			gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = E0WinFinite$sdE0^2)
+			#gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = (E0WinFinite$sdE0*2)^2, nugget.known=1L)
+	)
+	pred1 <- predict(gpFit, matrix(E0Win$iCentralRec, ncol=1), se.fit=TRUE)
+	nuggetNewObs <- quantile(gpFit$nugget, 0.9)
+	nugget <- rep(nuggetNewObs, nrow(E0Win))
+	nugget[isFiniteE0] <- gpFit$nugget
+	E0Win$E0 <- pred1$fit
+	E0Win$sdE0 <- pred1$se.fit + sqrt(nugget) 
+			
+	E0Win$E0[isFiniteE0] <- gpFit$cv[,1]
+	E0Win$sdE0[isFiniteE0] <- sqrt(gpFit$cv[,2])
+	if( !all(isFiniteE0) ){
+		nuggetNewObs <- quantile(gpFit$nugget, 0.9)
+		pred <- predict(gpFit, matrix(E0Win$iCentralRec[!isFiniteE0], ncol=1), se.fit=TRUE)
+		E0Win$E0[!isFiniteE0] <- pred$fit
+		E0Win$sdE0[!isFiniteE0] <- pred$se.fit + sqrt(nuggetNewObs) 
+	}
 	##value<< dataframe E0Win with updated columns E0 and sdE0
 	return(E0Win)
+}
+.tmp.f <- function(){
+	plot( E0WinFinite$E0 ~ E0WinFinite$iCentralRec )
+	#arrows( E0WinFinite$iCentralRec, E0WinFinite$E0-1.96*E0WinFinite$sdE0, y1=E0WinFinite$E0+1.96*E0WinFinite$sdE0, length=0, col="grey" )
+	arrows( E0WinFinite$iCentralRec, E0WinFinite$E0-E0WinFinite$sdE0, y1=E0WinFinite$E0+E0WinFinite$sdE0, length=0, col="grey" )
+	#
+	E0Win$day <- (E0Win$iCentralRec-1) / 48 +1
+	E0WinFinite$day <- (E0WinFinite$iCentralRec-1) / 48 +1
+	plot( E0WinFinite$E0 ~ E0WinFinite$day )
+	points( E0Win$E0 ~ E0Win$day, col="blue", type="b", lty="dotted" )
+	#points( E0Win$E0 ~ E0Win$day, col="blue" )
+	#arrows( E0Win$day, E0Win$E0Fit, y1=E0Win$E0, col="grey", length=0.1)
+	lines( I(E0Win$E0 + 1.06*E0Win$sdE0) ~ E0Win$day, col="lightblue" )
+	lines( I(E0Win$E0 - 1.06*E0Win$sdE0) ~ E0Win$day, col="lightblue" )
+	#
+	E0Win$E0 <- E0Win$E0Fit
+	E0Win$sdE0 <- E0Win$sdE0Fit
+	E0Win$E0[c(FALSE,(diff(E0Win$E0) == 0))] <- NA	# TODO return NA in the first place
+	#
+	E0Win$isFiniteE0 <- isFiniteE0
+	E0Win[ E0Win$E0 < 80,]
+	E0Win[ 65:75,]
+	subset(E0WinFinite, iWindow %in% 65:75)
+	
+ 	E0Win$sdE0 / E0Win$E0 
 }
 
 partGLFitNightRespRefOneWindow=function(
