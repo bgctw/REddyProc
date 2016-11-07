@@ -264,7 +264,6 @@ partGLFitLRCWindows=function(
 			,E0Win = E0Smooth
 			,controlGLPart=controlGLPart	
 	)
-recover()	
 	E0Smooth$RRef <- resRef15$summary$RRef
 	#
 	##seealso<< \code{\link{partGLFitLRCOneWindow}}
@@ -533,6 +532,7 @@ partGLSmoothTempSens <- function(
 	E0Win$E0 <- pred1$fit
 	E0Win$sdE0 <- pred1$se.fit + sqrt(nugget) 
 	##value<< dataframe E0Win with updated columns E0 and sdE0
+#recover()	
 	return(E0Win)
 }
 .tmp.f <- function(){
@@ -1116,7 +1116,8 @@ parmGLOptimLRCBounds <- function(
 	##details<<
 	## In addition to resampling the original data, also the temperature sensitivity is resampled 
 	## from its uncertainty distribution.
-	E0 <- rnorm( controlGLPart.l$nBootUncertainty, theta0[5L], sdE_0.n	)
+	E0r <- rnorm( controlGLPart.l$nBootUncertainty, theta0[5L], sdE_0.n	)
+	E0 <- pmax(50,pmin(400,E0r))
 	theta <- theta0
 	#iBoot <- 1L
 	for (iBoot in c(1:controlGLPart.l$nBootUncertainty)){

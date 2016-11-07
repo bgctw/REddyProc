@@ -32,9 +32,13 @@ EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) ne
 EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning 
 EddyProc.C$sMRFluxPartition()	# night time partitioning -> Reco, GPP
 
+.tmp.f <- function(){
+	#save(EddyProc.C, file="tmp/EddyProcC_Tharandt.RData")
+	load(file="tmp/EddyProcC_Tharandt.RData")
+}
 #EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
 #EddyProc.C$sGLFluxPartition(controlGLPart.l=partGLControl(isBoundLowerNEEUncertainty=FALSE, ))	# day time partitioning -> Reco_DT, GPP_DT
-EddyProc.C$sGLFluxPartition(controlGLPart.l=partGLControl(
+EddyProc.C$sGLFluxPartition(controlGLPart=partGLControl(
 	nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE
 ))
 
