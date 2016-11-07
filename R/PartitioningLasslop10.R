@@ -252,7 +252,13 @@ partGLFitLRCWindows=function(
 	E0Smooth <- if( isTRUE(controlGLPart$smoothTempSensEstimateAcrossTime) ){
 				if( isVerbose ) message("  Smoothing temperature sensitivity estimates")
 				partGLSmoothTempSens( resNight$summary )
-			}else resNight$summary
+			}else {
+				E0Smooth <- resNight$summary
+				iNonFiniteE0 <- which(!is.finite(E0Smooth$E0))
+				E0Smooth$sdE0[iNonFiniteE0] <- quantile(E0Smooth$sdE0, 0.9, na.rm=TRUE) # set uncertainty to the 90% quantile of the distribution of uncertainties
+				E0Smooth$E0 <- fillNAForward(E0Smooth$E0)	# fill NA with value from previous window
+				E0Smooth
+			}
 	#
 	##seealso<< \code{\link{partGLFitNightRespRefOneWindow}}
 	if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperature sensitivity from night time NEE ", appendLF = FALSE)
@@ -264,7 +270,7 @@ partGLFitLRCWindows=function(
 			,E0Win = E0Smooth
 			,controlGLPart=controlGLPart	
 	)
-	E0Smooth$RRef <- resRef15$summary$RRef
+	E0Smooth$RRef <- fillNAForward( resRef15$summary$RRef )	# may contain NA if not enough night-time records
 	#
 	##seealso<< \code{\link{partGLFitLRCOneWindow}}
 	if( isVerbose ) message("  Estimating light response curve parameters from day time NEE ", appendLF = FALSE)
@@ -277,7 +283,11 @@ partGLFitLRCWindows=function(
 			,controlGLPart=controlGLPart	
 	)
 	resParms <- resLRC
+	resParms$summary$E_0 <- E0Smooth$E0
+	resParms$summary$E_0_sd <- E0Smooth$sdE0
+recover()	
 	resParms$summary$R_ref_night <- E0Smooth$RRef
+	# summary$iMeanRec yet based on window instead of entire time, need to add beginning of window
 	resParms$summary$iMeanRec <- resParms$summary$iRecStart-1L + resParms$summary$iMeanRec
 	# omit records where NULL was returned
 	iWinNoFit <- which( is.na(resParms$summary$parms_out_range) )	
@@ -286,6 +296,30 @@ partGLFitLRCWindows=function(
 		resParms$resOptList <- resParms$resOptList[-iWinNoFit] 
 	}
 	resParms
+}
+
+.tmp.f <- function(){
+	plot( E0 ~ dayStart, E0Smooth)
+}
+
+fillNAForward <- function(
+		### replace NA by value of previous record
+		x		##<< numeric vector to fill NAs
+		, firstValue=median(x,na.rm=FALSE)	##<< value to be used for NA at the beginning of x
+){
+	iMissing <- which(!is.finite(x))
+	if( length(iMissing) && (iMissing[1] == 1L)){
+		# set first vluae
+		x[1L] <- firstValue
+		iMissing <- iMissing[-1]
+	}
+	if(length(iMissing)){
+		for( i in iMissing ){
+			# set to value from previous window
+			x[i] <- x[i-1L]	 
+		}
+	}
+	return(x)
 }
 
 applyWindows <- function(
@@ -403,6 +437,11 @@ partGLFitNightTempSensOneWindow=function(
 					,data.frame(E0=resNightFit$E0, sdE0=resNightFit$sdE0, TRefFit=resNightFit$TRefFit, RRefFit=resNightFit$RRefFit)
 					,list(prevE0=resNightFit$E0)
 		))
+}
+
+.tmp.f <- function(){
+	plot( dss$NEE ~ dss$sDateTime)
+	plot( dssNight$NEE ~ dssNight$sDateTime)
 }
 
 isValidNightRecord <- function(
@@ -638,8 +677,8 @@ partGLFitLRCOneWindow=function(
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
 	#
 	##seealso<< \code{\link{partGLFitLRC}}
-	resOpt <- resOpt0 <- partGLFitLRC(dsDay, dsNight$NEE, E_0.n=E0, sdE_0.n=sdE0, R_refNight.n=RRefNight
-			, controlGLPart.l=controlGLPart, lastGoodParameters.V.n=prevRes$lastGoodParameters)
+	resOpt <- resOpt0 <- partGLFitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
+			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$lastGoodParameters)
 	#
 	if( !is.finite(resOpt$opt.parms.V[1]) ) return(NULL)
 	# check the Beta bounds that depend on uncertainty, set to NA fit
@@ -917,12 +956,11 @@ partGLFitLRCOneWindow=function(
 partGLFitLRC <- function(
 		### Optimize rectangular hyperbolic light response curve against data in one window and estimate uncertainty
 		dsDay				##<< data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE
-		, NEENight.V.n		##<< non-na numeric vector of night time fluxes to estimate initial value of Rb
-		, E_0.n				##<< temperature sensitivity of respiration
-		, sdE_0.n			##<< standard deviation of E_0.n
-		, R_refNight.n		##<< basal respiration estimated from night time data 
-		, controlGLPart.l=partGLControl()	##<< further default parameters (see \code{\link{partGLControl}})
-		, lastGoodParameters.V.n	##<< numeric vector of last good theta
+		, E0				##<< temperature sensitivity of respiration
+		, sdE0				##<< standard deviation of E_0.n
+		, RRefNight			##<< basal respiration estimated from night time data 
+		, controlGLPart=partGLControl()	##<< further default parameters (see \code{\link{partGLControl}})
+		, lastGoodParameters			##<< numeric vector of last good theta
 ){
 	##author<< TW, MM
 	##seealso<< \code{\link{partGLFitLRCWindows}}
@@ -943,8 +981,8 @@ partGLFitLRC <- function(
 			,beta=as.vector(abs(quantile(dsDay$NEE, 0.03, na.rm=TRUE)-quantile(dsDay$NEE, 0.97, na.rm=TRUE)))
 			,alpha=0.1
 			#,R_ref=mean(NEENight.V.n, na.rm=T)
-			,R_ref=if( is.finite(R_refNight.n) ) as.vector(R_refNight.n) else mean(NEENight.V.n, na.rm=T)
-			,E_0=as.vector(E_0.n)
+			,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite R_refNight.n") #mean(NEENight.V.n, na.rm=T)
+			,E_0=as.vector(E0)
 	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
 	#twutz: beta is quite well defined, so try not changing it too much
 	theta.V.n[2,2] <- parameterPrior[2]*1.3
@@ -952,7 +990,7 @@ partGLFitLRC <- function(
 	#
 	##seealso<< \code{\link{parmGLOptimLRCBounds}}
 	resOpt3 <- apply( theta.V.n, 1, function(theta0){
-				resOpt <- parmGLOptimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart.l, lastGoodParameters.V.n=lastGoodParameters.V.n )
+				resOpt <- parmGLOptimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart, lastGoodParameters.V.n=lastGoodParameters )
 		})
 	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
 	resOpt3Valid <- resOpt3[iValid]
@@ -965,7 +1003,7 @@ partGLFitLRC <- function(
 	} else {
 		resOpt <- resOpt3Valid[[iBest <- which.min(optSSE)]] # select the one with the least cost
 		opt.parms.V<-resOpt$theta
-		if(controlGLPart.l$nBootUncertainty == 0L) {
+		if(controlGLPart$nBootUncertainty == 0L) {
 			##details<< If \code{controlGLPart.l$nBootUncertainty == 0L} then the covariance matrix of the 
 			## parameters is estimated by the Hessian of the LRC curve at optimum.
 			## Then, the additional uncertainty and covariance with uncertaint E0 is neglected.
@@ -979,7 +1017,7 @@ partGLFitLRC <- function(
 				solve(resOpt$hessian)
 			}
 			covParms <- structure( diag(0,nrow=length(resOpt$theta)), dimnames=list(namesPars,namesPars))
-			covParms[5L,5L] <- sdE_0.n^2
+			covParms[5L,5L] <- sdE0^2
 			covParms[resOpt$iOpt,resOpt$iOpt] <- covParmsLRC  
 			if( any(diag(covParms) < 0)) opt.parms.V[] <- NA	# no real if covariance negative
 		} else {
@@ -988,7 +1026,7 @@ partGLFitLRC <- function(
 			## parameters is estimated by a bootstrap of the data.
 			## In each draw, E0 is drawn from N ~ (E_0, sdE_0).
 			##seealso<< \code{\link{.bootStrapLRCFit}}
-			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l)
+			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE0, parameterPrior, controlGLPart)
 			#resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l=within(controlGLPart.l,nBootUncertainty <- 30L))
 			covParms <- cov(resBoot)
 			#better not to average parameters

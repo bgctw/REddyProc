@@ -783,12 +783,12 @@ test_that("partGLFitLRC",{
 			dssDay <- subset(dss, isDay==TRUE)
 			dssNight <- subset(dss, isNight==TRUE)
 			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
-			res <- resNewPrior <- partGLFitLRC(dsDay, dssNight$NEE_f, E_0.n=185, sdE_0.n=.05*185,R_refNight.n=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters.V.n=NA_real_
+			res <- resNewPrior <- partGLFitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=10L)
 			)
 			#testing Lasslop compliency: different priors, covariance from fit
-			res <- resGLPrior <- partGLFitLRC(dsDay, dssNight$NEE_f, E_0.n=185, sdE_0.n=.05*185, R_refNight.n=mean(dssNight$NEE_f, na.rm=TRUE),lastGoodParameters.V.n=NA_real_
-					,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
+			res <- resNewPrior <- partGLFitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
+				,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
 			)
 			#dput(res$opt.parms.V)
 			.tmp.plot <- function(){
@@ -800,7 +800,7 @@ test_that("partGLFitLRC",{
 			}
 			# testing increasing number of bootstrap samples
 			.tmp.f <- function(){
-				(res60 <- partGLFitLRC(dsDay, dssNight$NEE, E_0.n=185, sdE_0.n=.05*185, R_refNight.n=mean(dssNight$NEE, na.rm=TRUE)
+				(res60 <- partGLFitLRC(dsDay, dssNight$NEE, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE, na.rm=TRUE)
 						,controlGLPart=partGLControl(nBootUncertainty=100L)
 				))
 			}		
