@@ -159,8 +159,7 @@ partGLControl <- function(
 			## Decrease to get more precise parameter estimates, Increase for speedup.
 		,nBootUncertainty=30L			##<< number of bootstrap samples for estimating uncertainty. 
 			## Set to zero to derive uncertainty from curvature of a single fit
-		,minNRecInDayWindow = 12L 		##<< Minimum number of data points for regression 
-		#TODO CHECK IN GITTA'S CODE MINIMUM NUMBERS OF DAYS
+		,minNRecInDayWindow = 10L 		##<< Minimum number of data points for regression 
 		,isAssociateParmsToMeanOfValids=TRUE	##<< set to FALSE to associate parameters to 
 			## the first record of the window for interpolation 
 			## instead of mean across valid records inside a window
@@ -261,6 +260,7 @@ partGLFitLRCWindows=function(
 				E0Smooth$E0 <- fillNAForward(E0Smooth$E0)	# fill NA with value from previous window
 				E0Smooth
 			}
+	# now all E0 and sdE0 are defined
 	#
 	##seealso<< \code{\link{partGLFitNightRespRefOneWindow}}
 	if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperature sensitivity from night time NEE ", appendLF = FALSE)
