@@ -659,13 +659,16 @@ test_that("estimating temperature sensitivity on record with some freezing tempe
 			expect_true(sum(isValid) >= 13 && sum(isValidNightRecord(dss)) < nrow(dss) )
 			#
 			resE0 <- partGLEstimateTempSensInBoundsE0Only(dss$NEE_f[isValid], dss$Temp[isValid]+273.15)
-			expect_true( resE0$E0 >= 50 && resE0$E0 <= 400 )
-			medianResp <- median(dss$NEE_f[isValid],na.rm=TRUE)
-			expect_true( abs(resE0$RRefFit - medianResp)/medianResp < 0.2 )
-			E0Win <- as.data.frame(resE0)
-			res <- partGLFitNightRespRefOneWindow( dss, data.frame(iWindow=1L), E0Win=E0Win)
-			RRef <- res[[2]]$RRef[1]
-			expect_true( RRef >= 0 )
+			expect_true( is.na(resE0$E0) )
+			.tmp.f <- function(){
+				expect_true( resE0$E0 >= 50 && resE0$E0 <= 400 )
+				medianResp <- median(dss$NEE_f[isValid],na.rm=TRUE)
+				expect_true( abs(resE0$RRefFit - medianResp)/medianResp < 0.2 )
+				E0Win <- as.data.frame(resE0)
+				res <- partGLFitNightRespRefOneWindow( dss, data.frame(iWindow=1L), E0Win=E0Win)
+				RRef <- res[[2]]$RRef[1]
+				expect_true( RRef >= 0 )
+			}
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
 				points( NEE_f ~ Temp, dss[isValid,], col="red")

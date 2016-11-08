@@ -218,23 +218,25 @@ partGLFitLRCWindows=function(
 	##seealso<< \code{\link{partGLFitNightTempSensOneWindow}}
 	if( isVerbose ) message("  Estimating temperature sensitivity from night time NEE ", appendLF = FALSE)
 	resNight <- applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
-			, winSizeInDays=12L
+			, winSizeRefInDays = WinSizeDays.i
+			, winSizeInDays=WinSizeNight.i
 			,isVerbose=isVerbose		
 			,nRecInDay=nRecInDay
-			,isNAAllowed=TRUE
+			#,isNAAllowed=TRUE
 			#
 			,controlGLPart=controlGLPart	
 	)
 	iNoFit <- which( is.na(resNight$summary$E0) )
 	iExtend <- 1
-	winExtendSizes <- c(24L,48L)
+	winExtendSizes <- WinSizeNight.i*c(2L,4L)
 	while( length(iNoFit) && (iExtend <= length(winExtendSizes)) ){
 		if( isVerbose ) message("    increase window size to ",winExtendSizes[iExtend], appendLF = FALSE)
 		resNightExtend <- applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
+				, winSizeRefInDays = WinSizeDays.i
 				,winSizeInDays=winExtendSizes[iExtend]
 				,isVerbose=isVerbose		
 				,nRecInDay=nRecInDay
-				,isNAAllowed= (iExtend < length(winExtendSizes))
+				#,isNAAllowed= (iExtend < length(winExtendSizes))
 				#
 				,controlGLPart=controlGLPart	
 		)
@@ -263,7 +265,8 @@ partGLFitLRCWindows=function(
 	##seealso<< \code{\link{partGLFitNightRespRefOneWindow}}
 	if( isVerbose ) message("  Estimating respiration at reference temperature for smoothed temperature sensitivity from night time NEE ", appendLF = FALSE)
 	resRef15 <- applyWindows(ds, partGLFitNightRespRefOneWindow
-			, winSizeInDays=12L
+			, winSizeRefInDays = WinSizeDays.i
+			, winSizeInDays=WinSizeDays.i
 			,isVerbose=isVerbose		
 			,nRecInDay=nRecInDay
 			#
@@ -285,7 +288,6 @@ partGLFitLRCWindows=function(
 	resParms <- resLRC
 	resParms$summary$E_0 <- E0Smooth$E0
 	resParms$summary$E_0_sd <- E0Smooth$sdE0
-recover()	
 	resParms$summary$R_ref_night <- E0Smooth$RRef
 	# summary$iMeanRec yet based on window instead of entire time, need to add beginning of window
 	resParms$summary$iMeanRec <- resParms$summary$iRecStart-1L + resParms$summary$iMeanRec
@@ -411,9 +413,8 @@ partGLFitNightTempSensOneWindow=function(
 		,winInfo			##<< one-row data.frame with window information, including iWindow 
 		,prevRes			##<< component prevRes from previous result, here with item prevE0
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
-		,nRecInDay.i=48L	##<< number of records within one day (for half-hourly data its 48)
-		,controlGLPart.l=partGLControl()	##<< list of further default parameters
-		,isNAAllowed=FALSE		##<< set to TRUE to allow returning NA instead of bounding
+		,nRecInDay=48L	##<< number of records within one day (for half-hourly data its 48)
+		,controlGLPart=partGLControl()	##<< list of further default parameters
 ){
 	##author<<
 	## TW
@@ -422,7 +423,7 @@ partGLFitNightTempSensOneWindow=function(
 	## Estimation of respiration at reference temperature (R_Ref) and temperature (E_0) for one window.
 	isValid <- isValidNightRecord(dss) 
 	# check that there are enough night and enough day-values for fitting, else continue with next window
-	if( sum(isValid) < controlGLPart.l$minNRecInDayWindow ) return(NULL)
+	if( sum(isValid) < controlGLPart$minNRecInDayWindow ) return(NULL)
 	dssNight <- dss[isValid,]
 	# tmp <- dss[!is.na(dss$isNight) & dss$isNight & !is.na(dss$NEE), ]; plot(NEE ~ Temp, tmp)
 	# points(NEE ~ Temp, dssNight, col="blue" )
@@ -431,11 +432,11 @@ partGLFitNightTempSensOneWindow=function(
 	#resNightFitOld <- partGLEstimateTempSensInBounds(dssNight$NEE, fConvertCtoK(dssNight$Temp)
 	#			, prevE0=prevRes$prevE0)
 	resNightFit <- partGLEstimateTempSensInBoundsE0Only(dssNight$NEE, fConvertCtoK(dssNight$Temp)
-		, prevE0=prevRes$prevE0, isNAAllowed = isNAAllowed)
+		, prevE0=prevRes$prevE0)
 	return(list(
 					resNightFit
 					,data.frame(E0=resNightFit$E0, sdE0=resNightFit$sdE0, TRefFit=resNightFit$TRefFit, RRefFit=resNightFit$RRefFit)
-					,list(prevE0=resNightFit$E0)
+					,list(prevE0=if(is.finite(resNightFit$E0)) resNightFit$E0 else prevRes$prevE0) 
 		))
 }
 
@@ -463,7 +464,6 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 		REco					##<< numeric vector: night time NEE, i.e. ecosytem respiration
 		,temperatureKelvin		##<< numeric vector: temperature in Kelvin of same length as REco
 		,prevE0	= NA			##<< numeric scalar: the previous guess of Temperature Sensitivity
-		,isNAAllowed=FALSE		##<< set to TRUE to allow returning NA instead of bounding
 ){
 	##author<< MM, TW
 	##seealso<< \code{\link{partGLFitLRCWindows}}
@@ -497,38 +497,21 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 		E0 <- coef(resFit)['E_0']
 		sdE0 <- coef(summary(resFit))['E_0',2]
 		RRefFit <- coef(resFit)['R_ref']
-		
-#if( E0 < 100 ) recover()
 	}
 	# resFit$convInfo$isConv
 	##details<<
-	## If E_0 is out of bounds [50,400] then report E_0 of estimate from previous window and R_ref as mean of the respiration.
-	## If no previous estimate is available, report lower bound of 50 or upper bound of 400 respectively.
-	## Standard deviation of E_0 when out of bounds is set 1/2*E0
-	## On out of bounds parameters (or error in fitting) R_Ref is set to the mean of respiration in the dataset, or zero if the mean is negative. 
+	## If E_0 is out of bounds [50,400] then report E0 as NA 
 	if( is.na(E0) || (E0 < 50) || (E0 > 400)){
-		if( isNAAllowed ){
-			E0Bounded <- NA
-			sdE0 <- NA
-			RRefFit <- NA 
-		} else {
-			E0Bounded <- if( is.na(prevE0) ){
-						if( is.na(E0)) 100 else min(400,max(50,E0))
-					} else {
-						prevE0
-					}
-			sdE0 <- 0.5*E0Bounded
-			RRefFit <- median(REco)
-		}
-	} else {
-		E0Bounded <- E0
-	}
+		E0 <- NA
+		sdE0 <- NA
+		RRefFit <- NA 
+	} 
 	##value<< list with entries
 	return(list(
-					E0=E0Bounded		##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
-					,sdE0=sdE0		##<< numeric scalar of standard deviation of E0
-					,TRefFit=TRefFit		##<< numeric scalar reference temperature used in the E0 fit
-					,RRefFit=RRefFit		##<< numeric scalar respiration at TRefFit
+					E0=E0				##<< numeric scalar of estimated temperature sensitivty E0 bounded to [50,400]
+					,sdE0=sdE0			##<< numeric scalar of standard deviation of E0
+					,TRefFit=TRefFit	##<< numeric scalar reference temperature used in the E0 fit
+					,RRefFit=RRefFit	##<< numeric scalar respiration at TRefFit
 	))
 	#
 	# refit R_Ref with bounded E0 for 15 degC, instead of calling fLoydAndTaylor do a simple regression 

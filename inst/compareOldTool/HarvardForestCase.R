@@ -181,6 +181,8 @@ df.hf <- cbind(df.REddy_Ha1,Data.F2,NEE_DT,GPP_good,Reco_good)
  par(mfrow=c(1,2))
  plot(df.hf$GPP_DT,col="grey",xlab="Timestep",ylab="GPP")
  points(GPP_good,col="black")
+ plot(df.hf$Reco_DT,col="grey",xlab="Timestep",ylab="REco")
+ points(Reco_good,col="black")
 }
 
 
