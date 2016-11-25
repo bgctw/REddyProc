@@ -274,6 +274,9 @@ partGLFitLRCWindows=function(
 			,controlGLPart=controlGLPart	
 	)
 	E0Smooth$RRef <- fillNAForward( resRef15$summary$RRef )	# may contain NA if not enough night-time records
+	# special case NA on first record fill backward
+	iFirstFinite <- min(which(is.finite(E0Smooth$RRef)))
+	if(iFirstFinite > 1) E0Smooth$RRef[1:(iFirstFinite-1)] <- E0Smooth$RRef[iFirstFinite]
 	#
 	##seealso<< \code{\link{partGLFitLRCOneWindow}}
 	if( isVerbose ) message("  Estimating light response curve parameters from day time NEE ", appendLF = FALSE)

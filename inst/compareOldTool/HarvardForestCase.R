@@ -14,7 +14,8 @@ library(ncdf)
 
 
 ### Pvwave from the FLUXNET2015 database
-ipath <- "M:/data/DataStructureMDI/DATA/Incoming/Fluxnet/berkeley_012016/Data/HH/"
+#ipath <- "M:/data/DataStructureMDI/DATA/Incoming/Fluxnet/berkeley_012016/Data/HH/"
+ipath <- "M:/data/DataStructureMDI/DATA/Incoming/Fluxnet/berkeley_012016/Data/HH/2016_01/"
 fname <- "US-Ha1.HH.1991.2012.nc"
 
 nc <- open.ncdf(paste(ipath,fname,sep=""))
@@ -125,11 +126,12 @@ years <- years[-c(1,2,3)]   # model does not work for 1993 ("system is computati
 
 		
 #yr <- 2009
+#yr <- 2001
 
 ctrl <- partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, 
 		isLasslopPriorsApplied=TRUE,isBoundLowerNEEUncertainty=FALSE,
 		isFilterMeteoQualityFlag=FALSE
-		#,smoothTempSensEstimateAcrossTime=FALSE
+		,smoothTempSensEstimateAcrossTime=FALSE
 )
 
 for (yr in years){  # --> split into individual years or it will crash!
@@ -137,8 +139,8 @@ for (yr in years){  # --> split into individual years or it will crash!
   if (yr == years[1]){
     df.REddy_Ha1 <- partitionNEEGL(Data.F[Data.F[,"YEAR"] == yr,],NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
                                    TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-                                   RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay.i= nRecInDay.i,
-                                   controlGLPart.l=ctrl)
+                                   RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
+                                   controlGLPart=ctrl)
   } else {  # important: make sure it's identical to the first call!!
     df.REddy_Ha1_year <- tmp <- partitionNEEGL(Data.F[Data.F[,"YEAR"] == yr,],NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
                                         TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
