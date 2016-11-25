@@ -32,7 +32,7 @@ gfGapFillMDS <- function(
 	iTol <- match(covarVarNames, names(tolerance))
 	if( any(is.na(iTol))) stop("no tolerance given for meteoVarNames ",paste(covarVarNames[is.na(iTol)],collapse=","))
 	toFill <- fSetQF(ds, fillVarName,qfVarName, qfValue, 'sFillInit') # discard bad quality data as data with similar conditions
-	iColsMeteo <- .checkMeteoConditions(ds,covarVarNames)
+	iColsMeteo <- .checkCovarConditions(ds,covarVarNames)
 	colNamesMeteo <- names(ds)[iColsMeteo]
 	fTol = gfCreateRgToleranceFunction(
 			tolerance=tolerance[colNamesMeteo]
@@ -153,24 +153,24 @@ gfGapFillMDS <- function(
 	gapStats
 }
 
-.checkMeteoConditions <- function(
+.checkCovarConditions <- function(
 		### Check availablility of meteorological data for LookUpTable
 		ds 					##<< data.frame
-		,meteoVarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold meteo conditions
+		,covarNames = c("Rg","VPD","Tair")	##<< string vector of column names that hold meteo conditions
 ){
 	namesDs <- names(ds)
-	iColsMeteo0 <- structure( match( meteoVarNames, namesDs), names=meteoVarNames)
-	if( any(is.na(iColsMeteo0))) warning(
-				"The following meteo columns are missing in provided dataset: "
-				,paste(meteoVarNames[is.na(iColsMeteo0)],collapse=","))
-	iColsMeteo1 <-na.omit(iColsMeteo0)
-	hasRecords <- ( sapply( iColsMeteo1, function(iCol){ sum(!is.na(ds[,iCol])) } ) != 0 )
+	iColsCovar0 <- structure( match( covarNames, namesDs), names=covarNames)
+	if( any(is.na(iColsCovar0))) warning(
+				"The following covariate columns are missing in provided dataset: "
+				,paste(covarNames[is.na(iColsCovar0)],collapse=","))
+	iColsCovar1 <-na.omit(iColsCovar0)
+	hasRecords <- ( sapply( iColsCovar1, function(iCol){ sum(!is.na(ds[,iCol])) } ) != 0 )
 	if( any(!hasRecords) ) warning(
-				"The following meteo columns are have only missings: "
-				,paste(namesDs[iColsMeteo1][!hasRecords]),col=",")
-	iColsMeteo <- iColsMeteo1[hasRecords]
-	##value<< integer vector of column indices in  ds that hold valid meteorological conditions.
-	## Issues warning for invalid columns among meteoVarNames
+				"The following covariate columns are have only missings: "
+				,paste(namesDs[iColsCovar1][!hasRecords]),col=",")
+	iColsMeteo <- iColsCovar1[hasRecords]
+	##value<< integer vector of column indices in  ds that hold valid covariate conditions.
+	## Issues warning for invalid columns among covarNames
 	iColsMeteo
 }
 
