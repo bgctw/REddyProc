@@ -128,71 +128,71 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Fingerprint
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-.plotFingerprintY = function(
-		#twutz: TODO to use outside R5 class
-		### Plot fingerprint of specified year
-		Var.s               ##<< Variable to plot
-		,QFVar.s='none'     ##<< Quality flag of variable to be filled
-		,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
-		,Year.i             ##<< Year to plot
-		,Legend.b=F         ##<< Plot only legend
-		,col= colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))(50)
-){
-	##description<<
-	## The fingerprint for a single year is plotted to the current device, scaled to all data.
-	##author<<
-	## AMM, KS, TW
-	# TEST: sPlotFingerprintY('NEE', 'none', NA, 1998); sPlotFingerprintY('NEE_f', 'NEE_fqc', 1, 1998)
-	'Plot fingerprint of specified year'
-	# Set plot contents
-	Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
-	# Scale to all data
-	YMin.n <- min(Data.V.n, na.rm=T)
-	YMax.n <- max(Data.V.n, na.rm=T)
-	#Set yearly data
-	FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotFingerprintY')
-	Time.V.n <- FullYearData.F$DateTime
-	Plot.V.n <- FullYearData.F$Data
-	
-	# Calculate plot parameters
-	XAxis.V.n <- seq(0, 24, by=2)
-	YAxis.V.n <- seq(15, 345, by=30)
-	#fJetColors <- colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))
-	#Jet.n <- 50 
-	
-	# Daily sequence of DoY
-	DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))    
-
-	# Plot
-	if( !sum(!is.na(Plot.V.n))==0 && Legend.b==F ) {
-		# Plot fingerprint
-		par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-		image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=col,
-				axes=F, xlab='', ylab='', main=Year.i)
-		axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
-		axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet') 
-		box()
-	} else if ( Legend.b==F ) {
-		#Plot empy box
-		par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
-		image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(0,1), col=col,
-				axes=F, xlab='', ylab='', main=Year.i)
-		axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
-		axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
-		box()
-		warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
-	} else { #Plot legend and title
-		Title.s <- .self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
-		Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(length(col)-1))
-		par(mai=c(3,1,3,1))
-		image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=col, zlim=c(YMin.n,YMax.n),
-				xlab=Var.s, yaxt='n', ylab='', main=Title.s)
-		box()
-	}
-}
-attr(.plotFingerprintY,"ex") <- function(){
-	print("TODO")
-}
+#.plotFingerprintY = function(
+#		#twutz: TODO to use outside R5 class, makes reference to self
+#		### Plot fingerprint of specified year
+#		Var.s               ##<< Variable to plot
+#		,QFVar.s='none'     ##<< Quality flag of variable to be filled
+#		,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
+#		,Year.i             ##<< Year to plot
+#		,Legend.b=F         ##<< Plot only legend
+#		,col= colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))(50)
+#){
+#	##description<<
+#	## The fingerprint for a single year is plotted to the current device, scaled to all data.
+#	##author<<
+#	## AMM, KS, TW
+#	# TEST: sPlotFingerprintY('NEE', 'none', NA, 1998); sPlotFingerprintY('NEE_f', 'NEE_fqc', 1, 1998)
+#	'Plot fingerprint of specified year'
+#	# Set plot contents
+#	Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
+#	# Scale to all data
+#	YMin.n <- min(Data.V.n, na.rm=T)
+#	YMax.n <- max(Data.V.n, na.rm=T)
+#	#Set yearly data
+#	FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotFingerprintY')
+#	Time.V.n <- FullYearData.F$DateTime
+#	Plot.V.n <- FullYearData.F$Data
+#	
+#	# Calculate plot parameters
+#	XAxis.V.n <- seq(0, 24, by=2)
+#	YAxis.V.n <- seq(15, 345, by=30)
+#	#fJetColors <- colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))
+#	#Jet.n <- 50 
+#	
+#	# Daily sequence of DoY
+#	DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))    
+#
+#	# Plot
+#	if( !sum(!is.na(Plot.V.n))==0 && Legend.b==F ) {
+#		# Plot fingerprint
+#		par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
+#		image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=col,
+#				axes=F, xlab='', ylab='', main=Year.i)
+#		axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
+#		axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet') 
+#		box()
+#	} else if ( Legend.b==F ) {
+#		#Plot empy box
+#		par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
+#		image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(0,1), col=col,
+#				axes=F, xlab='', ylab='', main=Year.i)
+#		axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
+#		axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
+#		box()
+#		warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
+#	} else { #Plot legend and title
+#		Title.s <- .self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
+#		Seq.V.n <- seq(YMin.n, YMax.n, by=(YMax.n-YMin.n)/(length(col)-1))
+#		par(mai=c(3,1,3,1))
+#		image(Seq.V.n, c(0,1), matrix(Seq.V.n, ncol=1), col=col, zlim=c(YMin.n,YMax.n),
+#				xlab=Var.s, yaxt='n', ylab='', main=Title.s)
+#		box()
+#	}
+#}
+#attr(.plotFingerprintY,"ex") <- function(){
+#	print("TODO")
+#}
 
 
 sEddyProc$methods(

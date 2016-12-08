@@ -13,9 +13,10 @@
 sEddyProc$methods(
 		sGLFluxPartition=function(
 				##title<<
-				## sGLFluxPartition - Flux partitioning after Lasslop et al. (2010)
+				## sGLFluxPartition: Flux partitioning after Lasslop et al. (2010)
 				##description<<
-				## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
+				## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) 
+				## and ecosystem respiration (Reco)
 				...		##<< arguments to \code{\link{partitionNEEGL}} additional to the dataset \code{ds}
 					## such as \code{Suffix.s}
 				,debug.l=list(		     ##<< List with debugging control.
@@ -30,7 +31,7 @@ sEddyProc$methods(
 			## MM, TW
 			##references<<
 			## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
-			## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187–208
+			## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208
 			.self$sCalcPotRadiation(useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )	
 			dsAns <- partitionNEEGL( cbind(sDATA, sTEMP), ...
 					, nRecInDay=sINFO$DTS

@@ -297,17 +297,17 @@ test_that("gfGapFillMeanDiurnalCourse",{
 			res <- resAll <- gfGapFillMeanDiurnalCourse(dsTest$NEE, 1, iRecsGap=1:nrow(dsTest) )
 		})
 
-test_that(".checkMeteoConditions",{
-			res <- .checkMeteoConditions(dsTest, meteoVarNames=c("Rg","Temp","VPD"))
+test_that(".checkCovarConditions",{
+			res <- .checkCovarConditions(dsTest, covarNames=c("Rg","Temp","VPD"))
 			expect_equal( 3L, length(res) )
 			# missing Tair
-			expect_warning(res <- .checkMeteoConditions(dsTest)) 
+			expect_warning(res <- .checkCovarConditions(dsTest)) 
 			expect_equal( names(res), c("Rg","VPD"))
 			expect_equal( as.vector(res["Rg"]), match("Rg", names(dsTest)))
 			#
 			dsTestTair <- dsTest
 			dsTestTair$Rg <- NA
-			expect_warning(res <- .checkMeteoConditions(dsTestTair)) 
+			expect_warning(res <- .checkCovarConditions(dsTestTair)) 
 			expect_equal( res, c(VPD=7) )
 		})
 

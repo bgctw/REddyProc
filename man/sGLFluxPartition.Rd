@@ -1,7 +1,8 @@
 \name{sGLFluxPartition}
 \alias{sGLFluxPartition}
-\title{sGLFluxPartition - Flux partitioning after Lasslop et al. (2010)}
-\description{Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)}
+\title{sGLFluxPartition: Flux partitioning after Lasslop et al. (2010)}
+\description{Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) 
+and ecosystem respiration (Reco)}
 \usage{sGLFluxPartition(..., debug.l = list(useLocaltime.b = FALSE), 
     isWarnReplaceColumns = TRUE)}
 \arguments{
@@ -15,7 +16,7 @@ such as \code{Suffix.s}}
 
 \value{Flux partitioning results are in sTEMP data frame of the class.}
 \references{Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
-a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187–208}
+a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208}
 \author{MM, TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

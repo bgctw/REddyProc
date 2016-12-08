@@ -786,8 +786,9 @@ usGetYearOfSeason <- function(
 	# for performance reasons call a c++ function that loops across the vector
 	# 
 	# cannot generate C function with dot
-	# Rcpp::compileAttributes() generates a function without leading dot, need to adjust by hand afterwards 
-	whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	# defined in cFunc.R
+	# Rcpp::compileAttributes() generates a function without leading dot, need to adjust by hand afterwards
+	### searches a sorted integer vector for the next element that is >= a threshold in fast C-code 
+	whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	
 	##value<< 
 	## Scalar integer: first index in x, that is >= iStart, and whose value x[i] is >= threshold.
 	## If no index was found, returns NA

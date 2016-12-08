@@ -8,6 +8,7 @@
 
 Develop.b <- F #True if in development mode
 
+
 # Source settings for R environment
 source('inst/develop/setREnvir.R')
 

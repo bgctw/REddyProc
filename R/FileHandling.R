@@ -86,8 +86,8 @@ fLoadFluxNCIntoDataframe <- function(
   # TEST: str(tmp <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg'), 'Example_DE-Tha.1996.1998.hourly.nc', 'inst/examples', count=c(1L,1L,4000L) ))
 {
   # Check for R NetCDF packages
-  if( !(( NcPackage.s=='ncdf4' && suppressWarnings(require(ncdf4)) )
-        || ( NcPackage.s=='RNetCDF' && suppressWarnings(require(RNetCDF)) )) )
+  if( !(( NcPackage.s=='ncdf4' && suppressWarnings(requireNamespace("ncdf4")) )
+        || ( NcPackage.s=='RNetCDF' && suppressWarnings(requireNamespace("RNetCDF")) )) )
     stop('fLoadFluxNCIntoDataframe::: Required package \'', NcPackage.s, '\' could not be loaded!')
   
   # Read in time variables
@@ -109,7 +109,8 @@ fLoadFluxNCIntoDataframe <- function(
 attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
   if( FALSE ) { #Do not always execute example code (e.g. on package installation)
     Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f'), 'Example_DE-Tha.1996.1998.hourly.nc', Dir.s)
+    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
+		, 'Example_DE-Tha.1996.1998.hourly.nc', Dir.s)
   }
 }
 
@@ -200,16 +201,16 @@ fAddNCFVar <- function(
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
 
   if( NcPackage.s=='RNetCDF' ) {
-	  fOpen <- open.nc  
-	  fReadVar <- var.get.nc
-	  fClose <- close.nc
+	  fOpen <- RNetCDF::open.nc  
+	  fReadVar <- RNetCDF::var.get.nc
+	  fClose <- RNetCDF::close.nc
 	  #fInqVar <- var.inq.nc
-	  fGetAtt <- att.get.nc
+	  fGetAtt <- RNetCDF::att.get.nc
   } else if( NcPackage.s=='ncdf4' ) {
-	  fOpen <- nc_open  
-	  fReadVar <- ncvar_get
-	  fClose <- nc_close
-	  fGetAtt <- function(...){ ncatt_get(...)$value }
+	  fOpen <- ncdf4::nc_open  
+	  fReadVar <- ncdf4::ncvar_get
+	  fClose <- ncdf4::nc_close
+	  fGetAtt <- function(...){ ncdf4::ncatt_get(...)$value }
   } else {
 	stop(CallFunction.s, ':::fAddNCFVar::: NC file ', InputNCF.s, ' could not be opened!')
   }
@@ -268,44 +269,44 @@ fLoadFluxNCInfo <- function(
   #TEST: fLoadFluxNCInfo('Example_DE-Tha.1996.1998.hourly.nc','inst/examples','ncdf4')
 {
   # Check for R NetCDF packages
-  if( !(( NcPackage.s=='ncdf4' && suppressWarnings(require(ncdf4)) )
-        || ( NcPackage.s=='RNetCDF' && suppressWarnings(require(RNetCDF)) )) )
+  if( !(( NcPackage.s=='ncdf4' && suppressWarnings(requireNamespace("ncdf4")) )
+        || ( NcPackage.s=='RNetCDF' && suppressWarnings(requireNamespace("RNetCDF")) )) )
     stop('fLoadFluxNCIntoDataframe::: Required package \'', NcPackage.s, '\' could not be loaded!')
   
   InputNCF.s <- fSetFile(FileName.s, Dir.s, T, 'fAddNCFVar')
   
   if( NcPackage.s=='RNetCDF' ) {
-    NCFile.C <- open.nc(InputNCF.s)
+    NCFile.C <- RNetCDF::open.nc(InputNCF.s)
     tryCatch({
       ##details<<
       ## Description of attribute list:
       ##describe<<
       SiteInfo.L <- list( 
-        ID    = att.get.nc(NCFile.C,'NC_GLOBAL','Site_ID')                 ##<< SiteID
-        ,DIMS = dim.inq.nc(NCFile.C,'time')$length                        ##<< Number of data rows
-        ,LON  = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','Longitude'))  ##<< Longitude
-        ,LAT  = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','Latitude'))   ##<< Latitude
-        ,TZ   = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','TimeZone'))   ##<< Time zone
-        ,ELEV = as.numeric(att.get.nc(NCFile.C,'NC_GLOBAL','Elevation')) ##<< Elevation
-        ,IGBP = att.get.nc(NCFile.C,'NC_GLOBAL','IGBP_class')            ##<< IGBP class
+        ID    = RNetCDF::att.get.nc(NCFile.C,'NC_GLOBAL','Site_ID')                 ##<< SiteID
+        ,DIMS = RNetCDF::dim.inq.nc(NCFile.C,'time')$length                        ##<< Number of data rows
+        ,LON  = as.numeric(RNetCDF::att.get.nc(NCFile.C,'NC_GLOBAL','Longitude'))  ##<< Longitude
+        ,LAT  = as.numeric(RNetCDF::att.get.nc(NCFile.C,'NC_GLOBAL','Latitude'))   ##<< Latitude
+        ,TZ   = as.numeric(RNetCDF::att.get.nc(NCFile.C,'NC_GLOBAL','TimeZone'))   ##<< Time zone
+        ,ELEV = as.numeric(RNetCDF::att.get.nc(NCFile.C,'NC_GLOBAL','Elevation')) ##<< Elevation
+        ,IGBP = RNetCDF::att.get.nc(NCFile.C,'NC_GLOBAL','IGBP_class')            ##<< IGBP class
       )
     }, 
-             finally = close.nc(NCFile.C)
+             finally = RNetCDF::close.nc(NCFile.C)
     )
   } else if( NcPackage.s=='ncdf4' ) {
-    NCFile.C <- nc_open(InputNCF.s, write=FALSE, readunlim=TRUE, verbose=FALSE)
+    NCFile.C <- ncdf4::nc_open(InputNCF.s, write=FALSE, readunlim=TRUE, verbose=FALSE)
     tryCatch({
       SiteInfo.L <- list( 
-        ID    = ncatt_get(NCFile.C,0,'Site_ID')$value
+        ID    = ncdf4::ncatt_get(NCFile.C,0,'Site_ID')$value
         ,DIMS = NCFile.C$dim$time$len
-        ,LON  = as.numeric(ncatt_get(NCFile.C,0,'Longitude')$value)
-        ,LAT  = as.numeric(ncatt_get(NCFile.C,0,'Latitude')$value)
-        ,TZ   = as.numeric(ncatt_get(NCFile.C,0,'TimeZone')$value)
-        ,ELEV = as.numeric(ncatt_get(NCFile.C,0,'Elevation')$value)
-        ,IGBP = ncatt_get(NCFile.C,0,'IGBP_class')$value
+        ,LON  = as.numeric(ncdf4::ncatt_get(NCFile.C,0,'Longitude')$value)
+        ,LAT  = as.numeric(ncdf4::ncatt_get(NCFile.C,0,'Latitude')$value)
+        ,TZ   = as.numeric(ncdf4::ncatt_get(NCFile.C,0,'TimeZone')$value)
+        ,ELEV = as.numeric(ncdf4::ncatt_get(NCFile.C,0,'Elevation')$value)
+        ,IGBP = ncdf4::ncatt_get(NCFile.C,0,'IGBP_class')$value
       )
     }, 
-             finally = nc_close(NCFile.C)
+             finally = ncdf4::nc_close(NCFile.C)
     )
   } else {
     stop(CallFunction.s, ':::fLoadFluxNCInfo::: NC file ', InputNCF.s, ' could not be opened!')

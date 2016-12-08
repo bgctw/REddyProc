@@ -2,16 +2,15 @@
 \alias{partGLFitLRC}
 \title{partGLFitLRC}
 \description{Optimize rectangular hyperbolic light response curve against data in one window and estimate uncertainty}
-\usage{partGLFitLRC(dsDay, NEENight.V.n, E_0.n, sdE_0.n, R_refNight.n, 
-    controlGLPart.l = partGLControl(), lastGoodParameters.V.n)}
+\usage{partGLFitLRC(dsDay, E0, sdE0, RRefNight, controlGLPart = partGLControl(), 
+    lastGoodParameters)}
 \arguments{
   \item{dsDay}{data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE}
-  \item{NEENight.V.n}{non-na numeric vector of night time fluxes to estimate initial value of Rb}
-  \item{E_0.n}{temperature sensitivity of respiration}
-  \item{sdE_0.n}{standard deviation of E_0.n}
-  \item{R_refNight.n}{basal respiration estimated from night time data}
-  \item{controlGLPart.l}{further default parameters (see \code{\link{partGLControl}})}
-  \item{lastGoodParameters.V.n}{numeric vector of last good theta}
+  \item{E0}{temperature sensitivity of respiration}
+  \item{sdE0}{standard deviation of E_0.n}
+  \item{RRefNight}{basal respiration estimated from night time data}
+  \item{controlGLPart}{further default parameters (see \code{\link{partGLControl}})}
+  \item{lastGoodParameters}{numeric vector of last good theta}
 }
 \details{Optimization is performed for three initial parameter sets that differ by beta0 (*1.3, *0.8).
 From those three, the optimization result is selected that yielded the lowest misfit.

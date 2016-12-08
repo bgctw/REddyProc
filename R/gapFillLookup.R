@@ -306,8 +306,8 @@ gfCreateRgToleranceFunction <- function(
 		,iRgColumns	##<< the position of radiation in target
 ){
 	##details<< 
-	## The order of entries in tolerance, and iRgColumns must match the order to covariates 
-	## supplied to \code{\link{gapFillLUT}} 
+	## The order of entries in \code{tolerance}, and \code{iRgColumns} must match the order to covariates 
+	## supplied to \code{\link{gfGapFillLookupTable}} 
 	toleranceClosure = tolerance
 	iRgColumnsClosure = iRgColumns
 	fToleranceRg <- function(
@@ -326,6 +326,7 @@ gfCreateRgToleranceFunction <- function(
 
 
 gfComputeQualityFlags <- function(
+		### Get Quality flags used in Metoe-Gapfilling for given window width and number of covariates.
 		winWidthDays	##<< scalar integer: full windows length in days
 		,nCov			##<< scalar integer: number of covariates
 ){
