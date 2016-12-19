@@ -779,7 +779,7 @@ partGLFitLRC <- function(
 			## If \code{controlGLPart.l$nBootUncertainty > 0L} then the covariance matrix of the 
 			## parameters is estimated by a bootstrap of the data.
 			## In each draw, E0 is drawn from N ~ (E_0, sdE_0).
-			##seealso<< \code{\link{.bootStrapLRCFit}}
+			# #seealso<< \code{\link{.bootStrapLRCFit}}
 			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE0, parameterPrior, controlGLPart)
 			#resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l=within(controlGLPart.l,nBootUncertainty <- 30L))
 			covParms <- cov(resBoot)
