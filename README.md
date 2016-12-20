@@ -24,18 +24,16 @@ There is an online-formular to use the functionality of the package including
 description at
 <https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
 
-<!-- 
 ## Installation
 
 ```r
 # Release stable version from r-forge
 install.packages("REddyProc", repos=c("http://R-Forge.R-project.org","@CRAN@"), type="source")
 
-# The the development version from GitHub:
+# The development version from GitHub using devtools:
 # install.packages("devtools")
 devtools::install_github("bgctw/REddyProc")
 ```
--->
 
 ## Usage
 
