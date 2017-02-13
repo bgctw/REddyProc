@@ -10,12 +10,15 @@ context("partGL")
 # 8 first days of June from IT-MBo.2005.txt
 # 10 days from June from Example_DETha98.txt shipped with REddyProc
 .tmp.f <- function(){
+	#save(dsNEE, file="tmp/dsNEE_Tharandt.RData")
 	load("tmp/dsNEE_Tharandt.RData") # dsNEE
 	dsNEE$Temp <- dsNEE$Tair_f
 	dsNEE$Rg_f <- dsNEE$Rg
 	dsNEE$isNight <- (dsNEE$Rg_f <= 4 & dsNEE$PotRad_NEW == 0)
 	dsNEE$isDay=(dsNEE$Rg_f > 4 & dsNEE$PotRad_NEW != 0)
-	#
+}
+
+.tmp.f2 <- function(){
 	# else stop in partitionNEEGL, and grap ds:
 	attr(ds$sDateTime, "tzone") <- "UTC"
 	dsJune <- ds
@@ -985,11 +988,30 @@ test_that("partGLPartitionFluxes sparse data",{
 				plot( GPP_DT ~ time, tmp)
 			}
 })
+
+
+test_that("partGLPartitionFluxes missing night time data",{
+			dsNEE1 <- dsNEE
+			#set all data except one day to NA to associate the same data with several windows
+			dsNEE1$hourOfDay <- as.POSIXlt(dsNEE1$sDateTime)$hour
+			dsNEE1$NEE_f[ (dsNEE1$sDateTime >= "1998-06-01 00:00:00 GMT") & (dsNEE1$sDateTime < "1998-06-05 00:00:00 GMT") & 
+							((dsNEE1$hourOfDay >= 18) | (dsNEE1$hourOfDay <= 6))] <- NA
+			ds <- dsNEE1
+			ds$NEE <- ds$NEE_f
+			ds$sdNEE <- ds$NEE_fsd
+			ds$Temp <- ds$Tair_f
+			ds$VPD <- ds$VPD_f
+			ds$Rg <- ds$Rg_f
+			#
+			resLRC <- partGLFitLRCWindows(ds, WinSizeNight.i=4L, winExtendSizes=c() )
+			expect_true( all( is.finite(resLRC$summary$R_ref_night)) )
+		})
+
 	
 test_that("partGLPartitionFluxes filter Meteo flag",{
-		dsNEE1 <- dsNEE
+		dsNEE1 <- dsNEE1
 		# test setting VPD_fqc to other than zero, for omitting those rows
-		dsNEE1$VPD_fqc[ (dsNEE$sDateTime > "1998-06-03 00:00:00 GMT") & (dsNEE$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- 1L
+		dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > "1998-06-03 00:00:00 GMT") & (dsNEE1$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE1$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- 1L
 		#plot( VPD_fqc ~ sDateTime, dsNEE1 )
 		ds <- dsNEE1
 		ds$NEE <- ds$NEE_f

@@ -212,6 +212,7 @@ partGLFitLRCWindows=function(
 		,DayStep.i=floor(WinSizeDays.i / 2L)##<< step in days for shifting the windows
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
 		,nRecInDay=48L		##<< number of records within one day (for half-hourly data its 48)
+		,winExtendSizes = WinSizeNight.i*c(2L,4L) ##<< successively increased nighttime windows, to obtain a night-time fit
 		,controlGLPart=partGLControl()		##<< list of further default parameters
 ){
 	##seealso<< \code{\link{partGLFitNightTempSensOneWindow}}
@@ -227,7 +228,6 @@ partGLFitLRCWindows=function(
 	)
 	iNoFit <- which( is.na(resNight$summary$E0) )
 	iExtend <- 1
-	winExtendSizes <- WinSizeNight.i*c(2L,4L)
 	while( length(iNoFit) && (iExtend <= length(winExtendSizes)) ){
 		if( isVerbose ) message("    increase window size to ",winExtendSizes[iExtend], appendLF = FALSE)
 		resNightExtend <- applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
@@ -245,6 +245,10 @@ partGLFitLRCWindows=function(
 		iNoFit <- which( is.na(resNight$summary$E0) )
 		iExtend <- iExtend + 1L
 	}
+	# there might still some windows, where RRefNight has not been determined, but its needed as starting value for LRC estimate
+	resNight$summary$RRefFit <- resNight$summary$RRef	# store original estimate
+	resNight$summary$RRef <- fillNAForward(resNight$summary$RRef, firstValue=
+					resNight$summary$RRef[which(is.finite(resNight$summary$RRef))[1] ])	
 	#
 	##seealso<< \code{\link{partGLSmoothTempSens}}
 	# remember E0 and sdE0 before overidden by smoothing						
@@ -326,6 +330,8 @@ fillNAForward <- function(
 	}
 	return(x)
 }
+
+
 
 applyWindows <- function(
 		### apply a function to several windows of a data.frame
@@ -661,6 +667,9 @@ partGLFitLRCOneWindow=function(
 # if( DayStart.i > 72 ) recover()		
 	sdE0 <- E0Win$sdE0[winInfo$iWindow]
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
+	# RRefNight might not be determined due to lack of night-time data, still set to reasonable starting value
+	# better fill forward RRefNight, so that last estimate is used
+	# if( is.na(RRefNight) ) RRefNight<-mean(E0Win$RRef,na.rm = TRUE) 
 	#
 	##seealso<< \code{\link{partGLFitLRC}}
 	resOpt <- resOpt0 <- partGLFitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
@@ -712,7 +721,7 @@ partGLFitLRC <- function(
 		dsDay				##<< data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE
 		, E0				##<< temperature sensitivity of respiration
 		, sdE0				##<< standard deviation of E_0.n
-		, RRefNight			##<< basal respiration estimated from night time data 
+		, RRefNight			##<< basal respiration estimated from night time data, used as starring value and prior estimate 
 		, controlGLPart=partGLControl()	##<< further default parameters (see \code{\link{partGLControl}})
 		, lastGoodParameters			##<< numeric vector of last good theta
 ){
