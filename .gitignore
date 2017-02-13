@@ -42,3 +42,6 @@ vignettes/*.md
 # eclipse
 /.project
 /.RData
+/src-i386/
+/src-x64/
+/tmp/

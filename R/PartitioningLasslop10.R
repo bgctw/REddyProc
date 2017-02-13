@@ -541,8 +541,6 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	lines( fLloydTaylor(RRefFit, E0, temperatureKelvin, T_ref.n=TRefFit) ~ temp)
 }
 
-
-
 partGLSmoothTempSens <- function(
 		### Smoothes time development of E0
 		E0Win				##<< data.frame with columns E0 and sdE0, RRefFit, and TRefFit with one row for each window
@@ -550,21 +548,30 @@ partGLSmoothTempSens <- function(
 	#return(E0Win)
 	#E0Win$E0[1] <- NA
 	E0Win$E0[c(FALSE,(diff(E0Win$E0) == 0))] <- NA	# TODO return NA in the first place where the previous window was used
-	isFiniteE0 <- is.finite(E0Win$E0)
-	E0WinFinite <- E0Win[ isFiniteE0, ]
-	output <- capture.output(
-			gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = E0WinFinite$sdE0^2)
-			#gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = (E0WinFinite$sdE0*2)^2, nugget.known=1L)
-	)
-	pred1 <- predict(gpFit, matrix(E0Win$iCentralRec, ncol=1), se.fit=TRUE)
-	nuggetNewObs <- quantile(gpFit$nugget, 0.9)
-	nugget <- rep(nuggetNewObs, nrow(E0Win))
-	nugget[isFiniteE0] <- gpFit$nugget
-	E0Win$E0 <- pred1$fit
-	E0Win$sdE0 <- pred1$se.fit + sqrt(nugget) 
+	# mlegp does not work for long time series (Trevors bug report with Havard data)
+	# hence, smooth one year at a time
+	# testing: E0Win <- do.call( rbind, lapply(0:4,function(i){tmp<-E0Win; tmp$dayStart <- tmp$dayStart+i*365; tmp}))
+	E0Win$year <- ceiling(E0Win$dayStart/365)
+	yr <- E0Win$year[1]
+	resWin <- lapply( unique(E0Win$year), function(yr){
+				E0WinYr <- E0Win[ E0Win$year == yr, ,drop=FALSE]
+				isFiniteE0 <- is.finite(E0WinYr$E0)
+				E0WinFinite <- E0WinYr[ isFiniteE0, ]
+				output <- capture.output(
+						gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = E0WinFinite$sdE0^2)
+				#gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = (E0WinFinite$sdE0*2)^2, nugget.known=1L)
+				)
+				pred1 <- predict(gpFit, matrix(E0WinYr$iCentralRec, ncol=1), se.fit=TRUE)
+				nuggetNewObs <- quantile(gpFit$nugget, 0.9)
+				nugget <- rep(nuggetNewObs, nrow(E0WinYr))
+				nugget[isFiniteE0] <- gpFit$nugget
+				E0WinYr$E0 <- pred1$fit
+				E0WinYr$sdE0 <- pred1$se.fit + sqrt(nugget)
+				E0WinYr
+	})	
 	##value<< dataframe E0Win with updated columns E0 and sdE0
 #recover()	
-	return(E0Win)
+	ans <- do.call(rbind,resWin)
 }
 .tmp.f <- function(){
 	plot( E0WinFinite$E0 ~ E0WinFinite$iCentralRec )
