@@ -3,7 +3,7 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: TW
 #require(testthat)
-context("partGL")
+context("partGL_nonrectangular")
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -614,7 +614,8 @@ resLRCEx1 <- structure(list(resOptList = list(structure(list(opt.parms.V = struc
 
 
 
-test_that("RHLightResponseCostC",{
+test_that("NRHLightResponseCostC",{
+return(TRUE) #TODO			
 			.tmp.reloadDll <- function(){
 				library.dynam.unload("REddyProc", file.path(.libPaths()[1],"REddyProc") )
 				installPkg()
@@ -640,55 +641,31 @@ test_that("RHLightResponseCostC",{
 			expect_true(tmp - RSSR < 1e-8)	
 		})
 
-.benchmark_RHLightResponseCostC <- function(){
-	#require(rbenchmark)
-	tmp <- benchmark( 
-	 .partGLRHLightResponseCost( theta[1:4], theta, 1:4, flux, sdFlux, parameterPrior, sdParameterPrior
-			 ,dssDay$Rg_f, dssDay$VPD_f, dssDay$Temp, useCVersion=FALSE)
-		,
-		RHLightResponseCostC( theta, flux, sdFlux, parameterPrior, sdParameterPrior
-				,dssDay$Rg_f, dssDay$VPD_f, dssDay$Temp, 10.0, FALSE)
-		,replications = 10000
-					)
-	tmp			#speedup of only 2 :(
 
-	tmp <- benchmark( 
-			.partGLRHLightResponseCost( theta[1:4], theta, 1:4, flux, sdFlux, parameterPrior, sdParameterPrior
-					,dssDay$Rg_f, dssDay$VPD_f, dssDay$Temp, useCVersion=FALSE)
-			,
-			.partGLRHLightResponseCost( theta[1:4], theta, 1:4, flux, sdFlux, parameterPrior, sdParameterPrior
-					,dssDay$Rg_f, dssDay$VPD_f, dssDay$Temp)
-			,replications = 10000
-	)
-	tmp			#speedup of only about 1.8 :(
-}
-
-
-
-test_that("partGLFitLRC",{
+test_that("partGLFitLRC_NRHRF",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, isDay==TRUE)
 			dssNight <- subset(dss, isNight==TRUE)
 			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
-			res <- resNewPrior <- partGLFitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
-					,controlGLPart=partGLControl(nBootUncertainty=10L)
+			res <- resNewPrior <- partGLFitLRC_NRHRF(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
+					,controlGLPart=partGLControl(nBootUncertainty=10L, NRHRfunction=TRUE)
 			)
 			#testing Lasslop compliency: different priors, covariance from fit
-			res <- resNewPrior <- partGLFitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
-				,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
+			res <- resNewPrior <- partGLFitLRC_NRHRF(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
+				,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE, NRHRfunction=TRUE)
 			)
 			#dput(res$opt.parms.V)
 			.tmp.plot <- function(){
-				dsDay <- dsDay[ order(dsDay$Rg_f), ]
+				dsDay <- dsDay[ order(dsDay$Rg), ]
 				plot( -NEE ~ Rg, dsDay)		# NEE negative?
-				p <- c(res$opt.parms.V, E0=185)
-				pred <- partGL_RHLightResponse(p, Rg=dsDay$Rg_f, VPD=dsDay$VPD, Temp=dsDay$Temp)
-				lines(pred$NEP  ~ dsDay$Rg_f)
+				p <- c(res$opt.parms.V)
+				pred <- partGL_NRHLightResponse(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)
+				lines(pred$NEP  ~ dsDay$Rg)
 			}
 			# testing increasing number of bootstrap samples
 			.tmp.f <- function(){
-				(res60 <- partGLFitLRC(dsDay, dssNight$NEE, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE, na.rm=TRUE)
-						,controlGLPart=partGLControl(nBootUncertainty=100L)
+				(res60 <- partGLFitLRC_NRHRF(dsDay, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE_f, na.rm=TRUE)
+						,controlGLPart=partGLControl(nBootUncertainty=100L, NRHRfunction=TRUE), lastGoodParameters=rep(NA_real_, 6L)
 				))
 			}		
 		})

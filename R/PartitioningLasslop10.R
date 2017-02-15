@@ -154,10 +154,12 @@ partitionNEEGL=function(
 
 partGLControl <- function(
 		### Default list of parameters for Lasslop 2010 daytime flux partitioning
-		LRCFitConvergenceTolerance=1e-3	##<< convergence criterion for LRC fit. 
+		LRCFitConvergenceTolerance=1e-3	##<< convergence criterion for rectangular light response curve fit. 
 		## If relative improvement of reducing residual sum of squares between predictions and 
 		## observations is less than this criterion, assume convergence.
 		## Decrease to get more precise parameter estimates, Increase for speedup.
+		,nLRCFitConvergenceTolerance=1e-3	##<< convergence criterion for nonrectangular light response curve fit.
+		## Here its a factor of machine tolerance.
 		,nBootUncertainty=30L			##<< number of bootstrap samples for estimating uncertainty. 
 		## Set to zero to derive uncertainty from curvature of a single fit
 		,minNRecInDayWindow = 10L 		##<< Minimum number of data points for regression 
@@ -188,6 +190,7 @@ partGLControl <- function(
 	##      }
 	ctrl <- list(  
 			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
+			,nLRCFitConvergenceTolerance=nLRCFitConvergenceTolerance
 			,nBootUncertainty=nBootUncertainty
 			,minNRecInDayWindow=minNRecInDayWindow 
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
@@ -288,7 +291,7 @@ partGLFitLRCWindows=function(
 	#
 	##seealso<< \code{\link{partGLFitLRCOneWindow}}
 	if( isVerbose ) message("  Estimating light response curve parameters from day time NEE ", appendLF = FALSE)
-	resLRC <- applyWindows(ds, partGLFitLRCOneWindow, prevRes<-list(lastGoodParameters=rep(NA_real_, 5L))
+	resLRC <- applyWindows(ds, partGLFitLRCOneWindow, prevRes<-list(lastGoodParameters=rep(NA_real_, 6L))
 			, winSizeInDays=4L
 			,isVerbose=isVerbose		
 			,nRecInDay=nRecInDay

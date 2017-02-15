@@ -40,7 +40,7 @@ partGLFitLRC_NRHRF <- function(
 	#
 	##seealso<< \code{\link{parmGLOptimLRCBounds}}
 	resOpt3 <- apply( theta.V.n, 1, function(theta0){
-				resOpt <- parmGLOptimNRHRFBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart, lastGoodParameters.V.n=lastGoodParameters )
+				resOpt <- parmGLOptimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart, lastGoodParameters.V.n=lastGoodParameters )
 			})
 	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
 	resOpt3Valid <- resOpt3[iValid]
@@ -189,7 +189,7 @@ partGLFitLRC_NRHRF <- function(
 			,VPD = dsDayFinite$VPD
 			,Temp=dsDayFinite$Temp
 			#,E0 = E_0.n
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
+			,control=list(factr=ctrl$nLRCFitConvergenceTolerance)
 			,method="L-BFGS-B"
 			,lower = lower_theta[iOpt], upper = upper_theta[iOpt]
 			,hessian=isUsingHessian)  #MIRCO Changed
@@ -209,7 +209,7 @@ partGLFitLRC_NRHRF <- function(
 			,VPD = dsDayFinite$VPD
 			,Temp=dsDayFinite$Temp
 			#,E0 = E_0.n
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
+			,control=list(factr=ctrl$nLRCFitConvergenceTolerance)
 			,method="L-BFGS-B"
 			,lower = lower_theta[iOpt], upper = upper_theta[iOpt]
 			,hessian=isUsingHessian)  #MIRCO CHANGED
