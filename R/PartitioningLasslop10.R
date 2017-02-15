@@ -212,6 +212,7 @@ partGLFitLRCWindows=function(
 		,DayStep.i=floor(WinSizeDays.i / 2L)##<< step in days for shifting the windows
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
 		,nRecInDay=48L		##<< number of records within one day (for half-hourly data its 48)
+		,winExtendSizes = WinSizeNight.i*c(2L,4L) ##<< successively increased nighttime windows, to obtain a night-time fit
 		,controlGLPart=partGLControl()		##<< list of further default parameters
 ){
 	##seealso<< \code{\link{partGLFitNightTempSensOneWindow}}
@@ -227,7 +228,6 @@ partGLFitLRCWindows=function(
 	)
 	iNoFit <- which( is.na(resNight$summary$E0) )
 	iExtend <- 1
-	winExtendSizes <- WinSizeNight.i*c(2L,4L)
 	while( length(iNoFit) && (iExtend <= length(winExtendSizes)) ){
 		if( isVerbose ) message("    increase window size to ",winExtendSizes[iExtend], appendLF = FALSE)
 		resNightExtend <- applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
@@ -245,6 +245,10 @@ partGLFitLRCWindows=function(
 		iNoFit <- which( is.na(resNight$summary$E0) )
 		iExtend <- iExtend + 1L
 	}
+	# there might still some windows, where RRefNight has not been determined, but its needed as starting value for LRC estimate
+	resNight$summary$RRefFit <- resNight$summary$RRef	# store original estimate
+	resNight$summary$RRef <- fillNAForward(resNight$summary$RRef, firstValue=
+					resNight$summary$RRef[which(is.finite(resNight$summary$RRef))[1] ])	
 	#
 	##seealso<< \code{\link{partGLSmoothTempSens}}
 	# remember E0 and sdE0 before overidden by smoothing						
@@ -326,6 +330,8 @@ fillNAForward <- function(
 	}
 	return(x)
 }
+
+
 
 applyWindows <- function(
 		### apply a function to several windows of a data.frame
@@ -535,8 +541,6 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	lines( fLloydTaylor(RRefFit, E0, temperatureKelvin, T_ref.n=TRefFit) ~ temp)
 }
 
-
-
 partGLSmoothTempSens <- function(
 		### Smoothes time development of E0
 		E0Win				##<< data.frame with columns E0 and sdE0, RRefFit, and TRefFit with one row for each window
@@ -544,21 +548,30 @@ partGLSmoothTempSens <- function(
 	#return(E0Win)
 	#E0Win$E0[1] <- NA
 	E0Win$E0[c(FALSE,(diff(E0Win$E0) == 0))] <- NA	# TODO return NA in the first place where the previous window was used
-	isFiniteE0 <- is.finite(E0Win$E0)
-	E0WinFinite <- E0Win[ isFiniteE0, ]
-	output <- capture.output(
-			gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = E0WinFinite$sdE0^2)
-			#gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = (E0WinFinite$sdE0*2)^2, nugget.known=1L)
-	)
-	pred1 <- predict(gpFit, matrix(E0Win$iCentralRec, ncol=1), se.fit=TRUE)
-	nuggetNewObs <- quantile(gpFit$nugget, 0.9)
-	nugget <- rep(nuggetNewObs, nrow(E0Win))
-	nugget[isFiniteE0] <- gpFit$nugget
-	E0Win$E0 <- pred1$fit
-	E0Win$sdE0 <- pred1$se.fit + sqrt(nugget) 
+	# mlegp does not work for long time series (Trevors bug report with Havard data)
+	# hence, smooth one year at a time
+	# testing: E0Win <- do.call( rbind, lapply(0:4,function(i){tmp<-E0Win; tmp$dayStart <- tmp$dayStart+i*365; tmp}))
+	E0Win$year <- ceiling(E0Win$dayStart/365)
+	yr <- E0Win$year[1]
+	resWin <- lapply( unique(E0Win$year), function(yr){
+				E0WinYr <- E0Win[ E0Win$year == yr, ,drop=FALSE]
+				isFiniteE0 <- is.finite(E0WinYr$E0)
+				E0WinFinite <- E0WinYr[ isFiniteE0, ]
+				output <- capture.output(
+						gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = E0WinFinite$sdE0^2)
+				#gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = (E0WinFinite$sdE0*2)^2, nugget.known=1L)
+				)
+				pred1 <- predict(gpFit, matrix(E0WinYr$iCentralRec, ncol=1), se.fit=TRUE)
+				nuggetNewObs <- quantile(gpFit$nugget, 0.9)
+				nugget <- rep(nuggetNewObs, nrow(E0WinYr))
+				nugget[isFiniteE0] <- gpFit$nugget
+				E0WinYr$E0 <- pred1$fit
+				E0WinYr$sdE0 <- pred1$se.fit + sqrt(nugget)
+				E0WinYr
+	})	
 	##value<< dataframe E0Win with updated columns E0 and sdE0
 #recover()	
-	return(E0Win)
+	ans <- do.call(rbind,resWin)
 }
 .tmp.f <- function(){
 	plot( E0WinFinite$E0 ~ E0WinFinite$iCentralRec )
@@ -661,6 +674,9 @@ partGLFitLRCOneWindow=function(
 # if( DayStart.i > 72 ) recover()		
 	sdE0 <- E0Win$sdE0[winInfo$iWindow]
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
+	# RRefNight might not be determined due to lack of night-time data, still set to reasonable starting value
+	# better fill forward RRefNight, so that last estimate is used
+	# if( is.na(RRefNight) ) RRefNight<-mean(E0Win$RRef,na.rm = TRUE) 
 	#
 	##seealso<< \code{\link{partGLFitLRC}}
 	resOpt <- resOpt0 <- partGLFitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
@@ -712,7 +728,7 @@ partGLFitLRC <- function(
 		dsDay				##<< data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE
 		, E0				##<< temperature sensitivity of respiration
 		, sdE0				##<< standard deviation of E_0.n
-		, RRefNight			##<< basal respiration estimated from night time data 
+		, RRefNight			##<< basal respiration estimated from night time data, used as starring value and prior estimate 
 		, controlGLPart=partGLControl()	##<< further default parameters (see \code{\link{partGLControl}})
 		, lastGoodParameters			##<< numeric vector of last good theta
 ){

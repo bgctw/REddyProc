@@ -133,26 +133,38 @@ ctrl <- partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
 		isFilterMeteoQualityFlag=FALSE
 		,smoothTempSensEstimateAcrossTime=FALSE
 )
+#ctrl <- partGLControl()
 
-for (yr in years){  # --> split into individual years or it will crash!
-  cat("starting year",yr,fill=T)
-  if (yr == years[1]){
-    df.REddy_Ha1 <- partitionNEEGL(Data.F[Data.F[,"YEAR"] == yr,],NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
-                                   TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-                                   RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
-                                   controlGLPart=ctrl)
-  } else {  # important: make sure it's identical to the first call!!
-    df.REddy_Ha1_year <- tmp <- partitionNEEGL(Data.F[Data.F[,"YEAR"] == yr,],NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
-                                        TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-                                        RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
-                                        controlGLPart=ctrl)
-    
-    df.REddy_Ha1 <- rbind(df.REddy_Ha1,df.REddy_Ha1_year)
-  }
-  
+.tmp.deprecatedCrashOnLongTimeSeries <- function(){
+	for (yr in years){  # --> split into individual years or it will crash!
+	  cat("starting year",yr,fill=T)
+	  if (yr == years[1]){
+		#dataYr <- Data.F
+		dataYr <- Data.F[Data.F[,"YEAR"] == yr,]
+	    df.REddy_Ha1 <- partitionNEEGL(dataYr,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
+	                                   TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
+	                                   RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
+	                                   controlGLPart=ctrl)
+	  } else {  # important: make sure it's identical to the first call!!
+	    df.REddy_Ha1_year <- tmp <- partitionNEEGL(dataYr,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
+	                                        TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
+	                                        RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
+	                                        controlGLPart=ctrl)
+	    
+	    df.REddy_Ha1 <- rbind(df.REddy_Ha1,df.REddy_Ha1_year)
+	  }
+	}
 }
 
+
+
+df.REddy_Ha1 <- partitionNEEGL(Data.F,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
+		TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
+		RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
+		controlGLPart=ctrl)
+
 .tmp.f <- function(){
+	#ds <- Data.F[Data.F[,"YEAR"] == yr,]
 	ds <- Data.F[Data.F[,"YEAR"] == yr,]
 	plot( ds$NEE ~ ds$DateTime )
 }
@@ -165,7 +177,7 @@ GPP_good <- df.hf$GPP_DT
 Reco_good <- df.hf$Reco_DT
 GPP_good[df.hf$FP_qc > 0] <- NA
 Reco_good[df.hf$FP_qc > 0 ] <- NA
-Data.F2 <- Data.F[Time.F[,"year"] %in% years,]
+Data.F2 <- Data.F #Data.F[Time.F[,"year"] %in% years,]
 
 df.hf <- cbind(df.REddy_Ha1,Data.F2,NEE_DT,GPP_good,Reco_good)
 
@@ -186,6 +198,9 @@ df.hf <- cbind(df.REddy_Ha1,Data.F2,NEE_DT,GPP_good,Reco_good)
  plot(df.hf$Reco_DT,col="grey",xlab="Timestep",ylab="REco")
  points(Reco_good,col="black")
 }
+
+
+plot(df.hf$FP_E0[is.finite(df.hf$FP_E0)],xlab="Timestep",ylab="E0", type="b")
 
 
 ### closer look at individual years
