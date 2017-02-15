@@ -32,12 +32,12 @@ sEddyProc$methods(
 
 usEstUstarThreshold = function(
 		##title<<
-		## sEddyProc$sEstUstarThreshold - Estimating ustar threshold
+		## usEstUstarThreshold - Estimating ustar threshold
 		##description<<
 		## Estimate the Ustar threshold by aggregating the estimates for seasonal and temperature subsets.
 		ds 					##<< data.frame with columns "sDateTime", "Ustar", "NEE", "Tair", and "Rg"
-		,seasonFactor.v = usCreateSeasonFactorMonth(ds$sDateTime) ##<< factor for subsetting times (see details)
-		,seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year (aggregation period) that this season belongs to  
+		,seasonFactor.v = usCreateSeasonFactorMonth(ds$sDateTime) 				##<< factor for subsetting times (see details)
+		,seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, ds$sDateTime)	##<< named integer vector: for each seasonFactor level, get the year (aggregation period) that this season belongs to  
 		,ctrlUstarEst.l = usControlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{usControlUstarEst}}
 		,ctrlUstarSub.l = usControlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{usControlUstarSubsetting}} 
 		,fEstimateUStarBinned = usEstUstarThresholdSingleFw2Binned	##<< function to estimate UStar on a single binned series, see \code{\link{usEstUstarThresholdSingleFw2Binned}}
