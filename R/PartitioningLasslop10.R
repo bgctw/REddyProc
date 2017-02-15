@@ -151,30 +151,33 @@ partitionNEEGL=function(
 	return(dsAns)
 }
 
+
 partGLControl <- function(
 		### Default list of parameters for Lasslop 2010 daytime flux partitioning
 		LRCFitConvergenceTolerance=1e-3	##<< convergence criterion for LRC fit. 
-			## If relative improvement of reducing residual sum of squares between predictions and 
-			## observations is less than this criterion, assume convergence.
-			## Decrease to get more precise parameter estimates, Increase for speedup.
+		## If relative improvement of reducing residual sum of squares between predictions and 
+		## observations is less than this criterion, assume convergence.
+		## Decrease to get more precise parameter estimates, Increase for speedup.
 		,nBootUncertainty=30L			##<< number of bootstrap samples for estimating uncertainty. 
-			## Set to zero to derive uncertainty from curvature of a single fit
+		## Set to zero to derive uncertainty from curvature of a single fit
 		,minNRecInDayWindow = 10L 		##<< Minimum number of data points for regression 
 		,isAssociateParmsToMeanOfValids=TRUE	##<< set to FALSE to associate parameters to 
-			## the first record of the window for interpolation 
-			## instead of mean across valid records inside a window
+		## the first record of the window for interpolation 
+		## instead of mean across valid records inside a window
 		,isLasslopPriorsApplied=FALSE	##<< set to TRUE to apply strong fixed priors on LRC fitting.	
-			## Returned parameter estimates claimed valid for some case where not enough data was available 
+		## Returned parameter estimates claimed valid for some case where not enough data was available 
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
-			## of Reco and GPP for small performance increase 	
+		## of Reco and GPP for small performance increase 	
 		,isFilterMeteoQualityFlag=FALSE	##<< set to TRUE to use only records where quality flag 
-			## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled for parameter estimation.
-			## For prediction, the gap-filled value is used always, to produce predictions also for gaps.
+		## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled for parameter estimation.
+		## For prediction, the gap-filled value is used always, to produce predictions also for gaps.
 		,isBoundLowerNEEUncertainty=TRUE	##<< set to FALSE to avoid adjustment of very low uncertainties before
-			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
+		## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
-			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
-	){
+		## sensitivity on each windows instead of a vector of E0 that is smoothed over time
+		,NRHRfunction=FALSE #<< Flag if TRUE use the NRHRF for partitioning
+## Definition of the LRC Model
+){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
@@ -193,6 +196,7 @@ partGLControl <- function(
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
+			,NRHRfunction=NRHRfunction
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -850,31 +854,33 @@ parmGLOptimLRCBounds <- function(
 		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
 		theta0		##<< initial parameter estimate
 		,parameterPrior	##<< prior estimate of model parameters
-		, ...		##<< further parameters to \code{.optimLRC}, such as \code{dsDay}, and \code{ctrl} 
+		, ...		##<< further parameters to \code{.optimLRC}, such as \code{dsDay}
 		,lastGoodParameters.V.n ##<< parameters vector of last successful fit
+		, ctrl					##<< list of further controls
 ){
 	##author<< TW, MM
 	##seealso<< \code{\link{partGLFitLRC}}
+	fOptim <- if( ctrl$NRHRfunction ) .optimNRHRF else .optimLRC
 	if( !is.finite(lastGoodParameters.V.n[3L]) ) lastGoodParameters.V.n[3L] <- 0.22	# twutz 161014: default alpha 	
 	isAlphaFix <- FALSE
 	isKFix <- FALSE
-	resOpt <- resOpt0 <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+	resOpt <- resOpt0 <- fOptim(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
 	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
 	# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
 	##details<<
 	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
 	## to values from fit of previous window.
 	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
-	#dsDay <- list(...)$dsDay
+	#dsDay <- list(ctrl, ...)$dsDay
 	if (resOpt$theta[1L] < 0){
 		isKFix <- TRUE
 		theta0Adj[1L] <- 0
-		resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+		resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
 		# check alpha, if less than zero estimate parameters with fixed alpha of last window 
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
 			isAlphaFix <- TRUE
 			theta0Adj[3L] <- lastGoodParameters.V.n[3L] 
-			resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+			resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
 		}
 	} else {
 		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
@@ -882,12 +888,12 @@ parmGLOptimLRCBounds <- function(
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
 			isAlphaFix <- TRUE
 			theta0Adj[3L] <- lastGoodParameters.V.n[3L]
-			resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+			resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
 			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
 			if (resOpt$theta[1L] < 0){
 				isKFix <- TRUE
 				theta0Adj[1L] <- 0
-				resOpt <- .optimLRC(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
+				resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
 			}
 		}
 	} 
@@ -911,7 +917,6 @@ parmGLOptimLRCBounds <- function(
 	resOpt
 }
 
-
 .bootStrapLRCFit <- function(
 		### Compute parameters uncertainty by bootstrap
 		theta0, iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l
@@ -932,14 +937,21 @@ parmGLOptimLRCBounds <- function(
 		idx <- sample(nrow(dsDay), replace=TRUE)
 		dsDayB <- dsDay[idx,]
 		theta[5L] <- E0[iBoot]
-		resOptBoot <- .optimLRC(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
-				, dsDayB, parameterPrior, controlGLPart.l )
+		if ( controlGLPart.l$NRHRfunction == TRUE ){
+			resOptBoot <- .optimNRHRF(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
+					, dsDayB, parameterPrior, controlGLPart.l )
+		} else {
+			# call the usual rectangular version
+			resOptBoot <- .optimLRC(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
+					, dsDayB, parameterPrior, controlGLPart.l )
+		}
 		if( resOptBoot$convergence == 0L )	
 			#TODO: also remove the bery bad cases? 
 			ans[iBoot,]<-resOptBoot$theta
 	}
 	ans
 }
+
 
 .optimLRC <- function(
 		###<< one fit of the light response curve with a subset of parameters depending on which are fixed
@@ -1343,10 +1355,17 @@ partGLInterpolateFluxes <- function(
 		tmp <- fLloydTaylor(dsi$R_ref, dsi$E_0, Temp_Kelvin, T_ref.n=273.15+15)
 	})
 	#dsi <- dsBefore
-	GPP2 <- lapply( list(dsBefore,dsAfter), function(dsi){
-				theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0")])
-				tmp <- partGL_RHLightResponse(theta, Rg, VPD, Temp=Temp)$GPP
-		})
+	GPP2 <- if( controlGLPart$NRHRfunction ){
+				lapply( list(dsBefore,dsAfter), function(dsi){
+							theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0","conv")])
+							tmp <- partGL_NRHLightResponse(theta, Rg, VPD, Temp=Temp)$GPP
+						})
+	} else {
+		lapply( list(dsBefore,dsAfter), function(dsi){
+					theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0")])
+					tmp <- partGL_RHLightResponse(theta, Rg, VPD, Temp=Temp)$GPP
+			})
+	}
 	# interpolate between previous and next fit, weights already sum to 1
 	Reco <- (dsAssoc$wBefore*Reco2[[1]] + dsAssoc$wAfter*Reco2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)  
 	GPP <- (dsAssoc$wBefore*GPP2[[1]] + dsAssoc$wAfter*GPP2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)
@@ -1356,23 +1375,44 @@ partGLInterpolateFluxes <- function(
 			,GPP = GPP
 	)
 	if( isTRUE(controlGLPart$isSdPredComputed)){
-		varPred2 <- lapply( list(dsBefore,dsAfter), function(dsi){
-					theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0")])
-					grad <- partGL_RHLightResponseGrad(theta, Rg, VPD, Temp)
-					varPred <- matrix(NA_real_, nrow=nrow(dsi), ncol=2L, dimnames=list(NULL,c("varGPP","varReco")))
-					#iRec <- 1L
-					for( iRec in 1:nrow(dsi)){
-						iParRec <- dsi$iParRec[iRec]
-						# get the fitting object, TODO better document
-						resOpt <- resParms$resOptList[[ iParRec ]]
-						gradGPP <- grad$GPP[iRec,]
-						gradReco <- grad$Reco[iRec,]
-						# make sure parameter names match postions in covParms
-						varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[1:3,1:3] %*% gradGPP
-						varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[4:5,4:5] %*% gradReco
-					}
-					varPred
-				})
+		varPred2 <- if( controlGLPart$NRHRfunction ){
+						lapply( list(dsBefore,dsAfter), function(dsi){
+							theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0","conv")])
+							grad <- partGL_NRHLightResponseGrad(theta, Rg, VPD, Temp)
+							varPred <- matrix(NA_real_, nrow=nrow(dsi), ncol=2L, dimnames=list(NULL,c("varGPP","varReco")))
+							#iRec <- 1L
+							for( iRec in 1:nrow(dsi)){
+								iParRec <- dsi$iParRec[iRec]
+								# get the fitting object, TODO better document
+								resOpt <- resParms$resOptList[[ iParRec ]]
+								gradGPP <- grad$GPP[iRec,]
+								gradReco <- grad$Reco[iRec,]
+								# make sure parameter names match postions in covParms
+								varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[1:3,1:3] %*% gradGPP
+								varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[4:5,4:5] %*% gradReco
+							}
+							varPred
+						})
+				} else {
+					 # using the rectangular version
+					 lapply( list(dsBefore,dsAfter), function(dsi){
+						theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0")])
+						grad <- partGL_RHLightResponseGrad(theta, Rg, VPD, Temp)
+						varPred <- matrix(NA_real_, nrow=nrow(dsi), ncol=2L, dimnames=list(NULL,c("varGPP","varReco")))
+						#iRec <- 1L
+						for( iRec in 1:nrow(dsi)){
+							iParRec <- dsi$iParRec[iRec]
+							# get the fitting object, TODO better document
+							resOpt <- resParms$resOptList[[ iParRec ]]
+							gradGPP <- grad$GPP[iRec,]
+							gradReco <- grad$Reco[iRec,]
+							# make sure parameter names match postions in covParms
+							varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[1:3,1:3] %*% gradGPP
+							varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[4:5,4:5] %*% gradReco
+						}
+						varPred
+					})
+				}
 		sdGPP <- sqrt(dsAssoc$wBefore^2*varPred2[[1]][,"varGPP"] + dsAssoc$wAfter^2*varPred2[[1]][,"varGPP"]) 
 		sdReco <- sqrt(dsAssoc$wBefore^2*varPred2[[1]][,"varReco"] + dsAssoc$wAfter^2*varPred2[[1]][,"varReco"])   
 		ans <- cbind(ansPred, data.frame(sdGPP=sdGPP, sdReco=sdReco))

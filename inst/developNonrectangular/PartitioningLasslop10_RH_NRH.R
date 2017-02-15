@@ -1244,14 +1244,14 @@ parmGLOptimNRHRFBounds <- function(
 		idx <- sample(nrow(dsDay), replace=TRUE)
 		dsDayB <- dsDay[idx,]
 		theta[5L] <- E0[iBoot]
-    if ( controlGLPart.l$NRHRfunction == FALSE ){
-  		resOptBoot <- .optimLRC(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
-  				, dsDayB, parameterPrior, controlGLPart.l )
-    }
-    if ( controlGLPart.l$NRHRfunction == TRUE ){
-		  resOptBoot <- .optimNRHRF(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
-		            , dsDayB, parameterPrior, controlGLPart.l )
-    }
+		if ( controlGLPart.l$NRHRfunction == TRUE ){
+			resOptBoot <- .optimNRHRF(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
+					, dsDayB, parameterPrior, controlGLPart.l )
+		} else {
+			# call the usual rectangular version
+	  		resOptBoot <- .optimLRC(theta, isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha 
+	  				, dsDayB, parameterPrior, controlGLPart.l )
+		}
 		if( resOptBoot$convergence == 0L )	
 			#TODO: also remove the bery bad cases? 
 			ans[iBoot,]<-resOptBoot$theta
@@ -1553,7 +1553,7 @@ partGL_RHLightResponse <- function(
 }
 
 partGL_NRHRF <- function(
-  ###Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
+  ### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
   theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=conv)
   ##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
   ,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
