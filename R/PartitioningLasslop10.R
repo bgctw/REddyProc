@@ -1348,13 +1348,24 @@ partGLInterpolateFluxes <- function(
 	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAssoc <- .partGPAssociateSpecialRows(summaryLRC[[colNameAssoc]],nRec)
 	# now we have iBefore and iAfter
-	dsBefore <- merge( 
-			structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
-			, summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")]
-			)
-	dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
-	if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
-	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+	if (controlGLPart$NRHRfunction == TRUE){
+	  dsBefore <- merge( 
+	    structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
+	    , summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k","conv")]
+	  )
+	  dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k","conv")])
+	}
+	if (controlGLPart$NRHRfunction == FALSE){
+	  dsBefore <- merge( 
+	    structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
+	    , summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")]
+	  )
+	  dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
+	}
+
+  if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
+
+  Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
 		tmp <- fLloydTaylor(dsi$R_ref, dsi$E_0, Temp_Kelvin, T_ref.n=273.15+15)
 	})
 	#dsi <- dsBefore
