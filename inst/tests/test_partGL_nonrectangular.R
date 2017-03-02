@@ -654,6 +654,9 @@ test_that("partGLFitLRC_NRHRF",{
 			res <- resNewPrior <- partGLFitLRC_NRHRF(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 				,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE, NRHRfunction=TRUE)
 			)
+			expect_true("conv" %in% names(res$opt.parms.V))
+			expect_true( all(is.finite(res$covParms)) )
+			#
 			#dput(res$opt.parms.V)
 			.tmp.plot <- function(){
 				dsDay <- dsDay[ order(dsDay$Rg), ]
@@ -665,9 +668,10 @@ test_that("partGLFitLRC_NRHRF",{
 			# testing increasing number of bootstrap samples
 			.tmp.f <- function(){
 				(res60 <- partGLFitLRC_NRHRF(dsDay, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE_f, na.rm=TRUE)
-						,controlGLPart=partGLControl(nBootUncertainty=100L, NRHRfunction=TRUE), lastGoodParameters=rep(NA_real_, 6L)
+						,controlGLPart=partGLControl(nBootUncertainty=10L, NRHRfunction=TRUE), lastGoodParameters=rep(NA_real_, 6L)
 				))
-			}		
+				expect_true( all(is.finite(res60$covParms)) )
+}		
 		})
 
 
