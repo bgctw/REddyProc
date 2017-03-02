@@ -8,6 +8,8 @@
 ^vignettes/figure/.*$
 ^vignettes/cache/.*$	
 ^scratch$
+^out$
+^plots$
 ^tmp$
 ^.git$
 ^.gitignore$

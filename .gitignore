@@ -20,7 +20,7 @@
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
-vignettes/*.md
+#vignettes/*.md	# want view at github
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
@@ -45,3 +45,5 @@ vignettes/*.md
 /src-i386/
 /src-x64/
 /tmp/
+/out/
+/plots/
