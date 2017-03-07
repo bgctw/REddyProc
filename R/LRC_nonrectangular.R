@@ -83,8 +83,8 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 	##seealso<< \code{\link{partGLFitLRC}}
 	# optimLRC <- if( ctrl$NRHRfunction ) .optimNRHRF else .optimLRC # now called on method with supplying LRC
 	if( !is.finite(lastGoodParameters.V.n[3L]) ) lastGoodParameters.V.n[3L] <- 0.22	# twutz 161014: default alpha 	
-	isAlphaFix <- FALSE
-	isKFix <- FALSE
+	isUsingFixedVPD <- FALSE
+	isUsingFixedAlpha <- FALSE
 	getIOpt <- function( isUsingFixedVPD, isUsingFixedAlpha){
 		iOpt <- 
 				if( !isUsingFixedVPD & !isUsingFixedAlpha ) c(1:4) else
@@ -93,7 +93,7 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 				if(  isUsingFixedVPD &  isUsingFixedAlpha ) c(2L,4L) 
 		iOpt <- c(iOpt,6)	# add the convexity parameter
 	}
-	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
 	# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
 	##details<<
@@ -101,28 +101,49 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 	## to values from fit of previous window.
 	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
 	#dsDay <- list(ctrl, ...)$dsDay
-	if (resOpt$theta[1L] < 0){
-		isKFix <- TRUE
+	# #details<< Sometimes the VPD-effect parameter is fitted to match the noise.
+	# # Hence, only fit with the VPD-parameter if predictions at low PAR are not much effected.
+	.tmp.inspectFixedVPDEffect <- function(){
+		resOptFixVPD <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD=TRUE, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+		p <- theta0
+		p <- resOpt$theta
+		pFix <- resOptFixVPD$theta
+		dsDay <- list(...)$dsDay
+		dsDayLowPar <- dsDay
+		dsDayLowPar <- dsDay[dsDay$Rg <= 200,,drop=FALSE]
+		dsDayLowPar <- dsDayLowPar[order(dsDayLowPar$Rg),]
+		pred <- .self$predictLRC(p, Rg=dsDayLowPar$Rg, VPD=dsDayLowPar$VPD, Temp=dsDayLowPar$Temp)
+		predFix <- .self$predictLRC(pFix, Rg=dsDayLowPar$Rg, VPD=dsDayLowPar$VPD, Temp=dsDayLowPar$Temp)
+		plot( -NEE ~ Rg, dsDayLowPar)		# NEE negative?
+		lines(pred$NEP  ~ dsDayLowPar$Rg)
+		lines(predFix$NEP  ~ dsDayLowPar$Rg, col="blue")
+		lines(pred$GPP  ~ dsDayLowPar$Rg)
+		lines(predFix$GPP  ~ dsDayLowPar$Rg, col="blue")
+		# actually the GPP at low PAR is not much affects. The difference is in explaining the variability by
+		# respiration-T of modified GPP-VPD. Here, the VPD-based R_ref is closer to the night-time estimated.
+	}
+	if ((resOpt$theta[1L] < 0) || (FALSE) || (FALSE)){
+		isUsingFixedAlpha <- TRUE
 		theta0Adj[1L] <- 0
-		resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+		resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 		# check alpha, if less than zero estimate parameters with fixed alpha of last window 
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
-			isAlphaFix <- TRUE
+			isUsingFixedVPD <- TRUE
 			theta0Adj[3L] <- lastGoodParameters.V.n[3L] 
-			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 		}
 	} else {
 		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
 		# if not last window exists, let alpha > 0.22
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
-			isAlphaFix <- TRUE
+			isUsingFixedVPD <- TRUE
 			theta0Adj[3L] <- lastGoodParameters.V.n[3L]
-			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
 			if (resOpt$theta[1L] < 0){
-				isKFix <- TRUE
+				isUsingFixedAlpha <- TRUE
 				theta0Adj[1L] <- 0
-				resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+				resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 			}
 		}
 	} 
@@ -240,7 +261,6 @@ NonrectangularLRCFitter_predictLRC <- function(
 	#print(VPD)
 	#print(Rg)
 	Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13))) 
-	
 	zRoot<-((alfa*Rg+Amax)^2)-(4*alfa*Rg*conv*Amax)
 	zRoot[which(zRoot<0)]<-0
 	GPP<-(1/(2*conv))*(alfa*Rg+Amax-sqrt(zRoot))

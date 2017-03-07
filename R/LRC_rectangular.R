@@ -53,6 +53,7 @@ RectangularLRCFitter_optimLRCBounds <- function(
 	##author<< TW, MM
 	##seealso<< \code{\link{partGLFitLRC}}
 	# optimLRC <- if( ctrl$NRHRfunction ) .optimNRHRF else .optimLRC # now called on method with supplying LRC
+	# differs from Nonrectangular by setting iOpt
 	if( !is.finite(lastGoodParameters.V.n[3L]) ) lastGoodParameters.V.n[3L] <- 0.22	# twutz 161014: default alpha 	
 	isUsingFixedAlpha <- FALSE
 	isUsingVixedVPD <- FALSE

@@ -944,9 +944,12 @@ parmGLOptimLRCBounds <- function(
 		dsDayB <- dsDay[idx,]
 		theta[iPosE0] <- E0[iBoot]
 		resOptBoot <- LRC$optimLRCOnAdjustedPrior(theta, iOpt=iOpt, dsDay=dsDayB, parameterPrior=parameterPrior, ctrl=controlGLPart.l)
-		if( resOptBoot$convergence == 0L )	
+		if( resOptBoot$convergence == 0L ){	
 			#TODO: also remove the very bad cases? 
 			ans[iBoot,]<-resOptBoot$theta
+		}else{
+			recover()
+		}
 	}
 	ans
 }

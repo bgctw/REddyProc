@@ -43,11 +43,15 @@ LightResponseCurve_fitLRC <- function(
 	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
 	resOpt3Valid <- resOpt3[iValid]
 	optSSE <- sapply(resOpt3Valid, "[[", "value")
+	getNAResult <- function(){ list(
+				thetaOpt=structure( rep(NA_real_, nPar), names=colnames(thetaInitials) )
+				,iOpt=integer(0)		##<< index of parameters that have been optimized
+				,thetaInitialGuess=			##<< the initial guess from data
+						thetaInitials[1,]	
+				,covParms=matrix(NA_real_, nPar, nPar, dimnames=list(colnames(thetaInitials),colnames(thetaInitials)))
+		)}		
 	if( sum(!is.na(optSSE)) == 0L ){
-		# none of the intial fits yielded valid result, create NA-return values
-		thetaOpt <- structure( rep(NA_real_, nPar), names=colnames(thetaInitials) )
-		covParms <- matrix(NA_real_, nPar, nPar, dimnames=list(colnames(thetaInitials),colnames(thetaInitials)))
-		resOpt <- list(iOpt = integer(0))	
+		return( getNAResult() )
 	} else {
 		resOpt <- resOpt3Valid[[iBest <- which.min(optSSE)]] # select the one with the least cost
 		thetaOpt<-resOpt$theta
@@ -76,7 +80,11 @@ LightResponseCurve_fitLRC <- function(
 			# #seealso<< \code{\link{.bootStrapLRCFit}}
 			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE0, parameterPrior, controlGLPart, LRC=.self)
 			#resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l=within(controlGLPart.l,nBootUncertainty <- 30L))
-			covParms <- cov(resBoot)
+			iFiniteRows <- which( is.finite(resBoot[,1L]))
+recover()			
+			if( length(iFiniteRows)  < 0.8*nrow(resBoot))
+				return( getNAResult() )
+			covParms <- cov(resBoot[iFiniteRows,])
 			#better not to average parameters
 			#opt.parms.V <- apply(resBoot, 2, median, na.rm=TRUE)
 			#se.parms.V <- apply(resBoot, 2, sd, na.rm=TRUE)
