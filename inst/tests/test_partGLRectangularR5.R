@@ -610,8 +610,8 @@ resLRCEx1 <- structure(list(resOptList = list(structure(list(opt.parms.V = struc
 								"k", "k_SD", "parms_out_range"), row.names = c(NA, 4L), class = "data.frame")), .Names = c("resOptList", 
 				"summary"))
 
-RectangularLRC$methods()		
-LRC <- RectangularLRC()		
+RectangularLRCFitter$methods()		
+LRC <- RectangularLRCFitter()		
 
 
 test_that("partGL_RHLightResponseGrad matches numerical estimates",{
@@ -658,7 +658,7 @@ test_that("RHLightResponseCostC",{
 				,dssDay$Rg_f, dssDay$VPD_f, dssDay$Temp, 10.0, FALSE)
 			RSSR <- LRC$computeCost( theta, theta, seq_along(theta), flux, sdFlux, parameterPrior, sdParameterPrior
 					,Rg=dssDay$Rg_f, VPD=dssDay$VPD_f, Temp=dssDay$Temp)
-			LRC_CVersion <- RectangularLRC_C()
+			LRC_CVersion <- RectangularLRCFitterCVersion()
 			tmp <- LRC_CVersion$computeCost( theta, theta, seq_along(theta), flux, sdFlux, parameterPrior, sdParameterPrior
 					,Rg=dssDay$Rg_f, VPD=dssDay$VPD_f, Temp=dssDay$Temp)
 			#(predR$NEP - tmp)					
@@ -677,7 +677,7 @@ test_that("RHLightResponseCostC",{
 	tmp			#speedup of only 2 :(
 }
 
-test_that("partGLFitLRC",{
+test_that("fitLRC",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, isDay==TRUE)
 			dssNight <- subset(dss, isNight==TRUE)

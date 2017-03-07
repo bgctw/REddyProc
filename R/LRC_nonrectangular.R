@@ -1,12 +1,12 @@
 
 
-NonrectangularLRC <- setRefClass('NonrectangularLRC', contains='LightResponseCurve'
+NonrectangularLRCFitter <- setRefClass('NonrectangularLRCFitter', contains='LightResponseCurveFitter'
 ## R5 reference class for the Rectangular Light response curve
 ##author<<
 ## TW, MM
 )	
 
-NonrectangularLRC$methods(
+NonrectangularLRCFitter$methods(
 getParameterNames = function(
 ### return the parameter names used by this Light Response Curve Funciton
 ){
@@ -15,7 +15,7 @@ getParameterNames = function(
 })
 
 
-NonrectangularLRC$methods(
+NonrectangularLRCFitter$methods(
 getPriorLocation = function(
 		### return the prior distribution of parameters
 		NEEDay 		##<< numeric vector of daytime NEE
@@ -35,7 +35,7 @@ getPriorLocation = function(
 	)   
 })
 
-NonrectangularLRC$methods(
+NonrectangularLRCFitter$methods(
 getPriorScale = function(
 		### return the prior distribution of parameters
 		thetaPrior 	##<< numeric vector of location of priors
@@ -58,7 +58,7 @@ getPriorScale = function(
 			}
 })
 
-NonrectangularLRC$methods(
+NonrectangularLRCFitter$methods(
 getParameterInitials = function(
 		### return the prior distribution of parameters
 		thetaPrior 	##<< numeric vector prior estimate of parameters
@@ -71,7 +71,7 @@ getParameterInitials = function(
 	thetaInitials 
 })
 
-NonrectangularLRC_optimLRCBounds <- function(
+NonrectangularLRCFitter_optimLRCBounds <- function(
 		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
 		theta0			##<< initial parameter estimate
 		,parameterPrior	##<< prior estimate of model parameters
@@ -145,9 +145,9 @@ NonrectangularLRC_optimLRCBounds <- function(
 	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
 	resOpt
 }
-NonrectangularLRC$methods( optimLRCBounds = NonrectangularLRC_optimLRCBounds )
+NonrectangularLRCFitter$methods( optimLRCBounds = NonrectangularLRCFitter_optimLRCBounds )
 
-NonrectangularLRC_optimLRC <- function(
+NonrectangularLRCFitter_optimLRC <- function(
 		###<< calling the optimization function
 		theta  					##<< numeric vector of starting values
 		, iOpt					##<< integer vector of positions of parameters being optimized
@@ -196,11 +196,11 @@ NonrectangularLRC_optimLRC <- function(
 	)
 	c(resOptim, ans)
 }
-NonrectangularLRC$methods( optimLRC = NonrectangularLRC_optimLRC)
+NonrectangularLRCFitter$methods( optimLRC = NonrectangularLRCFitter_optimLRC)
 
 # computeCost inherited
 
-NonrectangularLRC_predictLRC <- function(
+NonrectangularLRCFitter_predictLRC <- function(
 		### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
 		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=conv)
 		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
@@ -255,9 +255,9 @@ NonrectangularLRC_predictLRC <- function(
 			,GPP=GPP	##<< Gross primary production
 	)
 }
-NonrectangularLRC$methods( predictLRC = NonrectangularLRC_predictLRC)
+NonrectangularLRCFitter$methods( predictLRC = NonrectangularLRCFitter_predictLRC)
 
-NonrectangularLRC_computeLRCGradient <- function(
+NonrectangularLRCFitter_computeLRCGradient <- function(
 		### Gradient of \code{\link{partGL_RHLightResponse}}
 		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0, theta[5]=conv)
 		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
@@ -323,7 +323,7 @@ NonrectangularLRC_computeLRCGradient <- function(
 			,GPP=gradGPP
 	)
 }
-NonrectangularLRC$methods( computeLRCGradient = NonrectangularLRC_computeLRCGradient)
+NonrectangularLRCFitter$methods( computeLRCGradient = NonrectangularLRCFitter_computeLRCGradient)
 
 
 

@@ -1,12 +1,12 @@
 
 
-RectangularLRC <- setRefClass('RectangularLRC', contains='NonrectangularLRC'
+RectangularLRCFitter <- setRefClass('RectangularLRCFitter', contains='NonrectangularLRCFitter'
 ## R5 reference class for the Rectangular Light response curve
 ##author<<
 ## TW, MM
 )	
 
-RectangularLRC$methods(
+RectangularLRCFitter$methods(
 getParameterNames = function(
 ### return the parameter names used by this Light Response Curve Funciton
 ){
@@ -15,7 +15,7 @@ getParameterNames = function(
 })
 
 
-RectangularLRC$methods(
+RectangularLRCFitter$methods(
 getPriorLocation = function(
 		### return the prior distribution of parameters
 		NEEDay 		##<< numeric vector of daytime NEE
@@ -27,7 +27,7 @@ getPriorLocation = function(
 	ans <- ans[1:5]	# omit conv parameter
 })
 
-RectangularLRC$methods(
+RectangularLRCFitter$methods(
 getPriorScale = function(
 		### return the prior distribution of parameters
 		thetaPrior 	##<< numeric vector of location of priors
@@ -42,7 +42,7 @@ getPriorScale = function(
 
 # getParameterInitials inherited
 
-partGL_optimRHLightResponseBounds <- function(
+RectangularLRCFitter_optimLRCBounds <- function(
 		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
 		theta0			##<< initial parameter estimate
 		,parameterPrior	##<< prior estimate of model parameters
@@ -64,7 +64,7 @@ partGL_optimRHLightResponseBounds <- function(
 				if(  isUsingFixedVPD &  isUsingFixedAlpha ) c(2L,4L) 
 		#iOpt <- c(iOpt,6)	# add the convexity parameter
 	}
-	resOpt <- resOpt0 <- partGLOptimLRC(theta0, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... ,LRC=.self)
+	resOpt <- resOpt0 <- LRC$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl=ctrl, ... )
 	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
 	# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
 	##details<<
@@ -75,12 +75,12 @@ partGL_optimRHLightResponseBounds <- function(
 	if (resOpt$theta[1L] < 0){
 		isUsingVixedVPD <- TRUE
 		theta0Adj[1L] <- 0
-		resOpt <- partGLOptimLRC(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... ,LRC=.self)
+		resOpt <- LRC$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl=ctrl, ... )
 		# check alpha, if less than zero estimate parameters with fixed alpha of last window 
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
 			isUsingFixedAlpha <- TRUE
 			theta0Adj[3L] <- lastGoodParameters.V.n[3L] 
-			resOpt <- partGLOptimLRC(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... ,LRC=.self)
+			resOpt <- LRC$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 		}
 	} else {
 		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
@@ -88,12 +88,12 @@ partGL_optimRHLightResponseBounds <- function(
 		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
 			isUsingFixedAlpha <- TRUE
 			theta0Adj[3L] <- lastGoodParameters.V.n[3L]
-			resOpt <- partGLOptimLRC(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... ,LRC=.self)
+			resOpt <- LRC$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
 			if (resOpt$theta[1L] < 0){
 				isUsingVixedVPD <- TRUE
 				theta0Adj[1L] <- 0
-				resOpt <- partGLOptimLRC(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... ,LRC=.self)
+				resOpt <- LRC$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingVixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 			}
 		}
 	} 
@@ -116,9 +116,9 @@ partGL_optimRHLightResponseBounds <- function(
 	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
 	resOpt
 }
-RectangularLRC$methods( optimLRCBounds = partGL_optimRHLightResponseBounds ) 
+RectangularLRCFitter$methods( optimLRCBounds = RectangularLRCFitter_optimLRCBounds ) 
 
-RectangularLRC_optimLRC <- function(
+RectangularLRCFitter_optimLRC <- function(
 		###<< calling the optimization function
 		theta  					##<< numeric vector of starting values
 		, iOpt					##<< integer vector of positions of parameters being optimized
@@ -156,12 +156,12 @@ RectangularLRC_optimLRC <- function(
 	)
 	c(resOptim, ans)
 }
-RectangularLRC$methods( optimLRC = RectangularLRC_optimLRC)
+RectangularLRCFitter$methods( optimLRC = RectangularLRCFitter_optimLRC)
 
 # computeCost inherited
 
 
-partGL_RHLightResponse <- function(
+RectangularLRCFitter_predictLRC <- function(
 		###Rectungular Hyperbolic Light Response function: (Xu & Baldocchi, 2004; Falge et al., 2001; Lasslop et al., 2010)
 		theta 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0)
 		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
@@ -205,9 +205,9 @@ partGL_RHLightResponse <- function(
 	)
 }
 
-RectangularLRC$methods( predictLRC = partGL_RHLightResponse )
+RectangularLRCFitter$methods( predictLRC = RectangularLRCFitter_predictLRC )
 
-partGL_RHLightResponseGrad <- function(
+RectangularLRCFitter_computeLRCGradient <- function(
 		### Gradient of \code{\link{partGL_RHLightResponse}}
 		theta 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0)
 		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
@@ -271,14 +271,14 @@ partGL_RHLightResponseGrad <- function(
 	)
 }
 
-RectangularLRC$methods(computeLRCGradient = partGL_RHLightResponseGrad)
+RectangularLRCFitter$methods(computeLRCGradient = RectangularLRCFitter_computeLRCGradient)
 
 
-RectangularLRC_C <- setRefClass('RectangularLRC_C', contains='RectangularLRC'
-	### overiding computeCost of \code{\link{RectangularLRC}} to a C-version (\code{\link{RectangularLRC_C_computeCost}}).
+RectangularLRCFitterCVersion <- setRefClass('RectangularLRCFitterCVersion', contains='RectangularLRCFitter'
+	### overiding computeCost of \code{\link{RectangularLRCFitter}} to a C-version (\code{\link{RectangularLRCFitter_C_computeCost}}).
 )
 
-RectangularLRC_C_computeCost <- function(
+RectangularLRCFitterCVersion_computeCost <- function(
 		### Computing residual sum of sqares for predictions vs. data of NEE
 		thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized 
 		,theta		##<< parameter vector with positions as in argument of \code{\link{partGL_RHLightResponse}} 
@@ -294,7 +294,7 @@ RectangularLRC_C_computeCost <- function(
 	theta[iOpt] <- thetaOpt
 	RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0=VPD0, fixVPD=fixVPD)
 }
-RectangularLRC_C$methods( computeCost = RectangularLRC_C_computeCost )
+RectangularLRCFitterCVersion$methods( computeCost = RectangularLRCFitterCVersion_computeCost )
 
 
 

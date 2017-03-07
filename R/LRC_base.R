@@ -1,4 +1,4 @@
-LightResponseCurve <- setRefClass('LightResponseCurve'
+LightResponseCurveFitter <- setRefClass('LightResponseCurveFitter'
 ## R5 reference parent class for describing the NEP ~ PAR relationship
 ##author<<
 ## TW, MM
@@ -10,7 +10,7 @@ LightResponseCurve_getParameterNames <- function(
 	stop("Abstract method. Need to define in derived LRC class.")
 	##value<< string vector of parameter names. Positions are important.
 }
-LightResponseCurve$methods(getParameterNames = LightResponseCurve_getParameterNames)
+LightResponseCurveFitter$methods(getParameterNames = LightResponseCurve_getParameterNames)
 
 LightResponseCurve_fitLRC <- function(
 		### Optimize rectangular hyperbolic light response curve against data in one window and estimate uncertainty
@@ -94,11 +94,11 @@ LightResponseCurve_fitLRC <- function(
 			,covParms=covParms			##<< numeric matrix of the covariance matrix of parameters, including E0
 	)
 } 
-LightResponseCurve$methods(fitLRC = LightResponseCurve_fitLRC)
+LightResponseCurveFitter$methods(fitLRC = LightResponseCurve_fitLRC)
 
 
 LightResponseCurve_optimLRCOnAdjustedPrior = function(
-		###<< Lower bound flux undertainty and adjust prior uncertainty before calling optimLRC 
+		###<< Lower bound flux uncertainty and adjust prior uncertainty before calling optimLRC 
 		theta  					##<< numeric vector of starting values
 		, iOpt					##<< integer vector: positions of subset of parameters that are optimized
 		, dsDay					##<< dataframe of NEE, sdNEE and predictors Rg, VPD and Temp
@@ -144,7 +144,7 @@ LightResponseCurve_optimLRCOnAdjustedPrior = function(
 	)  
 	##value<< result of \code{\link{optimLRC}}
 }
-LightResponseCurve$methods(optimLRCOnAdjustedPrior = LightResponseCurve_optimLRCOnAdjustedPrior)
+LightResponseCurveFitter$methods(optimLRCOnAdjustedPrior = LightResponseCurve_optimLRCOnAdjustedPrior)
 
 
 LightResponseCurve_getPriorLocation <- function(
@@ -166,7 +166,7 @@ LightResponseCurve_getPriorLocation <- function(
 			,conv=0.2
 	)   
 } 		
-LightResponseCurve$methods( getPriorLocation = LightResponseCurve_getPriorLocation)
+LightResponseCurveFitter$methods( getPriorLocation = LightResponseCurve_getPriorLocation)
 
 
 LightResponseCurve_getPriorScale <- function(
@@ -191,7 +191,7 @@ LightResponseCurve_getPriorScale <- function(
 				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, Rb=NA, E0=NA, conv=NA)
 			}
 } 
-LightResponseCurve$methods(getPriorScale = LightResponseCurve_getPriorScale)
+LightResponseCurveFitter$methods(getPriorScale = LightResponseCurve_getPriorScale)
 
 LightResponseCurve_getParameterInitials <- function(
 		### return the prior distribution of parameters
@@ -205,7 +205,7 @@ LightResponseCurve_getParameterInitials <- function(
 	thetaInitials [3,2] <- parameterPrior[2]*0.8
 	thetaInitials 
 }
-LightResponseCurve$methods( getParameterInitials = LightResponseCurve_getParameterInitials)
+LightResponseCurveFitter$methods( getParameterInitials = LightResponseCurve_getParameterInitials)
 
 LightResponseCurve_optimLRCBounds <- function(
 		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
@@ -221,8 +221,7 @@ LightResponseCurve_optimLRCBounds <- function(
 	## \item{theta}{ numeric parameter vector that includes the fixed components}
 	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
 }
-LightResponseCurve$methods(
-optimLRCBounds = LightResponseCurve_optimLRCBounds)
+LightResponseCurveFitter$methods(optimLRCBounds = LightResponseCurve_optimLRCBounds)
 
 
 LightResponseCurve_optimLRC <- function(
@@ -241,7 +240,7 @@ LightResponseCurve_optimLRC <- function(
 	)
 	c(resOptim, ans)
 } 
-LightResponseCurve$methods(optimLRC = LightResponseCurve_optimLRC)
+LightResponseCurveFitter$methods(optimLRC = LightResponseCurve_optimLRC)
 
 
 LightResponseCurve_computeCost <- function(
@@ -270,7 +269,7 @@ LightResponseCurve_computeCost <- function(
 	#if( !is.finite(RSS) ) recover()	# debugging the fit
 	RSS
 }
-LightResponseCurve$methods( computeCost = LightResponseCurve_computeCost )
+LightResponseCurveFitter$methods( computeCost = LightResponseCurve_computeCost )
 
 LightResponseCurve_predictLRC <- function(
 		### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
@@ -293,7 +292,7 @@ LightResponseCurve_predictLRC <- function(
 			,GPP=GPP	##<< Gross primary production
 	)
 }
-LightResponseCurve$methods(	predictLRC = LightResponseCurve_predictLRC)
+LightResponseCurveFitter$methods(	predictLRC = LightResponseCurve_predictLRC)
 
 LightResponseCurve_computeLRCGradient <- function(
 		### Gradient of \code{\link{partGL_RHLightResponse}}
@@ -314,7 +313,7 @@ LightResponseCurve_computeLRCGradient <- function(
 			,GPP=gradGPP
 	)
 }
-LightResponseCurve$methods(	computeLRCGradient = LightResponseCurve_computeLRCGradient)
+LightResponseCurveFitter$methods(	computeLRCGradient = LightResponseCurve_computeLRCGradient)
 
 
 
