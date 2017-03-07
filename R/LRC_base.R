@@ -81,7 +81,6 @@ LightResponseCurve_fitLRC <- function(
 			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE0, parameterPrior, controlGLPart, LRC=.self)
 			#resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l=within(controlGLPart.l,nBootUncertainty <- 30L))
 			iFiniteRows <- which( is.finite(resBoot[,1L]))
-recover()			
 			if( length(iFiniteRows)  < 0.8*nrow(resBoot))
 				return( getNAResult() )
 			covParms <- cov(resBoot[iFiniteRows,])

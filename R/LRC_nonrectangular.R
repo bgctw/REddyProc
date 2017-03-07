@@ -11,7 +11,7 @@ getParameterNames = function(
 ### return the parameter names used by this Light Response Curve Funciton
 ){
 	##value<< string vector of parameter names. Positions are important.
-	c("k","beta0", "alfa", "Rb","E0", "conv")
+	c("k","beta0", "alfa", "Rb","E0", "logitconv")
 })
 
 
@@ -31,7 +31,7 @@ getPriorLocation = function(
 			#,R_ref=mean(NEENight.V.n, na.rm=T)
 			,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
 			,E0=as.vector(E0)
-			,conv=0.2
+			,logitconv=logit(0.2)
 	)   
 })
 
@@ -45,7 +45,7 @@ getPriorScale = function(
 ){
 	##value<< a numeric vector with prior estimates of the parameters
 	sdParameterPrior <- if(ctrl$isLasslopPriorsApplied){
-				c(k=50, beta=600, alpha=10, Rb=80, E0=NA, conv=20)
+				c(k=50, beta=600, alpha=10, Rb=80, E0=NA, logitconv=NA)	#twutz: changed to no prior for logitconv
 			} else {
 				##details<< 
 				## The beta parameter is quite well defined. Hence use a prior with a standard deviation.
@@ -54,7 +54,7 @@ getPriorScale = function(
 				## The prior is weighted n times the observations in the cost.
 				## Hence, overall it is using a weight of 1/10 of the weight of all observations.
 				sdBetaPrior <- 10*medianRelFluxUncertainty*thetaPrior[2]/sqrt(nRec)
-				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, Rb=NA, E0=NA, conv=NA)
+				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, Rb=NA, E0=NA, logitconv=NA)
 			}
 })
 
@@ -94,34 +94,32 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 		iOpt <- c(iOpt,6)	# add the convexity parameter
 	}
 	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
-	# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
 	##details<<
 	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
 	## to values from fit of previous window.
 	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
 	#dsDay <- list(ctrl, ...)$dsDay
-	# #details<< Sometimes the VPD-effect parameter is fitted to match the noise.
-	# # Hence, only fit with the VPD-parameter if predictions at low PAR are not much effected.
-	.tmp.inspectFixedVPDEffect <- function(){
-		resOptFixVPD <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD=TRUE, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-		p <- theta0
-		p <- resOpt$theta
-		pFix <- resOptFixVPD$theta
-		dsDay <- list(...)$dsDay
-		dsDayLowPar <- dsDay
-		dsDayLowPar <- dsDay[dsDay$Rg <= 200,,drop=FALSE]
-		dsDayLowPar <- dsDayLowPar[order(dsDayLowPar$Rg),]
-		pred <- .self$predictLRC(p, Rg=dsDayLowPar$Rg, VPD=dsDayLowPar$VPD, Temp=dsDayLowPar$Temp)
-		predFix <- .self$predictLRC(pFix, Rg=dsDayLowPar$Rg, VPD=dsDayLowPar$VPD, Temp=dsDayLowPar$Temp)
-		plot( -NEE ~ Rg, dsDayLowPar)		# NEE negative?
-		lines(pred$NEP  ~ dsDayLowPar$Rg)
-		lines(predFix$NEP  ~ dsDayLowPar$Rg, col="blue")
-		lines(pred$GPP  ~ dsDayLowPar$Rg)
-		lines(predFix$GPP  ~ dsDayLowPar$Rg, col="blue")
-		# actually the GPP at low PAR is not much affects. The difference is in explaining the variability by
-		# respiration-T of modified GPP-VPD. Here, the VPD-based R_ref is closer to the night-time estimated.
-	}
+#	# #details<< Sometimes the VPD-effect parameter is fitted to match the noise.
+#	# # Hence, only fit with the VPD-parameter if predictions at low PAR are not much effected.
+#	.tmp.inspectFixedVPDEffect <- function(){
+#		resOptFixVPD <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD=TRUE, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+#		p <- theta0
+#		p <- resOpt$theta
+#		pFix <- resOptFixVPD$theta
+#		dsDay <- list(...)$dsDay
+#		dsDayLowPar <- dsDay
+#		dsDayLowPar <- dsDay[dsDay$Rg <= 200,,drop=FALSE]
+#		dsDayLowPar <- dsDayLowPar[order(dsDayLowPar$Rg),]
+#		pred <- .self$predictLRC(p, Rg=dsDayLowPar$Rg, VPD=dsDayLowPar$VPD, Temp=dsDayLowPar$Temp)
+#		predFix <- .self$predictLRC(pFix, Rg=dsDayLowPar$Rg, VPD=dsDayLowPar$VPD, Temp=dsDayLowPar$Temp)
+#		plot( -NEE ~ Rg, dsDayLowPar)		# NEE negative?
+#		lines(pred$NEP  ~ dsDayLowPar$Rg)
+#		lines(predFix$NEP  ~ dsDayLowPar$Rg, col="blue")
+#		lines(pred$GPP  ~ dsDayLowPar$Rg)
+#		lines(predFix$GPP  ~ dsDayLowPar$Rg, col="blue")
+#		# actually the GPP at low PAR is not much affects. The difference is in explaining the variability by
+#		# respiration-T of modified GPP-VPD. Here, the VPD-based R_ref is closer to the night-time estimated.
+#	}
 	if ((resOpt$theta[1L] < 0) || (FALSE) || (FALSE)){
 		isUsingFixedAlpha <- TRUE
 		theta0Adj[1L] <- 0
@@ -178,36 +176,30 @@ NonrectangularLRCFitter_optimLRC <- function(
 		, isUsingHessian		##<< scalar boolean: set to TRUE to compute Hessian at optimum
 ){
 	#Define lower and upper boundaries parameters
-	lower_theta<-c(0,0,0,0,0, 0.0001)
-	upper_theta<-c(Inf,Inf,Inf,Inf,Inf,1)
 	thetaOrig <- theta
 	# do a first fitting with a strong prior to avoid local side minima, only afterwards use fit with a weaker prior
 	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 0.5
 	#
-	resOptimStrongPrior <- optim(thetaOrig[iOpt], .partGLNRHRFCost
+	resOptimStrongPrior <- optim(thetaOrig[iOpt], .self$computeCost
 			#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
 			,theta=thetaOrig
 			,iOpt=iOpt
 			,sdParameterPrior = sdStrongPrior
 			, ...
-			,control=list(factr=ctrl$nLRCFitConvergenceTolerance)
-			,method="L-BFGS-B"
-			,lower = lower_theta[iOpt], upper = upper_theta[iOpt]
-			,hessian=isUsingHessian)  #MIRCO Changed
+			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
+			,method="BFGS", hessian=isUsingHessian)
 	
 	thetaOrig[iOpt] <- resOptimStrongPrior$par	
 	#
-	resOptim <- optim(thetaOrig[iOpt], .partGLNRHRFCost
+	resOptim <- optim(thetaOrig[iOpt], .self$computeCost
 			#resOptim <- optim(theta, .partGLRHLightResponseCost
 			#tmp <- .partGLRHLightResponseCost( theta[iOpt] 
 			,theta=thetaOrig
 			,iOpt=iOpt
 			,sdParameterPrior = sdParameterPrior
 			, ...
-			,control=list(factr=ctrl$nLRCFitConvergenceTolerance)
-			,method="L-BFGS-B"
-			,lower = lower_theta[iOpt], upper = upper_theta[iOpt]
-			,hessian=isUsingHessian)  #MIRCO CHANGED
+			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
+			,method="BFGS", hessian=isUsingHessian)
 	##value<<
 	## list of restult of \code{\link{optim}} amended with list
 	thetaOpt <- theta; thetaOpt[iOpt] <- resOptim$par
@@ -223,7 +215,7 @@ NonrectangularLRCFitter$methods( optimLRC = NonrectangularLRCFitter_optimLRC)
 
 NonrectangularLRCFitter_predictLRC <- function(
 		### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
-		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=conv)
+		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=logitconv)
 		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
@@ -243,15 +235,16 @@ NonrectangularLRCFitter_predictLRC <- function(
 		alfa<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
-		conv<-theta[,6]
+		logitconv<-theta[,6]
 	} else {
 		kVPD<-theta[1]
 		beta0<-theta[2]
 		alfa<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
-		conv<-theta[6]
+		logitconv<-theta[6]
 	}
+	conv <- invlogit(logitconv)
 	Amax <- if( isTRUE(fixVPD) ) beta0 else {
 				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
 			} 
@@ -279,7 +272,7 @@ NonrectangularLRCFitter$methods( predictLRC = NonrectangularLRCFitter_predictLRC
 
 NonrectangularLRCFitter_computeLRCGradient <- function(
 		### Gradient of \code{\link{partGL_RHLightResponse}}
-		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0, theta[5]=conv)
+		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0, theta[5]=logitconv)
 		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
@@ -295,14 +288,14 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		alfa<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
-		conv<-theta[,6]
+		logitconv<-theta[,6]
 	} else {
 		kVPD<-theta[1]
 		beta0<-theta[2]
 		alfa<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
-		conv<-theta[6]
+		logitconv<-theta[6]
 	}
 	Amax <- if( isTRUE(fixVPD) ) beta0 else {
 				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)

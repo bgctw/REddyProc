@@ -641,7 +641,7 @@ test_that("fitLRC_Nonrectangular",{
 			res <- resNewPrior <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=10L)
 			)
-			# expect_true( !all(res$covParms["E0",1:4]==0) ) # TODO fit without VPD effect
+			expect_true( !all(res$covParms["E0",1:4]==0) ) 
 			#testing Lasslop compliency: different priors, covariance from fit
 			res <- resNewPrior <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
@@ -652,11 +652,12 @@ test_that("fitLRC_Nonrectangular",{
 				# dsDay <- list(...)$dsDay
 				dsDay <- dsDay[ order(dsDay$Rg), ]
 				plot( -NEE ~ Rg, dsDay)		# NEE negative?
-				p <- resOpt$theta
 				p <- res$thetaOpt
+				#p <- resOpt$theta
 				#LRCn$trace(predictLRC, recover); #LRCn$trace(predictLRC)
 				pred <- LRCn$predictLRC(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)
 				lines(pred$NEP  ~ dsDay$Rg)
+				plot( I(pred$NEP+dsDay$NEE) ~ dsDay$Rg); abline(0,0)	# inspect residuals
 			}
 			# testing increasing number of bootstrap samples
 			.tmp.f <- function(){

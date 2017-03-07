@@ -119,48 +119,9 @@ RectangularLRCFitter_optimLRCBounds <- function(
 }
 RectangularLRCFitter$methods( optimLRCBounds = RectangularLRCFitter_optimLRCBounds ) 
 
-RectangularLRCFitter_optimLRC <- function(
-		###<< calling the optimization function
-		theta  					##<< numeric vector of starting values
-		, iOpt					##<< integer vector of positions of parameters being optimized
-		, sdParameterPrior		##<< numeric vector of scale of parameter priors
-		, ...					##<< further arguments to the cost function
-		, ctrl					##<< list of further controls
-		, isUsingHessian		##<< scalar boolean: set to TRUE to compute Hessian at optimum
-){
-	thetaOrig <- theta
-	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 0.5
-	resOptimStrongPrior <- optim(thetaOrig[iOpt], .self$computeCost
-			#tmp <- .self$computeCost( theta[iOpt], 
-			,theta=thetaOrig
-			,iOpt=iOpt
-			,sdParameterPrior = sdStrongPrior
-			,...
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
-			,method="BFGS", hessian=isUsingHessian)
-	thetaOrig[iOpt] <- resOptimStrongPrior$par	
-	#
-	resOptim <- optim(thetaOrig[iOpt], .self$computeCost
-			#tmp <- .self$computeCost( theta[iOpt] 
-			,theta=thetaOrig
-			,iOpt=iOpt
-			,sdParameterPrior = sdParameterPrior
-			,...
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
-			,method="BFGS", hessian=isUsingHessian)
-	##value<<
-	## list of restult of \code{\link{optim}} amended with list
-	thetaOpt <- theta; thetaOpt[iOpt] <- resOptim$par
-	ans <- list(
-			theta = thetaOpt	##<< numeric vector: optimized parameter vector including the fixed components
-			,iOpt = iOpt		##<< integer vector: position of parameters that have been optimized
-	)
-	c(resOptim, ans)
-}
-RectangularLRCFitter$methods( optimLRC = RectangularLRCFitter_optimLRC)
+# optimLRD inherited from Nonrectangular
 
 # computeCost inherited
-
 
 RectangularLRCFitter_predictLRC <- function(
 		###Rectungular Hyperbolic Light Response function: (Xu & Baldocchi, 2004; Falge et al., 2001; Lasslop et al., 2010)
