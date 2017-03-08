@@ -605,9 +605,14 @@ test_that("fitLRC",{
 			dssDay <- subset(dss, isDay==TRUE)
 			dssNight <- subset(dss, isNight==TRUE)
 			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
+			#LRC <- RectangularLRCFitter()
 			res <- resNewPrior <- LRC$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=10L)
 			)
+			parNames <- LRC$getParameterNames()
+			expect_equal( names(res$thetaOpt), parNames )
+			expect_equal( names(res$thetaInitialGuess), parNames )
+			expect_equal( colnames(res$covParms), parNames )
 			expect_true( !all(res$covParms["E0",1:4]==0) )
 			#testing Lasslop compliency: different priors, covariance from fit
 			res <- resNewPrior <- LRC$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_

@@ -6,13 +6,18 @@ NonrectangularLRCFitter <- setRefClass('NonrectangularLRCFitter', contains='Ligh
 ## TW, MM
 )	
 
-NonrectangularLRCFitter$methods(
-getParameterNames = function(
+NonrectangularLRCFitter_getParameterNames <- function(
 ### return the parameter names used by this Light Response Curve Funciton
 ){
 	##value<< string vector of parameter names. Positions are important.
-	c("k","beta0", "alfa", "Rb","E0", "logitconv")
-})
+	c(k="k"						##<< TODO				
+			, beta="beta"				##<< saturation of GPP at high radiation
+			, alpha="alpha"				##<< initial slope
+			, RRef="RRef"				##<< basal respiration 
+			, E0="E0"					##<< temperature sensitivity estimated from night-time data
+			, logitconf="logitconv")	##<< logit-transformed convexity parameter. The valua at original scale is obtained by conv = 1/(1+exp(-logitconv))
+}
+NonrectangularLRCFitter$methods(getParameterNames = NonrectangularLRCFitter_getParameterNames)
 
 
 NonrectangularLRCFitter$methods(
@@ -28,8 +33,8 @@ getPriorLocation = function(
 			#,beta=as.vector(abs(quantile(NEEDay, 0.03)-quantile(NEEDay, 0.97)))
 			,beta=as.vector(abs(quantile(NEEDay, 0.03, na.rm=TRUE)-quantile(NEEDay, 0.97, na.rm=TRUE)))
 			,alpha=0.1
-			#,R_ref=mean(NEENight.V.n, na.rm=T)
-			,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
+			#,RRef=mean(NEENight.V.n, na.rm=T)
+			,RRef=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
 			,E0=as.vector(E0)
 			,logitconv=logit(0.2)
 	)   
@@ -45,7 +50,7 @@ getPriorScale = function(
 ){
 	##value<< a numeric vector with prior estimates of the parameters
 	sdParameterPrior <- if(ctrl$isLasslopPriorsApplied){
-				c(k=50, beta=600, alpha=10, Rb=80, E0=NA, logitconv=NA)	#twutz: changed to no prior for logitconv
+				c(k=50, beta=600, alpha=10, RRef=80, E0=NA, logitconv=NA)	#twutz: changed to no prior for logitconv
 			} else {
 				##details<< 
 				## The beta parameter is quite well defined. Hence use a prior with a standard deviation.
@@ -54,7 +59,7 @@ getPriorScale = function(
 				## The prior is weighted n times the observations in the cost.
 				## Hence, overall it is using a weight of 1/10 of the weight of all observations.
 				sdBetaPrior <- 10*medianRelFluxUncertainty*thetaPrior[2]/sqrt(nRec)
-				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, Rb=NA, E0=NA, logitconv=NA)
+				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, RRef=NA, E0=NA, logitconv=NA)
 			}
 })
 
@@ -118,7 +123,7 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 #		lines(pred$GPP  ~ dsDayLowPar$Rg)
 #		lines(predFix$GPP  ~ dsDayLowPar$Rg, col="blue")
 #		# actually the GPP at low PAR is not much affects. The difference is in explaining the variability by
-#		# respiration-T of modified GPP-VPD. Here, the VPD-based R_ref is closer to the night-time estimated.
+#		# respiration-T of modified GPP-VPD. Here, the VPD-based RRef is closer to the night-time estimated.
 #	}
 	if ((resOpt$theta[1L] < 0) || (FALSE) || (FALSE)){
 		isUsingFixedAlpha <- TRUE
@@ -146,10 +151,10 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 		}
 	} 
 	##details<<
-	## No parameters are reported if alpha<0 or Rb < 0 or beta0 < 0 or beta0 > 250 
-	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
+	## No parameters are reported if alpha<0 or RRef < 0 or beta0 < 0 or beta0 > 250 
+	# positions in theta0: "k"     "beta0" "alfa"  "RRef"    "E0"
 	if( !is.na(resOpt$theta[1L]) && ((resOpt$theta[3L] < 0) || (resOpt$theta[4L] < 0) || (resOpt$theta[2L] < 0) || (resOpt$theta[2L] >= 250)) ){
-		# TODO estimate Rb from daytime data?
+		# TODO estimate RRef from daytime data?
 		#LloydT_E0fix
 		#stop("case with alpha or beta < 0")
 		resOpt$theta[] <- NA
@@ -165,6 +170,32 @@ NonrectangularLRCFitter_optimLRCBounds <- function(
 	resOpt
 }
 NonrectangularLRCFitter$methods( optimLRCBounds = NonrectangularLRCFitter_optimLRCBounds )
+
+NonrectangularLRCFitter_isParameterInBounds <- function(
+		### Check if estimated parameter vector is within reasonable bounds
+		theta					##<< numeric vector of estimated parameters
+		,sdTheta				##<< numeric vector of estimated standard deviation of the parameters
+		, RRefNight				##<< numeric scalar: night-time based estimate of basal respiration
+		, ctrl					##<< list of further controls
+){
+	##author<< TW, MM
+	#
+	# check the Beta bounds that depend on uncertainty, set to NA fit
+	if(isTRUE(as.vector( (theta[2] > 100) && (sdParms[2] >= theta[2]) ))) return(FALSE)
+	# check that RRef estimated from daytime is not both:
+	# larger than twice the estimate from nighttime and more than 0.7 in absolute terms  
+	# else this indicates a bad fit
+	# this is additional to Table A1 in Lasslop 2010
+	if( (theta[4L] > 2*RRefNight) 		&& 
+			((theta[4L]-RRefNight) > 0.7) 
+			){
+		return(FALSE)
+	}
+	##value<< FALSE if parameters are outisde reasonable bounds, TRUE otherwise 
+	return(TRUE)
+}
+NonrectangularLRCFitter$methods(isParameterInBounds = NonrectangularLRCFitter_isParameterInBounds)
+
 
 NonrectangularLRCFitter_optimLRC <- function(
 		###<< calling the optimization function

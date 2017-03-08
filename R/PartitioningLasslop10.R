@@ -1,22 +1,23 @@
 partitionNEEGL=function(
 		### Partitioning NEE fluxes into GP and Reco after daytime method of Lasslop et al. (2010)
-		ds						##<< dataset with all the specified input columns and full days in equidistant times		
-		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')      ##<< Variable of Net Ecosystem Exchange flux
-		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')  ##<< Quality flag of variable
-		,QFNEEValue.n=0         					   ##<< Value of quality flag for _good_ (original) data
-		,NEESdVar.s=paste0('NEE',SuffixDash.s,'_fsd')       ##<< Variable of standard deviation of net ecosystem fluxes
+		ds							##<< dataset with all the specified input columns and full days in equidistant times		
+		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
+		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')	##<< Quality flag of variable
+		,QFNEEValue.n=0         						##<< Value of quality flag for _good_ (original) data
+		,NEESdVar.s=paste0('NEE',SuffixDash.s,'_fsd')	##<< Variable of standard deviation of net ecosystem fluxes
 		,TempVar.s=paste0('Tair_f')     ##<< Filled air or soil temperature variable (degC)
 		,QFTempVar.s=paste0('Tair_fqc') ##<< Quality flag of filled temperature variable
-		,QFTempValue.n=0       ##<< Value of temperature quality flag for _good_ (original) data
+		,QFTempValue.n=0       		##<< Value of temperature quality flag for _good_ (original) data
 		,VPDVar.s=paste0('VPD_f')     ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
 		,QFVPDVar.s=paste0('VPD_fqc') ##<< Quality flag of filled VPD variable    
-		,QFVPDValue.n=0        ##<< Value of VPD quality flag for _good_ (original) data
-		,RadVar.s='Rg'         ##<< Unfilled (original) radiation variable
+		,QFVPDValue.n=0        		##<< Value of VPD quality flag for _good_ (original) data
+		,RadVar.s='Rg'         		##<< Unfilled (original) radiation variable
 		,PotRadVar.s="PotRad_NEW"	##<< Variable name of potential radiation (W/m2)			   
-		,Suffix.s = ""		   ##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillAfterUstar}}).
+		,Suffix.s = ""		   		##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillAfterUstar}}).
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
-		,isVerbose=TRUE			 ##<< set to FALSE to suppress output messages
-		,nRecInDay=48L		 ##<< number of records within one day (for half-hourly data its 48)
+		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
+		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
+		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve  	
 )
 ##description<<
 ## daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
@@ -43,23 +44,25 @@ partitionNEEGL=function(
 	GPPDTVar.s <- paste0('GPP_DT',SuffixDash.s) 
 	RecoDTSdVar.s <- paste0(RecoDTVar.s,"_SD") 
 	GPPDTSdVar.s <- paste0(GPPDTVar.s,"_SD") 
-	dsAns <- data.frame(
+	dsAns0 <- data.frame(
 			FP_VARnight=rep(NA_real_,nrow(ds))	##<< NEE filtered for nighttime records (others NA)
 			,FP_VARday=NA_real_		##<< NEE filtered for daytime recores (others NA)
 			,NEW_FP_Temp=NA_real_	##<< temperature after filtering for quality flag degree Celsius
 			,NEW_FP_VPD=NA_real_	##<< vapour pressure deficit after filtering for quality flag, hPa
-			,FP_R_refNight=NA_real_		##<< basal respiration estimated from LRC of daytime window  (W/m2)
-			,FP_R_ref=NA_real_		##<< basal respiration estimated from LRC of daytime window  (W/m2)
-			,FP_E0=NA_real_			##<< temperature sensitivity estimated from nighttime NEE window  in Kelvin (degK) 
-		#TODO Mirco: add descriptions to meaning of LRC parameters
-			,FP_alpha=NA_real_			##<< 
-			,FP_beta=NA_real_			##<< 
-			,FP_k=NA_real_				##<<
-			,FP_qc=NA_integer_			##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away
-			,FP_dRecPar=NA_integer_		##<< records until or after closest record that has a parameter estimate associated
+			,FP_RRef_Night=NA_real_	##<< basal respiration estimated from nighttime (W/m2)
+			,FP_qc=NA_integer_		##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away
+			,FP_dRecPar=NA_integer_	##<< records until or after closest record that has a parameter estimate associated
 	)
-	## \item{}{Light response curve parameters \code{FP_X} are estimated for windows, and are reported with the first record of the window}
+	## \item{<LRC>}{Furhter light response curve (LRC) parameters and their standard deviation depend on the used LRC
+	## (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
+	## They are estimated for windows and are reported with the first record of the window}
 	##end<<
+	# append LRC parameter result columns
+	lrcParNames <- lrcFitter$getParameterNames()
+	lrcParNames <- c(lrcParNames, paste0(lrcParNames,"_sd"))
+	FP_lrcParNames <- paste0("FP_",lrcParNames)
+	tmp <- matrix( NA_real_, nrow=nrow(ds), ncol=length(FP_lrcParNames), dimnames=list(NULL,FP_lrcParNames) )
+	dsAns <- cbind(dsAns0, tmp)
 	# Filter night time values only
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E_0.n
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
@@ -96,6 +99,7 @@ partitionNEEGL=function(
 	resParms <- partGLFitLRCWindows( dsR
 			, nRecInDay=nRecInDay
 			, controlGLPart=controlGLPart
+			, lrcFitter=lrcFitter
 	)
 	if( FALSE ){
 		resLRCOld <- tmp <- .depr.partGLFitLRCWindows( dsR
@@ -113,9 +117,8 @@ partitionNEEGL=function(
 	# default is isAssociateParmsToMeanOfValids=TRUE (double check partGLControl argument)
 	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec"
 	# for the output, always report at central record
-	dsAns[resParms$summary$iCentralRec,c("FP_R_refNight","FP_E0","FP_R_ref","FP_alpha","FP_beta","FP_k","FP_qc")] <- 
-					resParms$summary[,c("R_ref_night","E_0","R_ref","a","b","k","parms_out_range")]
-	matchFP_qc <- NA_integer_; matchFP_qc[resParms$summary[[colNameAssoc]] ] <- resParms$summary$parms_out_range	# here maybe indexed by meanRec
+	dsAns[resParms$summary$iCentralRec,c("FP_RRef_Night","FP_qc",FP_lrcParNames)] <- 
+					resParms$summary[,c("RRef_night","parms_out_range",lrcParNames)]
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
 	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s]
@@ -123,10 +126,12 @@ partitionNEEGL=function(
 					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction also using gap-Filled values
 					, resParms
 					, controlGLPart=controlGLPart
+					, lrcFitter = lrcFitter
 			)
 	# set quality flag to 2 where next parameter estimate is more than 14 days away 
 	dsAns$FP_dRecPar <- dsAnsFluxes$dRecNextEstimate
 	dDaysPar <- round(dsAns$FP_dRecPar / nRecInDay)
+	matchFP_qc <- NA_integer_; matchFP_qc[resParms$summary[[colNameAssoc]] ] <- resParms$summary$parms_out_range	# here maybe indexed by meanRec
 	dsAns$FP_qc <- matchFP_qc[ 1:nrow(dsAns) + dsAns$FP_dRecPar ] # associate quality flag of parameter estimate to each record
 	dsAns$FP_qc[ dDaysPar > 14] <- 2L	# set quality flag to 2 for records where next estimate is more than 14 days away
 	#dsAns[is.finite(dsAns$FP_beta),]
@@ -177,7 +182,7 @@ partGLControl <- function(
 		## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
 		## sensitivity on each windows instead of a vector of E0 that is smoothed over time
-		,NRHRfunction=FALSE #<< Flag if TRUE use the NRHRF for partitioning
+		,NRHRfunction=FALSE #<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
 ## Definition of the LRC Model
 ){
 	##author<< TW
@@ -188,6 +193,7 @@ partGLControl <- function(
 	##		, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE
 	##		, smoothTempSensEstimateAcrossTime=FALSE
 	##      }
+	if( NRHRfunction ) stop("option 'NRHRfunction' is deprecated. Use instead in partitionNEEGL argument: lrcFitter=NonrectangularLRCFitter()")
 	ctrl <- list(  
 			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
 			,nLRCFitConvergenceTolerance=nLRCFitConvergenceTolerance
@@ -199,7 +205,7 @@ partGLControl <- function(
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
-			,NRHRfunction=NRHRfunction
+			#,NRHRfunction=NRHRfunction
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -221,6 +227,7 @@ partGLFitLRCWindows=function(
 		,nRecInDay=48L		##<< number of records within one day (for half-hourly data its 48)
 		,winExtendSizes = WinSizeNight.i*c(2L,4L) ##<< successively increased nighttime windows, to obtain a night-time fit
 		,controlGLPart=partGLControl()		##<< list of further default parameters
+		,lrcFitter			##<< R5 class instance responsible for fitting the light response curve  	
 ){
 	##seealso<< \code{\link{partGLFitNightTempSensOneWindow}}
 	if( isVerbose ) message("  Estimating temperature sensitivity from night time NEE ", appendLF = FALSE)
@@ -297,12 +304,14 @@ partGLFitLRCWindows=function(
 			,nRecInDay=nRecInDay
 			#
 			,E0Win = E0Smooth
-			,controlGLPart=controlGLPart	
+			,controlGLPart=controlGLPart
+			,lrcFitter=lrcFitter
 	)
 	resParms <- resLRC
-	resParms$summary$E_0 <- E0Smooth$E0
-	resParms$summary$E_0_sd <- E0Smooth$sdE0
-	resParms$summary$R_ref_night <- E0Smooth$RRef
+	#E0_night equals E0, but uncertaint might differ 
+	#resParms$summary$E0_night <- E0Smooth$E0
+	resParms$summary$E0_night_sd <- E0Smooth$sdE0
+	resParms$summary$RRef_night <- E0Smooth$RRef
 	# summary$iMeanRec yet based on window instead of entire time, need to add beginning of window
 	resParms$summary$iMeanRec <- resParms$summary$iRecStart-1L + resParms$summary$iMeanRec
 	# omit records where NULL was returned
@@ -656,6 +665,7 @@ partGLFitLRCOneWindow=function(
 		,prevRes			##<< component prevRes from previous result, here with item prevE0
 		,E0Win				##<< data.frame with columns E0, sdE0, RRef from nighttime, one row for each window
 		,controlGLPart=partGLControl()	##<< list of further default parameters
+		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve  	
 ){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -681,247 +691,33 @@ partGLFitLRCOneWindow=function(
 # if( DayStart.i > 72 ) recover()		
 	sdE0 <- E0Win$sdE0[winInfo$iWindow]
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
-	# RRefNight might not be determined due to lack of night-time data, still set to reasonable starting value
-	# better fill forward RRefNight, so that last estimate is used
-	# if( is.na(RRefNight) ) RRefNight<-mean(E0Win$RRef,na.rm = TRUE) 
 	#
-	##seealso<< \code{\link{partGLFitLRC}}
-	resOpt <- resOpt0 <- partGLFitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
+	##seealso<< \code{\link{LightResponseCurveFitter_fitLRC}}
+	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
 			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$lastGoodParameters)
-	#
-	if( !is.finite(resOpt$opt.parms.V[1]) ) return(NULL)
-	# check the Beta bounds that depend on uncertainty, set to NA fit
-	sdParms <- resOpt$opt.parms.V; sdParms[] <- NA
+	if( !is.finite(resOpt$thetaOpt[1]) ) return(NULL)
+	sdParms <- resOpt$thetaOpt; sdParms[] <- NA
 	sdParms[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
-	if(isTRUE(as.vector( (resOpt$opt.parms.V[2] > 100) && (sdParms[2] >= resOpt$opt.parms.V[2]) ))){
-		return(NULL)
-	}
-	# check that R_ref estimated from daytime is not both:
-	# larger than twice the estimate from nighttime and more than 0.7 in absolute terms  
-	# else this indicates a bad fit
-	# this is additional to Table A1 in Lasslop 2010
-	if( (resOpt$opt.parms.V[4L] > 2*RRefNight) 		&& 
-			((resOpt$opt.parms.V[4L]-RRefNight) > 0.7) 
-			){
-		return(NULL)
-	}
+	if( !lrcFitter$isParameterInBounds(resOpt$thetaOpt, sdParms, RRefNight=RRefNight, ctrl=ctrl) ) return(NULL)
 	#
 	#recover()			
-	prevRes$lastGoodParameters <- resOpt$opt.parms.V
+	prevRes$lastGoodParameters <- resOpt$thetaOpt
 	# record valid fits results
+	as.data.frame(t(resOpt$thetaOpt))
 	ans <- list(
 		 resOpt=resOpt
-		 ,summary = data.frame(
+		 ,summary = cbind(data.frame(
 			nValidRec=nrow(dsDay)
 			,iMeanRec=iMeanRecInDayWindow
-			,E_0=E0, E_0_sd=sdE0
-			,R_ref=resOpt$opt.parms.V[4], R_ref_SD=sdParms[4]
-			,a=resOpt$opt.parms.V[3], a_SD=sdParms[3]
-			,b=resOpt$opt.parms.V[2], b_SD=sdParms[2]
-			,k=resOpt$opt.parms.V[1], k_SD=sdParms[1]
 			,parms_out_range=as.integer(!identical(resOpt$iOpt,1:5))
+			)
+			,as.data.frame(t(resOpt$thetaOpt))
+			,as.data.frame(t(structure(sdParms,names=paste0(names(sdParms),"_sd"))))
 		)
 		,prevRes=prevRes
 	)
 	return(ans)
 }
-
-
-
-
-
-partGLFitLRC <- function(
-		### Optimize rectangular hyperbolic light response curve against data in one window and estimate uncertainty
-		dsDay				##<< data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE
-		, E0				##<< temperature sensitivity of respiration
-		, sdE0				##<< standard deviation of E_0.n
-		, RRefNight			##<< basal respiration estimated from night time data, used as starring value and prior estimate 
-		, controlGLPart=partGLControl()	##<< further default parameters (see \code{\link{partGLControl}})
-		, lastGoodParameters			##<< numeric vector of last good theta
-){
-	##author<< TW, MM
-	##seealso<< \code{\link{partGLFitLRCWindows}}
-	#	
-	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
-	namesPars <- c("k","beta0", "alfa", "Rb","E0" )
-	nPar <- length(namesPars)
-	##details<<
-	## Optimization is performed for three initial parameter sets that differ by beta0 (*1.3, *0.8).
-	## From those three, the optimization result is selected that yielded the lowest misfit.
-	## Starting values are: k=0, beta=interpercentileRange(0.03,0.97) of respiration, alpha=0.1, R_ref 
-	## from nightTime estimate.
-	## E0 is fixed to the night-time estimate, but varied for estimating parameter uncertainty.
-	theta.V.n<-matrix(NA, 3,nPar, dimnames=list(NULL,namesPars))
-	parameterPrior <- theta.V.n[1,] <- theta.V.n[2,] <- theta.V.n[3,] <- c(
-			k=0
-			#,beta=as.vector(abs(quantile(dsDay$NEE, 0.03)-quantile(dsDay$NEE, 0.97)))
-			,beta=as.vector(abs(quantile(dsDay$NEE, 0.03, na.rm=TRUE)-quantile(dsDay$NEE, 0.97, na.rm=TRUE)))
-			,alpha=0.1
-			#,R_ref=mean(NEENight.V.n, na.rm=T)
-			,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
-			,E_0=as.vector(E0)
-	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
-	#twutz: beta is quite well defined, so try not changing it too much
-	theta.V.n[2,2] <- parameterPrior[2]*1.3
-	theta.V.n[3,2] <- parameterPrior[2]*0.8
-	#
-	##seealso<< \code{\link{parmGLOptimLRCBounds}}
-	resOpt3 <- apply( theta.V.n, 1, function(theta0){
-				resOpt <- parmGLOptimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart, lastGoodParameters.V.n=lastGoodParameters )
-		})
-	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
-	resOpt3Valid <- resOpt3[iValid]
-	optSSE <- sapply(resOpt3Valid, "[[", "value")
-	if( sum(!is.na(optSSE)) == 0L ){
-		# none of the intial fits yielded valid result, create NA-return values
-		opt.parms.V <- structure( rep(NA_real_, nPar), names=colnames(theta.V.n) )
-		covParms <- matrix(NA_real_, nPar, nPar, dimnames=list(colnames(theta.V.n),colnames(theta.V.n)))
-		resOpt <- list(iOpt = integer(0))	
-	} else {
-		resOpt <- resOpt3Valid[[iBest <- which.min(optSSE)]] # select the one with the least cost
-		opt.parms.V<-resOpt$theta
-		if(controlGLPart$nBootUncertainty == 0L) {
-			##details<< If \code{controlGLPart.l$nBootUncertainty == 0L} then the covariance matrix of the 
-			## parameters is estimated by the Hessian of the LRC curve at optimum.
-			## Then, the additional uncertainty and covariance with uncertaint E0 is neglected.
-			#seParmsHess <- seParmsHess0 <- sqrt(abs(diag(solve(resOpt$hessian))))
-			covParmsLRC <- if( (resOpt$hessian[1L,1L] < 1e-8) ){
-				# case where k=0 and not varying: cov(k,:) = cov(:,) = 0
-				covParmsLRC <- structure( diag(0,nrow=nrow(resOpt$hessian)), dimnames=dimnames(resOpt$hessian))
-				covParmsLRC[-1L,-1L] <- solve(resOpt$hessian[-1L,-1L])
-				covParmsLRC
-			} else {
-				solve(resOpt$hessian)
-			}
-			covParms <- structure( diag(0,nrow=length(resOpt$theta)), dimnames=list(namesPars,namesPars))
-			covParms[5L,5L] <- sdE0^2
-			covParms[resOpt$iOpt,resOpt$iOpt] <- covParmsLRC  
-			if( any(diag(covParms) < 0)) opt.parms.V[] <- NA	# no real if covariance negative
-		} else {
-			##details<< 
-			## If \code{controlGLPart.l$nBootUncertainty > 0L} then the covariance matrix of the 
-			## parameters is estimated by a bootstrap of the data.
-			## In each draw, E0 is drawn from N ~ (E_0, sdE_0).
-			# #seealso<< \code{\link{.bootStrapLRCFit}}
-			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE0, parameterPrior, controlGLPart)
-			#resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l=within(controlGLPart.l,nBootUncertainty <- 30L))
-			covParms <- cov(resBoot)
-			#better not to average parameters
-			#opt.parms.V <- apply(resBoot, 2, median, na.rm=TRUE)
-			#se.parms.V <- apply(resBoot, 2, sd, na.rm=TRUE)
-		}
-	}
-	##value<< a list, If none of the optimizations from different starting conditions converged,
-	## the parameters are NA
-	ans <- list(
-			opt.parms.V=opt.parms.V		##<< numeric vector of optimized parameters including 
-				## the fixed ones and including E0
-			,iOpt=c(resOpt$iOpt,5L)		##<< index of parameters that have been optimized
-				## , here including E0, which has been optimized prior to this function.
-			,initialGuess.parms.V.n=theta.V.n[1,]	##<< the initial guess from data
-			,covParms=covParms			##<< numeric matrix of the covariance matrix of parameters, including E0
-	)
-}
-
-.tmp.f <- function(){
-	plot(dsDay$Rg,-1*dsDay$NEE)
-	thetaB <- resOpt$theta
-	#thetaB <- opt.parms.V
-	#thetaB <-  opt[[iBest <- which.min(optSSE)]]
-	#
-	#thetaB <- resOpt$par
-	#thetaB <- c(resOpt3[[1]]$par, E_0=as.vector(E_0.n))
-	#thetaB <- theta
-	#thetaB <- thetaOrig
-	points(
-			#lines(
-			dsDay$Rg, tmp <- partGL_RHLightResponse(thetaB
-					,Rg = dsDay$Rg 
-					,Temp=dsDay$Temp
-					,VPD = dsDay$VPD
-					#,E0 = E_0.n
-					,fixVPD = FALSE
-			)$NEP, col="red")
-	points(dsDay$Rg, tmp <- partGL_RHLightResponse(thetaB
-					,Rg = dsDay$Rg 
-					,Temp=dsDay$Temp
-					,VPD = dsDay$VPD
-					,E0 = E_0.n
-					,fixVPD = FALSE
-			)$Reco, col="green")
-	#)$GPP, col="blue")
-}
-
-
-parmGLOptimLRCBounds <- function(
-		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
-		theta0		##<< initial parameter estimate
-		,parameterPrior	##<< prior estimate of model parameters
-		, ...		##<< further parameters to \code{.optimLRC}, such as \code{dsDay}
-		,lastGoodParameters.V.n ##<< parameters vector of last successful fit
-		, ctrl					##<< list of further controls
-){
-	##author<< TW, MM
-	##seealso<< \code{\link{partGLFitLRC}}
-	fOptim <- if( ctrl$NRHRfunction ) .optimNRHRF else .optimLRC
-	if( !is.finite(lastGoodParameters.V.n[3L]) ) lastGoodParameters.V.n[3L] <- 0.22	# twutz 161014: default alpha 	
-	isAlphaFix <- FALSE
-	isKFix <- FALSE
-	resOpt <- resOpt0 <- fOptim(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
-	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
-	# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
-	##details<<
-	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
-	## to values from fit of previous window.
-	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
-	#dsDay <- list(ctrl, ...)$dsDay
-	if (resOpt$theta[1L] < 0){
-		isKFix <- TRUE
-		theta0Adj[1L] <- 0
-		resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
-		# check alpha, if less than zero estimate parameters with fixed alpha of last window 
-		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
-			isAlphaFix <- TRUE
-			theta0Adj[3L] <- lastGoodParameters.V.n[3L] 
-			resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
-		}
-	} else {
-		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
-		# if not last window exists, let alpha > 0.22
-		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
-			isAlphaFix <- TRUE
-			theta0Adj[3L] <- lastGoodParameters.V.n[3L]
-			resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
-			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
-			if (resOpt$theta[1L] < 0){
-				isKFix <- TRUE
-				theta0Adj[1L] <- 0
-				resOpt <- fOptim(theta0Adj, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ctrl, ... )
-			}
-		}
-	} 
-	##details<<
-	## No parameters are reported if alpha<0 or Rb < 0 or beta0 < 0 or beta0 > 250 
-	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
-	if( !is.na(resOpt$theta[1L]) && ((resOpt$theta[3L] < 0) || (resOpt$theta[4L] < 0) || (resOpt$theta[2L] < 0) || (resOpt$theta[2L] >= 250)) ){
-		# TODO estimate Rb from daytime data?
-		#LloydT_E0fix
-		#stop("case with alpha or beta < 0")
-		resOpt$theta[] <- NA
-	}
-	##details<<
-	## No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation. 
-	if( isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
-		resOpt$theta[] <- NA
-	}
-	##value<< list result of optimization as of \code{.optimLRC} with entries 
-	## \item{theta}{ numeric parameter vector that includes the fixed components}
-	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
-	resOpt
-}
-
-
-
 
 .bootStrapLRCFit <- function(
 		### Compute parameters uncertainty by bootstrap
@@ -955,147 +751,6 @@ parmGLOptimLRCBounds <- function(
 }
 
 
-
-.tmp.f <- function(){
-	tmp <- .partGLRHLightResponseCost(theta 
-	,flux = -dsDay$NEE 
-	,sdFlux = Fc_unc	  
-	,betaPrior = betaPrior
-	,sdBetaPrior = sdBetaPrior
-	,Rg = dsDay$Rg 
-	,VPD = dsDay$VPD
-	,Temp=dsDay$Temp
-	,E_0.n = E_0.n
-	)
-}
-
-
-
-
-
-.partGLRHLightResponseCost <- function(
-		### Computing residual sum of sqares for predictions vs. data of NEE
-		thetaOpt 	##<< parameter vecotr with components of theta0 that are optimized 
-		,theta		##<< parameter vector with positions as in argument of \code{\link{partGL_RHLightResponse}} 
-		,iOpt		##<< position in theta0 that are optimized 
-		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s], should not contain NA
-		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
-		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
-		,sdParameterPrior	##<< standard deviation of parameterPrior
-		,...			##<< other arguments to \code{\link{partGL_RHLightResponse}}
-		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
-		,useCVersion=TRUE	##<< set to FALSE  to use R instead of fast C version, e.g. for debugging
-		# also tried to pass dsDay data.frame instead of all the variables separately, but accessing data.frame
-		# columns in the cost function was a severe penalty (here double execution time)
-) {
-	theta[iOpt] <- thetaOpt
-	#if( FALSE ){
-	if( useCVersion){
-		# generated in RcppExports: RHLightResponseCostC <- function(theta, flux, sdFlux, parameterPrior, sdParameterPrior, Rg, VPD, Temp, VPD0, fixVPD) {
-		# when generating add description 
-		### Compute the cost of RLightResponse prediction versus observations by using fast C-code
-		RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		
-	} else {
-		resPred <- partGL_RHLightResponse(theta, ..., VPD0=VPD0, fixVPD=fixVPD)
-		NEP_mod <- resPred$NEP
-		misFitPrior <- (((theta - parameterPrior))/(sdParameterPrior))^2
-		misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
-		RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE)
-		#if( !is.finite(RSS) ) recover()	# debugging the fit
-		RSS
-	}
-}
-
-.partGLRHLightResponseCostLogBeta <- function(
-		### Computing residual sum of sqares for predictions vs. data of NEE, with parameter beta given at log-Scale
-		thetaOpt 	##<< parameter vecotr with components of theta0 that are optimized 
-		,theta		##<< parameter vector with positions as in argument of \code{\link{partGL_RHLightResponse}} 
-		,iOpt		##<< position in theta0 that are optimized 
-		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s], should not contain NA
-		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
-		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
-		,sdParameterPrior	##<< standard deviation of parameterPrior
-		,...			##<< other arguments to \code{\link{partGL_RHLightResponse}}
-		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
-		,useCVersion=TRUE	##<< set to FALSE  to use R instead of fast C version, e.g. for debugging
-# also tried to pass dsDay data.frame instead of all the variables separately, but accessing data.frame
-# columns in the cost function was a severe penalty (here double execution time)
-) {
-	thetaOrig <- theta
-	thetaOrig[iOpt] <- thetaOpt
-	thetaOrig[2] <- exp(thetaOrig[2])
-	#if( FALSE ){
-	if( useCVersion){
-		RHLightResponseCostC(thetaOrig, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0=VPD0, fixVPD=fixVPD)		
-	} else {
-		resPred <- partGL_RHLightResponse(thetaOrig, ..., VPD0=VPD0, fixVPD=fixVPD)
-		NEP_mod <- resPred$NEP
-		misFitPrior <- (((thetaOrig - parameterPrior))/(sdParameterPrior))^2
-		misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
-		RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE)
-		#if( !is.finite(RSS) ) recover()	# debugging the fit
-		RSS
-	}
-}
-
-
-partGLBoundParameters <- function(
-		### Check if parameters are in the range and correct to bounds
-		resOpt			##<< list with first entry vector of parameters, second entry its uncertainty
-		, last_good		##<< vector of windows most recent good fit, make sure to set it to reasonable values, e.g. initial guess before optimiztion
-){
-	##details<<
-	## adjustments according to TAble A1 in Lasslop 2010
-	## vector positions: 1: k, 2: beta, 3: alpha, 4: rb
-	#
-	# Table A1 Initial guess; Valid Range; If outside range 
-	# E_0.n  100;	50-400;	Set to value of previous window, if no previous window exists estimates <50 were set to 50, estimates >400 were set to 400
-	# rb	Mean of nighttime NEE	>0;	Whole parameter set is not used
-	# alpha	0.01;	?0,<0.22;	Set to value of previous window, if no previous window exists and <0, set to zero
-	# beta0	Abs (0.03quantile - 0.97quantile) of NEE	?0; <250; If >100 then ? (?)<?	If negative set to zero, else the whole parameter set is not used
-	# kVPD	;0	?0; 	Set to zero
-	#parms_out_range<-0 #IF set to 1 means that the parameters are outside range and no computation uncertainties
-	opt.parms.V <- resOpt[[1]]
-	se.parms.V <- resOpt[[2]]
-	isGoodParameterSet <- TRUE	# FALSE means parameters are outside range and no uncertainties are reported
-	if( any(is.na(opt.parms.V)) ){
-		isGoodParameterSet <- FALSE
-	} 
-	# isTRUE(as.vector()) returns FALSE also for NA
-	if ( isTRUE((opt.parms.V[1] < 0)) ){	# k		
-		opt.parms.V[1]<-0
-		isGoodParameterSet <- FALSE
-	}
-	if ( isTRUE(as.vector(opt.parms.V[2] < 0)) ){	# beta
-		opt.parms.V[2]<-0
-		isGoodParameterSet <- FALSE
-	}
-	if ( isTRUE(as.vector(opt.parms.V[3] <= 0 || opt.parms.V[3] > 0.22))){ #set to alpha values of the latest good parameters set
-		opt.parms.V[3]<-last_good[3]	
-		isGoodParameterSet <- FALSE
-	}
-	#whole par set not used, if beta > 250 or (beta > 100 and sdBeta >= beta) or rb < 0
-	if ( isTRUE(as.vector(opt.parms.V[2] > 250 || (opt.parms.V[2] > 100 && se.parms.V[2] >= opt.parms.V[2] ) ))){ 
-		opt.parms.V[]<-NA
-		isGoodParameterSet <- FALSE
-	}
-	if ( isTRUE(as.vector(opt.parms.V[4] < 0 ))){ 
-		opt.parms.V[]<-NA
-		isGoodParameterSet <- FALSE
-	}
-	if( !isGoodParameterSet){
-		se.parms.V[]<-NA                  
-	}
-	##value<< list with entries
-	list(
-			opt.parms.V = opt.parms.V	##<< numeric vector of bounded optimized parameters
-			,se.parms.V = se.parms.V	##<< numeric vector of uncertainties of parameters
-			,isGoodParameterSet = isGoodParameterSet	##<< boolean scalar that is FALSE if original parameters were outside bounds
-	)
-}
-
 partGLInterpolateFluxes <- function(
 		### Interpolate ecoystem respiration (Reco) and Gross primary production (GPP) and associated uncertainty from two neighboring parameter sets of Light response curves 
 		Rg   	##<< photosynthetic flux density [umol/m2/s] or Global Radiation
@@ -1103,6 +758,7 @@ partGLInterpolateFluxes <- function(
 		,Temp 	##<< Temperature [degC] 
 		,resParms	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
+		,lrcFitter	##<< R5 class instance responsible for fitting the light response curve  	
 ){
 	##author<< TW
 	##seealso<< \code{link{partitionNEEGL}}
@@ -1130,38 +786,21 @@ partGLInterpolateFluxes <- function(
 	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAssoc <- .partGPAssociateSpecialRows(summaryLRC[[colNameAssoc]],nRec)
 	# now we have iBefore and iAfter
-	if (controlGLPart$NRHRfunction == TRUE){
-	  dsBefore <- merge( 
-	    structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
-	    , summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k","conv")]
-	  )
-	  dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k","conv")])
-	}
-	if (controlGLPart$NRHRfunction == FALSE){
-	  dsBefore <- merge( 
-	    structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
-	    , summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")]
-	  )
-	  dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,"R_ref","E_0","a","b","k")])
-	}
-
-  if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
-
-  Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
-		tmp <- fLloydTaylor(dsi$R_ref, dsi$E_0, Temp_Kelvin, T_ref.n=273.15+15)
+	parNames <- lrcFitter$getParameterNames()
+	dsBefore <- merge( 
+			structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
+			, summaryLRC[,c(colNameAssoc, parNames)]
+	)
+	dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,lrcFitter$getParameterNames())])
+	if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
+	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+		tmp <- fLloydTaylor(dsi$RRef, dsi$E0, Temp_Kelvin, T_ref.n=273.15+15)
 	})
 	#dsi <- dsBefore
-	GPP2 <- if( controlGLPart$NRHRfunction ){
-				lapply( list(dsBefore,dsAfter), function(dsi){
-							theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0","conv")])
-							tmp <- partGL_NRHLightResponse(theta, Rg, VPD, Temp=Temp)$GPP
+	GPP2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+							theta <- as.matrix(dsi[,parNames])
+							tmp <- lrcFitter$predictLRC(theta, Rg, VPD, Temp=Temp)$GPP
 						})
-	} else {
-		lapply( list(dsBefore,dsAfter), function(dsi){
-					theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0")])
-					tmp <- partGL_RHLightResponse(theta, Rg, VPD, Temp=Temp)$GPP
-			})
-	}
 	# interpolate between previous and next fit, weights already sum to 1
 	Reco <- (dsAssoc$wBefore*Reco2[[1]] + dsAssoc$wAfter*Reco2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)  
 	GPP <- (dsAssoc$wBefore*GPP2[[1]] + dsAssoc$wAfter*GPP2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)
@@ -1171,10 +810,10 @@ partGLInterpolateFluxes <- function(
 			,GPP = GPP
 	)
 	if( isTRUE(controlGLPart$isSdPredComputed)){
-		varPred2 <- if( controlGLPart$NRHRfunction ){
-						lapply( list(dsBefore,dsAfter), function(dsi){
-							theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0","conv")])
-							grad <- partGL_NRHLightResponseGrad(theta, Rg, VPD, Temp)
+		#dsi <- dsBefore
+		varPred2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+							theta <- as.matrix(dsi[,parNames])
+							grad <- lrcFitter$computeLRCGradient(theta, Rg, VPD, Temp)
 							varPred <- matrix(NA_real_, nrow=nrow(dsi), ncol=2L, dimnames=list(NULL,c("varGPP","varReco")))
 							#iRec <- 1L
 							for( iRec in 1:nrow(dsi)){
@@ -1189,26 +828,6 @@ partGLInterpolateFluxes <- function(
 							}
 							varPred
 						})
-				} else {
-					 # using the rectangular version
-					 lapply( list(dsBefore,dsAfter), function(dsi){
-						theta <- as.matrix(dsi[,c("k","b","a","R_ref","E_0")])
-						grad <- partGL_RHLightResponseGrad(theta, Rg, VPD, Temp)
-						varPred <- matrix(NA_real_, nrow=nrow(dsi), ncol=2L, dimnames=list(NULL,c("varGPP","varReco")))
-						#iRec <- 1L
-						for( iRec in 1:nrow(dsi)){
-							iParRec <- dsi$iParRec[iRec]
-							# get the fitting object, TODO better document
-							resOpt <- resParms$resOptList[[ iParRec ]]
-							gradGPP <- grad$GPP[iRec,]
-							gradReco <- grad$Reco[iRec,]
-							# make sure parameter names match postions in covParms
-							varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[1:3,1:3] %*% gradGPP
-							varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[4:5,4:5] %*% gradReco
-						}
-						varPred
-					})
-				}
 		sdGPP <- sqrt(dsAssoc$wBefore^2*varPred2[[1]][,"varGPP"] + dsAssoc$wAfter^2*varPred2[[1]][,"varGPP"]) 
 		sdReco <- sqrt(dsAssoc$wBefore^2*varPred2[[1]][,"varReco"] + dsAssoc$wAfter^2*varPred2[[1]][,"varReco"])   
 		ans <- cbind(ansPred, data.frame(sdGPP=sdGPP, sdReco=sdReco))

@@ -119,6 +119,8 @@ RectangularLRCFitter_optimLRCBounds <- function(
 }
 RectangularLRCFitter$methods( optimLRCBounds = RectangularLRCFitter_optimLRCBounds ) 
 
+# isParameterInBounds inherited from Nonrectangluar
+
 # optimLRD inherited from Nonrectangular
 
 # computeCost inherited

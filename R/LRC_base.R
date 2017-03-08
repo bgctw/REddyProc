@@ -161,17 +161,7 @@ LightResponseCurve_getPriorLocation <- function(
 		,E0			##<< numeric scalar of night-time estimate of temperature sensitivity
 ){
 	stop("Abstract method. Need to define in derived LRC class.")
-	##value<< a numeric vector with prior estimates of the parameters
-	parameterPrior <- c(
-			k=0
-			#,beta=as.vector(abs(quantile(NEEDay, 0.03)-quantile(NEEDay, 0.97)))
-			,beta=as.vector(abs(quantile(NEEDay, 0.03, na.rm=TRUE)-quantile(NEEDay, 0.97, na.rm=TRUE)))
-			,alpha=0.1
-			#,R_ref=mean(NEENight.V.n, na.rm=T)
-			,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
-			,E_0=as.vector(E0)
-			,conv=0.2
-	)   
+	##value<< a numeric vector with prior estimates of the parameters.
 } 		
 LightResponseCurveFitter$methods( getPriorLocation = LightResponseCurve_getPriorLocation)
 
@@ -185,18 +175,6 @@ LightResponseCurve_getPriorScale <- function(
 ){
 	stop("Abstract method. Need to define in derived LRC class.")
 	##value<< a numeric vector with prior estimates of the parameters
-	sdParameterPrior <- if(ctrl$isLasslopPriorsApplied){
-				c(k=50, beta=600, alpha=10, Rb=80, E0=NA, conv=20)
-			} else {
-				##details<< 
-				## The beta parameter is quite well defined. Hence use a prior with a standard deviation.
-				## The specific results are sometimes a bit sensitive to the uncertainty of the beta prior. 
-				## This uncertainty is set corresponding to 10 times the median relative flux uncertainty.
-				## The prior is weighted n times the observations in the cost.
-				## Hence, overall it is using a weight of 1/10 of the weight of all observations.
-				sdBetaPrior <- 10*medianRelFluxUncertainty*thetaPrior[2]/sqrt(nRec)
-				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, Rb=NA, E0=NA, conv=NA)
-			}
 } 
 LightResponseCurveFitter$methods(getPriorScale = LightResponseCurve_getPriorScale)
 
@@ -205,12 +183,7 @@ LightResponseCurve_getParameterInitials <- function(
 		thetaPrior 	##<< numeric vector prior estimate of parameters
 ){
 	stop("Abstract method. Need to define in derived LRC class.")
-	# only beta0 is varied between different intial guesses
 	##value<< a numeric matrix (3,nPar) of initial values for fitting parameters
-	thetaInitials <- matrix( rep(thetaPrior,each=3), 3,nPar, dimnames=list(NULL,names(thetaPrior)))
-	thetaInitials [2,2] <- parameterPrior[2]*1.3
-	thetaInitials [3,2] <- parameterPrior[2]*0.8
-	thetaInitials 
 }
 LightResponseCurveFitter$methods( getParameterInitials = LightResponseCurve_getParameterInitials)
 
@@ -229,6 +202,19 @@ LightResponseCurve_optimLRCBounds <- function(
 	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
 }
 LightResponseCurveFitter$methods(optimLRCBounds = LightResponseCurve_optimLRCBounds)
+
+LightResponseCurve_isParameterInBounds <- function(
+		### Check if estimated parameter vector is within reasonable bounds
+		theta					##<< estimate of parameter
+		,sdTheta				##<< estimate of uncertainty of the parameter
+		, RRefNight				##<< numeric scalar: night-time based estimate of basal respiration
+		, ctrl					##<< list of further controls
+){
+	stop("Abstract method. Need to define in derived LRC class.")
+	##author<< TW, MM
+	##value<< TRUE if parameters are within reasonable bounds, FALSE otherwise 
+}
+LightResponseCurveFitter$methods(isParameterInBounds = LightResponseCurve_isParameterInBounds)
 
 
 LightResponseCurve_optimLRC <- function(
