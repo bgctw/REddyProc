@@ -52,9 +52,9 @@ partitionNEEGL=function(
 			,FP_R_ref=NA_real_		##<< basal respiration estimated from LRC of daytime window  (W/m2)
 			,FP_E0=NA_real_			##<< temperature sensitivity estimated from nighttime NEE window  in Kelvin (degK) 
 		#TODO Mirco: add descriptions to meaning of LRC parameters
-			,FP_alpha=NA_real_			##<< 
-			,FP_beta=NA_real_			##<< 
-			,FP_k=NA_real_				##<<
+			,FP_alpha=NA_real_			##<< canopy light utilization efficiency and represents the initial slope of the light–response curve (μmol s-1 W)
+			,FP_beta=NA_real_			##<< maximum CO2 uptake rate of the canopy at light saturation (μmol m-2 s-1) 
+			,FP_k=NA_real_				##<< parameter controlling the VPD limitation of GPP 
 			,FP_qc=NA_integer_			##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away
 			,FP_dRecPar=NA_integer_		##<< records until or after closest record that has a parameter estimate associated
 	)
