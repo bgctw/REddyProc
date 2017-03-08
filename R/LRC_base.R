@@ -265,17 +265,23 @@ LightResponseCurve_computeCost <- function(
 LightResponseCurveFitter$methods( computeCost = LightResponseCurve_computeCost )
 
 LightResponseCurve_predictLRC <- function(
-		### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
-		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=conv)
-		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
+		### Light Response Function
+		theta   ##<< numeric vector of parameters
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
-		#,E0 	##<< Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
 ){
 	stop("Abstract method. Need to define in derived LRC class.")
+	##details<<
+	## Predict ecosystem fluxes (Reco, GPP, NEP=GPP-Reco) for given parameters and environmental conditions.
+	## 
+	## Currently ther are several subclasses that provide alternatives: \begin{itemize}
+	## \item Rectangular: \code{\link{RectangularLRCFitter_predictLRC}}
+	## \item Nonrectangular: \code{\link{NonrectangularLRCFitter_predictLRC}}
+	## \item Rectangular: \code{\link{LogisticSigmoidLRCFitter_predictLRC}}
+	#  \end{itemize}
 	##details<<
 	## If theta is a matrix, a different row of parameters is used for different entries of other inputs
 	##value<< a data.frame of length of Rg of computed  

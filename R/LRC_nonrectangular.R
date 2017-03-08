@@ -1,21 +1,21 @@
 
 
 NonrectangularLRCFitter <- setRefClass('NonrectangularLRCFitter', contains='LightResponseCurveFitter'
-## R5 reference class for the Rectangular Light response curve
+## R5 reference class for the nonrectangular Light response curve
 ##author<<
 ## TW, MM
 )	
 
 NonrectangularLRCFitter_getParameterNames <- function(
-### return the parameter names used by this Light Response Curve Funciton
+### return the parameter names used by this Light Response Curve Function
 ){
 	##value<< string vector of parameter names. Positions are important.
-	c(k="k"						##<< TODO				
-			, beta="beta"				##<< saturation of GPP at high radiation
-			, alpha="alpha"				##<< initial slope
-			, RRef="RRef"				##<< basal respiration 
-			, E0="E0"					##<< temperature sensitivity estimated from night-time data
-			, logitconf="logitconv")	##<< logit-transformed convexity parameter. The valua at original scale is obtained by conv = 1/(1+exp(-logitconv))
+	c(k="k"						##<< VPD effect
+	, beta="beta"				##<< saturation of GPP at high radiation
+	, alpha="alpha"				##<< initial slope
+	, RRef="RRef"				##<< basal respiration 
+	, E0="E0"					##<< temperature sensitivity estimated from night-time data
+	, logitconf="logitconv")	##<< logit-transformed convexity parameter. The valua at original scale is obtained by conv = 1/(1+exp(-logitconv))
 }
 NonrectangularLRCFitter$methods(getParameterNames = NonrectangularLRCFitter_getParameterNames)
 
@@ -245,39 +245,37 @@ NonrectangularLRCFitter$methods( optimLRC = NonrectangularLRCFitter_optimLRC)
 # computeCost inherited
 
 NonrectangularLRCFitter_predictLRC <- function(
-		### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
-		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=logitconv)
-		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
+		### Nonrectangular Hyperbolic Light Response function: (Gilmanov et al., 2003)
+		theta   ##<< theta [numeric] see \code{\link{NonrectangularLRCFitter_getParameterNames}}
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
-		#,E0 	##<< Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
 ) {
 	##details<<
-	## with fixes E0.n for the estimation of Rd
-	## VPD effect included according to Lasslop et al., 2010
+	## The VPD effect is included according to Lasslop et al., 2010.
+	## This function generalizes the \code{\link{RectangularLRCFitter_predictLRC}} by adding a convexity parameter.
 	##details<<
 	## If theta is a matrix, a different row of parameters is used for different entries of other inputs
 	if( is.matrix(theta) ){
 		kVPD<-theta[,1]
-		beta0<-theta[,2]
-		alfa<-theta[,3]
+		beta<-theta[,2]
+		alpha<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
 		logitconv<-theta[,6]
 	} else {
 		kVPD<-theta[1]
-		beta0<-theta[2]
-		alfa<-theta[3]
+		beta<-theta[2]
+		alpha<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
 		logitconv<-theta[6]
 	}
 	conv <- invlogit(logitconv)
-	Amax <- if( isTRUE(fixVPD) ) beta0 else {
-				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
+	Amax <- if( isTRUE(fixVPD) ) beta else {
+				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
 			} 
 	#browser()
 	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
@@ -285,9 +283,9 @@ NonrectangularLRCFitter_predictLRC <- function(
 	#print(VPD)
 	#print(Rg)
 	Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13))) 
-	zRoot<-((alfa*Rg+Amax)^2)-(4*alfa*Rg*conv*Amax)
+	zRoot<-((alpha*Rg+Amax)^2)-(4*alpha*Rg*conv*Amax)
 	zRoot[which(zRoot<0)]<-0
-	GPP<-(1/(2*conv))*(alfa*Rg+Amax-sqrt(zRoot))
+	GPP<-(1/(2*conv))*(alpha*Rg+Amax-sqrt(zRoot))
 	#browser()
 	NEP <- GPP - Reco
 	#print(NEP)
@@ -315,25 +313,25 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 	#TODO: test and correct
 	if( is.matrix(theta) ){
 		kVPD<-theta[,1]
-		beta0<-theta[,2]
-		alfa<-theta[,3]
+		beta<-theta[,2]
+		alpha<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
 		logitconv<-theta[,6]
 	} else {
 		kVPD<-theta[1]
-		beta0<-theta[2]
-		alfa<-theta[3]
+		beta<-theta[2]
+		alpha<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
 		logitconv<-theta[6]
 	}
-	Amax <- if( isTRUE(fixVPD) ) beta0 else {
-				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)
+	Amax <- if( isTRUE(fixVPD) ) beta else {
+				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
 			}
 	#ex <- expression( beta0*exp(-kVPD*(VPD-VPD0)) ); deriv(ex,c("beta0","kVPD"))
 	dAmax_dkVPD <- if( isTRUE(fixVPD) ) 0 else {
-				ifelse(VPD > VPD0, beta0*-(VPD-VPD0)*exp(-kVPD*(VPD-VPD0)), 0)
+				ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-kVPD*(VPD-VPD0)), 0)
 			} 
 	dAmax_dbeta0 <- if( isTRUE(fixVPD) ) 0 else {
 				ifelse(VPD > VPD0, exp(-kVPD*(VPD-VPD0)), 1)
@@ -348,8 +346,8 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 	gradReco[,"E0"] <- dReco_dE0 <- Rref * (.expr9 * .expr7)
 	#GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
 	#ex <- expression( (Amax*alfa*Rg)/(alfa*Rg+Amax) ); deriv(ex,c("Amax","alfa"))
-	.expr2 <- Amax * alfa * Rg
-	.expr3 <- alfa * Rg
+	.expr2 <- Amax * alpha * Rg
+	.expr3 <- alpha * Rg
 	.expr4 <- .expr3 + Amax
 	.expr7 <- .expr4^2
 	.value <- .expr2/.expr4

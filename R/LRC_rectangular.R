@@ -10,6 +10,8 @@ RectangularLRCFitter$methods(
 getParameterNames = function(
 ### return the parameter names used by this Light Response Curve Funciton
 ){
+	##value<< Same as \code{\link{NonrectangularLRCFitter_getParameterNames}},
+	## unless omitting the convexity parameter.
 	ans <- callSuper()
 	ans[1:5]	# omit the conv parameter
 })

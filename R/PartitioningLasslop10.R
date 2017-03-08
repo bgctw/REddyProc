@@ -1,5 +1,5 @@
 partitionNEEGL=function(
-		### Partitioning NEE fluxes into GP and Reco after daytime method of Lasslop et al. (2010)
+		### Partitioning NEE fluxes into GP and Reco after daytime method. 
 		ds							##<< dataset with all the specified input columns and full days in equidistant times		
 		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
 		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')	##<< Quality flag of variable
@@ -13,14 +13,17 @@ partitionNEEGL=function(
 		,QFVPDValue.n=0        		##<< Value of VPD quality flag for _good_ (original) data
 		,RadVar.s='Rg'         		##<< Unfilled (original) radiation variable
 		,PotRadVar.s="PotRad_NEW"	##<< Variable name of potential radiation (W/m2)			   
-		,Suffix.s = ""		   		##<< string inserted into column names before identifier (see \code{\link{sMDSGapFillAfterUstar}}).
+		,Suffix.s = ""		   		##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
 		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
 		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve  	
 )
-##description<<
-## daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
+##details<<
+## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
+##
+## The fit to the light-response-curve is done by default using the Rectangular function, as in Lasslop et al. (2010)
+## Alternative fittings can be used by providing the correspodning subclass of \code{LightResponseCurveFitter-class} to \code{lrcFitter} argument.
 ##author<<
 ## MM, TW
 ##references<<
