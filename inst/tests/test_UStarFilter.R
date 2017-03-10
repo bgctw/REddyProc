@@ -7,6 +7,8 @@ context("UStarFilter")
 require(plyr)
 # Furher context: fCheckColNames, fCheckColNumeric, fCheckOutsideRange
 
+if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)

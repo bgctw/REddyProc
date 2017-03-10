@@ -5,6 +5,10 @@
 #require(testthat)
 context("partGL")
 
+	if( !exists(".partGLRHLightResponseCost") ) .partGLRHLightResponseCost <- REddyProc:::.partGLRHLightResponseCost
+	if( !exists(".partGPAssociateSpecialRows") ) .partGPAssociateSpecialRows <- REddyProc:::.partGPAssociateSpecialRows
+	if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # 8 first days of June from IT-MBo.2005.txt
@@ -1009,7 +1013,7 @@ test_that("partGLPartitionFluxes missing night time data",{
 
 	
 test_that("partGLPartitionFluxes filter Meteo flag",{
-		dsNEE1 <- dsNEE1
+		dsNEE1 <- dsNEE
 		# test setting VPD_fqc to other than zero, for omitting those rows
 		dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > "1998-06-03 00:00:00 GMT") & (dsNEE1$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE1$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- 1L
 		#plot( VPD_fqc ~ sDateTime, dsNEE1 )

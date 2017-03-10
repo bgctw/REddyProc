@@ -2,6 +2,10 @@
 context(".binWithEqualValues")
 # Furher context: fCheckColNames, fCheckColNumeric, fCheckOutsideRange
 
+if( !exists(".whichValueGreaterEqual") ) .whichValueGreaterEqual <- REddyProc:::.whichValueGreaterEqual
+if( !exists(".binWithEqualValuesBalanced") ) .binWithEqualValuesBalanced <- REddyProc:::.binWithEqualValuesBalanced
+if( !exists(".binWithEqualValuesMinRec") ) .binWithEqualValuesMinRec <- REddyProc:::.binWithEqualValuesMinRec
+
 test_that(".whichValueGreaterEqual",{
 			x <- 1:10
 			expect_that( .whichValueGreaterEqual(x, 5L), equals(5L) )

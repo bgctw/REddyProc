@@ -7,6 +7,8 @@ context("sEddyProc-Class partitioning")
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
+
 #Load example data directly from package or (if not available) from txt file
 data('Example_DETha98', package='REddyProc')
 if( sum(grepl('EddyData.F',ls())) == 0 ) {
