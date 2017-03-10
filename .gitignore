@@ -15,7 +15,11 @@
 /*.Rcheck/
 
 # RStudio files
+*.Rproj
 .Rproj.user/
+.DS_Store
+inst/.DS_Store
+inst/develop/.DS_Store
 
 # produced vignettes
 vignettes/*.html
