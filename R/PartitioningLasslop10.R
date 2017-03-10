@@ -458,12 +458,12 @@ isValidNightRecord <- function(
 		### compute logical vector of each rows in ds is its a valid night record
 		ds		##<< data.frame with columns isNight, NEE, Temp (degC)
 ){
-	isValid <- !is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE)
+	isValid <- !is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE) & is.finite(ds$Temp)
 	##details<<
 	## For robustness, data is trimmed to conditions at temperature > 1 degC 
 	## but only timmed if there are more at least 12 records left
 	isFreezing <- ds$Temp[isValid] <= -1
-	if( sum(!isFreezing) >= 12L ) isValid[isValid][isFreezing] <- FALSE
+	if( sum(is.finite(isFreezing) & !isFreezing) >= 12L ) isValid[isValid][isFreezing|is.na(isFreezing)] <- FALSE
 	##value<< a logical vector of length nrow(ds)
 	return(isValid)
 }
