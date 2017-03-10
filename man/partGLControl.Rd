@@ -7,16 +7,19 @@ For highest compatibility to Lasslop10 use
 , isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE
 , smoothTempSensEstimateAcrossTime=FALSE
 }}
-\usage{partGLControl(LRCFitConvergenceTolerance = 0.001, nBootUncertainty = 30L, 
-    minNRecInDayWindow = 10L, isAssociateParmsToMeanOfValids = TRUE, 
-    isLasslopPriorsApplied = FALSE, isSdPredComputed = TRUE, 
-    isFilterMeteoQualityFlag = FALSE, isBoundLowerNEEUncertainty = TRUE, 
-    smoothTempSensEstimateAcrossTime = TRUE)}
+\usage{partGLControl(LRCFitConvergenceTolerance = 0.001, nLRCFitConvergenceTolerance = 0.001, 
+    nBootUncertainty = 30L, minNRecInDayWindow = 10L, 
+    isAssociateParmsToMeanOfValids = TRUE, isLasslopPriorsApplied = FALSE, 
+    isSdPredComputed = TRUE, isFilterMeteoQualityFlag = FALSE, 
+    isBoundLowerNEEUncertainty = TRUE, smoothTempSensEstimateAcrossTime = TRUE, 
+    NRHRfunction = FALSE)}
 \arguments{
-  \item{LRCFitConvergenceTolerance}{convergence criterion for LRC fit.
+  \item{LRCFitConvergenceTolerance}{convergence criterion for rectangular light response curve fit.
 If relative improvement of reducing residual sum of squares between predictions and 
 observations is less than this criterion, assume convergence.
 Decrease to get more precise parameter estimates, Increase for speedup.}
+  \item{nLRCFitConvergenceTolerance}{convergence criterion for nonrectangular light response curve fit.
+Here its a factor of machine tolerance.}
   \item{nBootUncertainty}{number of bootstrap samples for estimating uncertainty.
 Set to zero to derive uncertainty from curvature of a single fit}
   \item{minNRecInDayWindow}{Minimum number of data points for regression}
@@ -34,6 +37,8 @@ For prediction, the gap-filled value is used always, to produce predictions also
 day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.}
   \item{smoothTempSensEstimateAcrossTime}{set to FALSE to use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
+  \item{NRHRfunction}{
+}
 }
 
 \value{list with entries of given arguments.}
