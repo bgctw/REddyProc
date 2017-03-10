@@ -4,7 +4,7 @@
 \description{Strip file extension }
 \usage{fStripFileExtension(lFiles.V.s)}
 \arguments{
-  \item{lFiles.V.s}{Vector with names of all available site files}
+  \item{lFiles.V.s}{String vector with names of all available site files}
 }
 
 \value{Character vector containing the first part of file names (before first dot in file name).}

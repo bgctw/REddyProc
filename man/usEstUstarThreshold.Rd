@@ -1,6 +1,6 @@
 \name{usEstUstarThreshold}
 \alias{usEstUstarThreshold}
-\title{sEddyProc$sEstUstarThreshold - Estimating ustar threshold}
+\title{usEstUstarThreshold - Estimating ustar threshold}
 \description{Estimate the Ustar threshold by aggregating the estimates for seasonal and temperature subsets.}
 \usage{usEstUstarThreshold(ds, seasonFactor.v = usCreateSeasonFactorMonth(ds$sDateTime), 
     seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, 

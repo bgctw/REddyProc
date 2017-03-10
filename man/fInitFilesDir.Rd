@@ -4,8 +4,8 @@
 \description{Get all available files with specific file extension in directory}
 \usage{fInitFilesDir(Dir.s, lFileExt.s, fixed = TRUE)}
 \arguments{
-  \item{Dir.s}{Directory to be searched for files}
-  \item{lFileExt.s}{File extension specification}
+  \item{Dir.s}{Directory (string) to be searched for files}
+  \item{lFileExt.s}{File extension (string) specification}
   \item{fixed}{set to FALSE, if using regular expressions}
 }
 

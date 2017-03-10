@@ -1,7 +1,7 @@
 \name{RHLightResponseCostC}
 \alias{RHLightResponseCostC}
 \title{RHLightResponseCostC}
-\description{Compute the cost of RLightResponse prediction versus observations by using fast C-code}
+
 \usage{RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, 
     sdParameterPrior, Rg, VPD, Temp, VPD0, fixVPD)}
 \arguments{

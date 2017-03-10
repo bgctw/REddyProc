@@ -5,10 +5,10 @@
 \usage{fLoadFluxNCInfo(FileName.s, Dir.s, NcPackage.s = "ncdf4", 
     CallFunction.s = "")}
 \arguments{
-  \item{FileName.s}{NetCDF file name}
-  \item{Dir.s}{Directory}
-  \item{NcPackage.s}{Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
-  \item{CallFunction.s}{Name of function called from}
+  \item{FileName.s}{NetCDF file name as a string}
+  \item{Dir.s}{Directory as a string}
+  \item{NcPackage.s}{Name (string) of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
+  \item{CallFunction.s}{Name (string) of function called from}
 }
 \details{Description of attribute list:\describe{
 \item{ID}{SiteID}

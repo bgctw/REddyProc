@@ -7,10 +7,10 @@ The time stamp information needs to be provided as variables 'year', 'month', 'd
     NcPackage.s = "ncdf4", fReadTime = fReadTimeSeveralCols, 
     ...)}
 \arguments{
-  \item{VarList.V.s}{Vector of variables to be read in}
-  \item{FileName.s}{File name}
-  \item{Dir.s}{Directory}
-  \item{NcPackage.s}{Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
+  \item{VarList.V.s}{String vector of variables to be read in}
+  \item{FileName.s}{File name as a string}
+  \item{Dir.s}{Directory as a string}
+  \item{NcPackage.s}{Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4') as a string}
   \item{fReadTime}{function that reads time columns, must append columns year (from 0AD), month, day, and hour (fractional)}
   \item{\dots}{further arguments to var.get.nc or ncvar_get, such as start and count}
 }

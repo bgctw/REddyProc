@@ -16,6 +16,7 @@
 #+++ Simple example code for using the sEddyProc reference class +++
 
 if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+	#library(REddyProc)
 	
 	#+++ Load data with one header and one unit row from (tab-delimited) text file
 	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
@@ -73,6 +74,7 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 	
 	#+++ Processing with ustar filtering before  
 	EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+	EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 	# estimating the thresholds based on the data
 	(uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh)
 	# plot saturation of NEE with UStar for one season
@@ -133,6 +135,7 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 	#+++ Initialize new sEddyProc processing class with more columns
 	EddyTest.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F, Step=Step.V.n, QF=QF.V.n), 
 			c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
+	EddyTest.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 	
 	#+++ Gap fill variable with (non-default) variables and limits including preselection of data with quality flag QF==0 
 	EddyTest.C$sMDSGapFill('LE', QFVar.s='QF', QFValue.n=0, V1.s='Rg', T1.n=30, V2.s='Tsoil', T2.n=2, 'Step', 0.1)
@@ -151,6 +154,7 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 	
 	#+++ Initialize new sEddyProc processing class
 	EddyTestMDS.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD'))
+	EddyTestMDS.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 	#Initialize 'NEE' as variable to fill
 	EddyTestMDS.C$sFillInit('NEE')
 	# Set variables and tolerance intervals
@@ -184,13 +188,16 @@ if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 	
 	#+++ Provide a single user-defined uStarThreshold
 	EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+	EddySetups.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 	Ustar.V.n <- 0.46  
 	EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
 	
-	# See vignette DEGebExample for
+	# Type 'vignette(DEGebExample)' to view an example
 	#  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)
 	#  - using seasonal instead of annual uStar threshold estimates in gapfilling
 	#  - Bootstrapping uncertainty associated with uStar Threshold estimation
 	#  - Using change point detection instead of moving point method
+	# The vignette is only available if REddyProc was installed from binary package.
+	# A version can be seen at https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md
 }
 }

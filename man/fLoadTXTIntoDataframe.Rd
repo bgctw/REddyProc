@@ -4,8 +4,8 @@
 \description{If gaps with the flag -9999.0 exist, these are set to NA.}
 \usage{fLoadTXTIntoDataframe(FileName.s, Dir.s = "")}
 \arguments{
-  \item{FileName.s}{File name}
-  \item{Dir.s}{Directory}
+  \item{FileName.s}{File name as a character string}
+  \item{Dir.s}{Directory as a character string}
 }
 \details{Alternatively \code{\link{fLoadFluxNCIntoDataframe}} loads data from NetCDF-Files.
 In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.

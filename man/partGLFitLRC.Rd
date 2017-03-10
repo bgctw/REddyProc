@@ -8,7 +8,7 @@
   \item{dsDay}{data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE}
   \item{E0}{temperature sensitivity of respiration}
   \item{sdE0}{standard deviation of E_0.n}
-  \item{RRefNight}{basal respiration estimated from night time data}
+  \item{RRefNight}{basal respiration estimated from night time data, used as starring value and prior estimate}
   \item{controlGLPart}{further default parameters (see \code{\link{partGLControl}})}
   \item{lastGoodParameters}{numeric vector of last good theta}
 }
@@ -42,7 +42,5 @@ the fixed ones and including E0}
 
 \seealso{\code{\link{partGLFitLRCWindows}}
 
-\code{\link{parmGLOptimLRCBounds}}
-
-\code{\link{.bootStrapLRCFit}}}
+\code{\link{parmGLOptimLRCBounds}}}
 

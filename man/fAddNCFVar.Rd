@@ -6,12 +6,12 @@
     CallFunction.s = "", VarNew.s = Var.s, ...)}
 \arguments{
   \item{Data.F}{Data frame}
-  \item{Var.s}{Variable name or names}
-  \item{FileName.s}{NetCDF file name}
-  \item{Dir.s}{Directory}
-  \item{NcPackage.s}{Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
-  \item{CallFunction.s}{Name of function called from}
-  \item{VarNew.s}{Name of the variable in Data.F, offer renaming}
+  \item{Var.s}{Variable name or names (vector of strings)}
+  \item{FileName.s}{NetCDF file name as a string}
+  \item{Dir.s}{Directory as a string}
+  \item{NcPackage.s}{Name (string) of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')}
+  \item{CallFunction.s}{Name (string) of function called from}
+  \item{VarNew.s}{Name (string) of the variable in Data.F, offer renaming}
   \item{\dots}{further arguments to var.get.nc or ncvar_get, such as start and count}
 }
 
