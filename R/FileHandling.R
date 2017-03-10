@@ -12,8 +12,8 @@ fLoadTXTIntoDataframe <- function(
   ## Load text file with one header and one unit row into data frame
   ##description<<
   ## If gaps with the flag -9999.0 exist, these are set to NA.
-  FileName.s            ##<< File name
-  ,Dir.s=''             ##<< Directory
+  FileName.s            ##<< File name as a character string
+  ,Dir.s=''             ##<< Directory as a character string
 ) 
   ##author<<
   ## AMM
@@ -72,10 +72,10 @@ fLoadFluxNCIntoDataframe <- function(
   ##description<<
   ## Load specified variables and time stamp information from NetCDF file in Fluxnet BGI format.
   ## The time stamp information needs to be provided as variables 'year', 'month', 'day', 'hour'.
-  VarList.V.s           ##<< Vector of variables to be read in 
-  ,FileName.s           ##<< File name             
-  ,Dir.s=''             ##<< Directory
-  ,NcPackage.s='ncdf4'  ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
+  VarList.V.s           ##<< String vector of variables to be read in 
+  ,FileName.s           ##<< File name as a string             
+  ,Dir.s=''             ##<< Directory as a string
+  ,NcPackage.s='ncdf4'  ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4') as a string
   ,fReadTime=fReadTimeSeveralCols	##<< function that reads time columns, must append columns year (from 0AD), month, day, and hour (fractional)
   ,...					##<< further arguments to var.get.nc or ncvar_get, such as start and count
 ) 
@@ -117,15 +117,15 @@ attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
 fReadTimeSeveralCols <- function(
 		### Reading 
 		Data.F                ##<< Data frame
-		,FileName.s           ##<< NetCDF file name
-		,Dir.s                ##<< Directory
-		,NcPackage.s          ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
-		,CallFunction.s=''    ##<< Name of function called from
-		, colYear='year'	  ##<< Name of variable holding the year
-		, colMonth='month'	  ##<< Name of variable holding the month
-		, colDay='day'		  ##<< Name of variable holding the day
-		, colHour='hour'	  ##<< Name of variable holding the hour
-		, defaultHour=0	  	  ##<< default used when colHour=NA, when only days are specified
+		,FileName.s           ##<< NetCDF file name as a string
+		,Dir.s                ##<< Directory as a string
+		,NcPackage.s          ##<< Name (string) of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4') 
+		,CallFunction.s=''    ##<< Name (string) of function called from 
+		, colYear='year'	  ##<< Name (string) of variable holding the year
+		, colMonth='month'	  ##<< Name (string) of variable holding the month
+		, colDay='day'		  ##<< Name (string) of variable holding the day
+		, colHour='hour'	  ##<< Name (string) of variable holding the hour
+		, defaultHour=0	  	  ##<< (numeric) default that is used when colHour=NA, when only days are specified
 		,...				  ##<< further arguments to var.get.nc or ncvar_get, such as start and count
 ){
 	if( !length(colHour) ){
@@ -142,11 +142,11 @@ fReadTimeSeveralCols <- function(
 fReadTimeBerkeley <- function(
 		### Reads time columns (year, month, day, hour) from column in ISODate integer format
 		Data.F                ##<< Data frame
-		,FileName.s           ##<< NetCDF file name
-		,Dir.s                ##<< Directory
-		,NcPackage.s          ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
-		,CallFunction.s=''    ##<< Name of function called from
-		,colTime='TIMESTAMP_END'	##<< the column name holding time with format described in details
+		,FileName.s           ##<< NetCDF file name as a string
+		,Dir.s                ##<< Directory as a string
+		,NcPackage.s          ##<< Name (string) of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
+		,CallFunction.s=''    ##<< Name (string) of function called from
+		,colTime='TIMESTAMP_END'	##<< the column name (string) holding time with format described in details
 		,...					##<< further arguments to var.get.nc or ncvar_get, such as start and count
 ){
 	##details<< 
@@ -184,12 +184,12 @@ fAddNCFVar <- function(
   ##description<<
   ## Add variable from NetCDF file to data frame
   Data.F                ##<< Data frame
-  ,Var.s                ##<< Variable name or names
-  ,FileName.s           ##<< NetCDF file name
-  ,Dir.s                ##<< Directory
-  ,NcPackage.s          ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
-  ,CallFunction.s=''    ##<< Name of function called from
-  ,VarNew.s=Var.s		##<< Name of the variable in Data.F, offer renaming
+  ,Var.s                ##<< Variable name or names (vector of strings)
+  ,FileName.s           ##<< NetCDF file name as a string
+  ,Dir.s                ##<< Directory as a string
+  ,NcPackage.s          ##<< Name (string) of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
+  ,CallFunction.s=''    ##<< Name (string) of function called from
+  ,VarNew.s=Var.s		##<< Name (string) of the variable in Data.F, offer renaming
   ,...					##<< further arguments to var.get.nc or ncvar_get, such as start and count
 )
   ##author<<
@@ -257,10 +257,10 @@ fLoadFluxNCInfo <- function(
   ## Get site information from BGI NetCDF files
   ##description<<
   ## Load site information attributes such as latitude, longitude and others from BGI NetCDF files
-  FileName.s            ##<< NetCDF file name
-  ,Dir.s                ##<< Directory
-  ,NcPackage.s='ncdf4'  ##<< Name of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
-  ,CallFunction.s=''    ##<< Name of function called from
+  FileName.s            ##<< NetCDF file name as a string
+  ,Dir.s                ##<< Directory as a string
+  ,NcPackage.s='ncdf4'  ##<< Name (string) of R NetCDF package (implemented for 'RNetCDF' and 'ncdf4')
+  ,CallFunction.s=''    ##<< Name (string) of function called from
 )
   ##author<<
   ## AMM
@@ -326,9 +326,9 @@ fWriteDataframeToFile <- function(
   ##description<<
   ## Write data frame to ASCII tab-separated text file
   Data.F                ##<< Data frame     
-  ,FileName.s           ##<< File base name
-  ,Dir.s=''             ##<< Directory
-  ,Digits.n=5			      ##<< number of digits, i.e. precision, for numeric values  
+  ,FileName.s           ##<< File base name as a string
+  ,Dir.s=''             ##<< Directory as a string
+  ,Digits.n=5			##<< (integer) number of digits, i.e. precision, for numeric values  
 )
   ##author<<
   ## AMM, KS
@@ -372,8 +372,8 @@ attr(fWriteDataframeToFile, 'ex') <- function() {
 fInitFilesDir <- function(
   ##description<<
   ## Get all available files with specific file extension in directory
-  Dir.s           ##<< Directory to be searched for files
-  ,lFileExt.s     ##<< File extension specification
+  Dir.s           ##<< Directory (string) to be searched for files 
+  ,lFileExt.s     ##<< File extension (string) specification
   ,fixed=TRUE	  ##<< set to FALSE, if using regular expressions
 )
   ##author<<
@@ -397,7 +397,7 @@ attr(fInitFilesDir, 'ex') <- function()   {
 fStripFileExtension <- function(
   ##description<<
   ## Strip file extension 
-  lFiles.V.s     ##<< Vector with names of all available site files
+  lFiles.V.s     ##<< String vector with names of all available site files
 )
   ##author<<
   ## AMM
@@ -420,10 +420,10 @@ attr(fStripFileExtension, 'ex') <- function()  {
 fSetFile <- function(
   ##description<<
   ## Set file name with path and check if directory and/or file exists
-  FileName.s            ##<< File name
-  ,Dir.s                ##<< Directory
+  FileName.s            ##<< File name as a string
+  ,Dir.s                ##<< Directory as a string
   ,IO.b                 ##<< Input/output flag, TRUE for input, FALSE for output
-  ,CallFunction.s=''    ##<< Name of function called from
+  ,CallFunction.s=''    ##<< Name (string) of the caller function for warnings
 )
   ##author<<
   ## AMM
