@@ -314,7 +314,7 @@ partGLFitLRCWindows=function(
 fillNAForward <- function(
 		### replace NA by value of previous record
 		x		##<< numeric vector to fill NAs
-		, firstValue=median(x,na.rm=FALSE)	##<< value to be used for NA at the beginning of x
+		, firstValue=median(x,na.rm=TRUE)	##<< value to be used for NA at the beginning of x
 ){
 	iMissing <- which(!is.finite(x))
 	if( length(iMissing) && (iMissing[1] == 1L)){

@@ -52,3 +52,4 @@ vignettes/*.pdf
 /tmp/
 /out/
 /plots/
+.Rproj.user
