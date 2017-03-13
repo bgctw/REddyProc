@@ -536,28 +536,40 @@ dsNEE$isDay=(dsNEE$Rg_f > 4 & dsNEE$PotRad_NEW != 0)
 RectangularLRCFitter$methods()		
 LRC <- RectangularLRCFitter()		
 
+test_LRCGradient <- function(LRC){
+	#str(ds)
+	ds <- dsNEE
+	theta0 <- structure(c(0, 27.3333395589509, 0.162207578338878, 2.59392002410639, 185, 1.1
+			), .Names = c("k", "beta", "alpha", "RRef","E0","logitconv"))
+	res <- LRC$computeLRCGradient(theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
+	.numDerivLRC <- function(theta, eps=0.0001, ..., varName="NEP"){
+		ans <- matrix( NA, nrow=length(list(...)[[1]]), ncol=length(theta), dimnames=list(NULL,names(theta)))
+		i <- 1L
+		for( i in seq_along(theta)){
+			thetaMinus <- theta; thetaMinus[i] <- theta[i]-eps
+			thetaPlus <- theta; thetaPlus[i] <- theta[i]+eps
+			fMinus <- LRC$predictLRC(thetaMinus, ...)[[varName]]
+			fPlus <- LRC$predictLRC(thetaPlus, ...)[[varName]]
+			ans[,i] <- derivI <- (fPlus - fMinus)/(2*eps)
+		}
+		ans
+	}
+	varName <- "NEP"
+	#varName <- "Reco"
+	#varName <- "GPP"
+	res20 <- .numDerivLRC(varName=varName, theta=theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
+	res2 <- res20[, colnames(res[[varName]])]
+	expect_true( all(na.omit(abs(res[[varName]] - res2) < 1e-2)))
+	#plot( res[[varName]][,2L] ~ res2[,2L])
+	#plot( res$NEP[,4L] ~ res2[,4L])
+	#plot( resRectGrad$NEP[,3L] ~ res$NEP[,3L])
+}
 
-test_that("partGL_RHLightResponseGrad matches numerical estimates",{
-			#str(ds)
-			ds <- dsNEE
-			theta0 <- structure(c(0, 27.3333395589509, 0.162207578338878, 2.59392002410639, 185
-					), .Names = c("k", "beta0", "alfa", "Rb","E0"))
-			res <- LRC$computeLRCGradient(theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
-			.numDerivLRC <- function(theta, eps=0.0001, ...){
-				ans <- matrix( NA, nrow=length(list(...)[[1]]), ncol=length(theta), dimnames=list(NULL,names(theta)))
-				i <- 1L
-				for( i in seq_along(theta)){
-							thetaMinus <- theta; thetaMinus[i] <- theta[i]-eps
-							thetaPlus <- theta; thetaPlus[i] <- theta[i]+eps
-							fMinus <- LRC$predictLRC(thetaMinus, ...)$NEP
-							fPlus <- LRC$predictLRC(thetaPlus, ...)$NEP
-							ans[,i] <- derivI <- (fPlus - fMinus)/(2*eps)
-						}
-				ans
-			}
-			res2 <- .numDerivLRC(theta=theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
-			expect_true( all(na.omit(abs(res$NEP - res2) < 1e-2)))
-			#plot( res$NEP[,4L] ~ res2[,4L])
+test_that("RectangularLRCFitter$computeLRCGradient matches numerical estimates",{
+			LRC <- RectangularLRCFitter()
+			test_LRCGradient(LRC)
+			#LRC <- LogisticSigmoidLRCFitter()
+			#LRC <- NonrectangularLRCFitter()
 		})
 
 
@@ -570,7 +582,7 @@ test_that("RHLightResponseCostC",{
 			#
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, isDay==TRUE)
-			theta <- c(k=0, beta0=28.6, alfa=0.18,  Rb=2.87, E0=185)
+			theta <- c(k=0, beta=28.6, alpha=0.18,  RRef=2.87, E0=185)
 			flux <- dssDay$NEE_f
 			sdFlux <- dssDay$NEE_fsd
 			betaPrior <- 26
@@ -636,6 +648,13 @@ test_that("fitLRC",{
 		})
 
 #----------------------------- Logistic Sigmoid
+test_that("LogisticSigmoidLRCFitter$computeLRCGradient matches numerical estimates",{
+			#LRC <- RectangularLRCFitter()
+			LRC <- LogisticSigmoidLRCFitter()
+			#LRC <- NonrectangularLRCFitter()
+			test_LRCGradient(LRC)
+		})
+
 test_that("fitLRC_LogisticSigmoid",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, isDay==TRUE)
@@ -673,6 +692,38 @@ test_that("fitLRC_LogisticSigmoid",{
 
 
 #----------------------------- Nonrectangular
+test_that("NonrectangularLRCFitter$computeGPPGradient matches numerical estimates",{
+			#str(ds)
+			ds <- dsNEE
+			theta0 <- structure(c(0, 27.3333395589509, 0.162207578338878, 2.59392002410639, 185, 1.1
+					), .Names = c("k", "beta", "alpha", "RRef","E0","logitconv"))
+			LRC <- NonrectangularLRCFitter()
+			res <- LRC$computeGPPGradient(Rg=ds$Rg_f, Amax=theta0["beta"], alpha=theta0["alpha"], logitconv=theta0["logitconv"] )
+			.numDerivGPP <- function(theta, eps=0.00001, Rg, ...){
+				GPPParNames <- c("beta","alpha","logitconv")
+				ans <- matrix( NA, nrow=length(list(...)[[1]]), ncol=length(GPPParNames), dimnames=list(NULL,GPPParNames))
+				i <- "beta"
+				for( i in GPPParNames){
+					thetaMinus <- theta; thetaMinus[i] <- theta[i]-eps
+					thetaPlus <- theta; thetaPlus[i] <- theta[i]+eps
+					fMinus <- LRC$predictGPP(Rg=Rg, Amax=thetaMinus["beta"], alpha=thetaMinus["alpha"], conv=invlogit(thetaMinus["logitconv"]))
+					fPlus <- LRC$predictGPP(Rg=Rg, Amax=thetaPlus["beta"], alpha=thetaPlus["alpha"], conv=invlogit(thetaPlus["logitconv"])) 
+					ans[,i] <- derivI <- (fPlus - fMinus)/(2*eps)
+				}
+				ans
+			}
+			res2 <- .numDerivGPP(theta=theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
+			expect_true( all(na.omit(abs(res - res2) < 1e-2)))
+			#plot( res[,2L] ~ res2[,2L])
+		})
+
+test_that("NonrectangularLRCFitter$computeLRCGradient matches numerical estimates",{
+			#LRC <- RectangularLRCFitter()
+			#LRC <- LogisticSigmoidLRCFitter()
+			LRC <- NonrectangularLRCFitter()
+			test_LRCGradient(LRC)
+		})
+
 
 test_that("fitLRC_Nonrectangular",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )

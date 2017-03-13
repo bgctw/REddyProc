@@ -283,7 +283,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 	} 
 	##details<<
 	## No parameters are reported if alpha<0 or RRef < 0 or beta0 < 0 or beta0 > 250 
-	# positions in theta0: "k"     "beta0" "alfa"  "RRef"    "E0"
+	# positions in theta0: "k"     "beta0" "alpha"  "RRef"    "E0"
 	if( !is.na(resOpt$theta[1L]) && ((resOpt$theta[3L] < 0) || (resOpt$theta[4L] < 0) || (resOpt$theta[2L] < 0) || (resOpt$theta[2L] >= 250)) ){
 		# TODO estimate RRef from daytime data?
 		#LloydT_E0fix
@@ -427,6 +427,7 @@ LightResponseCurveFitter_predictLRC <- function(
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ){
 	##details<<
 	## Predict ecosystem fluxes (Reco, GPP, NEP=GPP-Reco) for given parameters and environmental conditions.
@@ -459,7 +460,7 @@ LightResponseCurveFitter_predictLRC <- function(
 	Amax <- if( isTRUE(fixVPD) ) beta else {
 				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
 			} 
-	Reco<-RRef*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
+	Reco<-RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha)
 	NEP <- GPP - Reco
 	## a data.frame of length of Rg of computed  
@@ -482,28 +483,61 @@ LightResponseCurveFitter_predictGPP  <- function(
 }
 LightResponseCurveFitter$methods( predictGPP = LightResponseCurveFitter_predictGPP)
 
+
 LightResponseCurveFitter_computeLRCGradient <- function(
-		### Gradient of \code{\link{partGL_RHLightResponse}}
-		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0, theta[5]=conv)
-		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
+		### Gradient of \code{\link{LightResponseCurveFitter_predictLRC}}
+		theta 	##<< theta [numeric] -> parameter vector (theta[1]=k (k), theta[2]=beta (beta), theta[3]=alpha, theta[4]=RRef (rb), theta[4]=E0)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
-		#,E0 	##<< Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
-	stop("Abstract method. Need to define in derived LRC class.")
-	## list with gradient matrices (length(Rg), nPar) for quantities 
+	if( is.matrix(theta) ){
+		k<-theta[,1]
+		beta<-theta[,2]
+		alpha<-theta[,3]
+		RRef<-theta[,4]
+		E0<-theta[,5]
+	} else {
+		k<-theta[1]
+		beta<-theta[2]
+		alpha<-theta[3]
+		RRef<-theta[4]
+		E0<-theta[5]
+	}
+	Amax <- if( isTRUE(fixVPD) ) beta else {
+				ifelse(VPD > VPD0, beta*exp(-k*(VPD-VPD0)), beta)
+			}
+	#ex <- expression( beta*exp(-k*(VPD-VPD0)) ); deriv(ex,c("beta","k"))
+	dAmax_dkVPD <- if( isTRUE(fixVPD) ) 0 else {
+				ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-k*(VPD-VPD0)), 0)
+			} 
+	dAmax_dbeta0 <- if( isTRUE(fixVPD) ) 0 else {
+				ifelse(VPD > VPD0, exp(-k*(VPD-VPD0)), 1)
+			} 
+	#Reco<-RRef*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
+	#ex <- expression( RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("RRef","E0"))
+	.expr7 <- 1/(273.15 + TRef - 227.13) - 1/(Temp + 273.15 - 227.13)
+	.expr9 <- exp(E0 * .expr7)
+	gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("RRef","E0")))
+	gradReco[,"RRef"] <- dReco_dRRef <- .expr9
+	gradReco[,"E0"] <- dReco_dE0 <- RRef * (.expr9 * .expr7)
+	#
+	gradGPP <- array(0, c(nrow(gradReco), 3L), list(NULL, c("k","beta","alpha")))
+	dGPP_dAMax <- .self$computeGPPGradient(Rg, Amax, alpha)
+	gradGPP[, "beta"] <- dGPP_dAMax[,1] * dAmax_dbeta0 
+	gradGPP[, "k"] <- dGPP_dAMax[,1] * dAmax_dkVPD 
+	gradGPP[, "alpha"] <- dGPP_dAMax[,2]
+	#NEP <- GPP - Reco
+	gradNEP <- cbind(gradGPP, -gradReco)
+	## list with gradient matrices. For each record (length(Rg)), c("k","beta","alpha","RRef")
 	ans <- list(
 			NEP=gradNEP
 			,Reco=gradReco
 			,GPP=gradGPP
 	)
 }
-LightResponseCurveFitter$methods(	computeLRCGradient = LightResponseCurveFitter_computeLRCGradient)
-
-
-
-
+LightResponseCurveFitter$methods(computeLRCGradient = LightResponseCurveFitter_computeLRCGradient)
 

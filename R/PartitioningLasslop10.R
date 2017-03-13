@@ -628,6 +628,7 @@ partGLFitNightRespRefOneWindow=function(
 		,isVerbose=TRUE		##<< set to FALSE to suppress messages
 		,nRecInDay=48L	##<< number of records within one day (for half-hourly data its 48)
 		,controlGLPart=partGLControl()	##<< list of further default parameters
+		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ){
 	##author<<
 	## TW
@@ -643,20 +644,20 @@ partGLFitNightRespRefOneWindow=function(
 	##seealso<< \code{\link{partGLEstimateTempSensInBoundsE0Only}}
 	REco <- dssNight$NEE
 	E0 <- E0Win$E0[winInfo$iWindow]
-	TRef15 <- 273.15+15	# 15degC in Kelvin
-	R_ref <- if( length(REco) >= 3L ){
+	TRefInKelvin <- 273.15+TRef	# 15degC in Kelvin
+	RRef <- if( length(REco) >= 3L ){
 				temperatureKelvin <- 273.15+dssNight$Temp
 				T_0.n=227.13         ##<< Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
-				TFacLloydTaylor <-  exp(E0 * ( 1/(TRef15-T_0.n) - 1/(temperatureKelvin-T_0.n) ) )
+				TFacLloydTaylor <-  exp(E0 * ( 1/(TRefInKelvin-T_0.n) - 1/(temperatureKelvin-T_0.n) ) )
 				lm15 <- lm(REco ~ TFacLloydTaylor -1)
 				coef(lm15)
 			} else 
-				fLloydTaylor( E0Win$RRefFit[winInfo$iWindow], E0, TRef15, T_ref.n=E0Win$TRefFit[winInfo$iWindow])
-	R_refBounded <- max(0, R_ref)
+				fLloydTaylor( E0Win$RRefFit[winInfo$iWindow], E0, TRefInKelvin, T_ref.n=E0Win$TRefFit[winInfo$iWindow])
+	RRefBounded <- max(0, RRef)
 	##value<< list with entries
 	return(list(
 					NULL
-					,data.frame(RRef=R_refBounded)
+					,data.frame(RRef=RRefBounded)
 					,prevRes
 			))
 }
@@ -826,8 +827,8 @@ partGLInterpolateFluxes <- function(
 								gradGPP <- grad$GPP[iRec,]
 								gradReco <- grad$Reco[iRec,]
 								# make sure parameter names match postions in covParms
-								varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[1:3,1:3] %*% gradGPP
-								varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[4:5,4:5] %*% gradReco
+								varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[names(gradGPP),names(gradGPP)] %*% gradGPP
+								varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[names(gradReco),names(gradReco)] %*% gradReco
 							}
 							varPred
 						})

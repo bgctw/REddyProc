@@ -68,14 +68,14 @@ NonrectangularLRCFitter_predictLRC <- function(
 		kVPD<-theta[,1]
 		beta<-theta[,2]
 		alpha<-theta[,3]
-		Rref<-theta[,4]
+		RRef<-theta[,4]
 		E0<-theta[,5]
 		logitconv<-theta[,6]
 	} else {
 		kVPD<-theta[1]
 		beta<-theta[2]
 		alpha<-theta[3]
-		Rref<-theta[4]
+		RRef<-theta[4]
 		E0<-theta[5]
 		logitconv<-theta[6]
 	}
@@ -83,7 +83,7 @@ NonrectangularLRCFitter_predictLRC <- function(
 	Amax <- if( isTRUE(fixVPD) ) beta else {
 				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
 			} 
-	Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
+	Reco<-RRef*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha, conv=conv)
 	NEP <- GPP - Reco
 	## a data.frame of length of Rg of computed  
@@ -115,65 +115,60 @@ NonrectangularLRCFitter$methods( predictGPP = NonrectangularLRCFitter_predictGPP
 
 
 NonrectangularLRCFitter_computeLRCGradient <- function(
-		### Gradient of \code{\link{partGL_RHLightResponse}}
-		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0, theta[5]=logitconv)
-		##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
+		### Gradient of \code{\link{NonrectangularLRCFitter_predictLRC}}
+		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=RRef (rb), theta[4]=E0, theta[5]=logitconv)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
-		#,E0 	##<< Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
-	#TODO: test and correct
+	##details<< differs from base by extracting conv parameter from theta 
+	## and adding gradient to logitconv (3rd parameter from computeGPPGradient)
 	if( is.matrix(theta) ){
-		kVPD<-theta[,1]
+		k<-theta[,1]
 		beta<-theta[,2]
 		alpha<-theta[,3]
-		Rref<-theta[,4]
+		RRef<-theta[,4]
 		E0<-theta[,5]
 		logitconv<-theta[,6]
 	} else {
-		kVPD<-theta[1]
+		k<-theta[1]
 		beta<-theta[2]
 		alpha<-theta[3]
-		Rref<-theta[4]
+		RRef<-theta[4]
 		E0<-theta[5]
 		logitconv<-theta[6]
 	}
+	if( !is.finite(logitconv[1]) ) stop("need to provide finite logitconv in theta")
 	Amax <- if( isTRUE(fixVPD) ) beta else {
-				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
+				ifelse(VPD > VPD0, beta*exp(-k*(VPD-VPD0)), beta)
 			}
-	#ex <- expression( beta0*exp(-kVPD*(VPD-VPD0)) ); deriv(ex,c("beta0","kVPD"))
+	#ex <- expression( beta*exp(-k*(VPD-VPD0)) ); deriv(ex,c("beta","k"))
 	dAmax_dkVPD <- if( isTRUE(fixVPD) ) 0 else {
-				ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-kVPD*(VPD-VPD0)), 0)
+				ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-k*(VPD-VPD0)), 0)
 			} 
 	dAmax_dbeta0 <- if( isTRUE(fixVPD) ) 0 else {
-				ifelse(VPD > VPD0, exp(-kVPD*(VPD-VPD0)), 1)
+				ifelse(VPD > VPD0, exp(-k*(VPD-VPD0)), 1)
 			} 
-	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
-	#ex <- expression( Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("Rref","E0"))
-	#.expr7 <- 1/(273.15 + 10 - 227.13) - 1/(Temp + 273.15 - 227.13)
-	.expr7 <- 1/(273.15 + 15 - 227.13) - 1/(Temp + 273.15 - 227.13)
+	#Reco<-RRef*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
+	#ex <- expression( RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("RRef","E0"))
+	.expr7 <- 1/(273.15 + TRef - 227.13) - 1/(Temp + 273.15 - 227.13)
 	.expr9 <- exp(E0 * .expr7)
-	gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("Rref","E0")))
-	gradReco[,"Rref"] <- dReco_dRRef <- .expr9
-	gradReco[,"E0"] <- dReco_dE0 <- Rref * (.expr9 * .expr7)
-	#GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
-	#ex <- expression( (Amax*alfa*Rg)/(alfa*Rg+Amax) ); deriv(ex,c("Amax","alfa"))
-	.expr2 <- Amax * alpha * Rg
-	.expr3 <- alpha * Rg
-	.expr4 <- .expr3 + Amax
-	.expr7 <- .expr4^2
-	.value <- .expr2/.expr4
-	gradGPP <- array(0, c(length(.value), 3L), list(NULL, c("kVPD","beta0","alfa")))
-	dGPP_dAMax <- .expr3/.expr4 - .expr2/.expr7
-	gradGPP[, "beta0"] <- dGPP_dAMax * dAmax_dbeta0 
-	gradGPP[, "kVPD"] <- dGPP_dAMax * dAmax_dkVPD 
-	gradGPP[, "alfa"] <- Amax * Rg/.expr4 - .expr2 * Rg/.expr7
+	gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("RRef","E0")))
+	gradReco[,"RRef"] <- dReco_dRRef <- .expr9
+	gradReco[,"E0"] <- dReco_dE0 <- RRef * (.expr9 * .expr7)
+	#
+	gradGPP <- array(0, c(nrow(gradReco), 4L), list(NULL, c("k","beta","alpha","logitconv")))
+	dGPP_dAMax <- .self$computeGPPGradient(Rg, Amax, alpha, logitconv)
+	gradGPP[, "beta"] <- dGPP_dAMax[,1L] * dAmax_dbeta0 
+	gradGPP[, "k"] <- dGPP_dAMax[,1L] * dAmax_dkVPD 
+	gradGPP[, "alpha"] <- dGPP_dAMax[,2L]
+	gradGPP[, "logitconv"] <- dGPP_dAMax[,3L]
 	#NEP <- GPP - Reco
 	gradNEP <- cbind(gradGPP, -gradReco)
-	## list with gradient matrices. For each record (length(Rg)), c("kVPD","beta0","alfa","Rref")
+	## list with gradient matrices. For each record (length(Rg)), c("k","beta","alpha","RRef")
 	ans <- list(
 			NEP=gradNEP
 			,Reco=gradReco
@@ -181,6 +176,61 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 	)
 }
 NonrectangularLRCFitter$methods( computeLRCGradient = NonrectangularLRCFitter_computeLRCGradient)
+
+NonrectangularLRCFitter_computeGPPGradient  <- function(
+		### Logistic Sigmoid Light Response function for GPP
+		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
+		,Amax	##<< numeric scalar or vector of length(Rg): beta parameter adjusted for VPD effect
+		,alpha	##<< numeric scalar or vector of length(Rg): alpha parameter: initial slope
+		,logitconv	##<< numeric scalar or vector of length(Rg): logit of convexity paramter
+
+) {
+	zRoot<-((alpha*Rg+Amax)^2)-(4*alpha*Rg*invlogit(logitconv)*Amax)
+	iNegRoot <- which(zRoot < 0)
+	#GPP<-(1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(zRoot))
+	#GPP<-               (1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(((alpha*Rg+Amax)^2)-(4*alpha*Rg*(1/(1+exp(-logitconv)))*Amax))) 
+	#ex <- expression(   (1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(((alpha*Rg+Amax)^2)-(4*alpha*Rg*(1/(1+exp(-logitconv)))*Amax))) ); deriv(ex,c("Amax","alpha","logitconv"))
+	.expr2 <- exp(-logitconv)
+	.expr3 <- 1 + .expr2
+	.expr4 <- 1/.expr3
+	.expr5 <- 2 * .expr4
+	.expr6 <- 1/.expr5
+	.expr8 <- alpha * Rg + Amax
+	.expr11 <- 4 * alpha * Rg
+	.expr12 <- .expr11 * .expr4
+	.expr14 <- .expr8^2 - .expr12 * Amax
+	.expr16 <- .expr8 - sqrt(.expr14)
+	.expr20 <- .expr14^-0.5
+	.expr36 <- .expr2/.expr3^2
+	.value <- .expr6 * .expr16
+	#plot( .value ~ GPP )
+	.grad <- array(0, c(length(.value), 3L), list(NULL, c("Amax","alpha", "logitconv")))
+	.grad[, "Amax"] <- .expr6 * (1 - 0.5 * ((2 * .expr8 - .expr12) *.expr20))
+	.grad[, "alpha"] <- .expr6 * (Rg - 0.5 * ((2 * (Rg * .expr8) - 
+						4 * Rg * .expr4 * Amax) * .expr20))
+	.grad[, "logitconv"] <- .expr6 * (0.5 * (.expr11 * .expr36 * 
+					Amax * .expr20)) - 2 * .expr36/.expr5^2 * .expr16
+	if( length(iNegRoot) ){
+		#GPP<-(1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-0)
+		#ex <- expression(   (1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-0) ); deriv(ex,c("Amax","alpha","logitconv"))
+		#.expr2 <- exp(-logitconv)
+		#.expr3 <- 1 + .expr2
+		.expr5 <- 2 * (1/.expr3)
+		.expr6 <- 1/.expr5
+		.expr9 <- alpha * Rg + Amax - 0
+		.value <- .expr6 * .expr9
+		.gradNegRoot <- array(0, c(length(.value), 3L), list(NULL, c("Amax", 
+								"alpha", "logitconv")))
+		.gradNegRoot[, "Amax"] <- .expr6
+		.gradNegRoot[, "alpha"] <- .expr6 * Rg
+		.gradNegRoot[, "logitconv"] <- -(2 * (.expr2/.expr3^2)/.expr5^2 * 
+					.expr9)
+		.grad[iNegRoot,] <- .gradNegRoot[iNegRoot,]
+	}
+	.grad
+	
+}
+NonrectangularLRCFitter$methods( computeGPPGradient = NonrectangularLRCFitter_computeGPPGradient)
 
 
 

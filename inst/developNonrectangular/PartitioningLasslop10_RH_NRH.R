@@ -889,7 +889,7 @@ partGLFitLRC <- function(
 	##seealso<< \code{\link{partGLFitLRCWindows}}
 	#	
 	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
-	namesPars <- c("k","beta0", "alfa", "Rb","E0" )
+	namesPars <- c("k","beta0", "alpha", "Rb","E0" )
 	nPar <- length(namesPars)
 	##details<<
 	## Optimization is performed for three initial parameter sets that differ by beta0 (*1.3, *0.8).
@@ -906,7 +906,7 @@ partGLFitLRC <- function(
 			#,R_ref=mean(NEENight.V.n, na.rm=T)
 			,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
 			,E_0=as.vector(E0)
-	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
+	)   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alpha, theta[4]=Rref)
 	#twutz: beta is quite well defined, so try not changing it too much
 	theta.V.n[2,2] <- parameterPrior[2]*1.3
 	theta.V.n[3,2] <- parameterPrior[2]*0.8
@@ -982,7 +982,7 @@ partGLFitLRC_NRHRF <- function(
   ##seealso<< \code{\link{partGLFitLRCWindows}}
   #	
   #Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
-  namesPars <- c("k","beta0", "alfa", "Rb","E0", "conv")  
+  namesPars <- c("k","beta0", "alpha", "Rb","E0", "conv")  
   nPar <- length(namesPars)
   ##details<<
   ## Optimization is performed for three initial parameter sets that differ by beta0 (*1.3, *0.8).
@@ -1000,7 +1000,7 @@ partGLFitLRC_NRHRF <- function(
     ,R_ref=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
     ,E_0=as.vector(E0)
     ,conv=0.2
-  )   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alfa, theta[4]=Rref)
+  )   #theta [numeric] -> parameter vector (theta[1]=kVPD, theta[2]-beta0, theta[3]=alpha, theta[4]=Rref)
   #twutz: beta is quite well defined, so try not changing it too much
   theta.V.n[2,2] <- parameterPrior[2]*1.3
   theta.V.n[3,2] <- parameterPrior[2]*0.8
@@ -1106,7 +1106,7 @@ parmGLOptimLRCBounds <- function(
 	isAlphaFix <- FALSE
 	isKFix <- FALSE
 	resOpt <- resOpt0 <- .optimLRC(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
-	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
+	# positions in theta0: "k"     "beta0" "alpha"  "Rb"    "E0"
 	# IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
 	##details<<
 	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
@@ -1140,7 +1140,7 @@ parmGLOptimLRCBounds <- function(
 	} 
 	##details<<
 	## No parameters are reported if alpha<0 or Rb < 0 or beta0 < 0 or beta0 > 250 
-	# positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
+	# positions in theta0: "k"     "beta0" "alpha"  "Rb"    "E0"
 	if( !is.na(resOpt$theta[1L]) && ((resOpt$theta[3L] < 0) || (resOpt$theta[4L] < 0) || (resOpt$theta[2L] < 0) || (resOpt$theta[2L] >= 250)) ){
 		# TODO estimate Rb from daytime data?
 		#LloydT_E0fix
@@ -1172,7 +1172,7 @@ parmGLOptimNRHRFBounds <- function(
   isKFix <- FALSE
   #browser()
   resOpt <- resOpt0 <- .optimNRHRF(theta0, isUsingFixedVPD=isKFix, isUsingFixedAlpha=isAlphaFix, parameterPrior = parameterPrior, ... )
-  # positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0" "conv"
+  # positions in theta0: "k"     "beta0" "alpha"  "Rb"    "E0" "conv"
   # IF kVPD parameter less or equal zero then estimate the parameters withouth VPD effect
   ##details<<
   ## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
@@ -1206,7 +1206,7 @@ parmGLOptimNRHRFBounds <- function(
   } 
   ##details<<
   ## No parameters are reported if alpha<0 or Rb < 0 or beta0 < 0 or beta0 > 250 
-  # positions in theta0: "k"     "beta0" "alfa"  "Rb"    "E0"
+  # positions in theta0: "k"     "beta0" "alpha"  "Rb"    "E0"
   if( !is.na(resOpt$theta[1L]) && ((resOpt$theta[3L] < 0) || (resOpt$theta[4L] < 0) || (resOpt$theta[2L] < 0) || (resOpt$theta[2L] >= 250)) ){
     # TODO estimate Rb from daytime data?
     #LloydT_E0fix
@@ -1510,7 +1510,7 @@ parmGLOptimNRHRFBounds <- function(
 
 partGL_RHLightResponse <- function(
 		###Rectungular Hyperbolic Light Response function: (Xu & Baldocchi, 2004; Falge et al., 2001; Lasslop et al., 2010)
-		theta 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0)
+		theta 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=Rref (rb), theta[5]=E0)
 			##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
@@ -1527,13 +1527,13 @@ partGL_RHLightResponse <- function(
 	if( is.matrix(theta) ){
 		kVPD<-theta[,1]
 		beta0<-theta[,2]
-		alfa<-theta[,3]
+		alpha<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
 	} else {
 		kVPD<-theta[1]
 		beta0<-theta[2]
-		alfa<-theta[3]
+		alpha<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
 	}
@@ -1542,7 +1542,7 @@ partGL_RHLightResponse <- function(
 			} 
 	#Reco<-Rref*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))	# formerly at 10degC
 	Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
-	GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
+	GPP <- (Amax*alpha*Rg)/(alpha*Rg+Amax)
 	NEP <- GPP - Reco
 	## a data.frame of length of Rg of computed  
 	ans <- list(
@@ -1554,7 +1554,7 @@ partGL_RHLightResponse <- function(
 
 partGL_NRHRF <- function(
   ### Nonrectangular Rectungular Hyperbolic Light Response function: (Gilmanov et al., 2003)
-  theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[5]=E0, theta[6]=conv)
+  theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=Rref (rb), theta[5]=E0, theta[6]=conv)
   ##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK) #get("testparams", envir=environment(foo)
   ,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
   ,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
@@ -1571,14 +1571,14 @@ partGL_NRHRF <- function(
   if( is.matrix(theta) ){
     kVPD<-theta[,1]
     beta0<-theta[,2]
-    alfa<-theta[,3]
+    alpha<-theta[,3]
     Rref<-theta[,4]
     E0<-theta[,5]
     conv<-theta[,6]
   } else {
     kVPD<-theta[1]
     beta0<-theta[2]
-    alfa<-theta[3]
+    alpha<-theta[3]
     Rref<-theta[4]
     E0<-theta[5]
     conv<-theta[6]
@@ -1593,9 +1593,9 @@ partGL_NRHRF <- function(
   #print(Rg)
   Reco<-Rref*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13))) 
   
-  zRoot<-((alfa*Rg+Amax)^2)-(4*alfa*Rg*conv*Amax)
+  zRoot<-((alpha*Rg+Amax)^2)-(4*alpha*Rg*conv*Amax)
   zRoot[which(zRoot<0)]<-0
-  GPP<-(1/(2*conv))*(alfa*Rg+Amax-sqrt(zRoot))
+  GPP<-(1/(2*conv))*(alpha*Rg+Amax-sqrt(zRoot))
   #browser()
   NEP <- GPP - Reco
   #print(NEP)
@@ -1610,7 +1610,7 @@ partGL_NRHRF <- function(
 
 partGL_RHLightResponseGrad <- function(
 		### Gradient of \code{\link{partGL_RHLightResponse}}
-		theta 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0)
+		theta 	##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=Rref (rb), theta[4]=E0)
 			##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
@@ -1622,13 +1622,13 @@ partGL_RHLightResponseGrad <- function(
 	if( is.matrix(theta) ){
 		kVPD<-theta[,1]
 		beta0<-theta[,2]
-		alfa<-theta[,3]
+		alpha<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
 	} else {
 		kVPD<-theta[1]
 		beta0<-theta[2]
-		alfa<-theta[3]
+		alpha<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
 	}
@@ -1650,21 +1650,21 @@ partGL_RHLightResponseGrad <- function(
 	gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("Rref","E0")))
 	gradReco[,"Rref"] <- dReco_dRRef <- .expr9
 	gradReco[,"E0"] <- dReco_dE0 <- Rref * (.expr9 * .expr7)
-	#GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
-	#ex <- expression( (Amax*alfa*Rg)/(alfa*Rg+Amax) ); deriv(ex,c("Amax","alfa"))
-	.expr2 <- Amax * alfa * Rg
-	.expr3 <- alfa * Rg
+	#GPP <- (Amax*alpha*Rg)/(alpha*Rg+Amax)
+	#ex <- expression( (Amax*alpha*Rg)/(alpha*Rg+Amax) ); deriv(ex,c("Amax","alpha"))
+	.expr2 <- Amax * alpha * Rg
+	.expr3 <- alpha * Rg
 	.expr4 <- .expr3 + Amax
 	.expr7 <- .expr4^2
 	.value <- .expr2/.expr4
-	gradGPP <- array(0, c(length(.value), 3L), list(NULL, c("kVPD","beta0","alfa")))
+	gradGPP <- array(0, c(length(.value), 3L), list(NULL, c("kVPD","beta0","alpha")))
 	dGPP_dAMax <- .expr3/.expr4 - .expr2/.expr7
 	gradGPP[, "beta0"] <- dGPP_dAMax * dAmax_dbeta0 
 	gradGPP[, "kVPD"] <- dGPP_dAMax * dAmax_dkVPD 
-	gradGPP[, "alfa"] <- Amax * Rg/.expr4 - .expr2 * Rg/.expr7
+	gradGPP[, "alpha"] <- Amax * Rg/.expr4 - .expr2 * Rg/.expr7
 	#NEP <- GPP - Reco
 	gradNEP <- cbind(gradGPP, -gradReco)
-	## list with gradient matrices. For each record (length(Rg)), c("kVPD","beta0","alfa","Rref")
+	## list with gradient matrices. For each record (length(Rg)), c("kVPD","beta0","alpha","Rref")
 	ans <- list(
 			NEP=gradNEP
 			,Reco=gradReco
@@ -1674,7 +1674,7 @@ partGL_RHLightResponseGrad <- function(
 
 partGL_NRHRFGrad <- function(
   ### Gradient of \code{\link{partGL_RHLightResponse}}
-  theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alfa, theta[4]=Rref (rb), theta[4]=E0, theta[5]=conv)
+  theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=Rref (rb), theta[4]=E0, theta[5]=conv)
   ##<< E0: Temperature sensitivity ("activation energy") in Kelvin (degK)
   ,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
   ,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
@@ -1686,14 +1686,14 @@ partGL_NRHRFGrad <- function(
   if( is.matrix(theta) ){
     kVPD<-theta[,1]
     beta0<-theta[,2]
-    alfa<-theta[,3]
+    alpha<-theta[,3]
     Rref<-theta[,4]
     E0<-theta[,5]
     conv<-theta[,6]
   } else {
     kVPD<-theta[1]
     beta0<-theta[2]
-    alfa<-theta[3]
+    alpha<-theta[3]
     Rref<-theta[4]
     E0<-theta[5]
     conv<-theta[6]
@@ -1716,21 +1716,21 @@ partGL_NRHRFGrad <- function(
   gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("Rref","E0")))
   gradReco[,"Rref"] <- dReco_dRRef <- .expr9
   gradReco[,"E0"] <- dReco_dE0 <- Rref * (.expr9 * .expr7)
-  #GPP <- (Amax*alfa*Rg)/(alfa*Rg+Amax)
-  #ex <- expression( (Amax*alfa*Rg)/(alfa*Rg+Amax) ); deriv(ex,c("Amax","alfa"))
-  .expr2 <- Amax * alfa * Rg
-  .expr3 <- alfa * Rg
+  #GPP <- (Amax*alpha*Rg)/(alpha*Rg+Amax)
+  #ex <- expression( (Amax*alpha*Rg)/(alpha*Rg+Amax) ); deriv(ex,c("Amax","alpha"))
+  .expr2 <- Amax * alpha * Rg
+  .expr3 <- alpha * Rg
   .expr4 <- .expr3 + Amax
   .expr7 <- .expr4^2
   .value <- .expr2/.expr4
-  gradGPP <- array(0, c(length(.value), 3L), list(NULL, c("kVPD","beta0","alfa")))
+  gradGPP <- array(0, c(length(.value), 3L), list(NULL, c("kVPD","beta0","alpha")))
   dGPP_dAMax <- .expr3/.expr4 - .expr2/.expr7
   gradGPP[, "beta0"] <- dGPP_dAMax * dAmax_dbeta0 
   gradGPP[, "kVPD"] <- dGPP_dAMax * dAmax_dkVPD 
-  gradGPP[, "alfa"] <- Amax * Rg/.expr4 - .expr2 * Rg/.expr7
+  gradGPP[, "alpha"] <- Amax * Rg/.expr4 - .expr2 * Rg/.expr7
   #NEP <- GPP - Reco
   gradNEP <- cbind(gradGPP, -gradReco)
-  ## list with gradient matrices. For each record (length(Rg)), c("kVPD","beta0","alfa","Rref")
+  ## list with gradient matrices. For each record (length(Rg)), c("kVPD","beta0","alpha","Rref")
   ans <- list(
     NEP=gradNEP
     ,Reco=gradReco
