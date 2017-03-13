@@ -5,9 +5,8 @@
 #require(testthat)
 context("partGL")
 
-	if( !exists(".partGLRHLightResponseCost") ) .partGLRHLightResponseCost <- REddyProc:::.partGLRHLightResponseCost
-	if( !exists(".partGPAssociateSpecialRows") ) .partGPAssociateSpecialRows <- REddyProc:::.partGPAssociateSpecialRows
-	if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
+if( !exists(".partGPAssociateSpecialRows") ) .partGPAssociateSpecialRows <- REddyProc:::.partGPAssociateSpecialRows
+if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
