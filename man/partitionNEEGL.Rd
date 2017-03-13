@@ -42,14 +42,14 @@ daytime-based partitioning of measured net ecosystem fluxes into gross primary p
 \item{FP_R_refNight}{basal respiration estimated from LRC of daytime window  (W/m2)}
 \item{FP_R_ref}{basal respiration estimated from LRC of daytime window  (W/m2)}
 \item{FP_E0}{temperature sensitivity estimated from nighttime NEE window  in Kelvin (degK)}
-\item{FP_alpha}{canopy light utilization efficiency and represents the initial slope of the light–response curve (μmol s-1 W)}
-\item{FP_beta}{maximum CO2 uptake rate of the canopy at light saturation (μmol m-2 s-1)}
+\item{FP_alpha}{canopy light utilization efficiency and represents the initial slope of the light-response curve (mumol s-1 W)}
+\item{FP_beta}{maximum CO2 uptake rate of the canopy at light saturation (mumol m-2 s-1)}
 \item{FP_k}{parameter controlling the VPD limitation of GPP}
 \item{FP_qc}{quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away}
 \item{FP_dRecPar}{records until or after closest record that has a parameter estimate associated
 {Light response curve parameters \code{FP_X} are estimated for windows, and are reported with the first record of the window}}}
 \references{Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
-a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187208}
+a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208}
 \author{MM, TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

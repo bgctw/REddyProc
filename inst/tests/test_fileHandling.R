@@ -7,7 +7,9 @@ context("fileHandling")
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-test_that("fLoadFluxNCIntoDataframe",{
+test_that_ <- function(...){}	# for uncommenting tests
+
+test_that_("fLoadFluxNCIntoDataframe",{
 			Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 			for( ncPack in c("ncdf4","RNetCDF")){
 				if( tmp <- requireNamespace(ncPack, quietly=TRUE) ){
