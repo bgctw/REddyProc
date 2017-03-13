@@ -6,261 +6,16 @@ LogisticSigmoidLRCFitter <- setRefClass('LogisticSigmoidLRCFitter', contains='Li
 ## TW
 )	
 
-LogisticSigmoidLRCFitter_getParameterNames <- function(
-### return the parameter names used by this Light Response Curve Function
-){
-	##value<< string vector of parameter names. Positions are important.
-	c(k="k"						##<< VPD effect
-	, beta="beta"				##<< saturation of GPP at high radiation
-	, alpha="alpha"				##<< initial slope
-	, RRef="RRef"				##<< basal respiration 
-	, E0="E0")					##<< temperature sensitivity estimated from night-time data
-}
-LogisticSigmoidLRCFitter$methods(getParameterNames = LogisticSigmoidLRCFitter_getParameterNames)
-
-
-LogisticSigmoidLRCFitter$methods(
-getPriorLocation = function(
-		### return the prior distribution of parameters
-		NEEDay 		##<< numeric vector of daytime NEE
-		,RRefNight	##<< numeric scalar of basal respiration estimated from night-time data
-		,E0			##<< numeric scalar of night-time estimate of temperature sensitivity
-){
-	##value<< a numeric vector with prior estimates of the parameters
-	parameterPrior <- c(
-			k=0.05
-			#,beta=as.vector(abs(quantile(NEEDay, 0.03)-quantile(NEEDay, 0.97)))
-			,beta=as.vector(abs(quantile(NEEDay, 0.03, na.rm=TRUE)-quantile(NEEDay, 0.97, na.rm=TRUE)))
-			,alpha=0.1
-			#,RRef=mean(NEENight.V.n, na.rm=T)
-			,RRef=if( is.finite(RRefNight) ) as.vector(RRefNight) else stop("must provide finite RRefNight") #mean(NEENight.V.n, na.rm=T)
-			,E0=as.vector(E0)
-	)   
-})
-
-LogisticSigmoidLRCFitter$methods(
-getPriorScale = function(
-		### return the prior distribution of parameters
-		thetaPrior 	##<< numeric vector of location of priors
-		,medianRelFluxUncertainty	##<< numeric scalar: median across the relative uncertainty of the flux values, i.e. sdNEE/NEE
-		,nRec		##<< integer scalar: number of finite observations
-		, ctrl		##<< list of further controls, with entry \code{isLasslopPriorsApplied}	
-){
-	##value<< a numeric vector with prior estimates of the parameters
-	sdParameterPrior <- if(ctrl$isLasslopPriorsApplied){
-				c(k=50, beta=600, alpha=10, RRef=80, E0=NA)	#twutz: changed to no prior for logitconv
-			} else {
-				##details<< 
-				## The beta parameter is quite well defined. Hence use a prior with a standard deviation.
-				## The specific results are sometimes a bit sensitive to the uncertainty of the beta prior. 
-				## This uncertainty is set corresponding to 10 times the median relative flux uncertainty.
-				## The prior is weighted n times the observations in the cost.
-				## Hence, overall it is using a weight of 1/10 of the weight of all observations.
-				sdBetaPrior <- 10*medianRelFluxUncertainty*thetaPrior[2]/sqrt(nRec)
-				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, RRef=NA, E0=NA)
-			}
-})
-
-LogisticSigmoidLRCFitter$methods(
-getParameterInitials = function(
-		### return the prior distribution of parameters
-		thetaPrior 	##<< numeric vector prior estimate of parameters
-){
-	# only beta (second parameter)  is varied between different intial guesses
-	##value<< a numeric matrix (3,nPar) of initial values for fitting parameters
-	thetaInitials <- matrix( rep(thetaPrior,each=3), 3, length(thetaPrior), dimnames=list(NULL,names(thetaPrior)))
-	thetaInitials [2,2] <- parameterPrior[2]*1.3
-	thetaInitials [3,2] <- parameterPrior[2]*0.8
-	thetaInitials 
-})
-
-LogisticSigmoidLRCFitter_optimLRCBounds <- function(
-		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
-		theta0			##<< initial parameter estimate
-		,parameterPrior	##<< prior estimate of model parameters
-		, ...			##<< further parameters to \code{.optimLRC}, such as \code{dsDay}
-		,lastGoodParameters.V.n=NA_real_ ##<< parameters vector of last successful fit
-		, ctrl					##<< list of further controls
-){
-	##author<< TW, MM
-	##seealso<< \code{\link{partGLFitLRC}}
-	# optimLRC <- if( ctrl$NRHRfunction ) .optimNRHRF else .optimLRC # now called on method with supplying LRC
-	if( !is.finite(lastGoodParameters.V.n[3L]) ) lastGoodParameters.V.n[3L] <- 0.22	# twutz 161014: default alpha 	
-	isUsingFixedVPD <- FALSE
-	isUsingFixedAlpha <- FALSE
-	getIOpt <- function( isUsingFixedVPD, isUsingFixedAlpha){
-		iOpt <- 
-				if( !isUsingFixedVPD & !isUsingFixedAlpha ) c(1:4) else
-				if(  isUsingFixedVPD & !isUsingFixedAlpha ) 2:4 else
-				if( !isUsingFixedVPD &  isUsingFixedAlpha ) c(1L,2L,4L) else
-				if(  isUsingFixedVPD &  isUsingFixedAlpha ) c(2L,4L) 
-	}
-	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-	##details<<
-	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
-	## to values from fit of previous window.
-	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
-	#dsDay <- list(ctrl, ...)$dsDay
-	if ((resOpt$theta[1L] < 0) ){
-		isUsingFixedAlpha <- TRUE
-		theta0Adj[1L] <- 0
-		resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-		# check alpha, if less than zero estimate parameters with fixed alpha of last window 
-		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
-			isUsingFixedVPD <- TRUE
-			theta0Adj[3L] <- lastGoodParameters.V.n[3L] 
-			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-		}
-	} else {
-		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
-		# if not last window exists, let alpha > 0.22
-		if ( (resOpt$theta[3L] > 0.22) && is.finite(lastGoodParameters.V.n[3L]) ){
-			isUsingFixedVPD <- TRUE
-			theta0Adj[3L] <- lastGoodParameters.V.n[3L]
-			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
-			if (resOpt$theta[1L] < 0){
-				isUsingFixedAlpha <- TRUE
-				theta0Adj[1L] <- 0
-				resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
-			}
-		}
-	} 
-	##details<<
-	## No parameters are reported if alpha<0 or RRef < 0 or beta0 < 0 or beta0 > 250 
-	# positions in theta0: "k"     "beta0" "alfa"  "RRef"    "E0"
-	if( !is.na(resOpt$theta[1L]) && ((resOpt$theta[3L] < 0) || (resOpt$theta[4L] < 0) || (resOpt$theta[2L] < 0) || (resOpt$theta[2L] >= 250)) ){
-		# TODO estimate RRef from daytime data?
-		#LloydT_E0fix
-		#stop("case with alpha or beta < 0")
-		resOpt$theta[] <- NA
-	}
-	##details<<
-	## No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation. 
-	if( isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
-		resOpt$theta[] <- NA
-	}
-	##value<< list result of optimization as of \code{.optimLRC} with entries 
-	## \item{theta}{ numeric parameter vector that includes the fixed components}
-	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
-	resOpt
-}
-LogisticSigmoidLRCFitter$methods( optimLRCBounds = LogisticSigmoidLRCFitter_optimLRCBounds )
-
-LogisticSigmoidLRCFitter_isParameterInBounds <- function(
-		### Check if estimated parameter vector is within reasonable bounds
-		theta					##<< numeric vector of estimated parameters
-		,sdTheta				##<< numeric vector of estimated standard deviation of the parameters
-		, RRefNight				##<< numeric scalar: night-time based estimate of basal respiration
-		, ctrl					##<< list of further controls
-){
-	##author<< TW, MM
-	#
-	# check the Beta bounds that depend on uncertainty, set to NA fit
-	if(isTRUE(as.vector( (theta[2] > 100) && (sdParms[2] >= theta[2]) ))) return(FALSE)
-	# check that RRef estimated from daytime is not both:
-	# larger than twice the estimate from nighttime and more than 0.7 in absolute terms  
-	# else this indicates a bad fit
-	# this is additional to Table A1 in Lasslop 2010
-	if( (theta[4L] > 2*RRefNight) 		&& 
-			((theta[4L]-RRefNight) > 0.7) 
-			){
-		return(FALSE)
-	}
-	##value<< FALSE if parameters are outisde reasonable bounds, TRUE otherwise 
-	return(TRUE)
-}
-LogisticSigmoidLRCFitter$methods(isParameterInBounds = LogisticSigmoidLRCFitter_isParameterInBounds)
-
-
-LogisticSigmoidLRCFitter_optimLRC <- function(
-		###<< calling the optimization function
-		theta  					##<< numeric vector of starting values
-		, iOpt					##<< integer vector of positions of parameters being optimized
-		, sdParameterPrior		##<< numeric vector of scale of parameter priors
-		, ...					##<< further arguments to the cost function
-		, ctrl					##<< list of further controls
-		, isUsingHessian		##<< scalar boolean: set to TRUE to compute Hessian at optimum
-){
-	#Define lower and upper boundaries parameters
-	thetaOrig <- theta
-	# do a first fitting with a strong prior to avoid local side minima, only afterwards use fit with a weaker prior
-	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 0.5
-	#
-	resOptimStrongPrior <- optim(thetaOrig[iOpt], .self$computeCost
-			#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
-			,theta=thetaOrig
-			,iOpt=iOpt
-			,sdParameterPrior = sdStrongPrior
-			, ...
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
-			,method="BFGS", hessian=isUsingHessian)
-	
-	thetaOrig[iOpt] <- resOptimStrongPrior$par	
-	#
-	resOptim <- optim(thetaOrig[iOpt], .self$computeCost
-			#resOptim <- optim(theta, .partGLRHLightResponseCost
-			#tmp <- .partGLRHLightResponseCost( theta[iOpt] 
-			,theta=thetaOrig
-			,iOpt=iOpt
-			,sdParameterPrior = sdParameterPrior
-			, ...
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
-			,method="BFGS", hessian=isUsingHessian)
-	##value<<
-	## list of restult of \code{\link{optim}} amended with list
-	thetaOpt <- theta; thetaOpt[iOpt] <- resOptim$par
-	ans <- list(
-			theta = thetaOpt	##<< numeric vector: optimized parameter vector including the fixed components
-			,iOpt = iOpt		##<< integer vector: position of parameters that have been optimized
-	)
-	c(resOptim, ans)
-}
-LogisticSigmoidLRCFitter$methods( optimLRC = LogisticSigmoidLRCFitter_optimLRC)
-
-# computeCost inherited
-
-LogisticSigmoidLRCFitter_predictLRC <- function(
-		### Nonrectangular Hyperbolic Light Response function: (Gilmanov et al., 2003)
-		theta   ##<< theta [numeric] see \code{\link{LogisticSigmoidLRCFitter_getParameterNames}}
-		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
-		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
-		,Temp 	##<< Temp [degC] -> Temperature [degC] 
-		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+LogisticSigmoidLRCFitter_predictGPP  <- function(
+		### Logistic Sigmoid Light Response function for GPP
+		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
+		,Amax	##<< numeric scalar or vector of length(Rg): beta parameter adjusted for VPD effect
+		,alpha	##<< numeric scalar or vector of length(Rg): alpha parameter: initial slope
 ) {
-	##details<<
-	## The VPD effect is included according to Lasslop et al., 2010.
-	## This function generalizes the \code{\link{RectangularLRCFitter_predictLRC}} by adding a convexity parameter.
-	##details<<
-	## If theta is a matrix, a different row of parameters is used for different entries of other inputs
-	if( is.matrix(theta) ){
-		kVPD<-theta[,1]
-		beta<-theta[,2]
-		alpha<-theta[,3]
-		RRef<-theta[,4]
-		E0<-theta[,5]
-	} else {
-		kVPD<-theta[1]
-		beta<-theta[2]
-		alpha<-theta[3]
-		RRef<-theta[4]
-		E0<-theta[5]
-	}
-	Amax <- if( isTRUE(fixVPD) ) beta else {
-				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
-			} 
-	Reco<-RRef*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
-	GPP <- Amax * tanh(alpha*Rg/Amax) - Reco
-	NEP <- GPP - Reco
-	## a data.frame of length of Rg of computed  
-	ans <- list(
-			NEP=NEP		##<< Net ecosystem production (-NEE), vector of length(Rg)
-			,Reco=Reco	##<< Ecosystem respiration 
-			,GPP=GPP	##<< Gross primary production
-	)
+	##value<< numeric vector of length(Rg) of GPP 
+	GPP <- Amax * tanh(alpha*Rg/Amax) 
 }
-LogisticSigmoidLRCFitter$methods( predictLRC = LogisticSigmoidLRCFitter_predictLRC)
+LogisticSigmoidLRCFitter$methods( predictGPP = LogisticSigmoidLRCFitter_predictGPP)
 
 LogisticSigmoidLRCFitter_computeLRCGradient <- function(
 		### Gradient of \code{\link{partGL_RHLightResponse}}
@@ -280,14 +35,12 @@ LogisticSigmoidLRCFitter_computeLRCGradient <- function(
 		alpha<-theta[,3]
 		Rref<-theta[,4]
 		E0<-theta[,5]
-		logitconv<-theta[,6]
 	} else {
 		kVPD<-theta[1]
 		beta0<-theta[2]
 		alpha<-theta[3]
 		Rref<-theta[4]
 		E0<-theta[5]
-		logitconv<-theta[6]
 	}
 	Amax <- if( isTRUE(fixVPD) ) beta0 else {
 				ifelse(VPD > VPD0, beta0*exp(-kVPD*(VPD-VPD0)), beta0)

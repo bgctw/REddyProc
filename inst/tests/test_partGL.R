@@ -879,7 +879,7 @@ test_that("partGLPartitionFluxes sparse data",{
 			expect_true( all(is.finite(tmp$GPP_DT)))
 			expect_true( all(tmp$GPP_DT >= 0))
 			expect_true( all(tmp$GPP_DT < 250))
-			expect_true( all(tmp$Reco_DT < 6))
+			expect_true( all(tmp$Reco_DT < 10))
 			expect_true( all(tmp$Reco_DT > 0))
 			expect_true( all(tmp$Reco_DT_SD > 0))
 			expect_true( all(tmp$GPP_DT_SD >= 0))

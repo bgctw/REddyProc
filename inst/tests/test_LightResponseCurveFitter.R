@@ -609,7 +609,7 @@ test_that("fitLRC",{
 			res <- resRect <- LRC$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=10L)
 			)
-			parNames <- LRC$getParameterNames()
+			parNames <- as.vector(LRC$getParameterNames())
 			expect_equal( names(res$thetaOpt), parNames )
 			expect_equal( names(res$thetaInitialGuess), parNames )
 			expect_equal( colnames(res$covParms), parNames )
@@ -629,58 +629,20 @@ test_that("fitLRC",{
 			}
 			# testing increasing number of bootstrap samples
 			.tmp.f <- function(){
-				(res60 <- LRC$fitLRC(dsDay, dssNight$NEE, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE, na.rm=TRUE)
+				(res60 <- LRC$fitLRC(dsDay, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE_f, na.rm=TRUE)
 						,controlGLPart=partGLControl(nBootUncertainty=100L)
 				))
 			}		
 		})
 
-#----------------------------- Nonrectangular
-
-test_that("fitLRC_Nonrectangular",{
-			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
-			dssDay <- subset(dss, isDay==TRUE)
-			dssNight <- subset(dss, isNight==TRUE)
-			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
-			LRCn <- NonrectangularLRCFitter()	
-			res <- resNonrect <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
-					,controlGLPart=partGLControl(nBootUncertainty=10L)
-			)
-			expect_true( !all(res$covParms["E0",1:4]==0) ) 
-			#testing Lasslop compliency: different priors, covariance from fit
-			res <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
-					,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
-			)
-			expect_true( all(res$covParms["E0",1:4]==0) ) # without bootstrap no covariance wiht other parameters
-			#dput(res$opt.parms.V)
-			.tmp.plot <- function(){
-				# dsDay <- list(...)$dsDay
-				dsDay <- dsDay[ order(dsDay$Rg), ]
-				plot( -NEE ~ Rg, dsDay)		# NEE negative?
-				p <- res$thetaOpt
-				#p <- resOpt$theta
-				#LRCn$trace(predictLRC, recover); #LRCn$trace(predictLRC)
-				pred <- LRCn$predictLRC(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)
-				lines(pred$NEP  ~ dsDay$Rg)
-				plot( I(pred$NEP+dsDay$NEE) ~ dsDay$Rg); abline(0,0)	# inspect residuals
-			}
-			# testing increasing number of bootstrap samples
-			.tmp.f <- function(){
-				(res60 <- LRCn$fitLRC(dsDay, dssNight$NEE, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE, na.rm=TRUE)
-									,controlGLPart=partGLControl(nBootUncertainty=100L)
-							))
-			}		
-		})
-
-
-#----------------------------- LogisticSigmoid
+#----------------------------- Logistic Sigmoid
 test_that("fitLRC_LogisticSigmoid",{
 			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
 			dssDay <- subset(dss, isDay==TRUE)
 			dssNight <- subset(dss, isNight==TRUE)
 			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
 			LRCl <- LogisticSigmoidLRCFitter()	
-			res <- resSig < LRCl$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
+			res <- resSig <- LRCl$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=10L)
 			)
 			expect_true( !all(res$covParms["E0",1:4]==0) ) 
@@ -708,4 +670,47 @@ test_that("fitLRC_LogisticSigmoid",{
 							))
 			}		
 		})
+
+
+#----------------------------- Nonrectangular
+
+test_that("fitLRC_Nonrectangular",{
+			dss <- subset(dsNEE, as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8 )
+			dssDay <- subset(dss, isDay==TRUE)
+			dssNight <- subset(dss, isNight==TRUE)
+			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
+			#loadPkg()
+			LRCn <- NonrectangularLRCFitter()	
+			res <- resNonrect <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
+					,controlGLPart=partGLControl(nBootUncertainty=10L)
+			)
+			expect_true( !all(res$covParms["E0",1:4]==0) ) 
+			#testing Lasslop compliency: different priors, covariance from fit
+			res <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
+					,controlGLPart=partGLControl(nBootUncertainty=0L, isLasslopPriorsApplied=TRUE)
+			)
+			expect_true( all(res$covParms["E0",1:4]==0) ) # without bootstrap no covariance wiht other parameters
+			#dput(res$opt.parms.V)
+			.tmp.plot <- function(){
+				# dsDay <- list(...)$dsDay
+				dsDay <- dsDay[ order(dsDay$Rg), ]
+				plot( -NEE ~ Rg, dsDay)		# NEE negative?
+				p <- res$thetaOpt
+				#p <- resOpt$theta
+				#p <- theta0Adj
+				#p <- theta0
+				#LRCn$trace(predictLRC, recover); #LRCn$trace(predictLRC)
+				pred <- LRCn$predictLRC(p, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)
+				lines(pred$NEP  ~ dsDay$Rg)
+				plot( I(pred$NEP+dsDay$NEE) ~ dsDay$Rg); abline(0,0)	# inspect residuals
+			}
+			# testing increasing number of bootstrap samples
+			.tmp.f <- function(){
+				(res60 <- LRCn$fitLRC(dsDay, E0=185, sdE0=.05*185, RRefNight=mean(dssNight$NEE_f, na.rm=TRUE)
+									,controlGLPart=partGLControl(nBootUncertainty=100L)
+							))
+				sqrt(diag(res60$covParms))/res60$thetaOpt
+			}		
+		})
+
 
