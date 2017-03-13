@@ -1,10 +1,10 @@
 partitionNEEGL=function(
-		### Partitioning NEE fluxes into GP and Reco after daytime method. 
-		ds							##<< dataset with all the specified input columns and full days in equidistant times		
-		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
-		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')	##<< Quality flag of variable
-		,QFNEEValue.n=0         						##<< Value of quality flag for _good_ (original) data
-		,NEESdVar.s=paste0('NEE',SuffixDash.s,'_fsd')	##<< Variable of standard deviation of net ecosystem fluxes
+		### Partitioning NEE fluxes into GP and Reco after daytime method of Lasslop et al. (2010)
+		ds						##<< dataset with all the specified input columns and full days in equidistant times		
+		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')      ##<< Variable of Net Ecosystem Exchange flux
+		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')  ##<< Quality flag of variable
+		,QFNEEValue.n=0         					   ##<< Value of quality flag for _good_ (original) data
+		,NEESdVar.s=paste0('NEE',SuffixDash.s,'_fsd')       ##<< Variable of standard deviation of net ecosystem fluxes
 		,TempVar.s=paste0('Tair_f')     ##<< Filled air or soil temperature variable (degC)
 		,QFTempVar.s=paste0('Tair_fqc') ##<< Quality flag of filled temperature variable
 		,QFTempValue.n=0       		##<< Value of temperature quality flag for _good_ (original) data

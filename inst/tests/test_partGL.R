@@ -5,6 +5,10 @@
 #require(testthat)
 context("partGL")
 
+	if( !exists(".partGLRHLightResponseCost") ) .partGLRHLightResponseCost <- REddyProc:::.partGLRHLightResponseCost
+	if( !exists(".partGPAssociateSpecialRows") ) .partGPAssociateSpecialRows <- REddyProc:::.partGPAssociateSpecialRows
+	if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # 8 first days of June from IT-MBo.2005.txt

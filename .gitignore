@@ -15,12 +15,16 @@
 /*.Rcheck/
 
 # RStudio files
+*.Rproj
 .Rproj.user/
+.DS_Store
+inst/.DS_Store
+inst/develop/.DS_Store
 
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
-vignettes/*.md
+#vignettes/*.md	# want view at github
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
@@ -28,7 +32,8 @@ vignettes/*.md
 # knitr and R markdown default cache directories
 /*_cache/
 /cache/
-/vignettes/figure/
+# /vignettes/figure/  # include in repo to view vignettes there
+/vignettes/cache
 
 
 # Temporary files created by R markdown
@@ -45,3 +50,6 @@ vignettes/*.md
 /src-i386/
 /src-x64/
 /tmp/
+/out/
+/plots/
+.Rproj.user

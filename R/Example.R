@@ -5,7 +5,7 @@ sEddyProc.example <- function( ) {
 	## Dummy function to show code example for sEddyProc provided below
 	##author<<
 	## AMM
-	# Empty function jsut to write attribute with example code for documenation
+	# Empty function just to write attribute with example code for documenation
 } 
 attr(sEddyProc.example,'ex') <- function( ){
 	#+++ Simple example code for using the sEddyProc reference class +++

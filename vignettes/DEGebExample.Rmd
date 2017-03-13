@@ -18,6 +18,7 @@ knit_hooks$set(spar = function(before, options, envir) {
         par(mgp=c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
      }
 })
+# genVigs("DEGebExample")
 ```
 
 Crop example demonstrating multiple years and user defined uStar-Seasons

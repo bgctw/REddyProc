@@ -71,6 +71,7 @@ file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
 if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) { 
   genRd(execInlinedocs = FALSE)
 }
+#dos2unix man/*.Rd
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

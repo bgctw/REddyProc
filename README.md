@@ -66,3 +66,8 @@ EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
 ```
 
 ![plot of chunk example](README-example-1.png)
+
+Further examples are in
+[vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
+and
+[?sEddyProc.example](https://github.com/bgctw/REddyProc/blob/master/R/Example.R).
