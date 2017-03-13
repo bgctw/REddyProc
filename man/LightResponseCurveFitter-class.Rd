@@ -35,12 +35,14 @@ showClass("LightResponseCurveFitter")
 \keyword{classes}
 \section{Methods}{
   \describe{
-    \item{\code{computeLRCGradient(theta, Rg, VPD, Temp, VPD0, fixVPD)}:}{ ~~ }
-    \item{\code{predictLRC(theta, Rg, VPD, Temp, VPD0, fixVPD)}:}{ ~~ }
+    \item{\code{computeLRCGradient(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
+    \item{\code{predictGPP(Rg, ...)}:}{ ~~ }
+    \item{\code{predictLRC(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
     \item{\code{computeCost(thetaOpt, theta, iOpt, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0, fixVPD)}:}{ ~~ }
-    \item{\code{optimLRC(theta, iOpt, sdParameterPrior, isUsingHessian, ...)}:}{ ~~ }
+    \item{\code{optimLRC(theta, iOpt, sdParameterPrior, ..., ctrl, isUsingHessian)}:}{ ~~ }
     \item{\code{isParameterInBounds(theta, sdTheta, RRefNight, ctrl)}:}{ ~~ }
-    \item{\code{optimLRCBounds(theta0, parameterPrior, ..., lastGoodParameters.V.n, ctrl)}:}{ ~~ }
+    \item{\code{getOptimizedParameterPositions(isUsingFixedVPD, isUsingFixedAlpha)}:}{ ~~ }
+    \item{\code{optimLRCBounds(theta0, parameterPrior, ..., lastGoodParameters, ctrl)}:}{ ~~ }
     \item{\code{getParameterInitials(thetaPrior)}:}{ ~~ }
     \item{\code{getPriorScale(thetaPrior, medianRelFluxUncertainty, nRec, ctrl)}:}{ ~~ }
     \item{\code{getPriorLocation(NEEDay, RRefNight, E0)}:}{ ~~ }

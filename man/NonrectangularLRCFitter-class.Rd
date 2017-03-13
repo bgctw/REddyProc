@@ -36,17 +36,16 @@ showClass("NonrectangularLRCFitter")
 \keyword{classes}
 \section{Methods}{
   \describe{
+    \item{\code{computeGPPGradient(Rg, Amax, alpha, logitconv)}:}{ ~~ }
     \item{\code{getParameterNames()}:}{ ~~ }
     \item{\code{getPriorLocation(NEEDay, RRefNight, E0)}:}{ ~~ }
     \item{\code{getPriorScale(thetaPrior, medianRelFluxUncertainty, nRec, ctrl)}:}{ ~~ }
-    \item{\code{getParameterInitials(thetaPrior)}:}{ ~~ }
-    \item{\code{optimLRCBounds(theta0, parameterPrior, ..., lastGoodParameters.V.n, ctrl)}:}{ ~~ }
-    \item{\code{isParameterInBounds(theta, sdTheta, RRefNight, ctrl)}:}{ ~~ }
-    \item{\code{optimLRC(theta, iOpt, sdParameterPrior, ..., ctrl, isUsingHessian)}:}{ ~~ }
+    \item{\code{getOptimizedParameterPositions(isUsingFixedVPD, isUsingFixedAlpha)}:}{ ~~ }
     \item{\code{predictLRC(theta, Rg, VPD, Temp, VPD0, fixVPD)}:}{ ~~ }
-    \item{\code{computeLRCGradient(theta, Rg, VPD, Temp, VPD0, fixVPD)}:}{ ~~ }
+    \item{\code{predictGPP(Rg, Amax, alpha, conv)}:}{ ~~ }
+    \item{\code{computeLRCGradient(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
   }
 
 The following methods are inherited (from the corresponding class):
-computeLRCGradient ("LightResponseCurveFitter"), predictLRC ("LightResponseCurveFitter"), optimLRC ("LightResponseCurveFitter"), isParameterInBounds ("LightResponseCurveFitter"), optimLRCBounds ("LightResponseCurveFitter"), getParameterInitials ("LightResponseCurveFitter"), getPriorScale ("LightResponseCurveFitter"), getPriorLocation ("LightResponseCurveFitter"), getParameterNames ("LightResponseCurveFitter"), fitLRC ("LightResponseCurveFitter"), optimLRCOnAdjustedPrior ("LightResponseCurveFitter"), computeCost ("LightResponseCurveFitter")
+computeLRCGradient ("LightResponseCurveFitter"), predictGPP ("LightResponseCurveFitter"), predictLRC ("LightResponseCurveFitter"), getOptimizedParameterPositions ("LightResponseCurveFitter"), getPriorScale ("LightResponseCurveFitter"), getPriorLocation ("LightResponseCurveFitter"), getParameterNames ("LightResponseCurveFitter"), fitLRC ("LightResponseCurveFitter"), optimLRCOnAdjustedPrior ("LightResponseCurveFitter"), getParameterInitials ("LightResponseCurveFitter"), optimLRCBounds ("LightResponseCurveFitter"), isParameterInBounds ("LightResponseCurveFitter"), optimLRC ("LightResponseCurveFitter"), computeCost ("LightResponseCurveFitter")
 }

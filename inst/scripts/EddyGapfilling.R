@@ -96,7 +96,7 @@ sEddyProc$methods(
               ' real gaps for gap filling.')
     }
     
-    sTEMP <<- data.frame(c(sTEMP, lTEMP))
+    sTEMP <<- data.frame(c(sTEMP, lTEMP))	# twutz: error prone if sTEMP already contains columns of lTEMP
     return(invisible(NULL))
   })
 
@@ -275,9 +275,12 @@ sEddyProc$methods(
         Index.V.i <- Index.V.i[Index.V.i>0 & Index.V.i<=nrow(sTEMP)]
         
         # If enough available data, fill gap
+		#iRecsSimilar <- Index.V.i[ !is.na(sTEMP$VAR_orig[Index.V.i]) ]
         lMDC.V.n <- subset(sTEMP$VAR_orig[Index.V.i], !is.na(sTEMP$VAR_orig[Index.V.i]))
         
         if( length(lMDC.V.n) > 1 ){
+#if( Gap.i == 15167  ) recover()		
+			
           lVAR_index.i <- Gap.i
           lVAR_mean.n <- mean(lMDC.V.n)
           lVAR_fnum.n  <- length(lMDC.V.n)
@@ -357,6 +360,7 @@ sEddyProc$methods(
     TimeStart.p <- Sys.time()
     ##details<<
     ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
+	# sTEMP <<- sTEMP[,1L,drop=FALSE]
     if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b )) ) #! , QF.V.b = QF.V.b)) )
       return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
     
@@ -410,13 +414,13 @@ sEddyProc$methods(
     #+++ Full MDS algorithm
     # Step 1: Look-up table (method 1) with window size ±7 days
     if( Met.n == 3 ) sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-    # Step 2: Look-up table (method 1) with window size ±14 days
+	# Step 2: Look-up table (method 1) with window size ±14 days
     if( Met.n == 3 ) sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
     # Step 3: Look-up table, Rg only (method 2) with window size ±7 days, 
     if( Met.n == 3 || Met.n == 1) sFillLUT(7, V1.s, T1.n, Verbose.b=Verbose.b)
-    # Step 4: Mean diurnal course (method 3) with window size 0 (same day)
+	# Step 4: Mean diurnal course (method 3) with window size 0 (same day)
     sFillMDC(0, Verbose.b=Verbose.b)
-    # Step 5: Mean diurnal course (method 3) with window size ±1, ±2 days
+	# Step 5: Mean diurnal course (method 3) with window size ±1, ±2 days
     sFillMDC(1, Verbose.b=Verbose.b)
     sFillMDC(2, Verbose.b=Verbose.b)
     # Step 6: Look-up table (method 1) with window size ±21, ±28, ..., ±70   
@@ -599,7 +603,8 @@ sEddyProc$methods(
 	## Advanced Example 1b in \code{\link{sEddyProc.example}}
     # # \code{\link{sEstUstarThresholdDistribution}}
     
-	if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+	#if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+	if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Add column 'season' to dataset with entries matching column season in UstarThres.df.")
 	if( !all(is.finite(as.matrix(UstarThres.df[,-1])))) warning("Provided non-finite uStarThreshold. All values in corresponding period will be marked as gap.")
 	nRec <- nrow(.self$sDATA)
 	nSeason <- length(levels(.self$sDATA$season))

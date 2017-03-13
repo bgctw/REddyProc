@@ -1,7 +1,7 @@
 \name{usGetSeasonalSeasonUStarMappingFromDistributionResult}
 \alias{usGetSeasonalSeasonUStarMappingFromDistributionResult}
 \title{usGetSeasonalSeasonUStarMappingFromDistributionResult}
-\description{extract mapping season -> uStar columns from Distribution result (\code{\link{sEstUstarThresholdDistribution}})}
+\description{extract mapping season -> uStar columns from Distribution result (\code{\link{sEstUstarThresholdDistribution}}}
 \usage{usGetSeasonalSeasonUStarMappingFromDistributionResult(uStarTh)}
 \arguments{
   \item{uStarTh}{result of \code{\link{sEstUstarThresholdDistribution}} or \code{\link{sEstUstarThreshold}}$uStarTh}

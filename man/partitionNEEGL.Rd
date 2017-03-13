@@ -1,8 +1,7 @@
 \name{partitionNEEGL}
 \alias{partitionNEEGL}
 \title{partitionNEEGL}
-\description{Partitioning NEE fluxes into GP and Reco after daytime method of Lasslop et al. (2010)
-daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)}
+\description{Partitioning NEE fluxes into GP and Reco after daytime method. }
 \usage{partitionNEEGL(ds, NEEVar.s = paste0("NEE", SuffixDash.s, 
     "_f"), QFNEEVar.s = paste0("NEE", SuffixDash.s, 
     "_fqc"), QFNEEValue.n = 0, NEESdVar.s = paste0("NEE", 
@@ -26,16 +25,22 @@ daytime-based partitioning of measured net ecosystem fluxes into gross primary p
   \item{QFVPDValue.n}{Value of VPD quality flag for _good_ (original) data}
   \item{RadVar.s}{Unfilled (original) radiation variable}
   \item{PotRadVar.s}{Variable name of potential radiation (W/m2)}
-  \item{Suffix.s}{string inserted into column names before identifier (see \code{\link{sMDSGapFillAfterUstar}}).}
+  \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).}
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}
   \item{isVerbose}{set to FALSE to suppress output messages}
   \item{nRecInDay}{number of records within one day (for half-hourly data its 48)}
   \item{lrcFitter}{R5 class instance responsible for fitting the light response curve}
 }
+\details{Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
 
+The fit to the light-response-curve is done by default using the Rectangular hyperbolic function, as in Lasslop et al. (2010)
+Alternative fittings can be used by providing the correspodning subclass of \code{LightResponseCurveFitter-class} to \code{lrcFitter} argument.
+(see \code{\link{LightResponseCurveFitter_predictGPP}})}
 \value{data.frame with columns
+\itemize{
 \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/second}
 \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/second}
+}
 \item{FP_VARnight}{NEE filtered for nighttime records (others NA)}
 \item{FP_VARday}{NEE filtered for daytime recores (others NA)}
 \item{NEW_FP_Temp}{temperature after filtering for quality flag degree Celsius}

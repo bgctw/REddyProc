@@ -1,15 +1,15 @@
 renameVariablesInDataframe <- function(
 		### Rename the column names of a data.frame according to a given mapping
 		data.F 		##<< data.frame whose columns should be renamped
-		,variableNameMapping = getBGC05ToAmerifluxVariableNameMapping()	##<< named character vector: 
+		,mapping = getBGC05ToAmerifluxVariableNameMapping()	##<< named character vector: 
 			##<< specifying a renaming (name -> value)  
 			##<< of the variables, see e.g. \code{\link{getAmerifluxToBGC05VariableNameMapping}}
 )
 {
-	if( length(names(variableNameMapping)) ){
-		iTarget <- match( colnames(data.F), names(variableNameMapping)  )
+	if( length(names(mapping)) ){
+		iTarget <- match( colnames(data.F), names(mapping)  )
 		iMatch <- which(!is.na(iTarget))
-		colnames(data.F)[iMatch] <- variableNameMapping[ iTarget[iMatch] ]  
+		colnames(data.F)[iMatch] <- mapping[ iTarget[iMatch] ]  
 	}
 	data.F
 }
