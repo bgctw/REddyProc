@@ -1,7 +1,7 @@
 \name{partitionNEEGL}
 \alias{partitionNEEGL}
 \title{partitionNEEGL}
-\description{Partitioning NEE fluxes into GP and Reco after daytime method of Lasslop et al. (2010)}
+\description{Partitioning NEE fluxes into GP and Reco after daytime method. }
 \usage{partitionNEEGL(ds, NEEVar.s = paste0("NEE", SuffixDash.s, 
     "_f"), QFNEEVar.s = paste0("NEE", SuffixDash.s, 
     "_fqc"), QFNEEValue.n = 0, NEESdVar.s = paste0("NEE", 
