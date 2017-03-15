@@ -17,7 +17,8 @@ partitionNEEGL=function(
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
 		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
-		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve  	
+		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve.
+			##<< Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. (See details)
 )
 ##details<<
 ## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
@@ -703,9 +704,8 @@ partGLFitLRCOneWindow=function(
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
 			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$lastGoodParameters)
 	if( !is.finite(resOpt$thetaOpt[1]) ) return(NULL)
-	sdParms <- resOpt$thetaOpt; sdParms[] <- NA
-	sdParms[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
-	if( !lrcFitter$isParameterInBounds(resOpt$thetaOpt, sdParms, RRefNight=RRefNight, ctrl=ctrl) ) return(NULL)
+	sdTheta <- resOpt$thetaOpt; sdTheta[] <- NA
+	sdTheta[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
 	#
 	#recover()			
 	prevRes$lastGoodParameters <- resOpt$thetaOpt
@@ -719,7 +719,7 @@ partGLFitLRCOneWindow=function(
 			,parms_out_range=as.integer(!identical(resOpt$iOpt,1:5))
 			)
 			,as.data.frame(t(resOpt$thetaOpt))
-			,as.data.frame(t(structure(sdParms,names=paste0(names(sdParms),"_sd"))))
+			,as.data.frame(t(structure(sdTheta,names=paste0(names(sdTheta),"_sd"))))
 		)
 		,prevRes=prevRes
 	)

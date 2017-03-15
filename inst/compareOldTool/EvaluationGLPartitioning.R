@@ -62,6 +62,7 @@ check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 
 
 #s <- grep("CA-TP3",sites)[1]
+#s <- 1L
 for ( s in seq_along(sites)) {
   
   fname        <- flist[s]
@@ -93,9 +94,17 @@ for ( s in seq_along(sites)) {
   df.REddy <- partitionNEEGL(dfall,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
                              TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
 						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
+<<<<<<< HEAD
 								 		         ,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
                                                           isBoundLowerNEEUncertainty=FALSE),
 								 		         lrcFitter=NonrectangularLRCFitter())
+=======
+								 		,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
+                                                    isBoundLowerNEEUncertainty=FALSE)
+										,lrcFitter=RectangularLRCFitter()
+										#,lrcFitter=NonrectangularLRCFitter()
+								)
+>>>>>>> ca2e2307c8569a74ca911dcb726325b1aa66aa1d
   .tmp.debug <- function(){
 	  df.REddy$DateTime <- dfall_posix$DateTime
 	  iParRecs <- which( is.finite(df.REddy$FP_qc))
