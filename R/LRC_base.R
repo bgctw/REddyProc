@@ -109,56 +109,6 @@ LightResponseCurveFitter_fitLRC <- function(
 LightResponseCurveFitter$methods(fitLRC = LightResponseCurveFitter_fitLRC)
 
 
-LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
-		###<< Lower bound flux uncertainty and adjust prior uncertainty before calling optimLRC 
-		theta  					##<< numeric vector of starting values
-		, iOpt					##<< integer vector: positions of subset of parameters that are optimized
-		, dsDay					##<< dataframe of NEE, sdNEE and predictors Rg, VPD and Temp
-		, parameterPrior		##<< numeric vector of prior parameter estimates (corresponding to theta) # TODO rename to thetaPrior
-		, ctrl					##<< list of further controls
-		, ...					##<< further arguments to \code{\link{LightResponseCurveFitter_optimLRC}} (passed to \code{\link{LightResponseCurveFitter_computeCost}})
-){
-	if( !all(is.finite(theta))) stop("need to provide finite starting values.")
-	##details<<
-	## Only those records are used for optimization where both NEE and sdNEE are finite.
-	dsDayFinite <- dsDay[ is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
-	##details<<
-	## Optimization of LRC parameters takes into account the uncertainty of the flux values.
-	## In order to avoid very strong leverage, values with a very low uncertainty (< median) are assigned
-	## the median of the uncertainty.
-	## This procedure downweighs records with a high uncertainty, but does not apply a large leverage for
-	## records with a very low uncertainty. Avoid this correction by suppyling setting \code{ctrl$isBoundLowerNEEUncertainty = FALSE}
-	Fc_unc <- if( isTRUE(ctrl$isBoundLowerNEEUncertainty) ){
-				pmax( dsDayFinite$sdNEE, quantile(dsDayFinite$sdNEE, 0.3) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
-			} else {
-				dsDayFinite$sdNEE
-			}
-	#plot( Fc_unc ~ dsDayFinite$sdNEE)
-	medianRelFluxUncertainty <- abs(median(Fc_unc/dsDayFinite$NEE))
-	##details<<
-	## The uncertainty of the prior, that maybe derived from fluxes)  is allowed to 
-	## adapt to the uncertainty of the fluxes.
-	## This is done in \code{link{LightResponseCurveFitter_getPriorScale}}
-	sdParameterPrior <- .self$getPriorScale( parameterPrior, medianRelFluxUncertainty, nrow(dsDayFinite), ctrl=ctrl )
-	sdParameterPrior[-iOpt] <- NA
-	isUsingHessian <- (ctrl$nBootUncertainty==0L)
-	.self$optimLRC( theta 
-			,iOpt=iOpt
-			,flux = -dsDayFinite$NEE 
-			,sdFlux = Fc_unc	  
-			,sdParameterPrior = sdParameterPrior
-			,parameterPrior = parameterPrior
-			,Rg = dsDayFinite$Rg 
-			,VPD = dsDayFinite$VPD
-			,Temp=dsDayFinite$Temp
-			, isUsingHessian=isUsingHessian
-			, ctrl=ctrl
-	)  
-	##value<< result of \code{\link{LightResponseCurveFitter_optimLRC}}
-}
-LightResponseCurveFitter$methods(optimLRCOnAdjustedPrior = LightResponseCurveFitter_optimLRCOnAdjustedPrior)
-
-
 LightResponseCurveFitter_getPriorLocation <- function(
 		### return the prior distribution of parameters
 		NEEDay 		##<< numeric vector of daytime NEE
@@ -295,6 +245,9 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 	if( isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
 		resOpt$theta[] <- NA
 	}
+	# Further checks are done, after parameter uncertainty has been determined, by call from 
+	# fitLRC to isParameterInBounds
+	#
 	##value<< list result of optimization as of \code{.optimLRC} with entries 
 	## \item{theta}{ numeric parameter vector that includes the fixed components}
 	## \item{iOpt}{ integer vector of indices of the vector that have been optimized}
@@ -318,6 +271,55 @@ LightResponseCurveFitter_getOptimizedParameterPositions <- function(
 }
 LightResponseCurveFitter$methods(getOptimizedParameterPositions = LightResponseCurveFitter_getOptimizedParameterPositions)
 
+LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
+		###<< Lower bound flux uncertainty and adjust prior uncertainty before calling optimLRC 
+		theta  					##<< numeric vector of starting values
+		, iOpt					##<< integer vector: positions of subset of parameters that are optimized
+		, dsDay					##<< dataframe of NEE, sdNEE and predictors Rg, VPD and Temp
+		, parameterPrior		##<< numeric vector of prior parameter estimates (corresponding to theta) # TODO rename to thetaPrior
+		, ctrl					##<< list of further controls
+		, ...					##<< further arguments to \code{\link{LightResponseCurveFitter_optimLRC}} (passed to \code{\link{LightResponseCurveFitter_computeCost}})
+){
+	if( !all(is.finite(theta))) stop("need to provide finite starting values.")
+	##details<<
+	## Only those records are used for optimization where both NEE and sdNEE are finite.
+	dsDayFinite <- dsDay[ is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
+	##details<<
+	## Optimization of LRC parameters takes into account the uncertainty of the flux values.
+	## In order to avoid very strong leverage, values with a very low uncertainty (< median) are assigned
+	## the median of the uncertainty.
+	## This procedure downweighs records with a high uncertainty, but does not apply a large leverage for
+	## records with a very low uncertainty. Avoid this correction by suppyling setting \code{ctrl$isBoundLowerNEEUncertainty = FALSE}
+	Fc_unc <- if( isTRUE(ctrl$isBoundLowerNEEUncertainty) ){
+				pmax( dsDayFinite$sdNEE, quantile(dsDayFinite$sdNEE, 0.3) ) #twutz: avoid excessive weights by small uncertainties (of 1/unc^2)
+			} else {
+				dsDayFinite$sdNEE
+			}
+	#plot( Fc_unc ~ dsDayFinite$sdNEE)
+	medianRelFluxUncertainty <- abs(median(Fc_unc/dsDayFinite$NEE))
+	##details<<
+	## The uncertainty of the prior, that maybe derived from fluxes)  is allowed to 
+	## adapt to the uncertainty of the fluxes.
+	## This is done in \code{link{LightResponseCurveFitter_getPriorScale}}
+	sdParameterPrior <- .self$getPriorScale( parameterPrior, medianRelFluxUncertainty, nrow(dsDayFinite), ctrl=ctrl )
+	sdParameterPrior[-iOpt] <- NA
+	isUsingHessian <- (ctrl$nBootUncertainty==0L)
+	.self$optimLRC( theta 
+			,iOpt=iOpt
+			,flux = -dsDayFinite$NEE 
+			,sdFlux = Fc_unc	  
+			,sdParameterPrior = sdParameterPrior
+			,parameterPrior = parameterPrior
+			,Rg = dsDayFinite$Rg 
+			,VPD = dsDayFinite$VPD
+			,Temp=dsDayFinite$Temp
+			, isUsingHessian=isUsingHessian
+			, ctrl=ctrl
+	)  
+	##value<< result of \code{\link{LightResponseCurveFitter_optimLRC}}
+}
+LightResponseCurveFitter$methods(optimLRCOnAdjustedPrior = LightResponseCurveFitter_optimLRCOnAdjustedPrior)
+
 
 LightResponseCurveFitter_isParameterInBounds <- function(
 		### Check if estimated parameter vector is within reasonable bounds
@@ -329,7 +331,7 @@ LightResponseCurveFitter_isParameterInBounds <- function(
 	##author<< TW, MM
 	#
 	# check the Beta bounds that depend on uncertainty, set to NA fit
-	if(isTRUE(as.vector( (theta[2] > 100) && (sdParms[2] >= theta[2]) ))) return(FALSE)
+	if(isTRUE(as.vector( (theta[2] > 100) && (sdTheta[2] >= theta[2]) ))) return(FALSE)
 	# check that RRef estimated from daytime is not both:
 	# larger than twice the estimate from nighttime and more than 0.7 in absolute terms  
 	# else this indicates a bad fit

@@ -112,7 +112,7 @@ Computes the uncertainty of the fluxes given the parameter covariances.<y:LabelM
           <y:Geometry height="77.0" width="233.00000000000006" x="902.3481609620133" y="229.0"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="37.33984375" x="97.830078125" y="4.0">fitLRC</y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="143.3828125" x="44.80859375" y="4.0">partGLFitLRCOneWindow</y:NodeLabel>
           <y:NodeLabel alignment="center" autoSizePolicy="node_width" configuration="CroppingLabel" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="66.375" modelName="custom" textColor="#000000" visible="true" width="233.00000000000006" x="0.0" y="4.0">
 
 estimates parameters of the light response curve from daytime data<y:LabelModel>
@@ -481,7 +481,6 @@ smooth time course of temperature sensitivity E0 and esimate its uncertainty by 
     </node>
     <node id="n21">
       <data key="d4"/>
-      <data key="d5"/>
       <data key="d6">
         <y:UMLNoteNode>
           <y:Geometry height="56.45323741007189" width="162.0905319706973" x="147.02552168330715" y="298.83812949640287"/>
