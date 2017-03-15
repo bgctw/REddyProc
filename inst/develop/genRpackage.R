@@ -10,7 +10,9 @@ Develop.b <- F #True if in development mode
 
 
 # Source settings for R environment
-source('inst/develop/setREnvir.R')
+if ( length(grep( "amoffat", Sys.getenv('HOME'))) != 0 ) { 
+	source('inst/develop/setREnvir.R')
+}
 
 #Source file and data handling scripts
 source('R/DataFunctions.R')
@@ -70,8 +72,8 @@ file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
 # If package twDev from TW is used for documenation generation
 if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) { 
   genRd(execInlinedocs = FALSE)
+  system("dos2unix man/*.Rd")  
 }
-#dos2unix man/*.Rd
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

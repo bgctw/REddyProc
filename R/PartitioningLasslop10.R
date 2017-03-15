@@ -17,7 +17,8 @@ partitionNEEGL=function(
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
 		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
-		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve  	
+		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve.
+			##<< Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. (See details)
 )
 ##details<<
 ## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)

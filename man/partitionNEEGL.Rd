@@ -29,7 +29,8 @@
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}
   \item{isVerbose}{set to FALSE to suppress output messages}
   \item{nRecInDay}{number of records within one day (for half-hourly data its 48)}
-  \item{lrcFitter}{R5 class instance responsible for fitting the light response curve}
+  \item{lrcFitter}{R5 class instance responsible for fitting the light response curve.
+<< Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. (See details)}
 }
 \details{Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
 

@@ -41,12 +41,12 @@ showClass("LightResponseCurveFitter")
     \item{\code{computeCost(thetaOpt, theta, iOpt, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0, fixVPD)}:}{ ~~ }
     \item{\code{optimLRC(theta, iOpt, sdParameterPrior, ..., ctrl, isUsingHessian)}:}{ ~~ }
     \item{\code{isParameterInBounds(theta, sdTheta, RRefNight, ctrl)}:}{ ~~ }
+    \item{\code{optimLRCOnAdjustedPrior(theta, iOpt, dsDay, parameterPrior, ctrl, ...)}:}{ ~~ }
     \item{\code{getOptimizedParameterPositions(isUsingFixedVPD, isUsingFixedAlpha)}:}{ ~~ }
     \item{\code{optimLRCBounds(theta0, parameterPrior, ..., lastGoodParameters, ctrl)}:}{ ~~ }
     \item{\code{getParameterInitials(thetaPrior)}:}{ ~~ }
     \item{\code{getPriorScale(thetaPrior, medianRelFluxUncertainty, nRec, ctrl)}:}{ ~~ }
     \item{\code{getPriorLocation(NEEDay, RRefNight, E0)}:}{ ~~ }
-    \item{\code{optimLRCOnAdjustedPrior(theta, iOpt, dsDay, parameterPrior, ctrl, ...)}:}{ ~~ }
     \item{\code{fitLRC(dsDay, E0, sdE0, RRefNight, controlGLPart, lastGoodParameters)}:}{ ~~ }
     \item{\code{getParameterNames()}:}{ ~~ }
   }
