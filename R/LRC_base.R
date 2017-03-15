@@ -94,6 +94,12 @@ LightResponseCurveFitter_fitLRC <- function(
 			#se.parms.V <- apply(resBoot, 2, sd, na.rm=TRUE)
 		}
 	}
+	# further parameter checking after parameter uncertainty has been computed
+	# (before other parameter checking is done in optimLRCBounds) 
+	sdTheta <- thetaOpt; sdTheta[] <- NA
+	sdTheta[resOpt$iOpt] <- sqrt(diag(covParms)[resOpt$iOpt])
+	if( !.self$isParameterInBounds(thetaOpt, sdTheta, RRefNight=RRefNight, ctrl=controlGLPart) ) 
+		return(getNAResult())
 	##value<< a list, If none of the optimizations from different starting conditions converged,
 	## the parameters are NA
 	ans <- list(

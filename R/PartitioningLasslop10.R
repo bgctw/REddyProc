@@ -704,9 +704,8 @@ partGLFitLRCOneWindow=function(
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
 			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$lastGoodParameters)
 	if( !is.finite(resOpt$thetaOpt[1]) ) return(NULL)
-	sdParms <- resOpt$thetaOpt; sdParms[] <- NA
-	sdParms[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
-	if( !lrcFitter$isParameterInBounds(resOpt$thetaOpt, sdParms, RRefNight=RRefNight, ctrl=ctrl) ) return(NULL)
+	sdTheta <- resOpt$thetaOpt; sdTheta[] <- NA
+	sdTheta[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
 	#
 	#recover()			
 	prevRes$lastGoodParameters <- resOpt$thetaOpt
@@ -720,7 +719,7 @@ partGLFitLRCOneWindow=function(
 			,parms_out_range=as.integer(!identical(resOpt$iOpt,1:5))
 			)
 			,as.data.frame(t(resOpt$thetaOpt))
-			,as.data.frame(t(structure(sdParms,names=paste0(names(sdParms),"_sd"))))
+			,as.data.frame(t(structure(sdTheta,names=paste0(names(sdTheta),"_sd"))))
 		)
 		,prevRes=prevRes
 	)
