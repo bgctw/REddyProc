@@ -336,12 +336,13 @@ LightResponseCurveFitter_isParameterInBounds <- function(
 ){
 	##author<< TW, MM
 	#
-	# check the Beta bounds that depend on uncertainty, set to NA fit
+	##details<< check the Beta bounds that depend on uncertainty: outside if (beta > 100 and sdBeta >= beta)
+	if( !is.finite(theta[2]) ) return(FALSE)
 	if(isTRUE(as.vector( (theta[2] > 100) && (sdTheta[2] >= theta[2]) ))) return(FALSE)
-	# check that RRef estimated from daytime is not both:
-	# larger than twice the estimate from nighttime and more than 0.7 in absolute terms  
-	# else this indicates a bad fit
-	# this is additional to Table A1 in Lasslop 2010
+	##details<< check that RRef estimated from daytime is not both:
+	## 1) larger than twice the estimate from nighttime and 2) more than 0.7 in absolute terms  
+	## Else this indicates a bad fit.
+	## This is additional to Table A1 in Lasslop 2010.
 	if( (theta[4L] > 2*RRefNight) 		&& 
 			((theta[4L]-RRefNight) > 0.7) 
 			){
