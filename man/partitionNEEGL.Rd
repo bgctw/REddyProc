@@ -59,7 +59,9 @@ a light response curve approach: critical issues and global evaluation. Global C
 
 
 
-\seealso{\code{\link{partGLFitLRCWindows}}
+\seealso{\code{\link{partGLFitNightTimeTRespSens}}
+
+\code{\link{partGLFitLRCWindows}}
 
 \code{\link{partGLInterpolateFluxes}}}
 

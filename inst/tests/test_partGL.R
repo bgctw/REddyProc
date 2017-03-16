@@ -880,9 +880,13 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 			ds <- with(dsNEE, data.frame(NEE=NEE_f, Temp=Temp, VPD=VPD_f, Rg=ifelse( Rg_f >= 0, Rg_f, 0 )
 			, sdNEE=NEE_fsd, isDay=isDay, isNight=isNight))
 			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday
+			dsTempSens <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+			)
 			lrcFitter <- RectangularLRCFitter()
 			#lrcFitter <- NonrectangularLRCFitter()
-			resFits <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart=partGLControl(nBootUncertainty=10L), lrcFitter=lrcFitter)
+			resFits <- partGLFitLRCWindows(ds, nRecInDay=48L, dsTempSens=dsTempSens, controlGLPart=partGLControl(nBootUncertainty=10L), lrcFitter=lrcFitter)
 			expect_equal( nrow(resFits$summary), length(resFits$resOptList) )
 			.tmp.f <- function(){
 				# in order to replicate, use nBoot=0L 
@@ -1039,7 +1043,11 @@ test_that("partGLPartitionFluxes sparse data",{
 			ds$VPD <- ds$VPD_f
 			ds$Rg <- ds$Rg_f
 			#
-			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter() )
+			dsTempSens <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+			)
+			resLRC <- partGLFitLRCWindows(ds, dsTempSens=dsTempSens, lrcFitter=RectangularLRCFitter() )
 			expect_true( resLRC$summary$iMeanRec[2] == resLRC$summary$iMeanRec[3])
 			#
 			tmp <- partitionNEEGL( dsNEE1, RadVar.s="Rg_f" )
@@ -1078,7 +1086,13 @@ test_that("partGLPartitionFluxes missing night time data",{
 			ds$VPD <- ds$VPD_f
 			ds$Rg <- ds$Rg_f
 			#
-			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter(), winSizeNight=4L, winExtendSizes=c() )
+			dsTempSens <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+					, winSizeNight=4L, winExtendSizes=c()
+			)
+			expect_true( all( is.finite(dsTempSens$RRef)) )
+			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter(), dsTempSens=dsTempSens )
 			expect_true( all( is.finite(resLRC$summary$RRef_night)) )
 		})
 
