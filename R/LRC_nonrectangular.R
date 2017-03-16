@@ -66,14 +66,14 @@ NonrectangularLRCFitter_predictLRC <- function(
 ) {
 	# extracting and calling precit with conf-parameter
 	if( is.matrix(theta) ){
-		kVPD<-theta[,1]
+		k<-theta[,1]
 		beta<-theta[,2]
 		alpha<-theta[,3]
 		RRef<-theta[,4]
 		E0<-theta[,5]
 		logitconv<-theta[,6]
 	} else {
-		kVPD<-theta[1]
+		k<-theta[1]
 		beta<-theta[2]
 		alpha<-theta[3]
 		RRef<-theta[4]
@@ -82,8 +82,9 @@ NonrectangularLRCFitter_predictLRC <- function(
 	}
 	conv <- invlogit(logitconv)
 	Amax <- if( isTRUE(fixVPD) ) beta else {
-				ifelse(VPD > VPD0, beta*exp(-kVPD*(VPD-VPD0)), beta)
-			} 
+				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+			}
 	Reco<-RRef*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha, conv=conv)
 	NEP <- GPP - Reco
@@ -146,7 +147,8 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 	}
 	if( !is.finite(logitconv[1]) ) stop("need to provide finite logitconv in theta")
 	Amax <- if( isTRUE(fixVPD) ) beta else {
-				ifelse(VPD > VPD0, beta*exp(-k*(VPD-VPD0)), beta)
+				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 			}
 	#ex <- expression( beta*exp(-k*(VPD-VPD0)) ); deriv(ex,c("beta","k"))
 	dAmax_dkVPD <- if( isTRUE(fixVPD) ) 0 else {
@@ -157,7 +159,9 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 			} 
 	#Reco<-RRef*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
 	#ex <- expression( RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("RRef","E0"))
-	.expr7 <- 1/(273.15 + TRef - 227.13) - 1/(Temp + 273.15 - 227.13)
+	# to prevent numeric instabilities, use do not let temperature go below 20degC
+	#.expr7 <- 1/(273.15 + TRef - 227.13) - 1/(Temp + 273.15 - 227.13)
+	.expr7 <- 1/(273.15 + TRef - 227.13) - 1/(pmax(-20,Temp) + 273.15 - 227.13)
 	.expr9 <- exp(E0 * .expr7)
 	gradReco <- matrix(0, ncol=2L, nrow=length(.expr9), dimnames=list(NULL,c("RRef","E0")))
 	gradReco[,"RRef"] <- dReco_dRRef <- .expr9
@@ -179,6 +183,10 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 	)
 }
 NonrectangularLRCFitter$methods( computeLRCGradient = NonrectangularLRCFitter_computeLRCGradient)
+
+.tmp.f <- function(){
+	iNonFinite <- which( !is.finite(gradReco[,"E0"]))
+}
 
 NonrectangularLRCFitter_computeGPPGradient  <- function(
 		### Logistic Sigmoid Light Response function for GPP

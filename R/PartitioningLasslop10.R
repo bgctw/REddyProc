@@ -256,6 +256,7 @@ partGLFitLRCWindows=function(
 	lrcSummary <- lapply(resLRC$resFUN, "[[", "summary")
 	iNoSummary <- which( sapply(lrcSummary, length)==0 )
 	if( length(iNoSummary) ){
+		stop("expected summary returned by all fits, but found missing summaries.")
 		# put dummy NA data.frame where no fit was obtained
 		dummySummary <- lrcSummary[-iNoSummary][[1]]
 		dummySummary[] <- NA
@@ -265,6 +266,7 @@ partGLFitLRCWindows=function(
 			resOptList = lapply(resLRC$resFUN, "[[", "resOpt")
 			,summary = cbind( resLRC$winInfo, rbind.fill(lrcSummary)) 
 	)
+	#table(resParms$summary$convergence)
 	#E0_night equals E0, but uncertaint might differ 
 	#resParms$summary$E0_night <- dsTempSens$E0
 	resParms$summary$E0_night_sd <- dsTempSens$sdE0
@@ -296,7 +298,7 @@ partGLFitLRCOneWindow=function(
 	#requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
 	#iMissing <- which( is.na(match( requiredCols, names(ds) )))
 	#if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$VPD) 
+	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$VPD) & !is.na(ds$Rg) 
 	dsDay <- ds[isValidDayRec,]
 	##details<<
 	## Each window estimate is associated with a time or equivalently with a record.
@@ -308,22 +310,28 @@ partGLFitLRCOneWindow=function(
 	##seealso<< \code{\link{partGLEstimateTempSensInBoundsE0Only}}
 	E0 <- E0Win$E0[winInfo$iWindow]
 	# if too few records or 
+	getNAResult <- function(convergenceCode){ list(
+			resOpt = NULL
+			,summary = data.frame(
+					nValidRec=nrow(dsDay)
+					,iMeanRec=iMeanRecInDayWindow
+					,convergence=convergenceCode
+			)
+			,isValid=FALSE
+	)}
 	# if no temperature-respiration relationship could be found, indicate no-fit, but report Window properties
-	if( is.na(E0) || (sum(isValidDayRec) < controlGLPart$minNRecInDayWindow) ) return(list(
-		resOpt = NULL
-		,summary = data.frame(
-						nValidRec=nrow(dsDay)
-						,iMeanRec=iMeanRecInDayWindow
-				)
-		))
-# if( DayStart.i > 72 ) recover()		
+	if( is.na(E0)  ) return(getNAResult(1010L))
+	if( (sum(isValidDayRec) < controlGLPart$minNRecInDayWindow) ) return(getNAResult(1011L))
+	# if( DayStart.i > 72 ) recover()		
 	sdE0 <- E0Win$sdE0[winInfo$iWindow]
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
 	#
 	##seealso<< \code{\link{LightResponseCurveFitter_fitLRC}}
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
 			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$resOpt$thetaOpt)
-	if( !is.finite(resOpt$thetaOpt[1]) ) return(NULL)
+	if( !is.finite(resOpt$thetaOpt[1]) ) {
+		return(getNAResult(resOpt$convergence))
+	}
 	sdTheta <- resOpt$thetaOpt; sdTheta[] <- NA
 	sdTheta[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
 	#
@@ -334,10 +342,12 @@ partGLFitLRCOneWindow=function(
 		 ,summary = cbind(data.frame(
 			nValidRec=nrow(dsDay)
 			,iMeanRec=iMeanRecInDayWindow
+			,convergence=resOpt$convergence
 			,parms_out_range=as.integer(!identical(resOpt$iOpt,1:5))
 			)
 			,as.data.frame(t(resOpt$thetaOpt))
 			,as.data.frame(t(structure(sdTheta,names=paste0(names(sdTheta),"_sd"))))
+		,isValid=TRUE
 		)
 	)
 	return(ans)
@@ -345,30 +355,30 @@ partGLFitLRCOneWindow=function(
 
 .bootStrapLRCFit <- function(
 		### Compute parameters uncertainty by bootstrap
-		theta0, iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l
-		, LRC		##<< Light Response Curve R5 instance
+		theta0, iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart
+		, lrcFitter		##<< Light Response Curve R5 instance
 		,iPosE0=5L	##<< position (integer scalar) of temperature sensitivity in parameter vector
 ){
 	##value<<
 	## matrix with each row a parameter estimate on a different bootstrap sample
-	ans <-matrix(NA, nrow=controlGLPart.l$nBootUncertainty, ncol=length(theta0), dimnames=list(NULL,names(theta0)))
+	ans <-matrix(NA, nrow=controlGLPart$nBootUncertainty, ncol=length(theta0), dimnames=list(NULL,names(theta0)))
 	##details<<
 	## In addition to resampling the original data, also the temperature sensitivity is resampled 
 	## from its uncertainty distribution.
-	E0r <- rnorm( controlGLPart.l$nBootUncertainty, theta0[5L], sdE_0.n	)
+	E0r <- rnorm( controlGLPart$nBootUncertainty, theta0[5L], sdE_0.n	)
 	E0 <- pmax(50,pmin(400,E0r))
 	theta <- theta0
 	#iBoot <- 1L
-	for (iBoot in c(1:controlGLPart.l$nBootUncertainty)){
+	for (iBoot in c(1:controlGLPart$nBootUncertainty)){
 		idx <- sample(nrow(dsDay), replace=TRUE)
 		dsDayB <- dsDay[idx,]
 		theta[iPosE0] <- E0[iBoot]
-		resOptBoot <- LRC$optimLRCOnAdjustedPrior(theta, iOpt=iOpt, dsDay=dsDayB, parameterPrior=parameterPrior, ctrl=controlGLPart.l)
+		resOptBoot <- lrcFitter$optimLRCOnAdjustedPrior(theta, iOpt=iOpt, dsDay=dsDayB, parameterPrior=parameterPrior, ctrl=controlGLPart)
 		if( resOptBoot$convergence == 0L ){	
 			#TODO: also remove the very bad cases? 
 			ans[iBoot,]<-resOptBoot$theta
 		}else{
-			recover()
+			#recover()
 		}
 	}
 	ans
@@ -390,7 +400,9 @@ partGLInterpolateFluxes <- function(
 	## \code{resLRC$iFirstRecInCentralDay} must denote the row for which the LRC parameters are representative, 
 	## here, the first record of the center day
 	# create a dataframe with index of rows of estimates before and after and correponding weights
-	summaryLRC <- resParms$summary[ is.finite(resParms$summary$parms_out_range), ,drop=FALSE]
+	isValidWin <- is.finite(resParms$summary$parms_out_range)
+	summaryLRC <- resParms$summary[ isValidWin, ,drop=FALSE]
+    resOptList <- resParms$resOptList[isValidWin]
 	nLRC <- nrow(summaryLRC)
 	nRec <- length(Rg) 
 	Temp_Kelvin <- Temp+273.15
@@ -418,17 +430,17 @@ partGLInterpolateFluxes <- function(
 	dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,lrcFitter$getParameterNames())])
 	if( (nrow(dsBefore) != nRec) || (nrow(dsAfter) != nRec)) stop("error in merging parameters to original records.")
 	Reco2 <- lapply( list(dsBefore,dsAfter), function(dsi){
-		tmp <- fLloydTaylor(dsi$RRef, dsi$E0, Temp_Kelvin, T_ref.n=273.15+15)
+		#twutz170316: fLloydTaylor gives unreasonable values with very low temperatures, hence constrain lower temperature
+		tmp <- fLloydTaylor(dsi$RRef, dsi$E0, pmax(-40,Temp_Kelvin), T_ref.n=273.15+15)
 	})
 	#dsi <- dsBefore
 	GPP2 <- lapply( list(dsBefore,dsAfter), function(dsi){
 							theta <- as.matrix(dsi[,parNames])
-							tmp <- lrcFitter$predictLRC(theta, Rg, VPD, Temp=Temp)$GPP
+							tmp <- lrcFitter$predictLRC(theta, Rg, VPD, Temp=pmax(-40,Temp))$GPP
 						})
 	# interpolate between previous and next fit, weights already sum to 1
 	Reco <- (dsAssoc$wBefore*Reco2[[1]] + dsAssoc$wAfter*Reco2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)  
 	GPP <- (dsAssoc$wBefore*GPP2[[1]] + dsAssoc$wAfter*GPP2[[2]]) #/ (dsAssoc$wBefore+dsAssoc$wAfter)
-#recover()  # to inspect the deviations between successive estimates	
 	ans <- ansPred <- data.frame(
 			Reco = Reco
 			,GPP = GPP
@@ -437,18 +449,18 @@ partGLInterpolateFluxes <- function(
 		#dsi <- dsBefore
 		varPred2 <- lapply( list(dsBefore,dsAfter), function(dsi){
 							theta <- as.matrix(dsi[,parNames])
-							grad <- lrcFitter$computeLRCGradient(theta, Rg, VPD, Temp)
+							grad <- lrcFitter$computeLRCGradient(theta, Rg, VPD, pmax(-40,Temp))
 							varPred <- matrix(NA_real_, nrow=nrow(dsi), ncol=2L, dimnames=list(NULL,c("varGPP","varReco")))
 							#iRec <- 1L
 							for( iRec in 1:nrow(dsi)){
-								iParRec <- dsi$iParRec[iRec]
+								iParRec <- dsi$iParRec[iRec]	# row within sequence of valid parameters (at centralREc or meanRec)
 								# get the fitting object, TODO better document
-								resOpt <- resParms$resOptList[[ iParRec ]]
+								resOpt <- resOptList[[ iParRec ]]
 								gradGPP <- grad$GPP[iRec,]
 								gradReco <- grad$Reco[iRec,]
 								# make sure parameter names match postions in covParms
-								varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[names(gradGPP),names(gradGPP)] %*% gradGPP
 								varPred[iRec,2L] <- varReco <-  gradReco %*% resOpt$covParms[names(gradReco),names(gradReco)] %*% gradReco
+								varPred[iRec,1L] <- varGPP <-  gradGPP %*% resOpt$covParms[names(gradGPP),names(gradGPP)] %*% gradGPP
 							}
 							varPred
 						})

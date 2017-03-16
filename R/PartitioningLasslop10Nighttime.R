@@ -73,7 +73,7 @@ partGLFitNightTimeTRespSens=function(
 fillNAForward <- function(
 		### replace NA by value of previous record
 		x		##<< numeric vector to fill NAs
-		, firstValue=median(x,na.rm=FALSE)	##<< value to be used for NA at the beginning of x
+		, firstValue=median(x,na.rm=TRUE)	##<< value to be used for NA at the beginning of x
 ){
 	iMissing <- which(!is.finite(x))
 	if( length(iMissing) && (iMissing[1] == 1L)){
@@ -145,8 +145,12 @@ applyWindows <- function(
 		# range( which(iDayOfRec >= startDay & iDayOfRec <= endDay))	# slower but check for startRec and endRec
 		dsWin <- ds[startRec:endRec,]
 		resFun <- FUN(dsWin, dsRec[iWindow,], prevRes, ...)
+		##details<< Usually indicate an invalid result by returning NULL.
+		## If one still wants to store results but prevent updating the \code{prevRes} argument supplied to the next call
+		## then return a list item (or dataframe column) \code{isValid=TRUE}.
 		if( length(resFun) ){
-			res2List[[iWindow]] <- prevRes <- resFun
+			res2List[[iWindow]] <- resFun
+			if( !is.list(resFun) || !length(resFun$isValid) || isTRUE(resFun$isValid) ) prevRes <- resFun
 		}
 	}
 	if( isVerbose ) message("") # LineFeed
@@ -215,7 +219,7 @@ isValidNightRecord <- function(
 		### compute logical vector of each rows in ds is its a valid night record
 		ds		##<< data.frame with columns isNight, NEE, Temp (degC)
 ){
-	isValid <- !is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE)
+	isValid <- !is.na(ds$isNight) & ds$isNight & !is.na(ds$NEE) & is.finite(ds$Temp)
 	##details<<
 	## For robustness, data is trimmed to conditions at temperature > 1 degC 
 	## but only timmed if there are more at least 12 records left
