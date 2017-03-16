@@ -748,7 +748,7 @@ test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 			expect_true( abs(resE0$RRefFit - medianResp)/medianResp < 0.2 )
 			E0Win <- as.data.frame(resE0)
 			res <- partGLFitNightRespRefOneWindow( dss, data.frame(iWindow=1L), E0Win=E0Win)
-			RRef <- res[[2]]$RRef[1]
+			RRef <- res[1]
 			expect_true( RRef >= 0)
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
@@ -789,22 +789,22 @@ test_that("applyWindows",{
 						iRec <-1:nRec
 						iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 			# specifying the day for each record assuming equidistand records
 					})
-			fReportTime <- function(dss,winInfo, prevRes){
+			fReportTime <- function(dss, winInfo, prevRes){
 				nRecS <- nrow(dss)
-				list( res1=dss$iRec[1], res2=data.frame(
+				list( res2=data.frame(
 								startRec=dss$iRec[1]	
 								,endRec=dss$iRec[nRecS]
 								,startDay=dss$iDayOfRec[1]
 								,endDay=dss$iDayOfRec[nRecS]
 						)
-						,prevRes=within(prevRes, sum <- sum +1L)
+						,sumRes = prevRes$sumRes +1L
 				)
 			}
-			prevRes <- list(sum=0)
+			prevRes <- list(sumRes=0)
 			fReportTime(ds,0,prevRes)
 			resApply <- applyWindows( ds, fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
 			#resApply <- applyWindows( ds[1:41,], fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
-			res <- resApply[[2L]]
+			res <- cbind( resApply$winInfo, tmp <- do.call( rbind, lapply(resApply$resFUN, "[[", 1L)))
 			nRecRes <- nrow(res)
 			expect_equal( res$dayStart, res$startDay )	
 			expect_equal( res$dayEnd, res$endDay )	
@@ -817,20 +817,62 @@ test_that("applyWindows",{
 			# day boundary after endRec
 			expect_true( all((ds$iDayOfRec[res$startRec[-nRecRes]]+1 - ds$iDayOfRec[res$startRec[-nRecRes]])==1L))
 			# prevRes accumulated
-			expect_equal( resApply[[3]]$sum, nrow(res) )
+			expect_equal( resApply$resFUN[[nRecRes]]$sumRes, nrow(res) )
+		})
+
+test_that("simplifyApplyWindows",{
+			nRec <- nrow(dsNEE)
+			nRecInDay <- 10L
+			ds <- within(dsNEE, {
+						iRec <-1:nRec
+						iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 			# specifying the day for each record assuming equidistand records
+					})
+			fReportTimeSimple <- function(dss, winInfo, prevRes=list()){
+				nRecS <- nrow(dss)
+				c(
+								startRec=dss$iRec[1]	
+								,endRec=dss$iRec[nRecS]
+								,startDay=dss$iDayOfRec[1]
+								,endDay=dss$iDayOfRec[nRecS]
+						)
+			}
+			fReportTimeSimple(ds,0)
+			resApply <- applyWindows( ds, fReportTimeSimple, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			res <- simplifyApplyWindows(resApply)
+			#resApply <- applyWindows( ds[1:41,], fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			nRecRes <- nrow(res)
+			expect_equal( res$dayStart, res$startDay )	
+			expect_equal( res$dayEnd, res$endDay )	
+			expect_equal( res$iRecStart, res$startRec )	
+			expect_equal( res$iRecEnd, res$endRec )
+			#
+			# repeat with function returning a single-row data.frame
+			fReportTimeSimpleDs <- function(dss, winInfo, prevRes=list()){
+				nRecS <- nrow(dss)
+				data.frame(
+						startRec=dss$iRec[1]	
+						,endRec=dss$iRec[nRecS]
+						,startDay=dss$iDayOfRec[1]
+						,endDay=dss$iDayOfRec[nRecS]
+				)
+			}
+			fReportTimeSimpleDs(ds,0)
+			resApply <- applyWindows( ds, fReportTimeSimpleDs, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			resDs <- simplifyApplyWindows(resApply)
+			expect_equal(res, resDs )
 		})
 
 test_that("estimating temperature sensitivity windows outputs are in accepted range",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:12, ]
 			dss$NEE <- dss$NEE_f
 			dss <- dss[ order(dss$Temp), ]
-			res <- applyWindows(dss, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
+			res <- simplifyApplyWindows( applyWindows(dss, partGLFitNightTempSensOneWindow, prevRes=data.frame(E0=NA)
 					, winSizeInDays=12L
 			#,controlGLPart=controlGLPart	
-			)
+			))
 			#res <- partGLEstimateTempSensInBounds(dss$NEE_f, dss$Temp+273.15)
-			expect_true( res$summary$E0 >= 50 && res$summary$E0 <= 400 )
-			expect_true( res$summary$RRefFit > 0 )
+			expect_true( res$E0 >= 50 && res$E0 <= 400 )
+			expect_true( res$RRefFit > 0 )
 		})
 
 
@@ -1012,7 +1054,7 @@ test_that("partGLPartitionFluxes sparse data",{
 			expect_true( all(tmp$GPP_DT_SD >= 0))
 			#TODO expect_true( all(abs(diff(tmp$Reco_DT)) < 0.6))	#smooth
 			# reporting good values at first row
-			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resLRC$summary) ) 
+			expect_true( sum( is.finite(tmp$FP_alpha) ) == sum(is.finite(resLRC$summary$alpha)) ) 
 			expect_true( all((is.na(tmp$FP_alpha[resLRC$iCentralRec] - resLRC$a)[resLRC$parms_out_range!=0L])) )
 			.tmp.plot <- function(){
 				tmp$time <- dsNEE1$sDateTime
@@ -1036,7 +1078,7 @@ test_that("partGLPartitionFluxes missing night time data",{
 			ds$VPD <- ds$VPD_f
 			ds$Rg <- ds$Rg_f
 			#
-			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter(), WinSizeNight.i=4L, winExtendSizes=c() )
+			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter(), winSizeNight=4L, winExtendSizes=c() )
 			expect_true( all( is.finite(resLRC$summary$RRef_night)) )
 		})
 

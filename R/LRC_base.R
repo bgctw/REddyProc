@@ -50,7 +50,7 @@ LightResponseCurveFitter_fitLRC <- function(
 	optSSE <- sapply(resOpt3Valid, "[[", "value")
 	getNAResult <- function(){ list(
 				thetaOpt=structure( rep(NA_real_, nPar), names=colnames(thetaInitials) )
-				,iOpt=integer(0)		##<< index of parameters that have been optimized
+				,iOpt=integer(0)			##<< index of parameters that have been optimized
 				,thetaInitialGuess=			##<< the initial guess from data
 						thetaInitials[1,]	
 				,covParms=matrix(NA_real_, nPar, nPar, dimnames=list(colnames(thetaInitials),colnames(thetaInitials)))
