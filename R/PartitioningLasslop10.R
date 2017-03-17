@@ -40,7 +40,7 @@ partitionNEEGL=function(
 	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
 	fCheckColNum(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
 	fCheckColPlausibility(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
-	Var.V.n <- fSetQF(ds, NEEVar.s, QFNEEVar.s, QFNEEValue.n, 'sGLFluxPartition')
+	NEEFiltered <- fSetQF(ds, NEEVar.s, QFNEEVar.s, QFNEEValue.n, 'sGLFluxPartition')
 	if( isVerbose ) message('Start daytime flux partitioning for variable ', NEEVar.s, ' with temperature ', TempVar.s, '.')
 	##value<< data.frame with columns
 	## \itemize{
@@ -74,16 +74,16 @@ partitionNEEGL=function(
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E_0.n
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
 	isNight <- (ds[,RadVar.s] <= 4 & ds[[PotRadVar.s]] == 0)
-	dsAns$FP_VARnight <- ifelse(isNight, Var.V.n, NA)
-	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
-	attr(dsAns$FP_VARnight, 'units') <- attr(Var.V.n, 'units')
+	dsAns$FP_VARnight <- ifelse(isNight, NEEFiltered, NA)
+	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(NEEFiltered, 'varnames'), '_night', sep='')
+	attr(dsAns$FP_VARnight, 'units') <- attr(NEEFiltered, 'units')
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
 	isDay=(ds[,RadVar.s] > 4 & ds[[PotRadVar.s]] != 0)
-	dsAns$FP_VARday <- ifelse(isDay, Var.V.n, NA)
-	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(Var.V.n, 'varnames'), '_day', sep='')
-	attr(dsAns$FP_VARday, 'units') <- attr(Var.V.n, 'units')
+	dsAns$FP_VARday <- ifelse(isDay, NEEFiltered, NA)
+	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(NEEFiltered, 'varnames'), '_day', sep='')
+	attr(dsAns$FP_VARday, 'units') <- attr(NEEFiltered, 'units')
 	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
 	# Apply quality flag for temperature and VPD
 	# TODO: docu meteo filter, standard FALSE
@@ -94,7 +94,7 @@ partitionNEEGL=function(
 	# extract the relevant columns in df with defined names (instead of passing many variables)
 	dsR <- data.frame(
 			sDateTime=ds[[1]]		# not used, but usually first column is a dateTime is kept for aiding debug
-			,NEE=Var.V.n
+			,NEE=NEEFiltered
 			,sdNEE=ds[[NEESdVar.s]]
 			, Temp=dsAns$NEW_FP_Temp
 			, VPD=dsAns$NEW_FP_VPD
@@ -149,17 +149,17 @@ partitionNEEGL=function(
 	#
 	dsAns[[RecoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[RecoDTVar.s]], 'varnames') <- RecoDTVar.s
-	attr(dsAns[[RecoDTVar.s]], 'units') <- attr(Var.V.n, 'units')
+	attr(dsAns[[RecoDTVar.s]], 'units') <- attr(NEEFiltered, 'units')
 	dsAns[[GPPDTVar.s]] <- dsAnsFluxes$GPP
 	attr(dsAns[[GPPDTVar.s]], 'varnames') <- GPPDTVar.s
-	attr(dsAns[[GPPDTVar.s]], 'units') <- attr(Var.V.n, 'units')
+	attr(dsAns[[GPPDTVar.s]], 'units') <- attr(NEEFiltered, 'units')
 	if( controlGLPart$isSdPredComputed ){
 		dsAns[[RecoDTSdVar.s]] <- dsAnsFluxes$sdReco
 		attr(dsAns[[RecoDTSdVar.s]], 'varnames') <- RecoDTSdVar.s
-		attr(dsAns[[RecoDTSdVar.s]], 'units') <- attr(Var.V.n, 'units')
+		attr(dsAns[[RecoDTSdVar.s]], 'units') <- attr(NEEFiltered, 'units')
 		dsAns[[GPPDTSdVar.s]] <- dsAnsFluxes$sdGPP
 		attr(dsAns[[GPPDTSdVar.s]], 'varnames') <- GPPDTSdVar.s
-		attr(dsAns[[GPPDTSdVar.s]], 'units') <- attr(Var.V.n, 'units')
+		attr(dsAns[[GPPDTSdVar.s]], 'units') <- attr(NEEFiltered, 'units')
 	}
 	#sTEMP$GPP_DT_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
 	#! New code: MDS gap filling information are not copied from NEE_fmet and NEE_fwin to GPP_fmet and GPP_fwin
@@ -193,7 +193,8 @@ partGLControl <- function(
 		## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
 		## sensitivity on each windows instead of a vector of E0 that is smoothed over time
-		,NRHRfunction=FALSE #<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
+		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
+		,isNeglectVPDEffect=FALSE 		##<< set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.
 ## Definition of the LRC Model
 ){
 	##author<< TW
@@ -216,6 +217,7 @@ partGLControl <- function(
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
+			,isNeglectVPDEffect=isNeglectVPDEffect
 			#,NRHRfunction=NRHRfunction
 	)
 	#display warning message for the following variables that we advise not to be changed
@@ -300,7 +302,9 @@ partGLFitLRCOneWindow=function(
 	#requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
 	#iMissing <- which( is.na(match( requiredCols, names(ds) )))
 	#if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$VPD) & !is.na(ds$Rg)
+	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$Rg)
+	if( !isTRUE(controlGLPart$isNeglectVPDEffect) )
+		isValidDayRec <- isValidDayRec & !is.na(ds$VPD) 
 	dsDay <- ds[isValidDayRec,]
 	##details<<
 	## Each window estimate is associated with a time or equivalently with a record.
@@ -360,6 +364,7 @@ partGLFitLRCOneWindow=function(
 		theta0, iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart
 		, lrcFitter		##<< Light Response Curve R5 instance
 		,iPosE0=5L	##<< position (integer scalar) of temperature sensitivity in parameter vector
+		#should be dealt with iOpt ,isNeglectVPD=FALSE	##<< set to TRUE to neglect VPD effect
 ){
 	##value<<
 	## matrix with each row a parameter estimate on a different bootstrap sample
@@ -375,7 +380,8 @@ partGLFitLRCOneWindow=function(
 		idx <- sample(nrow(dsDay), replace=TRUE)
 		dsDayB <- dsDay[idx,]
 		theta[iPosE0] <- E0[iBoot]
-		resOptBoot <- lrcFitter$optimLRCOnAdjustedPrior(theta, iOpt=iOpt, dsDay=dsDayB, parameterPrior=parameterPrior, ctrl=controlGLPart)
+		resOptBoot <- lrcFitter$optimLRCOnAdjustedPrior(theta, iOpt=iOpt, dsDay=dsDayB
+			, parameterPrior=parameterPrior, ctrl=controlGLPart)
 		if( resOptBoot$convergence == 0L ){	
 			#TODO: also remove the very bad cases? 
 			ans[iBoot,]<-resOptBoot$theta

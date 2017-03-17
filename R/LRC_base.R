@@ -43,7 +43,8 @@ LightResponseCurveFitter_fitLRC <- function(
 	#
 	##seealso<< \code{\link{LightResponseCurveFitter_optimLRCBounds}}
 	resOpt3 <- apply( thetaInitials, 1, function(theta0){
-				resOpt <- .self$optimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart, lastGoodParameters=lastGoodParameters )
+				resOpt <- .self$optimLRCBounds(theta0, parameterPrior, dsDay=dsDay, ctrl=controlGLPart
+					, lastGoodParameters=lastGoodParameters )
 			})
 	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
 	resOpt3Valid <- resOpt3[iValid]
@@ -77,7 +78,9 @@ LightResponseCurveFitter_fitLRC <- function(
 			covParms <- structure( diag(0,nrow=length(resOpt$theta)), dimnames=list(parNames,parNames))
 			covParms[5L,5L] <- sdE0^2
 			covParms[resOpt$iOpt,resOpt$iOpt] <- covParmsLRC  
-			if( any(diag(covParms) < 0)) thetaOpt[] <- NA	# no real if covariance negative
+			if( any(diag(covParms) < 0)){
+				return( getNAResult(1005L) )
+			} 
 		} else {
 			##details<< 
 			## If \code{controlGLPart.l$nBootUncertainty > 0L} then the covariance matrix of the 
@@ -116,6 +119,7 @@ LightResponseCurveFitter_fitLRC <- function(
 				##<< ,1002: fitted parameters were outside reasonable bounds
 				##<< ,1003: too few valid records in window
 				##<< ,1004: near zero covariance in bootstrap indicating bad fit
+				##<< ,1005: covariance from curvature of fit yieled negative variances indicating bad fit
 				##<< ,1010: no temperature-respiration relationship found
 				##<< ,1011: too few valid records in window (from different location: partGLFitLRCOneWindow)
 				)
@@ -185,19 +189,21 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		,parameterPrior	##<< prior estimate of model parameters
 		, ...			##<< further parameters to \code{.optimLRC}, such as \code{dsDay}
 		,lastGoodParameters ##<< parameters vector of last successful fit
-		, ctrl					##<< list of further controls
+		, ctrl					##<< list of further controls, such as \code{isNeglectVPDEffect=TRUE}
 ){
 	##author<< TW, MM
 	##seealso<< \code{\link{LightResponseCurveFitter_fitLRC}}
-	if( !is.finite(lastGoodParameters[3L]) ) lastGoodParameters[3L] <- 0.22	# twutz 161014: default alpha 	
-	isUsingFixedVPD <- FALSE
+	if( !is.finite(lastGoodParameters[3L]) ) lastGoodParameters[3L] <- 0.22	# twutz 161014: default alpha
+	isNeglectVPDEffect <- isTRUE(ctrl$isNeglectVPDEffect)
+	isUsingFixedVPD <- isNeglectVPDEffect
 	isUsingFixedAlpha <- FALSE
 	getIOpt <- .self$getOptimizedParameterPositions
-	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
+	if( isNeglectVPDEffect ) theta0Adj[1] <- 0
+	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
 	##details<<
 	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010), refit with some parameters fixed 
 	## to values from fit of previous window.
-	theta0Adj <- theta0	# intial parameter estimate with some parameters adjusted to bounds
 	#dsDay <- list(ctrl, ...)$dsDay
 #	# #details<< Sometimes the VPD-effect parameter is fitted to match the noise.
 #	# # Hence, only fit with the VPD-parameter if predictions at low PAR are not much effected.
@@ -397,7 +403,9 @@ LightResponseCurveFitter_optimLRC <- function(
 			,sdParameterPrior = sdStrongPrior
 			, ...
 			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
-			,method="BFGS", hessian=isUsingHessian)
+			,method="BFGS"
+			#, hessian=isUsingHessian	# only need to compute Hessian on non-modified prior
+		)
 	
 	thetaOrig[iOpt] <- resOptimStrongPrior$par	
 	#
@@ -431,13 +439,11 @@ LightResponseCurveFitter_computeCost <- function(
 		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
 		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
 		,sdParameterPrior	##<< standard deviation of parameterPrior
-		,...				##<< other arguments to \code{\link{LightResponseCurveFitter_predictLRC}}
-		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,...				##<< other arguments to \code{\link{LightResponseCurveFitter_predictLRC}}, such as VPD0, fixVPD
 ) {
 	theta[iOpt] <- thetaOpt
 	#print(theta)
-	resPred <- .self$predictLRC(theta, ..., VPD0=VPD0, fixVPD=fixVPD)
+	resPred <- .self$predictLRC(theta, ...)
 	NEP_mod <- resPred$NEP
 	#if(is.na(mean(NEP_mod))==TRUE) {
 	#  recover()
@@ -457,7 +463,7 @@ LightResponseCurveFitter_predictLRC <- function(
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow theta:fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ){
 	##details<<
@@ -480,10 +486,12 @@ LightResponseCurveFitter_predictLRC <- function(
 		RRef<-theta[4]
 		E0<-theta[5]
 	}
-	Amax <- if( isTRUE(fixVPD) ) beta else {
+	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
+	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	Amax <- ifelse( fixVPD, beta, 
 				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-			}
+			)
 	Reco<-RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha)
 	NEP <- GPP - Reco
@@ -526,7 +534,7 @@ LightResponseCurveFitter_computeLRCGradient <- function(
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow(theta): fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
 	if( is.matrix(theta) ){
@@ -542,17 +550,19 @@ LightResponseCurveFitter_computeLRCGradient <- function(
 		RRef<-theta[4]
 		E0<-theta[5]
 	}
-	Amax <- if( isTRUE(fixVPD) ) beta else {
-				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-			}
+	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
+	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	Amax <- ifelse( fixVPD, beta, 
+			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+	)
 	#ex <- expression( beta*exp(-k*(VPD-VPD0)) ); deriv(ex,c("beta","k"))
-	dAmax_dkVPD <- if( isTRUE(fixVPD) ) 0 else {
+	dAmax_dkVPD <- ifelse( fixVPD, 0,
 				ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-k*(VPD-VPD0)), 0)
-			} 
-	dAmax_dbeta0 <- if( isTRUE(fixVPD) ) 0 else {
+		)
+	dAmax_dbeta0 <- ifelse( fixVPD, 0,
 				ifelse(VPD > VPD0, exp(-k*(VPD-VPD0)), 1)
-			} 
+		)
 	#Reco<-RRef*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
 	#ex <- expression( RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("RRef","E0"))
 	.expr7 <- 1/(273.15 + TRef - 227.13) - 1/(Temp + 273.15 - 227.13)

@@ -62,7 +62,8 @@ NonrectangularLRCFitter_predictLRC <- function(
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow theta:fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
+		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
 	# extracting and calling precit with conf-parameter
 	if( is.matrix(theta) ){
@@ -81,11 +82,13 @@ NonrectangularLRCFitter_predictLRC <- function(
 		logitconv<-theta[6]
 	}
 	conv <- invlogit(logitconv)
-	Amax <- if( isTRUE(fixVPD) ) beta else {
-				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-			}
-	Reco<-RRef*exp(E0*(1/((273.15+15)-227.13)-1/(Temp+273.15-227.13)))
+	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
+	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	Amax <- ifelse( fixVPD, beta, 
+			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+	)
+	Reco<-RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha, conv=conv)
 	NEP <- GPP - Reco
 	## a data.frame of length of Rg of computed  
@@ -125,7 +128,7 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow(theta): fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
 	##details<< differs from base by extracting conv parameter from theta 
@@ -146,17 +149,19 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		logitconv<-theta[6]
 	}
 	if( !is.finite(logitconv[1]) ) stop("need to provide finite logitconv in theta")
-	Amax <- if( isTRUE(fixVPD) ) beta else {
-				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-			}
+	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
+	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	Amax <- ifelse( fixVPD, beta, 
+			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+	)
 	#ex <- expression( beta*exp(-k*(VPD-VPD0)) ); deriv(ex,c("beta","k"))
-	dAmax_dkVPD <- if( isTRUE(fixVPD) ) 0 else {
-				ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-k*(VPD-VPD0)), 0)
-			} 
-	dAmax_dbeta0 <- if( isTRUE(fixVPD) ) 0 else {
-				ifelse(VPD > VPD0, exp(-k*(VPD-VPD0)), 1)
-			} 
+	dAmax_dkVPD <- ifelse( fixVPD, 0,
+			ifelse(VPD > VPD0, beta*-(VPD-VPD0)*exp(-k*(VPD-VPD0)), 0)
+	)
+	dAmax_dbeta0 <- ifelse( fixVPD, 0,
+			ifelse(VPD > VPD0, exp(-k*(VPD-VPD0)), 1)
+	)
 	#Reco<-RRef*exp(E0*(1/((273.15+10)-227.13)-1/(Temp+273.15-227.13)))
 	#ex <- expression( RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13))) ); deriv(ex,c("RRef","E0"))
 	# to prevent numeric instabilities, use do not let temperature go below 20degC
