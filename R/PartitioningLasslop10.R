@@ -114,6 +114,8 @@ partitionNEEGL=function(
 			, controlGLPart=controlGLPart
 			, lrcFitter=lrcFitter
 	)
+	# if no windows was fitted, return error. Else error on missing columns (no parameter columns returned)
+	if( sum(resParms$summary$convergence==0) == 0 ) stop("could not fit a single window in dayTime partitioning. Check the data.")
 	# append parameter fits to the central record of day window
 	#iGood <- which(resLRC$summary$parms_out_range == 0L)
 	# resLRC provides parameters only for a subset of rows. For each row in the original data.frame
@@ -298,7 +300,7 @@ partGLFitLRCOneWindow=function(
 	#requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
 	#iMissing <- which( is.na(match( requiredCols, names(ds) )))
 	#if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$VPD) & !is.na(ds$Rg) 
+	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$VPD) & !is.na(ds$Rg)
 	dsDay <- ds[isValidDayRec,]
 	##details<<
 	## Each window estimate is associated with a time or equivalently with a record.
@@ -343,7 +345,7 @@ partGLFitLRCOneWindow=function(
 			nValidRec=nrow(dsDay)
 			,iMeanRec=iMeanRecInDayWindow
 			,convergence=resOpt$convergence
-			,parms_out_range=as.integer(!identical(resOpt$iOpt,1:5))
+			,parms_out_range=as.integer( !all(1:5 %in% resOpt$iOpt) )
 			)
 			,as.data.frame(t(resOpt$thetaOpt))
 			,as.data.frame(t(structure(sdTheta,names=paste0(names(sdTheta),"_sd"))))
