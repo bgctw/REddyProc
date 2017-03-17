@@ -82,8 +82,9 @@ NonrectangularLRCFitter_predictLRC <- function(
 		logitconv<-theta[6]
 	}
 	conv <- invlogit(logitconv)
-	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
-	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	if( length(fixVPD) != length(VPD) ) 
+		if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) ) else
+			stop("Length of vector argument fixVPD must correspond to rows in theta.")
 	Amax <- ifelse( fixVPD, beta, 
 			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
@@ -149,8 +150,9 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		logitconv<-theta[6]
 	}
 	if( !is.finite(logitconv[1]) ) stop("need to provide finite logitconv in theta")
-	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
-	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	if( length(fixVPD) != length(VPD) ) 
+		if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) ) else
+			stop("Length of vector argument fixVPD must correspond to rows in theta.")
 	Amax <- ifelse( fixVPD, beta, 
 			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)

@@ -486,8 +486,9 @@ LightResponseCurveFitter_predictLRC <- function(
 		RRef<-theta[4]
 		E0<-theta[5]
 	}
-	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
-	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	if( length(fixVPD) != length(VPD) ) 
+		if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) ) else
+			stop("Length of vector argument fixVPD must correspond to rows in theta.")
 	Amax <- ifelse( fixVPD, beta, 
 				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
@@ -550,8 +551,9 @@ LightResponseCurveFitter_computeLRCGradient <- function(
 		RRef<-theta[4]
 		E0<-theta[5]
 	}
-	if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) )
-	if( length(fixVPD) != length(VPD) ) stop("Length of vector argument fixVPD must correspond to rows in theta.")
+	if( length(fixVPD) != length(VPD) ) 
+		if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) ) else
+			stop("Length of vector argument fixVPD must correspond to rows in theta.")
 	Amax <- ifelse( fixVPD, beta, 
 			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
