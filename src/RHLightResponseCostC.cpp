@@ -18,7 +18,12 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	if( !VPD0.size() || !fixVPD.size() )
 		throw std::range_error("VPD0 and fixVPD must have one entry.");
 	double _VPD0 = VPD0[0];
-	bool _fixVPD = fixVPD[0];
+	if( fixVPD.size() != VPD.size() ){
+		if( 1 == fixVPD.size() ){
+			bool _fixVPD = fixVPD[0];
+			fixVPD = LogicalVector( VPD.size(), _fixVPD );
+		}else throw std::range_error("fixVPD must be of length 1 or length of VPD.");
+	}
 	int _nRec=flux.size();
 	//
 	double _Amax, _Reco, _GPP;
@@ -37,7 +42,7 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 		throw std::range_error("flux, sdFlux, Rg, Temp, VPD must be of the same length.");
 	for( int i=0; i < _nRec; i++){
 		_Amax = _beta0;
-		if( !_fixVPD && (VPD[i] > _VPD0)){
+		if( !fixVPD[i] && (VPD[i] > _VPD0)){
 			_Amax = _beta0 * exp( -_kVPD*(VPD[i]-_VPD0));
 		}
 		//_Reco = _Rref*exp(_E0*(1/((273.15+10)-227.13)-1/(Temp[i]+273.15-227.13)));

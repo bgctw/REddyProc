@@ -536,91 +536,99 @@ dsNEE$isNight <- (dsNEE$Rg_f <= 4 & dsNEE$PotRad_NEW == 0)
 dsNEE$isDay=(dsNEE$Rg_f > 4 & dsNEE$PotRad_NEW != 0)
 		
 # regression result from dput in 
-resEx <- structure(list(resOptList = list(structure(list(thetaOpt = structure(c(0.0585975496401384, 
-														26.7816169280692, 0.126779203969054, 3.69916470743896, 89.692119472524
+resLRCEx1 <- structure(list(resOptList = list(structure(list(thetaOpt = structure(c(0.0613113489893077, 
+														25.7587154627362, 0.104659948709649, 2.72875516411363, 62.633343296311
 												), .Names = c("k", "beta", "alpha", "RRef", "E0")), iOpt = 1:5, 
-										thetaInitialGuess = structure(c(0, 25.775475, 0.1, 4.53116505559727, 
-														89.692119472524), .Names = c("k", "beta", "alpha", "RRef", 
-														"E0")), covParms = structure(c(0.000170414292969798, 0.00481720170410877, 
-														-7.5698663977315e-05, -0.00472239613592078, 0, 0.00481720170410876, 
-														2.37701790206754, 0.003884109052756, 0.778455488410108, 0, 
-														-7.56986639773151e-05, 0.00388410905275599, 0.00040493650902463, 
-														0.0159222622015, 0, -0.00472239613592079, 0.778455488410108, 
-														0.0159222622015, 0.942287165012841, 0, 0, 0, 0, 0, 75.353004774345
-												), .Dim = c(5L, 5L), .Dimnames = list(c("k", "beta", "alpha", 
-																"RRef", "E0"), c("k", "beta", "alpha", "RRef", "E0")))), .Names = c("thetaOpt", 
-										"iOpt", "thetaInitialGuess", "covParms")), structure(list(thetaOpt = structure(c(0.0724887625052699, 
-														27.1620534843832, 0.107294640164074, 4.03773625155765, 89.6921194725239
+										thetaInitialGuess = structure(c(0.05, 24.3542, 0.1, 5.17329116845493, 
+														62.633343296311), .Names = c("k", "beta", "alpha", "RRef", 
+														"E0")), covParms = structure(c(0.000251214210298421, 0.00755513332781565, 
+														-6.39529087362892e-05, -0.00548439359764972, 0, 0.00755513332781565, 
+														3.34696052492104, 0.0071184302250457, 1.12504303088961, 0, 
+														-6.39529087362891e-05, 0.00711843022504573, 0.000407990327150761, 
+														0.0195857742581252, 0, -0.00548439359764972, 1.12504303088961, 
+														0.0195857742581252, 1.32002384662705, 0, 0, 0, 0, 0, 18.0715858825324
+												), .Dim = c(5L, 5L), .Dimnames = list(structure(c("k", "beta", 
+																		"alpha", "RRef", "E0"), .Names = c("k", "beta", "alpha", 
+																		"RRef", "E0")), structure(c("k", "beta", "alpha", "RRef", 
+																		"E0"), .Names = c("k", "beta", "alpha", "RRef", "E0")))), 
+										convergence = 0L), .Names = c("thetaOpt", "iOpt", "thetaInitialGuess", 
+										"covParms", "convergence")), structure(list(thetaOpt = structure(c(0.0739854779933397, 
+														27.0015098493852, 0.102615547999444, 4.2495284400208, 62.633343296311
 												), .Names = c("k", "beta", "alpha", "RRef", "E0")), iOpt = 1:5, 
-										thetaInitialGuess = structure(c(0, 25.2232867857143, 0.1, 
-														4.71785948630008, 89.6921194725239), .Names = c("k", "beta", 
-														"alpha", "RRef", "E0")), covParms = structure(c(9.03902099229707e-05, 
-														0.00195150360028685, -0.000106516367933976, -0.00580078976018619, 
-														0, 0.00195150360028684, 2.20821479092441, -0.00615414071381134, 
-														0.296615150487763, 0, -0.000106516367933976, -0.00615414071381135, 
-														0.000265468189561034, 0.00927370440338986, 0, -0.00580078976018619, 
-														0.296615150487762, 0.00927370440338987, 0.579225785866747, 
-														0, 0, 0, 0, 0, 64.6218389522201), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta", "alpha", "RRef", "E0"), c("k", "beta", 
-																"alpha", "RRef", "E0")))), .Names = c("thetaOpt", "iOpt", 
-										"thetaInitialGuess", "covParms")), structure(list(thetaOpt = structure(c(0.0582985662668373, 
-														24.5382174329144, 0.144700372967328, 5.1232237722329, 89.6921194725239
+										thetaInitialGuess = structure(c(0.05, 24.8403, 0.1, 5.14770049230269, 
+														62.633343296311), .Names = c("k", "beta", "alpha", "RRef", 
+														"E0")), covParms = structure(c(9.56822303670418e-05, 0.00169235277992624, 
+														-0.000109330751465059, -0.00657241309935668, 0, 0.00169235277992624, 
+														2.35141421704582, -0.0046397809365896, 0.380790763055421, 
+														0, -0.000109330751465059, -0.00463978093658962, 0.000261587456149576, 
+														0.0103671470956277, 0, -0.00657241309935668, 0.380790763055421, 
+														0.0103671470956277, 0.700868622344887, 0, 0, 0, 0, 0, 17.8515881000995
+												), .Dim = c(5L, 5L), .Dimnames = list(structure(c("k", "beta", 
+																		"alpha", "RRef", "E0"), .Names = c("k", "beta", "alpha", 
+																		"RRef", "E0")), structure(c("k", "beta", "alpha", "RRef", 
+																		"E0"), .Names = c("k", "beta", "alpha", "RRef", "E0")))), 
+										convergence = 0L), .Names = c("thetaOpt", "iOpt", "thetaInitialGuess", 
+										"covParms", "convergence")), structure(list(thetaOpt = structure(c(0.0725834713247735, 
+														24.8899412472737, 0.120577057433197, 4.38170766338622, 62.633343296311
 												), .Names = c("k", "beta", "alpha", "RRef", "E0")), iOpt = 1:5, 
-										thetaInitialGuess = structure(c(0, 23.7206553846154, 0.1, 
-														4.79470861535851, 89.6921194725239), .Names = c("k", "beta", 
-														"alpha", "RRef", "E0")), covParms = structure(c(7.11125627366481e-05, 
-														0.00214015288198085, -0.000172367628588732, -0.00547822024354459, 
-														0, 0.00214015288198084, 1.63827854646076, -0.00395107011222892, 
-														0.253517488349518, 0, -0.000172367628588732, -0.00395107011222894, 
-														0.000657122540279478, 0.0176703508653226, 0, -0.00547822024354459, 
-														0.253517488349518, 0.0176703508653226, 0.64209559441024, 
-														0, 0, 0, 0, 0, 64.6218378830118), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta", "alpha", "RRef", "E0"), c("k", "beta", 
-																"alpha", "RRef", "E0")))), .Names = c("thetaOpt", "iOpt", 
-										"thetaInitialGuess", "covParms")), structure(list(thetaOpt = structure(c(0.0360222715933294, 
-														23.8136612381531, 0.142940109615163, 5.00668904789565, 89.6921194725239
+										thetaInitialGuess = structure(c(0.05, 24.1194, 0.1, 5.14770049230269, 
+														62.633343296311), .Names = c("k", "beta", "alpha", "RRef", 
+														"E0")), covParms = structure(c(0.0001714051950895, 0.0082489600234631, 
+														-0.000282987245397411, -0.0112285795213827, 0, 0.0082489600234631, 
+														3.71037250623053, -0.0136950551905816, 0.158692621555923, 
+														0, -0.000282987245397411, -0.0136950551905816, 0.00072064595630304, 
+														0.0230683064884274, 0, -0.0112285795213827, 0.158692621555923, 
+														0.0230683064884274, 1.03142138604714, 0, 0, 0, 0, 0, 17.8515851526051
+												), .Dim = c(5L, 5L), .Dimnames = list(structure(c("k", "beta", 
+																		"alpha", "RRef", "E0"), .Names = c("k", "beta", "alpha", 
+																		"RRef", "E0")), structure(c("k", "beta", "alpha", "RRef", 
+																		"E0"), .Names = c("k", "beta", "alpha", "RRef", "E0")))), 
+										convergence = 0L), .Names = c("thetaOpt", "iOpt", "thetaInitialGuess", 
+										"covParms", "convergence")), structure(list(thetaOpt = structure(c(0.0463981852046929, 
+														22.6437682790709, 0.117391583263166, 3.33560182809652, 62.633343296311
 												), .Names = c("k", "beta", "alpha", "RRef", "E0")), iOpt = 1:5, 
-										thetaInitialGuess = structure(c(0, 23.0107602739726, 0.1, 
-														4.79311957179834, 89.6921194725239), .Names = c("k", "beta", 
-														"alpha", "RRef", "E0")), covParms = structure(c(0.000109032521173343, 
-														0.00766675073336738, -0.000139673413162111, -0.00400750987706598, 
-														0, 0.00766675073336739, 2.86329103973138, 0.00527806639208363, 
-														0.827303305500204, 0, -0.000139673413162111, 0.00527806639208364, 
-														0.000865288005976811, 0.0262119110532487, 0, -0.00400750987706598, 
-														0.827303305500205, 0.0262119110532487, 1.08026005840638, 
-														0, 0, 0, 0, 0, 95.2210521740231), .Dim = c(5L, 5L), .Dimnames = list(
-														c("k", "beta", "alpha", "RRef", "E0"), c("k", "beta", 
-																"alpha", "RRef", "E0")))), .Names = c("thetaOpt", "iOpt", 
-										"thetaInitialGuess", "covParms"))), summary = structure(list(
-								iWindow = 1:4, dayStart = c(1L, 3L, 5L, 7L), dayEnd = c(4, 
-										6, 8, 9), iRecStart = c(1, 97, 193, 289), iRecEnd = c(192, 
-										288, 384, 428), iCentralRec = c(97, 193, 289, 385), nValidRec = c(118L, 
-										118L, 120L, 90L), iMeanRec = c(95, 193, 288, 360), parms_out_range = c(0L, 
-										0L, 0L, 0L), k = c(0.0585975496401384, 0.0724887625052699, 
-										0.0582985662668373, 0.0360222715933294), beta = c(26.7816169280692, 
-										27.1620534843832, 24.5382174329144, 23.8136612381531), alpha = c(0.126779203969054, 
-										0.107294640164074, 0.144700372967328, 0.142940109615163), 
-								RRef = c(3.69916470743896, 4.03773625155765, 5.1232237722329, 
-										5.00668904789565), E0 = c(89.692119472524, 89.6921194725239, 
-										89.6921194725239, 89.6921194725239), k_sd = c(0.0130542825528559, 
-										0.00950737660571888, 0.0084328264974828, 0.0104418638744883
-								), beta_sd = c(1.54175805561947, 1.48600632263945, 1.27995255633197, 
-										1.69212618906847), alpha_sd = c(0.0201230342897047, 0.016293194578137, 
-										0.0256344015003175, 0.0294157781807113), RRef_sd = c(0.970714770163121, 
-										0.761068844367411, 0.801308676110673, 1.03935559766924), 
-								E0_sd = c(8.68061085260392, 8.038770985183, 8.03877091867978, 
-										9.75812749322446), E0_night_sd = structure(c(8.68061085260392, 
-												8.038770985183, 8.03877091867978, 9.75812749322446), .Dim = c(4L, 
-												1L), .Dimnames = list(NULL, NULL)), RRef_night = c(4.53116505559727, 
-										4.71785948630008, 4.79470861535851, 4.79311957179834)), .Names = c("iWindow", 
+										thetaInitialGuess = structure(c(0.05, 21.665, 0.1, 5.21501814931109, 
+														62.633343296311), .Names = c("k", "beta", "alpha", "RRef", 
+														"E0")), covParms = structure(c(0.000206188988163437, 0.00985635560168572, 
+														-0.000229244167932125, -0.0103224271440462, 0, 0.00985635560168573, 
+														6.26707037119168, 0.0237956357541255, 2.42497435977993, 0, 
+														-0.000229244167932125, 0.0237956357541255, 0.00112679531701444, 
+														0.0475833935365426, 0, -0.0103224271440462, 2.42497435977993, 
+														0.0475833935365426, 2.66122299323298, 0, 0, 0, 0, 0, 19.9446007071226
+												), .Dim = c(5L, 5L), .Dimnames = list(structure(c("k", "beta", 
+																		"alpha", "RRef", "E0"), .Names = c("k", "beta", "alpha", 
+																		"RRef", "E0")), structure(c("k", "beta", "alpha", "RRef", 
+																		"E0"), .Names = c("k", "beta", "alpha", "RRef", "E0")))), 
+										convergence = 0L), .Names = c("thetaOpt", "iOpt", "thetaInitialGuess", 
+										"covParms", "convergence"))), summary = structure(list(iWindow = 1:4, 
+								dayStart = c(1L, 3L, 5L, 7L), dayEnd = c(4L, 6L, 8L, 9L), 
+								iRecStart = c(1L, 97L, 193L, 289L), iRecEnd = c(192L, 288L, 
+										384L, 428L), iCentralRec = c(97L, 193L, 289L, 385L), nValidRec = c(98L, 
+										98L, 75L, 56L), iMeanRec = c(97L, 194L, 283L, 385L), convergence = c(0L, 
+										0L, 0L, 0L), parms_out_range = c(0L, 0L, 0L, 0L), k = c(0.0613113489893077, 
+										0.0739854779933397, 0.0725834713247735, 0.0463981852046929
+								), beta = c(25.7587154627362, 27.0015098493852, 24.8899412472737, 
+										22.6437682790709), alpha = c(0.104659948709649, 0.102615547999444, 
+										0.120577057433197, 0.117391583263166), RRef = c(2.72875516411363, 
+										4.2495284400208, 4.38170766338622, 3.33560182809652), E0 = c(62.633343296311, 
+										62.633343296311, 62.633343296311, 62.633343296311), k_sd = c(0.015849738493061, 
+										0.00978172941595922, 0.013092180685031, 0.0143592822997334
+								), beta_sd = c(1.82947001203109, 1.53343216903971, 1.92623272379807, 
+										2.50341174623586), alpha_sd = c(0.0201987704366073, 0.0161736655137163, 
+										0.0268448497165292, 0.03356777199956), RRef_sd = c(1.14892290717308, 
+										0.837178966735839, 1.01558918173006, 1.63132553257557), E0_sd = c(4.25106879296635, 
+										4.22511397480583, 4.22511362599932, 4.46593783063789), isValid = c(TRUE, 
+										TRUE, TRUE, TRUE), E0_night_sd = structure(c(4.25106879296635, 
+												4.22511397480583, 4.22511362599932, 4.46593783063789), .Dim = c(4L, 
+												1L), .Dimnames = list(NULL, NULL)), RRef_night = c(5.17329116845493, 
+										5.14770049230269, 5.14770049230269, 5.21501814931109)), .Names = c("iWindow", 
 								"dayStart", "dayEnd", "iRecStart", "iRecEnd", "iCentralRec", 
-								"nValidRec", "iMeanRec", "parms_out_range", "k", "beta", "alpha", 
-								"RRef", "E0", "k_sd", "beta_sd", "alpha_sd", "RRef_sd", "E0_sd", 
-								"E0_night_sd", "RRef_night"), row.names = c(NA, -4L), class = "data.frame"), 
-				prevRes = structure(list(lastGoodParameters = structure(c(0.0360222715933294, 
-												23.8136612381531, 0.142940109615163, 5.00668904789565, 89.6921194725239
-										), .Names = c("k", "beta", "alpha", "RRef", "E0"))), .Names = "lastGoodParameters")), .Names = c("resOptList", 
-				"summary", "prevRes"))
+								"nValidRec", "iMeanRec", "convergence", "parms_out_range", "k", 
+								"beta", "alpha", "RRef", "E0", "k_sd", "beta_sd", "alpha_sd", 
+								"RRef_sd", "E0_sd", "isValid", "E0_night_sd", "RRef_night"), row.names = c(NA, 
+								-4L), class = "data.frame")), .Names = c("resOptList", "summary"
+		))
+
 		
 resLRCEx1Nonrectangular <- structure(list(resOptList = list(structure(list(thetaOpt = structure(c(0.0724501762553205, 
 																25.8305793280287, 0.0682662592751091, 3.7303285840094, 89.692119472524, 
@@ -735,9 +743,6 @@ resLRCEx1Nonrectangular <- structure(list(resOptList = list(structure(list(theta
 						"summary", "prevRes"))
 		
 		
-
-# moved some tests to test_LightResponseCurveFitter.T
-
 test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
 			dss <- dss[ order(dss$Temp), ]
@@ -748,7 +753,7 @@ test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 			expect_true( abs(resE0$RRefFit - medianResp)/medianResp < 0.2 )
 			E0Win <- as.data.frame(resE0)
 			res <- partGLFitNightRespRefOneWindow( dss, data.frame(iWindow=1L), E0Win=E0Win)
-			RRef <- res[[2]]$RRef[1]
+			RRef <- res[1]
 			expect_true( RRef >= 0)
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
@@ -789,22 +794,22 @@ test_that("applyWindows",{
 						iRec <-1:nRec
 						iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 			# specifying the day for each record assuming equidistand records
 					})
-			fReportTime <- function(dss,winInfo, prevRes){
+			fReportTime <- function(dss, winInfo, prevRes){
 				nRecS <- nrow(dss)
-				list( res1=dss$iRec[1], res2=data.frame(
+				list( res2=data.frame(
 								startRec=dss$iRec[1]	
 								,endRec=dss$iRec[nRecS]
 								,startDay=dss$iDayOfRec[1]
 								,endDay=dss$iDayOfRec[nRecS]
 						)
-						,prevRes=within(prevRes, sum <- sum +1L)
+						,sumRes = prevRes$sumRes +1L
 				)
 			}
-			prevRes <- list(sum=0)
+			prevRes <- list(sumRes=0)
 			fReportTime(ds,0,prevRes)
 			resApply <- applyWindows( ds, fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
 			#resApply <- applyWindows( ds[1:41,], fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
-			res <- resApply[[2L]]
+			res <- cbind( resApply$winInfo, tmp <- do.call( rbind, lapply(resApply$resFUN, "[[", 1L)))
 			nRecRes <- nrow(res)
 			expect_equal( res$dayStart, res$startDay )	
 			expect_equal( res$dayEnd, res$endDay )	
@@ -817,34 +822,83 @@ test_that("applyWindows",{
 			# day boundary after endRec
 			expect_true( all((ds$iDayOfRec[res$startRec[-nRecRes]]+1 - ds$iDayOfRec[res$startRec[-nRecRes]])==1L))
 			# prevRes accumulated
-			expect_equal( resApply[[3]]$sum, nrow(res) )
+			expect_equal( resApply$resFUN[[nRecRes]]$sumRes, nrow(res) )
+		})
+
+test_that("simplifyApplyWindows",{
+			nRec <- nrow(dsNEE)
+			nRecInDay <- 10L
+			ds <- within(dsNEE, {
+						iRec <-1:nRec
+						iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 			# specifying the day for each record assuming equidistand records
+					})
+			fReportTimeSimple <- function(dss, winInfo, prevRes=list()){
+				nRecS <- nrow(dss)
+				c(
+								startRec=dss$iRec[1]	
+								,endRec=dss$iRec[nRecS]
+								,startDay=dss$iDayOfRec[1]
+								,endDay=dss$iDayOfRec[nRecS]
+						)
+			}
+			fReportTimeSimple(ds,0)
+			resApply <- applyWindows( ds, fReportTimeSimple, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			res <- simplifyApplyWindows(resApply)
+			#resApply <- applyWindows( ds[1:41,], fReportTime, prevRes, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			nRecRes <- nrow(res)
+			expect_equal( res$dayStart, res$startDay )	
+			expect_equal( res$dayEnd, res$endDay )	
+			expect_equal( res$iRecStart, res$startRec )	
+			expect_equal( res$iRecEnd, res$endRec )
+			#
+			# repeat with function returning a single-row data.frame
+			fReportTimeSimpleDs <- function(dss, winInfo, prevRes=list()){
+				nRecS <- nrow(dss)
+				data.frame(
+						startRec=dss$iRec[1]	
+						,endRec=dss$iRec[nRecS]
+						,startDay=dss$iDayOfRec[1]
+						,endDay=dss$iDayOfRec[nRecS]
+				)
+			}
+			fReportTimeSimpleDs(ds,0)
+			resApply <- applyWindows( ds, fReportTimeSimpleDs, winSizeInDays=6L, nRecInDay=nRecInDay )	# larger than reference window of 4 days
+			resDs <- simplifyApplyWindows(resApply)
+			expect_equal(res, resDs )
 		})
 
 test_that("estimating temperature sensitivity windows outputs are in accepted range",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:12, ]
 			dss$NEE <- dss$NEE_f
 			dss <- dss[ order(dss$Temp), ]
-			res <- applyWindows(dss, partGLFitNightTempSensOneWindow, prevRes=list(prevE0=NA)
+			res <- simplifyApplyWindows( applyWindows(dss, partGLFitNightTempSensOneWindow, prevRes=data.frame(E0=NA)
 					, winSizeInDays=12L
 			#,controlGLPart=controlGLPart	
-			)
+			))
 			#res <- partGLEstimateTempSensInBounds(dss$NEE_f, dss$Temp+273.15)
-			expect_true( res$summary$E0 >= 50 && res$summary$E0 <= 400 )
-			expect_true( res$summary$RRefFit > 0 )
+			expect_true( res$E0 >= 50 && res$E0 <= 400 )
+			expect_true( res$RRefFit > 0 )
 		})
 
 
 test_that("partGLFitLRCWindows outputs are in accepted range",{
 			ds <- with(dsNEE, data.frame(NEE=NEE_f, Temp=Temp, VPD=VPD_f, Rg=ifelse( Rg_f >= 0, Rg_f, 0 )
 			, sdNEE=NEE_fsd, isDay=isDay, isNight=isNight))
+			ds$NEE <- fSetQF(dsNEE, "NEE_f", "NEE_fqc", 0, 'test_partGLFitLRCWindows')
+			#
 			#yday <- as.POSIXlt(dsNEE$sDateTime)$yday
+			dsTempSens <- dsTempSens0 <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+			)
 			lrcFitter <- RectangularLRCFitter()
 			#lrcFitter <- NonrectangularLRCFitter()
-			resFits <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart=partGLControl(nBootUncertainty=10L), lrcFitter=lrcFitter)
+			resFits <- partGLFitLRCWindows(ds, nRecInDay=48L, dsTempSens=dsTempSens, controlGLPart=partGLControl(nBootUncertainty=10L), lrcFitter=lrcFitter)
 			expect_equal( nrow(resFits$summary), length(resFits$resOptList) )
+			expect_true( var(resFits$summary$k) > 0)
 			.tmp.f <- function(){
 				# in order to replicate, use nBoot=0L 
-				resParms0 <- partGLFitLRCWindows(ds, nRecInDay=48L, controlGLPart=partGLControl(nBootUncertainty=0L), lrcFitter=lrcFitter)
+				resParms0 <- partGLFitLRCWindows(ds, nRecInDay=48L, dsTempSens=dsTempSens, controlGLPart=partGLControl(nBootUncertainty=0L), lrcFitter=lrcFitter)
 				iTooMany <- which(resParms0$summary$iFirstRec >= nrow(ds)-2*48)
 				if( length(iTooMany)){
 					resParms0$summary <- resParms0$summary[-iTooMany,]
@@ -937,7 +991,7 @@ testGLInterpolateFluxes <- function( lrcFitter, resEx ){
 			expect_true( all(c("sdGPP","sdReco") %in% names(tmp) ))
 		}
 test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
-			lrcFitter=RectangularLRCFitter(); resEx <- resEx
+			lrcFitter=RectangularLRCFitter(); resEx <- resLRCEx1
 			testGLInterpolateFluxes( lrcFitter, resEx)			
 		})
 test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
@@ -949,28 +1003,34 @@ test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
 #resLRCEx1
 test_that("partitionNEEGL",{
 			dsNEE1 <- dsNEE
+			ds <- data.frame( NEE=dsNEE1$NEE_f, sdNEE=dsNEE1$NEE_fsd, Rg=dsNEE1$Rg_f, VPD=dsNEE1$VPD_f, Temp=dsNEE1$Temp, isDay=dsNEE1$isDay, isNight=dsNEE$isNight )
+			resEx <- resLRCEx1
 			#DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
 			#Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
 			#dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0 )
 			tmp <- partitionNEEGL( dsNEE1,RadVar.s='Rg_f')
+			tmp <- partitionNEEGL( dsNEE1,RadVar.s='Rg_f', controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE))
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			#tmp[ is.finite(tmp$FP_beta), ]	# note FP_dRecPar is not zero, because iCentralRec != iMeanRec
 			#
-			dsNEE2 <- dsNEE1
+			# now test with different suffix: u50
+			dsNEE2 <- dsNEE 
 			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
 			tmp <- partitionNEEGL( dsNEE2, RadVar.s='Rg_f', Suffix.s="u50", controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE) )
+			#tmp <- partitionNEEGL( dsNEE2, RadVar.s='Rg_f', Suffix.s="u50", controlGLPart=partGLControl(isAssociateParmsToMeanOfValids=FALSE) )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			expect_true( all(is.finite(tmp$GPP_DT_u50)))
 			expect_true( all(tmp$GPP_DT_u50 >= 0))
 			expect_true( all(tmp$GPP_DT_u50 < 250))
-			expect_true( all(tmp$Reco_DT_u50 < 6))
+			expect_true( all(tmp$Reco_DT_u50 < 10))
 			expect_true( all(tmp$Reco_DT_u50 > 0))
 			expect_true( all(tmp$Reco_DT_u50_SD > 0))
 			expect_true( all(tmp$GPP_DT_u50_SD >= 0))
 			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
 			# reporting good values at central records
+			# tmp[resEx$summary$iCentralRec,]
 			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resEx$summary) ) 
-			expect_true( all((tmp$FP_alpha[resEx$iCentralRec] - resEx$a)[resEx$parms_out_range==0L] < 1e-2) )
+			expect_true( all((tmp$FP_alpha[resEx$summary$iCentralRec] - resEx$a)[resEx$parms_out_range==0L] < 1e-2) )
 			#expect_true( all((is.na(tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range!=0L])) )
 			expect_true( length(is.finite(tmp$FP_RRef_Night)) > 0 )
 			.tmp.plot <- function(){
@@ -984,7 +1044,7 @@ test_that("partitionNEEGL",{
 		})
 
 
-test_that("partGLPartitionFluxes sparse data",{
+test_that("partitionNEEGL sparse data",{
 			dsNEE1 <- dsNEE
 			#set all data except one day to NA to associate the same data with several windows
 			dsNEE1$NEE_f[ (dsNEE$sDateTime >= "1998-06-03 00:00:00 GMT") & (dsNEE$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- NA
@@ -997,7 +1057,11 @@ test_that("partGLPartitionFluxes sparse data",{
 			ds$VPD <- ds$VPD_f
 			ds$Rg <- ds$Rg_f
 			#
-			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter() )
+			dsTempSens <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+			)
+			resLRC <- partGLFitLRCWindows(ds, dsTempSens=dsTempSens, lrcFitter=RectangularLRCFitter() )
 			expect_true( resLRC$summary$iMeanRec[2] == resLRC$summary$iMeanRec[3])
 			#
 			tmp <- partitionNEEGL( dsNEE1, RadVar.s="Rg_f" )
@@ -1012,7 +1076,7 @@ test_that("partGLPartitionFluxes sparse data",{
 			expect_true( all(tmp$GPP_DT_SD >= 0))
 			#TODO expect_true( all(abs(diff(tmp$Reco_DT)) < 0.6))	#smooth
 			# reporting good values at first row
-			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resLRC$summary) ) 
+			expect_true( sum( is.finite(tmp$FP_alpha) ) == sum(is.finite(resLRC$summary$alpha)) ) 
 			expect_true( all((is.na(tmp$FP_alpha[resLRC$iCentralRec] - resLRC$a)[resLRC$parms_out_range!=0L])) )
 			.tmp.plot <- function(){
 				tmp$time <- dsNEE1$sDateTime
@@ -1022,6 +1086,52 @@ test_that("partGLPartitionFluxes sparse data",{
 			}
 })
 
+test_that("partitionNEEGL isNeglectVPDEffect",{
+			dsNEE1 <- dsNEE
+			#set all data except one day to NA to associate the same data with several windows
+			dsNEE1$VPD_f[ (dsNEE$sDateTime >= "1998-06-03 00:00:00 GMT") & (dsNEE$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- NA
+			#plot( NEE_f ~ sDateTime, dsNEE1 )
+			#
+			dsNEE1$NEE_f <- fSetQF(dsNEE, "NEE_f", "NEE_fqc", 0, 'partitionNEEGL isNeglectVPDEffect')
+			ds <- dsNEE1
+			ds$NEE <- ds$NEE_f
+			ds$sdNEE <- ds$NEE_fsd
+			ds$Temp <- ds$Tair_f
+			ds$VPD <- ds$VPD_f
+			ds$Rg <- ds$Rg_f
+			#
+			dsTempSens <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+			)
+			resLRC <- partGLFitLRCWindows(ds, dsTempSens=dsTempSens, lrcFitter=RectangularLRCFitter() )
+			expect_true( resLRC$summary$iMeanRec[2] == resLRC$summary$iMeanRec[3])
+			#resLRC$summary
+			#
+			resLRC2 <- partGLFitLRCWindows(ds, dsTempSens=dsTempSens, lrcFitter=RectangularLRCFitter()
+				,controlGLPart=partGLControl(isNeglectVPDEffect=TRUE)  )
+			expect_true( all( resLRC2$nValidRec >=  90L) )	# used all records despite missing VPD
+			#resLRC2$summary
+			#
+			resLRC2C <- partGLFitLRCWindows(ds, dsTempSens=dsTempSens, lrcFitter=RectangularLRCFitterCVersion()
+					,controlGLPart=partGLControl(isNeglectVPDEffect=TRUE)  )
+			expect_true( all( resLRC2C$nValidRec >=  90L) )	# used all records despite missing VPD
+			iSd <- grep("_sd$",names(resLRC2$summary))
+			expect_equal( resLRC2$summary[,-iSd], resLRC2C$summary[,-iSd] )	# equal unless bootstrapped uncertainty	
+			#
+			tmp <- partitionNEEGL( dsNEE1, RadVar.s="Rg_f", controlGLPart=partGLControl(isNeglectVPDEffect=TRUE)  )
+			#tmp[ resLRC2$summary$iCentralRec,]			
+			expect_equal( tmp[ resLRC2$summary$iCentralRec,"FP_alpha"], resLRC2$summary$alpha )			
+			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			#
+			expect_true( all(is.finite(tmp$GPP_DT)))	# finite prediction despite missing VPD
+			expect_true( all(tmp$GPP_DT >= 0))
+			expect_true( all(tmp$GPP_DT < 250))
+			expect_true( all(tmp$Reco_DT < 10))
+			expect_true( all(tmp$Reco_DT > 0))
+			expect_true( all(tmp$Reco_DT_SD > 0))
+			expect_true( all(tmp$GPP_DT_SD >= 0))
+		})
 
 test_that("partGLPartitionFluxes missing night time data",{
 			dsNEE1 <- dsNEE
@@ -1036,7 +1146,13 @@ test_that("partGLPartitionFluxes missing night time data",{
 			ds$VPD <- ds$VPD_f
 			ds$Rg <- ds$Rg_f
 			#
-			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter(), WinSizeNight.i=4L, winExtendSizes=c() )
+			dsTempSens <- partGLFitNightTimeTRespSens( ds
+					, nRecInDay=48L
+					, controlGLPart=partGLControl()
+					, winSizeNight=4L, winExtendSizes=c()
+			)
+			expect_true( all( is.finite(dsTempSens$RRef)) )
+			resLRC <- partGLFitLRCWindows(ds, lrcFitter=RectangularLRCFitter(), dsTempSens=dsTempSens )
 			expect_true( all( is.finite(resLRC$summary$RRef_night)) )
 		})
 
@@ -1062,7 +1178,9 @@ test_that("partGLPartitionFluxes filter Meteo flag",{
 		tmpPar <- tmp[is.finite(tmp$FP_beta),]
 		expect_true( nrow(tmpPar) == 3L )	# only three estimates instead of four
 })
-		
+
+
+
 
 .profilePartGL <- function(){
 	require(profr)

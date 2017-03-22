@@ -58,9 +58,10 @@ RectangularLRCFitterCVersion_computeCost <- function(
 		,sdParameterPrior	##<< standard deviation of parameterPrior
 		,...				##<< other arguments to \code{\link{LightResponseCurveFitter_predictLRC}}
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
-		,fixVPD = FALSE   	##<< fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered
+		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow theta:fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 ) {
 	theta[iOpt] <- thetaOpt
+	k <- theta[1]	# here k and fixVPD is only a scalar
 	RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0=VPD0, fixVPD=fixVPD)
 }
 RectangularLRCFitterCVersion$methods( computeCost = RectangularLRCFitterCVersion_computeCost )
