@@ -90,7 +90,7 @@ sEddyProc$methods(
     
     if( FillAll.b==T ) {
       message('Initialized variable \'', Var.s, '\' with ', sum(is.na(lTEMP$VAR_orig)), 
-              ' real gaps for gap filling of all ', sum(is.na(lTEMP$VAR_fall)) ,' values (to estimate uncertainies).')
+              ' real gaps for gap filling of all ', sum(is.na(lTEMP$VAR_fall)) ,' values (to estimate uncertainties).')
     } else {
       message('Initialized variable \'', Var.s, '\' with ', sum(is.na(lTEMP$VAR_orig)),
               ' real gaps for gap filling.')
