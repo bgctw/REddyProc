@@ -919,18 +919,21 @@ usGetSeasonalSeasonUStarMappingFromDistributionResult <- function(
 	## TW
 	# omit aggregation model and seasonYear column
 	dsSeasons <- uStarTh[uStarTh$aggregationMode=="season", ,drop=FALSE]
+	##details<<
+	## If there are any NA values for some seasons (maybe due to many invalid bootstrap samples), 
+	## then the thresholds for those seasons are replaced by the corresponding annual estimates.
+	iInvalid <- which( apply( dsSeasons[,-(1:3),drop=FALSE], 1, function(x){ any(is.na(x)) } ))
+	if( length(iInvalid) ){
+		warning("Invalid uStar-Thresholds for seasons ",paste(dsSeasons$season[iInvalid], collapse=",")
+			,". Using annual estimates for these instead.")
+		dsYears <- uStarTh[uStarTh$aggregationMode=="year", ,drop=FALSE]
+		#iRow <- 1L
+		for( iRow in iInvalid ){
+			dsSeasons[iRow,-(1:3)] <- dsYears[dsYears$seasonYear==dsSeasons$seasonYear[iRow],-(1:3)]
+		}
+	}
 	dsSeasons$seasonYear <- NULL
 	dsSeasons$aggregationMode <- NULL
-	
-	# deprecated: already done in uStar estimation
-	##details<<
-#	## missing thresholds are replaced by corresponding estimates based on annually aggregated estimates
-#	## (\code{\link{usGetAnnualSeasonUStarMappingFromDistributionResult}})
-#	naLines <- apply(dsSeasons[,-(1),drop=FALSE],1,function(x){ all(is.na(x))} )
-#	if( length(naLines) ){
-#		dsYears <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)
-#		dsSeasons[naLines,] <- dsYears[naLines,]
-#	}
 	##value<< a data frame with first column the season, and other columns different uStar threshold estimates
 	# transform column names of "x%" to "Ux" with leading zeros
 	colnames(dsSeasons)[-(1:2)] <- (gsub(" ","0",sprintf("U%2s",gsub("%","",colnames(dsSeasons)[-(1:2)]))))
@@ -1001,10 +1004,12 @@ sEddyProc$methods(
 			resAgg <- res$uStarTh$uStar[iPosAgg] 
 			years <- res$uStarTh$year[iPosYears]
 			resYears <- structure( 
-					if( all(years == years0) ) res$uStarTh$uStar[iPosYears] else rep(NA_real_, length(years0))
+					if( all(years == years0) ) res$uStarTh$uStar[iPosYears] else 
+								rep(NA_real_, length(years0))
 					, names=as.character(years0) )
 			resSeasons <- structure( 
-					if( nrow(res$uStarTh) == nrow(res0$uStarTh) && all((seasons <- res$uStarTh$season[iPosSeasons]) == seasons0) ) res$uStarTh$uStar[iPosSeasons] else rep(NA_real_, length(seasons0))
+					if( nrow(res$uStarTh) == nrow(res0$uStarTh) && all((seasons <- res$uStarTh$season[iPosSeasons]) == seasons0) ) res$uStarTh$uStar[iPosSeasons] else 
+								rep(NA_real_, length(seasons0))
 					, names=as.character(seasons0) )
 			return(c(aggYears=resAgg, resYears, resSeasons ))
 			#return(length(res$UstarSeason$uStar))
@@ -1021,10 +1026,12 @@ sEddyProc$methods(
 		## no quantiles (i.e. NA) are reported.
 		## }}		
 		resQuantiles <-	t(apply( stat, 2, quantile, probs=probs, na.rm=TRUE ))
-		iInvalid <- colSums(is.finite(stat))/nrow(stat) < ctrlUstarEst.l$minValidBootProp 
+		iInvalid <- colSums(is.finite(stat))/nrow(stat) < ctrlUstarEst.l$minValidBootProp
+		if( length(iInvalid) ) warning("sEstUstarThresholdDistribution: many non-valid bootstrap samples, returning NA quantiles for seasons: "
+						,paste(res0$uStarTh$season[iInvalid], collapse=","))
 		resQuantiles[iInvalid,] <- NA_real_
 		resDf <- cbind(res0$uStarTh, resQuantiles)
-		message(paste("Estimated UStar distribution of:\n", paste(capture.output(resDf[resDf$aggregationMode=="single",-(1:3)]),collapse="\n")
+		message(paste("Estimated UStar distribution of:\n", paste(capture.output(resDf[resDf$aggregationMode=="year",-c(1,3)]),collapse="\n")
 						,"\nby using ",nSample,"bootstrap samples and controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
 				))
 		resDf

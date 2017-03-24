@@ -176,6 +176,14 @@ test_that("Test sMDSGapFillAfterUStar error on na-values",{
 		})
 
 
+test_that("Test usGetSeasonalSeasonUStarMappingFromDistributionResult replacing NA values",{
+			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
+			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+			uStarTh[which(uStarTh$season=="1998006"),"uStar"] <- NA
+			expect_warning(UstarThres.df <- usGetSeasonalSeasonUStarMappingFromDistributionResult(uStarTh))
+			expect_true( is.finite(UstarThres.df[which(UstarThres.df$season=="1998006"),"uStar"]) )
+		})
+
 test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitioning",{
 			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 			# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		

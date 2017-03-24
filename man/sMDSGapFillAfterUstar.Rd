@@ -11,7 +11,10 @@
   \item{FluxVar.s}{Flux variable to gap fill after ustar filtering}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}
   \item{UstarThres.df}{data.frame with first column, season names, and second column estimates of uStar Threshold.
-<< Alternatively, a single value to be used as threshold for all records}
+Alternatively, a single value can be given and will be used as threshold for all records.
+Get such a data.frame from results from \code{\link{sEstUstarThreshold}} and \code{\link{sEstUstarThresholdDistribution}} 
+by functions \code{\link{usGetAnnualSeasonUStarMappingFromDistributionResult}} 
+or \code{\link{usGetSeasonalSeasonUStarMappingFromDistributionResult}}.}
   \item{UstarSuffix.s}{Different suffixes required for different u* scenarios}
   \item{FlagEntryAfterLowTurbulence.b}{Set to TRUE for flagging the first entry after low turbulance as bad condition (by value of 2).}
   \item{isFilterDayTime}{Set to TRUE to also filter day-time values, default only filters night-time data}

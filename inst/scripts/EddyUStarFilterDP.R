@@ -1020,7 +1020,9 @@ sEddyProc$methods(
 		## no quantiles (i.e. NA) are reported.
 		## }}		
 		resQuantiles <-	t(apply( stat, 2, quantile, probs=probs, na.rm=TRUE ))
-		iInvalid <- colSums(is.finite(stat))/nrow(stat) < ctrlUstarEst.l$minValidBootProp 
+		iInvalid <- colSums(is.finite(stat))/nrow(stat) < ctrlUstarEst.l$minValidBootProp
+		if( length(iInvalid) ) warning("sEstUstarThresholdDistribution: non-finite stats for many bootstrap samples - returning NA for some quantiles")
+recover()		
 		resQuantiles[iInvalid,] <- NA_real_
 		resDf <- cbind(res0$uStarTh, resQuantiles)
 		message(paste("Estimated UStar distribution of:\n", paste(capture.output(resDf[resDf$aggregationMode=="single",-(1:3)]),collapse="\n")

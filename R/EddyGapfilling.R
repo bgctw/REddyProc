@@ -466,8 +466,12 @@ sEddyProc$methods(
     ## Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*
     FluxVar.s             ##<< Flux variable to gap fill after ustar filtering
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-	,UstarThres.df=usGetAnnualSeasonUStarMappingFromDistributionResult(sUSTAR$uStarTh)		  ##<< data.frame with first column, season names, and second column estimates of uStar Threshold.
-		##<< Alternatively, a single value to be used as threshold for all records
+	,UstarThres.df= 	  ##<< data.frame with first column, season names, and second column estimates of uStar Threshold.
+			## Alternatively, a single value can be given and will be used as threshold for all records.
+			## Get such a data.frame from results of \code{\link{sEstUstarThreshold}} and \code{\link{sEstUstarThresholdDistribution}} 
+			## by functions \code{\link{usGetAnnualSeasonUStarMappingFromDistributionResult}} 
+			## or \code{\link{usGetSeasonalSeasonUStarMappingFromDistributionResult}}.
+			usGetAnnualSeasonUStarMappingFromDistributionResult(sUSTAR$uStarTh)		  
     #,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
 		## If only one value is given, it is used for all records.
     ,UstarSuffix.s='WithUstar'   ##<< Different suffixes required for different u* scenarios
