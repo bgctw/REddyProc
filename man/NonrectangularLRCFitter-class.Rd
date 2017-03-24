@@ -41,7 +41,7 @@ showClass("NonrectangularLRCFitter")
     \item{\code{getPriorLocation(NEEDay, RRefNight, E0)}:}{ ~~ }
     \item{\code{getPriorScale(thetaPrior, medianRelFluxUncertainty, nRec, ctrl)}:}{ ~~ }
     \item{\code{getOptimizedParameterPositions(isUsingFixedVPD, isUsingFixedAlpha)}:}{ ~~ }
-    \item{\code{predictLRC(theta, Rg, VPD, Temp, VPD0, fixVPD)}:}{ ~~ }
+    \item{\code{predictLRC(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
     \item{\code{predictGPP(Rg, Amax, alpha, conv)}:}{ ~~ }
     \item{\code{computeLRCGradient(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
   }

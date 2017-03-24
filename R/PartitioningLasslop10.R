@@ -18,7 +18,7 @@ partitionNEEGL=function(
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
 		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
 		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve.
-			##<< Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. (See details)
+			## Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. (See details)
 )
 ##details<<
 ## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
@@ -103,10 +103,36 @@ partitionNEEGL=function(
 			, isNight=isNight
 	)
 	##seealso<< \code{\link{partGLFitNightTimeTRespSens}}
-	dsTempSens <- partGLFitNightTimeTRespSens( dsR
-			, nRecInDay=nRecInDay
-			, controlGLPart=controlGLPart
-	)
+	isUsingFixedTempSens <- length(controlGLPart$fixedTempSens) && 
+			all(is.finite(controlGLPart$fixedTempSens$E0)) &&
+			all(is.finite(controlGLPart$fixedTempSens$sdE0)) 
+	dsTempSens <- if( !isUsingFixedTempSens	){ 
+				dsTempSens <- partGLFitNightTimeTRespSens( dsR
+						, nRecInDay=nRecInDay
+						, controlGLPart=controlGLPart
+				)
+			} else	{
+				dsTempSens <- controlGLPart$fixedTempSens
+				nWindow <- length(getStartRecsOfWindows( nrow(dsR), nRecInDay = nRecInDay))
+				# if one row is given, use it for all windows
+				if( nrow(dsTempSens) == 1L ) dsTempSens <- do.call(rbind, lapply(1:nWindow, function(i) dsTempSens ))
+				if( nrow(dsTempSens) != nWindow ) stop("when providing controlGLPart$fixedTempSens then it must be 1 row",
+							"or rows must macht the number of windows (",nWindow,"), but was ",nrow(dsTempSens))
+				# if no RRef is given, estimate from nighttime data
+				if( !length(dsTempSens$RRef) || all(is.na(dsTempSens$RRef)) ){
+					resRef15 <- simplifyApplyWindows( tmp <- applyWindows(dsR, partGLFitNightRespRefOneWindow
+									,nRecInDay=nRecInDay
+									,E0Win = dsTempSens
+									,controlGLPart=controlGLPart	
+							))
+					dsTempSens$RRef <- resRef15$RRef
+				}
+				# fill missing RRef by previous window
+				dsTempSens$RRef <- fillNAForward( dsTempSens$RRef, firstValue= 
+								# on NA at the start of the series, take the first occuring finite value
+								dsTempSens$RRef[ which(is.finite(dsTempSens$RRef))[1] ] )
+				dsTempSens
+			}
 	##seealso<< \code{\link{partGLFitLRCWindows}}
 	resParms <- partGLFitLRCWindows( dsR
 			, nRecInDay=nRecInDay
@@ -195,6 +221,10 @@ partGLControl <- function(
 		## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
 		,isNeglectVPDEffect=FALSE 		##<< set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.
+		,fixedTempSens=data.frame(E0=NA_real_, sdE0=NA_real_, RRef=NA_real_)	##<< data.frame of one row or nRow=nWindow
+			## corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
+			## While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
+			## \code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
 ## Definition of the LRC Model
 ){
 	##author<< TW
@@ -218,7 +248,7 @@ partGLControl <- function(
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
-			#,NRHRfunction=NRHRfunction
+			,fixedTempSens=fixedTempSens
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")

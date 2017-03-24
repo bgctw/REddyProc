@@ -1180,6 +1180,38 @@ test_that("partGLPartitionFluxes filter Meteo flag",{
 })
 
 
+test_that("partitionNEEGL fixed tempSens",{
+			dsNEE1 <- dsNEE
+			#
+			ds <- dsNEE1
+			ds$NEE <- ds$NEE_f
+			ds$sdNEE <- ds$NEE_fsd
+			ds$Temp <- ds$Tair_f
+			ds$VPD <- ds$VPD_f
+			ds$Rg <- ds$Rg_f
+			#
+			dsTempSens0 <- partGLFitNightTimeTRespSens( ds )
+			startRecs <- getStartRecsOfWindows( nrow(ds) )
+			fixedTempSens <- data.frame(E0=80, sdE0=10 )
+			tmp <- partitionNEEGL( dsNEE1, RadVar.s="Rg_f", controlGLPart=partGLControl(fixedTempSens=fixedTempSens) )
+			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			#
+			expect_true( all(is.finite(tmp$GPP_DT)))
+			expect_true( all(tmp$GPP_DT >= 0))
+			expect_true( all(tmp$GPP_DT < 250))
+			expect_true( all(tmp$Reco_DT < 10))
+			expect_true( all(tmp$Reco_DT > 0))
+			expect_true( all(tmp$Reco_DT_SD > 0))
+			expect_true( all(tmp$GPP_DT_SD >= 0))
+			.tmp.plot <- function(){
+				tmp$time <- dsNEE1$sDateTime
+				plot( Reco_DT ~ time, tmp)
+				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
+				plot( GPP_DT ~ time, tmp)
+			}
+		})
+
+
 
 
 .profilePartGL <- function(){

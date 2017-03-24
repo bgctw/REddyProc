@@ -38,7 +38,7 @@ showClass("LightResponseCurveFitter")
     \item{\code{computeLRCGradient(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
     \item{\code{predictGPP(Rg, ...)}:}{ ~~ }
     \item{\code{predictLRC(theta, Rg, VPD, Temp, VPD0, fixVPD, TRef)}:}{ ~~ }
-    \item{\code{computeCost(thetaOpt, theta, iOpt, flux, sdFlux, parameterPrior, sdParameterPrior, ..., VPD0, fixVPD)}:}{ ~~ }
+    \item{\code{computeCost(thetaOpt, theta, iOpt, flux, sdFlux, parameterPrior, sdParameterPrior, ...)}:}{ ~~ }
     \item{\code{optimLRC(theta, iOpt, sdParameterPrior, ..., ctrl, isUsingHessian)}:}{ ~~ }
     \item{\code{isParameterInBounds(theta, sdTheta, RRefNight, ctrl)}:}{ ~~ }
     \item{\code{optimLRCOnAdjustedPrior(theta, iOpt, dsDay, parameterPrior, ctrl, ...)}:}{ ~~ }

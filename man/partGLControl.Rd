@@ -12,7 +12,9 @@ For highest compatibility to Lasslop10 use
     isAssociateParmsToMeanOfValids = TRUE, isLasslopPriorsApplied = FALSE, 
     isSdPredComputed = TRUE, isFilterMeteoQualityFlag = FALSE, 
     isBoundLowerNEEUncertainty = TRUE, smoothTempSensEstimateAcrossTime = TRUE, 
-    NRHRfunction = FALSE)}
+    NRHRfunction = FALSE, isNeglectVPDEffect = FALSE, 
+    fixedTempSens = data.frame(E0 = NA_real_, sdE0 = NA_real_, 
+        RRef = NA_real_))}
 \arguments{
   \item{LRCFitConvergenceTolerance}{convergence criterion for rectangular light response curve fit.
 If relative improvement of reducing residual sum of squares between predictions and 
@@ -37,8 +39,13 @@ For prediction, the gap-filled value is used always, to produce predictions also
 day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.}
   \item{smoothTempSensEstimateAcrossTime}{set to FALSE to use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
-  \item{NRHRfunction}{
-}
+  \item{NRHRfunction}{deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}}
+  \item{isNeglectVPDEffect}{set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.}
+  \item{fixedTempSens}{data.frame of one row or nRow=nWindow
+corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
+While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
+\code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
+Definition of the LRC Model}
 }
 
 \value{list with entries of given arguments.}

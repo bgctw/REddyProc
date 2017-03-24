@@ -23,7 +23,7 @@ records with a very low uncertainty. Avoid this correction by suppyling setting 
 The uncertainty of the prior, that maybe derived from fluxes)  is allowed to 
 adapt to the uncertainty of the fluxes.
 This is done in \code{link{LightResponseCurveFitter_getPriorScale}}}
-\value{result of \code{\link{LightResponseCurveFitter_optimLRC}}}
+\value{result of \code{\link{LightResponseCurveFitter_optimLRC}} with itmes theta, iOpt and convergence}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

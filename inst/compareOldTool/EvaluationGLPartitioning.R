@@ -81,7 +81,7 @@ for ( s in seq_along(sites)) {
   dfall$PotRad <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"]))
   dfall$day    <- (1 - dfall$night)*100
   dfall_posix  <- fConvertTimeToPosix(dfall, 'YMDH', Year.s = 'Year', Month.s='Month', Day.s = 'Day', Hour.s = 'Hr')
-  
+  dfall_posix <- cbind( sDateTime = dfall_posix$DateTime - 15*60, dfall_posix )
   
   #+++ Initalize R5 reference class sEddyProc for processing of eddy data
   #+++ with all variables needed for processing later
@@ -91,7 +91,7 @@ for ( s in seq_along(sites)) {
   # EddyProc.C$sDATA$night
   #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   # START - RUN THE REddyProc DT partitioning 
-  df.REddy <- partitionNEEGL(dfall,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+  df.REddy <- partitionNEEGL(dfall_posix,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
                              TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
 						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
 								 		,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
@@ -105,6 +105,20 @@ for ( s in seq_along(sites)) {
 	  head(df.REddy[iParRecs,], 20)
 	  plot( Reco_DT ~ DateTime, df.REddy)
 	  #trace(partGLFitLRC, recover)	#untrace(partGLFitLRC)
+  }
+  
+  .tmp.inspectFixingE0 <- function(){
+	  # with site 25: IT-Pia.2004.DataSetafterFluxpart.txt
+	  df.REddy <- partitionNEEGL(dfall_posix,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+			  TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+			  QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
+			  ,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE
+					  ,isBoundLowerNEEUncertainty=FALSE
+	  				  ,fixedTempSens=data.frame(E0=80, sdE0=20)
+	  			)
+			  ,lrcFitter=RectangularLRCFitter()
+	  #,lrcFitter=NonrectangularLRCFitter()
+	  )
   }
   
   ### add modelled NEE

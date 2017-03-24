@@ -4,7 +4,8 @@
 \description{Computing residual sum of sqares for predictions vs. data of NEE}
 \usage{RectangularLRCFitterCVersion_computeCost(thetaOpt, 
     theta, iOpt, flux = NA, sdFlux = NA, parameterPrior, 
-    sdParameterPrior, ..., VPD0 = 10, fixVPD = FALSE)}
+    sdParameterPrior, ..., VPD0 = 10, fixVPD = (k == 
+        0))}
 \arguments{
   \item{thetaOpt}{parameter vecotr with components of theta0 that are optimized}
   \item{theta}{parameter vector with positions as in argument of \code{\link{LightResponseCurveFitter_getParameterNames}}}
@@ -15,7 +16,7 @@
   \item{sdParameterPrior}{standard deviation of parameterPrior}
   \item{\dots}{other arguments to \code{\link{LightResponseCurveFitter_predictLRC}}}
   \item{VPD0}{VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010}
-  \item{fixVPD}{fixVPD TRUE or FALSE -> if TRUE the VPD effect is not considered}
+  \item{fixVPD}{boolean scalar or vector of nrow theta:fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation}
 }
 
 

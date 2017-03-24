@@ -1,8 +1,8 @@
 \name{partGLFitNightTempSensOneWindow}
 \alias{partGLFitNightTempSensOneWindow}
 \title{partGLFitNightTempSensOneWindow}
-\description{Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
-Estimation of respiration at reference temperature (R_Ref) and temperature (E_0) for one window.}
+\description{Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,RRef, k) for successive periods
+Estimation of respiration at reference temperature (RRef) and temperature (E0) for one window.}
 \usage{partGLFitNightTempSensOneWindow(dss, winInfo, prevRes, 
     isVerbose = TRUE, nRecInDay = 48L, controlGLPart = partGLControl())}
 \arguments{
