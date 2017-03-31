@@ -31,8 +31,9 @@ library(scales) # for plotting (function alpha())
 
 
 path  <- "M:/work_3/REddyProcRelease/Eval_GL_Partitioning/"
-flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")[-31]
+flist <- list.files(paste0(path,"MR_GL_partitioning/"), pattern="*DataSetafterFluxpart.txt")[-c(25,31)]  ## sites IT-Pia (not enough and unreliable data) and US-MMS (missing VPD?) excluded 
 sites <- substr(flist,1,6)
+
 
 latLongSites <- rbind( 
 		data.frame(site="DE-Tha", lat=51, long=11, timeOffset=-1	)
@@ -93,18 +94,11 @@ for ( s in seq_along(sites)) {
   # START - RUN THE REddyProc DT partitioning 
   df.REddy <- partitionNEEGL(dfall,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
                              TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
-						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
-<<<<<<< HEAD
-								 		         ,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
+						                 QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+								 		         controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
                                                           isBoundLowerNEEUncertainty=FALSE),
-								 		         lrcFitter=NonrectangularLRCFitter())
-=======
-								 		,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
-                                                    isBoundLowerNEEUncertainty=FALSE)
-										,lrcFitter=RectangularLRCFitter()
-										#,lrcFitter=NonrectangularLRCFitter()
-								)
->>>>>>> ca2e2307c8569a74ca911dcb726325b1aa66aa1d
+								 		         lrcFitter=RectangularLRCFitter())
+
   .tmp.debug <- function(){
 	  df.REddy$DateTime <- dfall_posix$DateTime
 	  iParRecs <- which( is.finite(df.REddy$FP_qc))
@@ -403,14 +397,14 @@ for ( s in seq_along(sites)) {
   # str(df.REddy)
 
   # R_ref
-  plot(df.REddy$FP_R_ref,col="black",xlab="timestep",ylab="R_ref",las=1,ylim=c(min(pars_pvwave$rb,df.REddy$FP_R_ref,na.rm=T),
-                                                                                 max(pars_pvwave$rb,df.REddy$FP_R_ref,na.rm=T) + 0.2*max(pars_pvwave$rb,df.REddy$FP_R_ref,na.rm=T))) # leave some extra space for legend 
+  plot(df.REddy$FP_RRef,col="black",xlab="timestep",ylab="R_ref",las=1,ylim=c(min(pars_pvwave$rb,df.REddy$FP_RRef,na.rm=T),
+                                                                                 max(pars_pvwave$rb,df.REddy$FP_RRef,na.rm=T) + 0.2*max(pars_pvwave$rb,df.REddy$FP_RRef,na.rm=T))) # leave some extra space for legend 
   points(pars_pvwave$rb,col=col.pvwave)
   legend("topleft",legend=c("REddyProc","Pvwave"),col=c("black",col.pvwave),bty="n",pch=1,x.intersp=0.5)
 
   # R_ref_night (for REddyProc only at the moment)
-  plot(df.REddy$FP_R_refNight,col="black",xlab="timestep",ylab="R_refNight",las=1,ylim=c(min(df.REddy$FP_R_ref,na.rm=T),
-                                                                                      max(df.REddy$FP_R_ref,na.rm=T) + 0.2*max(df.REddy$FP_R_ref,na.rm=T))) 
+  plot(df.REddy$FP_RRef_Night,col="black",xlab="timestep",ylab="R_refNight",las=1,ylim=c(min(df.REddy$FP_RRef,na.rm=T),
+                                                                                      max(df.REddy$FP_RRef,na.rm=T) + 0.2*max(df.REddy$FP_RRef,na.rm=T))) 
 
   #points(pars_pvwave$Rrefopt_OrdE0_2_from,col=col.pvwave)  # is it the right parameter?
 
@@ -460,7 +454,7 @@ for ( s in seq_along(sites)) {
   pars_pvwave <- rbind(pars_pvwave[-1,],NA)
 
   # R_ref
-  plot(df.REddy$FP_R_ref ~ pars_pvwave$rb,xlab="Rb_Pvwave",ylab="Rb_REddy",las=1)
+  plot(df.REddy$FP_RRef ~ pars_pvwave$rb,xlab="Rb_Pvwave",ylab="Rb_REddy",las=1)
   curve(1*x,from=-1000,to=1000,col="red",add=T)
   
   # E0
