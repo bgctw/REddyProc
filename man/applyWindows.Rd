@@ -25,7 +25,11 @@ i.e. all of the nRecInDay records are in the first day.
 In order to have a common reference winSizeRefInDays is given so that results by a different window
 size correspond to each window of shifting a window of winSizeRefInDays
 Each window is anchord so that the center equals the center of the reference window.
-This becomes important when selecting records at the edges of the series.}
+This becomes important when selecting records at the edges of the series.
+
+Usually indicate an invalid result by returning NULL.
+If one still wants to store results but prevent updating the \code{prevRes} argument supplied to the next call
+then return a list item (or dataframe column) \code{isValid=TRUE}.}
 \value{a list with first component a data.frame with columns
 \item{iWindow}{integer: counter of the window}
 \item{dayStart}{integer: starting day of the window}

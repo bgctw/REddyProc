@@ -36,7 +36,9 @@ partGLFitNightTimeTRespSens=function(
 	}
 	#
 	##seealso<< \code{\link{partGLSmoothTempSens}}
-	# remember E0 and sdE0 before overidden by smoothing						
+	# remember E0 and sdE0 before overidden by smoothing
+	nFiniteE0 <- sum(is.finite(resNight$E0)) 
+	if( (nFiniteE0 < 5) && (nFiniteE0 < 0.1*nrow(resNight)) ) stop("Estimated valid temperature sensitivity for only ",nFiniteE0, " windows. Stopping.")
 	resNight$E0Fit <- resNight$E0
 	resNight$sdE0Fit <- resNight$sdE0
 	E0Smooth <- if( isTRUE(controlGLPart$smoothTempSensEstimateAcrossTime) ){
@@ -89,6 +91,25 @@ fillNAForward <- function(
 	}
 	return(x)
 }
+
+getStartRecsOfWindows <- function(
+		### compute the starting positions of windows for given size
+		nRec					##<< numeric scalar: number of records
+		,winSizeInDays=winSizeRefInDays		##<< Window size in days   
+		,winSizeRefInDays=4L				##<< Window size in days for reference window (e.g. day-Window for night time)
+		,strideInDays=floor(winSizeRefInDays/2L)	##<< step in days for shifting the window, for alligning usually a factor of winSizeRef
+		,nRecInDay=48L			##<< number of records within one day (for half-hourly data its 48)
+){
+	nDay <- as.integer(ceiling( nRec / nRecInDay)) 
+	nDayLastWindow <- nDay - (winSizeRefInDays/2)			# center of the reference window still in records  
+	#iDayOfRec <- ((c(1:nRec)-1L) %/% nRecInDay)+1L 		# specifying the day for each record assuming equidistand records
+	startDaysRef <- seq(1, nDayLastWindow, strideInDays)	# starting days for each reference window
+	iCentralRec <- as.integer((startDaysRef-1L)+winSizeRefInDays/2)*nRecInDay+1L	# assuming equidistant records
+	# precomputing the starting and end records for all periods in vectorized way
+	iRecStart0 <- as.integer(iCentralRec -winSizeInDays/2*nRecInDay)	# may become negative, negative needed for computation of iRecEnd
+	iRecStart <- pmax(1L, iRecStart0 )
+}
+
 
 applyWindows <- function(
 		### apply a function to several windows of a data.frame
@@ -185,7 +206,7 @@ simplifyApplyWindows <- function(
 }
 
 partGLFitNightTempSensOneWindow=function(
-		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
+		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,RRef, k) for successive periods
 		dss					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
 		,winInfo			##<< one-row data.frame with window information, including iWindow 
 		,prevRes			##<< component prevRes from previous result, here with item prevE0
@@ -197,7 +218,7 @@ partGLFitNightTempSensOneWindow=function(
 	## TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
-	## Estimation of respiration at reference temperature (R_Ref) and temperature (E_0) for one window.
+	## Estimation of respiration at reference temperature (RRef) and temperature (E0) for one window.
 	isValid <- isValidNightRecord(dss) 
 	# check that there are enough night and enough day-values for fitting, else continue with next window
 	if( sum(isValid) < controlGLPart$minNRecInDayWindow ) return(data.frame(
@@ -230,33 +251,33 @@ isValidNightRecord <- function(
 }
 
 partGLEstimateTempSensInBoundsE0Only <- function(
-		### Estimate temperature sensitivity E_0 and R_ref of ecosystem respiration, and apply bounds or previous estimate
+		### Estimate temperature sensitivity E0 and RRef of ecosystem respiration, and apply bounds or previous estimate
 		REco					##<< numeric vector: night time NEE, i.e. ecosytem respiration
 		,temperatureKelvin		##<< numeric vector: temperature in Kelvin of same length as REco
 		,prevE0	= NA			##<< numeric scalar: the previous guess of Temperature Sensitivity
+		,TRefFit = median(temperatureKelvin, na.rm=TRUE)	##<< reference temperature for which RRef is estimated.
+			##<< Set it to the center of the data (the default) for best fit (lowest uncertainty) 
 ){
 	##author<< MM, TW
 	##seealso<< \code{\link{partGLFitLRCWindows}}
 	#twutz: using nls to avoid additional package dependency
-	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
-	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(R_ref=mean(REco.V.n,na.rm=TRUE),E_0=100)
+	#resFitLM <- NLS.L <- nlsLM(formula=R_eco ~ fLloydTaylor(RRef, E0, Temp, T_ref.n=273.15+15), algorithm='default', trace=FALSE,
+	#		data=as.data.frame(cbind(R_eco=REco.V.n,Temp=temperatureKelvin.V.n)), start=list(RRef=mean(REco.V.n,na.rm=TRUE),E0=100)
 	#		,control=nls.lm.control(maxiter = 20))
 	##details<< 
 	## Basal respiration is reported for temperature of 15 degree Celsius. However during the fit
 	## a reference temperature of the median of the dataset is used. This is done to avoid
-	## strong correlations between estimated parameters E0 and R_ref, that occure if reference temperature 
+	## strong correlations between estimated parameters E0 and RRef, that occure if reference temperature 
 	## is outside the center of the data.
-	TRefFit <- median(temperatureKelvin, na.rm=TRUE)	# formerly 273.15+15
 	resFit <- try(
-			nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=TRefFit), algorithm='default', trace=FALSE,
+			nls(formula=R_eco ~ fLloydTaylor(RRef, E0, Temp, T_ref.n=TRefFit), algorithm='default', trace=FALSE,
 					data=as.data.frame(cbind(R_eco=REco,Temp=temperatureKelvin))
-					, start=list(R_ref= mean(REco,na.rm=TRUE)
-							,E_0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
+					, start=list(RRef= mean(REco,na.rm=TRUE)
+							,E0=as.vector({if(is.finite(prevE0)) prevE0 else 100}))
 					,control=nls.control(maxiter = 20L)
 			)
 			, silent=TRUE)
-	#plot( REco.V.n ~ I(temperatureKelvin.V.n-273.15) )
-	#plot( REcoCorrected ~ I(temperatureKelvin.V.n-273.15)[isNotFreezing] )
+	#plot( REco ~ I(temperatureKelvin-273.15) ); lines( fLloydTaylor(coef(resFit)["RRef"], coef(resFit)["E0"], temperatureKelvin, T_ref.n=TRefFit) ~ I(temperatureKelvin-273.15))
 	if( inherits(resFit, "try-error")){
 		#stop("debug partGLEstimateTempSensInBounds")
 		#plot( REco.V.n	~ temperatureKelvin.V.n )
@@ -264,13 +285,13 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 		sdE0 <- NA
 		RRefFit <- NA 
 	} else {
-		E0 <- coef(resFit)['E_0']
-		sdE0 <- coef(summary(resFit))['E_0',2]
-		RRefFit <- coef(resFit)['R_ref']
+		E0 <- coef(resFit)['E0']
+		sdE0 <- coef(summary(resFit))['E0',2]
+		RRefFit <- coef(resFit)['RRef']
 	}
 	# resFit$convInfo$isConv
 	##details<<
-	## If E_0 is out of bounds [50,400] then report E0 as NA 
+	## If E0 is out of bounds [50,400] then report E0 as NA 
 	if( is.na(E0) || (E0 < 50) || (E0 > 400)){
 		E0 <- NA
 		sdE0 <- NA
@@ -284,15 +305,15 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 					,RRefFit=RRefFit	##<< numeric scalar respiration at TRefFit
 			))
 	#
-	# refit R_Ref with bounded E0 for 15 degC, instead of calling fLoydAndTaylor do a simple regression 
+	# refit RRef with bounded E0 for 15 degC, instead of calling fLoydAndTaylor do a simple regression 
 #   starting value from forward model
-#	RRef15 <- fLloydTaylor( RRefFit, E_0Bounded.V.n, TRef15, T_ref.n=TRefFit)
-#	resFit15 <-	nls(formula=R_eco ~ fLloydTaylor(R_ref, E_0, Temp, T_ref.n=TRef15), algorithm='default', trace=FALSE,
-#					data=as.data.frame(cbind(R_eco=REcoFitting,Temp=temperatureKelvin.V.n[isNotFreezing], E_0=E_0Bounded.V.n))
-#					, start=list(R_ref=RRef15)
+#	RRef15 <- fLloydTaylor( RRefFit, E0Bounded.V.n, TRef15, T_ref.n=TRefFit)
+#	resFit15 <-	nls(formula=R_eco ~ fLloydTaylor(RRef, E0, Temp, T_ref.n=TRef15), algorithm='default', trace=FALSE,
+#					data=as.data.frame(cbind(R_eco=REcoFitting,Temp=temperatureKelvin.V.n[isNotFreezing], E0=E0Bounded.V.n))
+#					, start=list(RRef=RRef15)
 #					,control=nls.control(maxiter = 20L)
 #			)
-#	(R_ref_ <- coef(resFit15)[1])
+#	(RRef_ <- coef(resFit15)[1])
 }
 
 .tmp.f <- function(){
@@ -318,6 +339,7 @@ partGLSmoothTempSens <- function(
 				E0WinYr <- E0Win[ E0Win$year == yr, ,drop=FALSE]
 				isFiniteE0 <- is.finite(E0WinYr$E0)
 				E0WinFinite <- E0WinYr[ isFiniteE0, ]
+				if( !length(E0WinFinite) ) stop("No temperature sensitivities to smooth")
 				output <- capture.output(
 						gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = E0WinFinite$sdE0^2)
 				#gpFit <- mlegp(X=E0WinFinite$iCentralRec, Z=E0WinFinite$E0, nugget = (E0WinFinite$sdE0*2)^2, nugget.known=1L)
@@ -374,7 +396,7 @@ partGLFitNightRespRefOneWindow=function(
 	## TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
-	## Estimation of respiration at reference temperature (R_Ref) and temperature (E_0) for one window.
+	## Estimation of respiration at reference temperature (RRef) and temperature (E0) for one window.
 	isValid <- isValidNightRecord(dss) 
 	# check that there are enough night and enough day-values for fitting, else continue with next window
 	##details<<

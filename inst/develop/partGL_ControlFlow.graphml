@@ -82,7 +82,7 @@ partitioning including parameter estimation and interpolation of predicted fluxe
     <node id="n3">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="190.0" width="233.00000000000006" x="595.1605365400428" y="309.0"/>
+          <y:Geometry height="190.0" width="233.00000000000006" x="611.2901341350108" y="169.09523809523813"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="132.736328125" x="50.1318359375" y="4.0">partGLInterpolateFluxes</y:NodeLabel>
@@ -109,7 +109,7 @@ Computes the uncertainty of the fluxes given the parameter covariances.<y:LabelM
     <node id="n4">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="77.0" width="233.00000000000006" x="902.3481609620133" y="229.0"/>
+          <y:Geometry height="77.0" width="233.00000000000006" x="910.9576847715371" y="146.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="143.3828125" x="44.80859375" y="4.0">partGLFitLRCOneWindow</y:NodeLabel>
@@ -131,7 +131,7 @@ estimates parameters of the light response curve from daytime data<y:LabelModel>
     <node id="n5">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="71.0" width="233.00000000000006" x="902.3481609620133" y="109.58333333333333"/>
+          <y:Geometry height="71.0" width="233.00000000000006" x="902.3481609620133" y="13.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="194.078125" x="19.4609375" y="3.999999999999986">partGLFitNightRespRefOneWindow</y:NodeLabel>
@@ -153,7 +153,7 @@ estimates respiration at TRef for updated temperature sensitivity E0<y:LabelMode
     <node id="n6">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="77.0" width="231.07157076796608" x="612.3795841590904" y="-28.083333333333357"/>
+          <y:Geometry height="77.0" width="231.07157076796608" x="612.3795841590904" y="-135.75000000000003"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="171.390625" x="29.84047288398301" y="4.0">partGLFitNightTimeTRespSens</y:NodeLabel>
@@ -173,28 +173,6 @@ fitting temperature sensitivity for several windows<y:LabelModel>
       </data>
     </node>
     <node id="n7">
-      <data key="d6">
-        <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="57.0" width="151.00000000000006" x="410.4517679397187" y="29.0"/>
-          <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="79.369140625" x="35.8154296875" y="4.0">partGLControl</y:NodeLabel>
-          <y:NodeLabel alignment="center" autoSizePolicy="node_width" configuration="CroppingLabel" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="51.28125" modelName="custom" textColor="#000000" visible="true" width="151.00000000000006" x="0.0" y="4.0">
-
-setting global parameters<y:LabelModel>
-              <y:SmartNodeLabelModel distance="4.0"/>
-            </y:LabelModel>
-            <y:ModelParameter>
-              <y:SmartNodeLabelModelParameter labelRatioX="-0.5" labelRatioY="-0.5" nodeRatioX="-0.5" nodeRatioY="-0.5" offsetX="0.0" offsetY="4.0" upX="0.0" upY="-1.0"/>
-            </y:ModelParameter>
-          </y:NodeLabel>
-          <y:StyleProperties>
-            <y:Property class="java.lang.Boolean" name="y.view.ShadowNodePainter.SHADOW_PAINTING" value="true"/>
-          </y:StyleProperties>
-        </y:GenericNode>
-      </data>
-    </node>
-    <node id="n8">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="139.0" width="200.00000000000006" x="353.2321073080086" y="567.0"/>
@@ -217,7 +195,7 @@ Fills parameter vector and covariance function with fixed and estiamted paramete
         </y:GenericNode>
       </data>
     </node>
-    <node id="n9">
+    <node id="n8">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="114.0" width="200.00000000000006" x="109.11605365400442" y="517.0"/>
@@ -240,7 +218,7 @@ Performs a bootstrap to estimate parameter uncertainty.<y:LabelModel>
         </y:GenericNode>
       </data>
     </node>
-    <node id="n10">
+    <node id="n9">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="91.0" width="200.00000000000006" x="902.3481609620133" y="399.0"/>
@@ -262,7 +240,7 @@ Computes the Gradient of REco, GPP and NEE with a change in parameters.<y:LabelM
         </y:GenericNode>
       </data>
     </node>
-    <node id="n11">
+    <node id="n10">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="77.0" width="200.00000000000006" x="902.3481609620133" y="512.0"/>
@@ -284,7 +262,7 @@ Computes REco and GPP for given parameters.<y:LabelModel>
         </y:GenericNode>
       </data>
     </node>
-    <node id="n12">
+    <node id="n11">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="108.0" width="200.00000000000006" x="870.0889657720771" y="655.0"/>
@@ -307,7 +285,7 @@ Adds log-Density of the parameters given the prior.<y:LabelModel>
         </y:GenericNode>
       </data>
     </node>
-    <node id="n13">
+    <node id="n12">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="96.30755395683445" width="192.8839463459961" x="615.2185633670448" y="629.0"/>
@@ -329,7 +307,7 @@ Lower bound flux uncertainty and adjust prior uncertainty to Flux uncertainty<y:
         </y:GenericNode>
       </data>
     </node>
-    <node id="n14">
+    <node id="n13">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="77.0" width="200.00000000000006" x="353.2321073080086" y="733.0"/>
@@ -351,10 +329,10 @@ Resamples data and E0 to estimate uncertainty of LRC parameters.<y:LabelModel>
         </y:GenericNode>
       </data>
     </node>
-    <node id="n15">
+    <node id="n14">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="86.0" width="233.00000000000006" x="902.3481609620133" y="-156.33333333333337"/>
+          <y:Geometry height="86.0" width="233.00000000000006" x="902.3481609620133" y="-252.41666666666669"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="205.416015625" x="13.7919921875" y="4.0">partGLFitNightTempSensOneWindow</y:NodeLabel>
@@ -373,10 +351,10 @@ estimates respiration at TRefFit and Temperature sensitivity from nighttime data
         </y:GenericNode>
       </data>
     </node>
-    <node id="n16">
+    <node id="n15">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="101.5" width="233.00000000000006" x="902.3481609620131" y="-40.33333333333336"/>
+          <y:Geometry height="101.5" width="233.00000000000006" x="902.3481609620131" y="-136.41666666666669"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="140.06640625" x="46.466796875" y="4.0">partGLSmoothTempSens</y:NodeLabel>
@@ -395,10 +373,31 @@ smooth time course of temperature sensitivity E0 and esimate its uncertainty by 
         </y:GenericNode>
       </data>
     </node>
+    <node id="n16">
+      <data key="d6">
+        <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
+          <y:Geometry height="30.0" width="109.00000000000006" x="878.3210730800856" y="-282.4166666666667"/>
+          <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
+          <y:BorderStyle color="#000000" type="line" width="1.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="81.3671875" x="13.81640625" y="4.0">applyWindows</y:NodeLabel>
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="2.0" y="30.701171875">
+            <y:LabelModel>
+              <y:ErdAttributesNodeLabelModel/>
+            </y:LabelModel>
+            <y:ModelParameter>
+              <y:ErdAttributesNodeLabelModelParameter/>
+            </y:ModelParameter>
+          </y:NodeLabel>
+          <y:StyleProperties>
+            <y:Property class="java.lang.Boolean" name="y.view.ShadowNodePainter.SHADOW_PAINTING" value="true"/>
+          </y:StyleProperties>
+        </y:GenericNode>
+      </data>
+    </node>
     <node id="n17">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="30.0" width="109.00000000000006" x="878.3210730800856" y="-186.33333333333337"/>
+          <y:Geometry height="30.0" width="109.00000000000006" x="878.3210730800856" y="-16.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="81.3671875" x="13.81640625" y="4.0">applyWindows</y:NodeLabel>
@@ -419,7 +418,7 @@ smooth time course of temperature sensitivity E0 and esimate its uncertainty by 
     <node id="n18">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="30.0" width="109.00000000000006" x="878.3210730800856" y="79.58333333333333"/>
+          <y:Geometry height="30.0" width="109.00000000000006" x="896.0911334296522" y="116.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="81.3671875" x="13.81640625" y="4.0">applyWindows</y:NodeLabel>
@@ -440,27 +439,6 @@ smooth time course of temperature sensitivity E0 and esimate its uncertainty by 
     <node id="n19">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="30.0" width="109.00000000000006" x="887.4816096201284" y="199.0"/>
-          <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="81.3671875" x="13.81640625" y="4.0">applyWindows</y:NodeLabel>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" modelName="custom" textColor="#000000" visible="true" width="4.0" x="2.0" y="30.701171875">
-            <y:LabelModel>
-              <y:ErdAttributesNodeLabelModel/>
-            </y:LabelModel>
-            <y:ModelParameter>
-              <y:ErdAttributesNodeLabelModelParameter/>
-            </y:ModelParameter>
-          </y:NodeLabel>
-          <y:StyleProperties>
-            <y:Property class="java.lang.Boolean" name="y.view.ShadowNodePainter.SHADOW_PAINTING" value="true"/>
-          </y:StyleProperties>
-        </y:GenericNode>
-      </data>
-    </node>
-    <node id="n20">
-      <data key="d6">
-        <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
           <y:Geometry height="30.0" width="109.00000000000006" x="851.9593681771092" y="625.0"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
@@ -479,11 +457,11 @@ smooth time course of temperature sensitivity E0 and esimate its uncertainty by 
         </y:GenericNode>
       </data>
     </node>
-    <node id="n21">
+    <node id="n20">
       <data key="d4"/>
       <data key="d6">
         <y:UMLNoteNode>
-          <y:Geometry height="56.45323741007189" width="162.0905319706973" x="147.02552168330715" y="298.83812949640287"/>
+          <y:Geometry height="56.45323741007189" width="162.0905319706973" x="147.02552168330715" y="381.70479616306955"/>
           <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="33.40234375" modelName="custom" textColor="#000000" visible="true" width="137.39453125" x="12.348000360348635" y="11.525446830035946">fitLRC functions reside in
@@ -497,16 +475,38 @@ LRCFitter classes<y:LabelModel>
         </y:UMLNoteNode>
       </data>
     </node>
-    <node id="n22">
+    <node id="n21">
       <data key="d6">
         <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
-          <y:Geometry height="77.0" width="231.07157076796608" x="620.3210730800856" y="131.0"/>
+          <y:Geometry height="77.0" width="231.07157076796608" x="620.3210730800856" y="69.5"/>
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="126.701171875" x="52.18519944648301" y="4.0">partGLFitLRCWindows</y:NodeLabel>
           <y:NodeLabel alignment="center" autoSizePolicy="node_width" configuration="CroppingLabel" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="66.375" modelName="custom" textColor="#000000" visible="true" width="231.07157076796608" x="0.0" y="4.0">
 
 fitting LRC-parameters for several windows<y:LabelModel>
+              <y:SmartNodeLabelModel distance="4.0"/>
+            </y:LabelModel>
+            <y:ModelParameter>
+              <y:SmartNodeLabelModelParameter labelRatioX="-0.5" labelRatioY="-0.5" nodeRatioX="-0.5" nodeRatioY="-0.5" offsetX="0.0" offsetY="4.0" upX="0.0" upY="-1.0"/>
+            </y:ModelParameter>
+          </y:NodeLabel>
+          <y:StyleProperties>
+            <y:Property class="java.lang.Boolean" name="y.view.ShadowNodePainter.SHADOW_PAINTING" value="true"/>
+          </y:StyleProperties>
+        </y:GenericNode>
+      </data>
+    </node>
+    <node id="n22">
+      <data key="d6">
+        <y:GenericNode configuration="com.yworks.entityRelationship.big_entity">
+          <y:Geometry height="57.0" width="151.00000000000006" x="410.4517679397187" y="29.0"/>
+          <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
+          <y:BorderStyle color="#000000" type="line" width="1.0"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="79.369140625" x="35.8154296875" y="4.0">partGLControl</y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="node_width" configuration="CroppingLabel" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="51.28125" modelName="custom" textColor="#000000" visible="true" width="151.00000000000006" x="0.0" y="4.0">
+
+setting global parameters<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -543,7 +543,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e2" source="n7" target="n2">
+    <edge id="e2" source="n22" target="n2">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -559,7 +559,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
     <edge id="e3" source="n2" target="n6">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
-          <y:Path sx="99.98291015625" sy="0.0" tx="0.0" ty="0.0"/>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="delta"/>
           <y:StyleProperties>
@@ -568,7 +568,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e4" source="n6" target="n18">
+    <edge id="e4" source="n6" target="n17">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="-54.516357421875" ty="0.0"/>
@@ -580,7 +580,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e5" source="n22" target="n19">
+    <edge id="e5" source="n21" target="n18">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="16.862189154978978" sy="2.6333333333333258" tx="-54.516357421875" ty="0.0"/>
@@ -604,22 +604,23 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e7" source="n4" target="n9">
+    <edge id="e7" source="n4" target="n8">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
-          <y:Path sx="-116.46718432265378" sy="22.496450609569365" tx="-82.09053197069738" ty="-57.02957232806898">
-            <y:Point x="127.02552168330706" y="289.99645060956937"/>
+          <y:Path sx="-6.767208581060913" sy="18.70952380952383" tx="-82.09053197069738" ty="-57.02957232806898">
+            <y:Point x="1012.0809523809523" y="371.2285714285714"/>
+            <y:Point x="127.02552168330706" y="371.2285714285714"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="concave"/>
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" hasText="false" height="4.0" modelName="center_slider" preferredPlacement="anywhere" ratio="0.800736267466668" textColor="#000000" visible="true" width="4.0" x="-777.3081575159117" y="22.18784558767493"/>
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" hasText="false" height="4.0" modelName="center_slider" preferredPlacement="anywhere" ratio="0.8940258345094112" textColor="#000000" visible="true" width="4.0" x="-894.6497102502867" y="161.82985063825333"/>
           <y:StyleProperties>
             <y:Property class="com.yworks.yfiles.bpmn.view.BPMNTypeEnum" name="com.yworks.bpmn.type" value="CONNECTION_TYPE_MESSAGE_FLOW"/>
           </y:StyleProperties>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e8" source="n3" target="n10">
+    <edge id="e8" source="n3" target="n9">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -631,7 +632,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e9" source="n3" target="n11">
+    <edge id="e9" source="n3" target="n10">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="-99.97966008848675" ty="-13.500922501605942"/>
@@ -643,7 +644,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e10" source="n12" target="n11">
+    <edge id="e10" source="n11" target="n10">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -655,7 +656,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e11" source="n9" target="n8">
+    <edge id="e11" source="n8" target="n7">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -667,7 +668,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e12" source="n9" target="n14">
+    <edge id="e12" source="n8" target="n13">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="-99.98291015625" ty="0.0"/>
@@ -679,7 +680,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e13" source="n8" target="n13">
+    <edge id="e13" source="n7" target="n12">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -691,7 +692,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e14" source="n14" target="n13">
+    <edge id="e14" source="n13" target="n12">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="-50.84933486486102" ty="21.54165039453071"/>
@@ -703,7 +704,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e15" source="n13" target="n20">
+    <edge id="e15" source="n12" target="n19">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -715,7 +716,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e16" source="n6" target="n16">
+    <edge id="e16" source="n6" target="n15">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="-116.5245361328125" ty="0.0"/>
@@ -727,7 +728,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e17" source="n6" target="n17">
+    <edge id="e17" source="n6" target="n16">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="-54.516357421875" ty="0.0"/>
@@ -739,7 +740,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e18" source="n0" target="n7">
+    <edge id="e18" source="n0" target="n22">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -751,7 +752,7 @@ fitting LRC-parameters for several windows<y:LabelModel>
         </y:GenericEdge>
       </data>
     </edge>
-    <edge id="e19" source="n2" target="n22">
+    <edge id="e19" source="n2" target="n21">
       <data key="d10">
         <y:GenericEdge configuration="com.yworks.bpmn.Connection">
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>

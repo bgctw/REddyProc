@@ -33,7 +33,17 @@ the fixed ones and including E0}
 \item{iOpt}{index of parameters that have been optimized
 , here including E0, which has been optimized prior to this function.}
 \item{thetaInitialGuess}{the initial guess from data}
-\item{covParms}{numeric matrix of the covariance matrix of parameters, including E0
+\item{covParms}{numeric matrix of the covariance matrix of parameters, including E0}
+\item{convergence}{integer code specifying convergence problems
+<< 0: good convergence
+<< ,1-1000: see \code{\link{optim}}
+<< ,1001: too few bootstraps converged
+<< ,1002: fitted parameters were outside reasonable bounds
+<< ,1003: too few valid records in window
+<< ,1004: near zero covariance in bootstrap indicating bad fit
+<< ,1005: covariance from curvature of fit yieled negative variances indicating bad fit
+<< ,1010: no temperature-respiration relationship found
+<< ,1011: too few valid records in window (from different location: partGLFitLRCOneWindow)
 }}
 
 \author{TW, MM
