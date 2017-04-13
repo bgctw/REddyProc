@@ -9,6 +9,7 @@ opts_chunk$set(out.extra='style="display:block; margin: auto"'
     #, fig.align="center"
     , fig.width=4.3, fig.height=3.2, dev.args=list(pointsize=10)
     , message=FALSE
+	, fig.path = "figure/"
     )
 knit_hooks$set(spar = function(before, options, envir) {
     if (before){
@@ -85,8 +86,8 @@ or that let seasons start at the same day each year.
 The user-specific seasoning is provided to the gap-filling by the argument `seasonFactor.v`. 
 ```{r DEGeb_estUStar1b, cache=TRUE}
 	(uStarTh <- EddyProc.C$sEstUstarThreshold(seasonFactor.v=seasonFactor)$uStarTh)
-	# estimation can be inspected by plotting the saturation of NEE with UStar for the temperatures of one season
-	#EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
+	# estimation can be inspected by plotting the saturation of NEE with UStar for the temperatures of one season to pdf
+	# EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
 ```
 
 Note that there is an estimate for each season. Further, an annual estimate is obtained

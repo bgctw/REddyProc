@@ -171,6 +171,15 @@ different estimates of the uStar Threshold.
 	# uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor )
 	uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( seasonFactor.v=seasonFactor
 		, nSample=30L, probs =c(0.1,0.9))
+```
+
+```
+## Warning in EddyProc.C$sEstUstarThresholdDistribution(seasonFactor.v =
+## seasonFactor, : sEstUstarThresholdDistribution: many non-valid bootstrap
+## samples, returning NA quantiles for seasons:
+```
+
+```r
 	(UstarThres.df <- usGetSeasonalSeasonUStarMappingFromDistributionResult(uStarRes))
 ```
 
