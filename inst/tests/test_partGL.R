@@ -1157,16 +1157,17 @@ test_that("partGLPartitionFluxes missing night time data",{
 		})
 
 	
-test_that("partGLPartitionFluxes filter Meteo flag",{
+test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
 		dsNEE1 <- dsNEE
 		# test setting VPD_fqc to other than zero, for omitting those rows
 		dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > "1998-06-03 00:00:00 GMT") & (dsNEE1$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE1$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- 1L
 		#plot( VPD_fqc ~ sDateTime, dsNEE1 )
+		#plot( NEE_f ~ sDateTime, dsNEE1 )
 		ds <- dsNEE1
-		ds$NEE <- ds$NEE_f
-		ds$sdNEE <- ds$NEE_fsd
-		ds$Temp <- ds$Tair_f
-		ds$VPD <- ds$VPD_f
+		#ds$NEE <- ds$NEE_f
+		#ds$sdNEE <- ds$NEE_fsd
+		#ds$Temp <- ds$Tair_f
+		#ds$VPD <- ds$VPD_f
 		ds$Rg <- ds$Rg_f
 		#
 		.tmp.f <- function(){
@@ -1175,9 +1176,19 @@ test_that("partGLPartitionFluxes filter Meteo flag",{
 		}
 		tmp <- partitionNEEGL( ds, controlGLPart=partGLControl(isFilterMeteoQualityFlag=TRUE) )
 		expect_equal( nrow(ds), nrow(tmp) )
-		tmpPar <- tmp[is.finite(tmp$FP_beta),]
-		expect_true( nrow(tmpPar) == 3L )	# only three estimates instead of four
-})
+		tmpPar <- tmp[is.finite(tmp$FP_RRef_Night),]
+		expect_equal( sum(is.finite(tmpPar[,"FP_beta"])), 4L )	# estimate despite missing VPD
+		expect_equal( tmpPar[4L,"FP_k"], 0 )	# k = 0 for missing VPD
+		#
+		# now set temperature to bad quality flag, 
+		dsNEE1$Tair_fqc[ (dsNEE1$sDateTime > "1998-06-03 00:00:00 GMT") & (dsNEE1$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE1$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- 1L
+		ds <- dsNEE1
+		ds$Rg <- ds$Rg_f
+		tmp <- partitionNEEGL( ds, controlGLPart=partGLControl(isFilterMeteoQualityFlag=TRUE) )
+		expect_equal( nrow(ds), nrow(tmp) )
+		tmpPar <- tmp[is.finite(tmp$FP_RRef_Night),]
+		expect_equal( sum(is.finite(tmpPar[,"FP_beta"])), 3L )	# one row less with parameter estimates
+	})
 
 
 test_that("partitionNEEGL fixed tempSens",{

@@ -332,32 +332,43 @@ partGLFitLRCOneWindow=function(
 	#requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
 	#iMissing <- which( is.na(match( requiredCols, names(ds) )))
 	#if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	isValidDayRec <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$Rg)
-	if( !isTRUE(controlGLPart$isNeglectVPDEffect) )
-		isValidDayRec <- isValidDayRec & !is.na(ds$VPD) 
+	isValidDayRecNoVPDConstraint <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$Rg)
+	##details<< Fitting is done on a subset of the data where isDay, NEE, sdNEE, Temp, Rg, and VPD are all non-NA 
+	## and isDay is TRUE 
+	isValidDayRec <- if( isTRUE(controlGLPart$isNeglectVPDEffect) ) 
+				isValidDayRecNoVPDConstraint else isValidDayRecNoVPDConstraint & !is.na(ds$VPD)
+	iMeanRecInDayWindow <- as.integer(round(mean(which(isValidDayRec))))
+	getNAResult <- function(convergenceCode){
+			list(
+				resOpt = NULL
+				,summary = data.frame(
+						nValidRec=sum(isValidDayRec)
+						,iMeanRec=iMeanRecInDayWindow
+						,convergence=convergenceCode
+				)
+				,isValid=FALSE
+		)}
+	##details<< If there are too few records (< \code{controlGLPart$minNRecInDayWindow}), then
+	## the constraint on non-NA VPD is neglected and \code{controlGLPart$isNeglectVPDEffect} is set to TRUE
+	## If there are still too few records, an NA-result with convergence code 1011L is returned.
+	if( (sum(isValidDayRec) < controlGLPart$minNRecInDayWindow) ){
+		controlGLPart$isNeglectVPDEffect <- TRUE
+		isValidDayRec <- isValidDayRecNoVPDConstraint
+		iMeanRecInDayWindow <- as.integer(round(mean(which(isValidDayRec))))
+		if( (sum(isValidDayRec) < controlGLPart$minNRecInDayWindow) ) return(getNAResult(1011L)) 
+	} 
 	dsDay <- ds[isValidDayRec,]
 	##details<<
 	## Each window estimate is associated with a time or equivalently with a record.
 	## The first record, i.e. row number, of the day-window is reported.
 	## Moreover, the mean of all valid records numbers in the daytime window is reported for interpolation.
-	iMeanRecInDayWindow <- as.integer(round(mean(which(isValidDayRec))))
 	#better report NA and care for it properly: if( is.na(iMeanRecInDayWindow)) iMeanRecInDayWindow <- as.integer(nrow(ds)%/%2)
 	#TODO firstRecInDayWindow.i <- which(SubsetDayPeriod.b)[1] # the rownumber of the first record inside the day window
 	##seealso<< \code{\link{partGLEstimateTempSensInBoundsE0Only}}
 	E0 <- E0Win$E0[winInfo$iWindow]
 	# if too few records or 
-	getNAResult <- function(convergenceCode){ list(
-			resOpt = NULL
-			,summary = data.frame(
-					nValidRec=nrow(dsDay)
-					,iMeanRec=iMeanRecInDayWindow
-					,convergence=convergenceCode
-			)
-			,isValid=FALSE
-	)}
 	# if no temperature-respiration relationship could be found, indicate no-fit, but report Window properties
 	if( is.na(E0)  ) return(getNAResult(1010L))
-	if( (sum(isValidDayRec) < controlGLPart$minNRecInDayWindow) ) return(getNAResult(1011L))
 	# if( DayStart.i > 72 ) recover()		
 	sdE0 <- E0Win$sdE0[winInfo$iWindow]
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
@@ -397,11 +408,12 @@ partGLFitLRCOneWindow=function(
 		#should be dealt with iOpt ,isNeglectVPD=FALSE	##<< set to TRUE to neglect VPD effect
 ){
 	##value<<
-	## matrix with each row a parameter estimate on a different bootstrap sample
+	## Matrix with each row a parameter estimate on a different bootstrap sample.
+	## Some of the rows might be NA, if the subsampled dataset could not be fitted.
 	ans <-matrix(NA, nrow=controlGLPart$nBootUncertainty, ncol=length(theta0), dimnames=list(NULL,names(theta0)))
 	##details<<
 	## In addition to resampling the original data, also the temperature sensitivity is resampled 
-	## from its uncertainty distribution.
+	## from its uncertainty distribution but bounded in between 50 to 400.
 	E0r <- rnorm( controlGLPart$nBootUncertainty, theta0[5L], sdE_0.n	)
 	E0 <- pmax(50,pmin(400,E0r))
 	theta <- theta0

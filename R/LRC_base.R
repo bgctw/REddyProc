@@ -49,7 +49,8 @@ LightResponseCurveFitter_fitLRC <- function(
 	iValid <- which(sapply(resOpt3,function(resOpt){ is.finite(resOpt$theta[1]) }))
 	resOpt3Valid <- resOpt3[iValid]
 	optSSE <- sapply(resOpt3Valid, "[[", "value")
-	getNAResult <- function(convergenceCode){ list(
+	getNAResult <- function(convergenceCode){ 
+		list(
 				thetaOpt=structure( rep(NA_real_, nPar), names=colnames(thetaInitials) )
 				,iOpt=integer(0)			##<< index of parameters that have been optimized
 				,thetaInitialGuess=			##<< the initial guess from data
@@ -90,6 +91,8 @@ LightResponseCurveFitter_fitLRC <- function(
 			resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE0, parameterPrior, controlGLPart, lrcFitter=.self)
 			#resBoot  <- .bootStrapLRCFit(resOpt$theta, resOpt$iOpt, dsDay, sdE_0.n, parameterPrior, controlGLPart.l=within(controlGLPart.l,nBootUncertainty <- 30L))
 			iFiniteRows <- which( is.finite(resBoot[,1L]))
+			##details<< If there are no estimates for more than 20% of the bootstrapped samples
+			## The an NA-result with convergence code 1001L is returned.
 			if( length(iFiniteRows)  < 0.8*nrow(resBoot))
 				return( getNAResult(1001L) )
 			covParms <- cov(resBoot[iFiniteRows,])
@@ -534,7 +537,7 @@ LightResponseCurveFitter_computeLRCGradient <- function(
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		,Temp 	##<< Temp [degC] -> Temperature [degC] 
-		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
+		,VPD0 = 10 			##<< VPDQ0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow(theta): fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
