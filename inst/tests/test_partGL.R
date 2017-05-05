@@ -1190,6 +1190,38 @@ test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
 		expect_equal( sum(is.finite(tmpPar[,"FP_beta"])), 3L )	# one row less with parameter estimates
 	})
 
+test_that("partGLPartitionFluxes missing prediction VPD",{
+			dsNEE1 <- dsNEE
+			# test setting VPD_fqc to other than zero, for omitting those rows
+			dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > "1998-06-03 00:00:00 GMT") & (dsNEE1$sDateTime < "1998-06-05 00:00:00 GMT" | dsNEE1$sDateTime >= "1998-06-06 00:00:00 GMT") ] <- 1L
+			#plot( VPD_fqc ~ sDateTime, dsNEE1 )
+			#plot( NEE_f ~ sDateTime, dsNEE1 )
+			iMissingVPD <- c(10,400)
+			dsNEE1$VPD_f[iMissingVPD] <- NA
+			ds <- dsNEE1
+			#ds$NEE <- ds$NEE_f
+			#ds$sdNEE <- ds$NEE_fsd
+			#ds$Temp <- ds$Tair_f
+			#ds$VPD <- ds$VPD_f
+			ds$Rg <- ds$Rg_f
+			#
+			expect_warning(tmp <- partitionNEEGL( ds, controlGLPart=partGLControl(isFilterMeteoQualityFlag=TRUE, isRefitMissingVPDWithNeglectVPDEffect=FALSE) ))
+			expect_equal( nrow(ds), nrow(tmp) )
+			tmpPar <- tmp[is.finite(tmp$FP_RRef_Night),]
+			expect_equal( sum(is.finite(tmpPar[,"FP_beta"])), 4L )	# estimate despite missing VPD
+			expect_equal( tmpPar[4L,"FP_k"], 0 )	# k = 0 for missing VPD
+			expect_true( is.na(tmp$GPP_DT[iMissingVPD[1]]) )	# default could not predict 
+			expect_true( is.finite(tmp$GPP_DT[iMissingVPD[2]]) )	# second: both parameter sets with k=0 -> VPD not evaluated for prediction
+			#
+			# repeat with (default) refitting with neglecting VPD
+			tmp2 <- partitionNEEGL( ds, controlGLPart=partGLControl(isFilterMeteoQualityFlag=TRUE, isRefitMissingVPDWithNeglectVPDEffect=TRUE) )
+			expect_equal( tmp2[-iMissingVPD,"GPP_DT"], tmp[-iMissingVPD,"GPP_DT"] )
+			expect_equal( tmp2[-iMissingVPD,"Reco_DT"], tmp[-iMissingVPD,"Reco_DT"] )
+			expect_equal( tmp2[iMissingVPD[2],c("GPP_DT","Reco_DT")],  tmp2[iMissingVPD[2],c("GPP_DT","Reco_DT")])
+			expect_true( is.finite(tmp2$GPP_DT[iMissingVPD[1]]) )	# now also estimate for first missing VPD 
+		})
+
+
 
 test_that("partitionNEEGL fixed tempSens",{
 			dsNEE1 <- dsNEE

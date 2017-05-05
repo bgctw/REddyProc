@@ -162,6 +162,36 @@ partitionNEEGL=function(
 					, controlGLPart=controlGLPart
 					, lrcFitter = lrcFitter
 			)
+	if( !controlGLPart$isNeglectVPDEffect && controlGLPart$isRefitMissingVPDWithNeglectVPDEffect){
+		##details<<
+		## There common case where VPD is missing for predicting GPP, the default 
+		## (with \code{controlGLPart$isRefitMissingVPDWithNeglectVPDEffect=TRUE})
+		## is to redo the estimation of LRC parameters with neglecting the VPD-effect.
+		## The cases (rows) with missing VPD are then replaced with predictions based on LRC-fits that neglected the VPD effect.  
+		iNAVPD <- which(is.na(ds[[VPDVar.s]] & is.na(dsAnsFluxes$GPP)))
+		if( length(iNAVPD)){
+			message("  could not predict GPP in ",length(iNAVPD)," cases due to missing VPD.")
+			message("    Therefore refitting LightResponseCurve with option isNeglectVPDEffect=TRUE")
+			ctrl2 <- within(controlGLPart, isNeglectVPDEffect<-TRUE)
+			resParms2 <- partGLFitLRCWindows( dsR
+					, nRecInDay=nRecInDay
+					, dsTempSens=dsTempSens
+					, controlGLPart=ctrl2
+					, lrcFitter=lrcFitter
+			)
+			dsAnsFluxes2 <- partGLInterpolateFluxes( ds[,RadVar.s]
+					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
+					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction also using gap-Filled values
+					, resParms2
+					, controlGLPart=ctrl2
+					, lrcFitter = lrcFitter
+			)
+			dsAnsFluxes[iNAVPD,] <- dsAnsFluxes2[iNAVPD,]
+		}
+	}
+	nNAGPP <- sum(is.na(dsAnsFluxes$GPP))
+	if( nNAGPP ) warning("could not predict GPP in ",nNAGPP," cases.")
+	#
 	dsAns$FP_dRecPar <- dsAnsFluxes$dRecNextEstimate
 	# copy quality flag from parameter row 
 	# 	first copy from iCentralRec to colNameAssoc
@@ -221,6 +251,7 @@ partGLControl <- function(
 		## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
 		,isNeglectVPDEffect=FALSE 		##<< set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.
+		,isRefitMissingVPDWithNeglectVPDEffect=TRUE	##<< set to FALSE to avoid repeating estimation with \code{isNeglectVPDEffect=TRUE} trying to predict when VPD is missing
 		,fixedTempSens=data.frame(E0=NA_real_, sdE0=NA_real_, RRef=NA_real_)	##<< data.frame of one row or nRow=nWindow
 			## corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
 			## While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
@@ -248,6 +279,7 @@ partGLControl <- function(
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
+			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
 			,fixedTempSens=fixedTempSens
 	)
 	#display warning message for the following variables that we advise not to be changed
