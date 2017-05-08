@@ -102,6 +102,13 @@ partitionNEEGL=function(
 			, isDay=isDay
 			, isNight=isNight
 	)
+	##details<<
+	## The LRC fit ususally weights NEE records by its uncertainty. In order to also use
+	## records with missing \code{NEESdVar.s}, uncertainty of the missing is by default set 
+	## to a conservatively high value, parameterized by \code{controlGLPart$replaceMissingSdNEEParms).
+	dsR$sdNEE <- replaceMissingSdByPercentage(dsR$sdNEE, dsR$NEE
+		, controlGLPart$replaceMissingSdNEEParms[1], controlGLPart$replaceMissingSdNEEParms[2] )
+	#
 	##seealso<< \code{\link{partGLFitNightTimeTRespSens}}
 	isUsingFixedTempSens <- length(controlGLPart$fixedTempSens) && 
 			all(is.finite(controlGLPart$fixedTempSens$E0)) &&
@@ -256,7 +263,10 @@ partGLControl <- function(
 			## corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
 			## While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
 			## \code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
-## Definition of the LRC Model
+		,replaceMissingSdNEEParms=c(perc=0.2, minSd=0.7)	##<< parameters for replacing missing standard deviation of NEE.
+			## see \code{\link{replaceMissingSdByPercentage}}.
+			## Default sets missing ucnertainty to 20% of NEE but at least 0.7 gC/m2/yr.
+			## Set to c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit. 
 ){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -281,6 +291,7 @@ partGLControl <- function(
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
 			,fixedTempSens=fixedTempSens
+			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -636,4 +647,21 @@ partGLInterpolateFluxes <- function(
 	ans
 }
 
+
+replaceMissingSdByPercentage <- function(
+	### replace missing standard deviation of a measure x by a percentage of x
+	sdX		##<< numeric vector: with missing to be repalce
+	,x		##<< numeric vector of length(sdX): value form which percentage is computed
+	,perc=0.2	##<< numeric scalar: sdX = perc*x
+	,minSdX=0.7	##<< numeric scalar: minimum of sdX to be applied for low x
+){
+	##details<<
+	## If either perc or inSdX is NA then only the other criterion is applied.
+	## If both are NA then all missings are set to NA.
+	## \code{sdX[iToFill] <- pmax(minSdX, abs(x[iToFill]*perc), na.rm=TRUE)}
+	iToFill <- !is.finite(sdX) 
+	sdX[iToFill] <- pmax(minSdX, abs(x[iToFill]*perc), na.rm=TRUE)
+	##value<< sdX with non-finite values replaced.
+	sdX
+}
 

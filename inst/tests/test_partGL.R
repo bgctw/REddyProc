@@ -742,6 +742,40 @@ resLRCEx1Nonrectangular <- structure(list(resOptList = list(structure(list(theta
 														"E0", "logitconv"))), .Names = "lastGoodParameters")), .Names = c("resOptList", 
 						"summary", "prevRes"))
 		
+				
+test_that("replaceMissingSdByPercentage",{
+			n <- 100
+			x <- rnorm(n,10)
+			sdX <- sdX0 <- pmax(0.7, rnorm(n, 10*0.1 ))  
+			iMissing <- sample(n, 20)
+			sdX[iMissing] <- NA
+			sdXf <- replaceMissingSdByPercentage(sdX,x, 0.2, 1.7)
+			#plot( sdXf ~ x, col="blue" );points( sdX ~ x )
+			expect_equal( sdXf[-iMissing], sdX[-iMissing])
+			expect_true( all(is.finite(sdXf)))
+			expect_true( all(sdXf[iMissing] >= 1.7))
+			expect_true( all(sdXf[iMissing] >= 0.2*x[iMissing]))
+			#
+			sdX <- sdX0
+			iMissing <- TRUE
+			sdX[iMissing] <- NA
+			sdXf <- replaceMissingSdByPercentage(sdX,x, 0.2, 1.7)
+			#plot( sdXf ~ x, col="blue" );points( sdX ~ x )
+			expect_true( all(is.finite(sdXf)))
+			expect_true( all(sdXf[iMissing] >= 1.7))
+			expect_true( all(sdXf[iMissing] >= 0.2*x[iMissing]))
+			#
+			sdX <- sdX0 
+			iMissing <- sample(n, 20)
+			sdX[iMissing] <- NA
+			sdXf <- replaceMissingSdByPercentage(sdX,x, NA, 1.7)
+			expect_true( all(sdXf[iMissing] == 1.7))
+			#plot( sdXf ~ x, col="blue" );points( sdX ~ x )
+			sdXf <- replaceMissingSdByPercentage(sdX,x, 0.2, NA)
+			expect_true( all(sdXf[iMissing] == 0.2*x[iMissing]))
+			sdXf <- replaceMissingSdByPercentage(sdX,x, NA, NA)
+			expect_true( all(is.na(sdXf[iMissing])))
+		})				
 		
 test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 			dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
@@ -1254,8 +1288,18 @@ test_that("partitionNEEGL fixed tempSens",{
 			}
 		})
 
-
-
+test_that("partitionNEEGL: missing sdNEE",{
+			dsNEE1 <- dsNEE
+			#summary(dsNEE1)
+			dsNEE1$NEE_fsd <- NA_real_
+			#
+			tmp <- partitionNEEGL( dsNEE1, RadVar.s="Rg_f", controlGLPart=partGLControl() )
+			tmpWithPar <- tmp[ is.finite(tmp$FP_alpha),]
+			expect_equal( nrow(tmpWithPar), 4)	# fitted with missing fsd
+			#
+			rm(tmp)
+			expect_error(tmp <- partitionNEEGL( dsNEE1, RadVar.s="Rg_f", controlGLPart=partGLControl(replaceMissingSdNEEParms=c(NA,NA)) ))
+		})
 
 .profilePartGL <- function(){
 	require(profr)
