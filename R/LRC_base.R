@@ -323,8 +323,8 @@ LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
 	}
 	##details<<
 	## Optimization of LRC parameters takes into account the uncertainty of the flux values.
-	## In order to avoid very strong leverage, values with a very low uncertainty (< median) are assigned
-	## the median of the uncertainty.
+	## In order to avoid very strong leverage, values with a very low uncertainty (< a lower quantile) are assigned
+	## the lower quantile is assigned.
 	## This procedure downweighs records with a high uncertainty, but does not apply a large leverage for
 	## records with a very low uncertainty. Avoid this correction by suppyling setting \code{ctrl$isBoundLowerNEEUncertainty = FALSE}
 	Fc_unc <- if( isTRUE(ctrl$isBoundLowerNEEUncertainty) ){

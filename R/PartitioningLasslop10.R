@@ -273,8 +273,10 @@ partGLControl <- function(
 	##description<<
 	## For highest compatibility to Lasslop10 use 
 	## \code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE
-	##		, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE
+	##		, isLasslopPriorsApplied=TRUE
 	##		, smoothTempSensEstimateAcrossTime=FALSE
+	##		, isBoundLowerNEEUncertainty=FALSE
+	##		, replaceMissingSdNEEParms=c(NA,NA)
 	##      }
 	if( NRHRfunction ) stop("option 'NRHRfunction' is deprecated. Use instead in partitionNEEGL argument: lrcFitter=NonrectangularLRCFitter()")
 	ctrl <- list(  
