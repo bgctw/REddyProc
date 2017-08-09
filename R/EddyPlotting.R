@@ -687,10 +687,11 @@ sEddyProc$methods(
   ,UstarColName = "Ustar"		##<< column name for UStar
   ,NEEColName = "NEE"			##<< column name for NEE
   ,TempColName = "Tair"		##<< column name for air temperature
-
+  ,WInch = 16*0.394		##<< width of the plot in inches, defaults to 16cm
+  ,HInchSingle = 6*0.394	##<< height of a subplot in inches, defaults to 6cm
+  ,...						##<< other arguments to \code{\link{.plotNEEVersusUStarTempClass}}
 )
-  ##author<<
-  ## TW  
+  ##author<< TW  
   {
 	  'Image with daily sums of each year'
   # generate subset of data
@@ -698,18 +699,16 @@ sEddyProc$methods(
   tempBinLevels <- sort(unique(dsSeason$tempBin)) 
   # Open plot
   PlotType.s <- paste('NEEvsUStar',season.s,sep="_")
-  WInch.n <- 15
-  HInch.n <- WInch.n/3 * (length(tempBinLevels)+1)
-  PlotFile.s <- .self$.sxOpenPlot('none', 'none', NA, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotNEEVersusUStarForSeason')
+  HInch <- HInchSingle * (length(tempBinLevels)+1)
+  PlotFile.s <- .self$.sxOpenPlot('none', 'none', NA, PlotType.s, WInch, HInch, Format.s, Dir.s, 'sPlotNEEVersusUStarForSeason')
   
   tryCatch({
 			  # Split screen 
   	  split.screen(c(length(tempBinLevels) + 1, 1))
 		  split.screen(c(3,1), screen=1)
-		  
 		  # Set title of plot
 		  screen(length(tempBinLevels) + 3)
-		  mtext(.self$.sxSetTitle('NEE', 'none', NA, paste('NEE versus uStar for season',season.s)), line=-3, side=3, cex=2.0)
+		  mtext(.self$.sxSetTitle('NEE', 'none', NA, paste('NEE versus uStar for season',season.s)), line=-3, side=3, cex=1.1)
 		  
 		  # Loop over all temperature classes
 		  # tempBinI <- 1L
@@ -718,10 +717,34 @@ sEddyProc$methods(
 			  tempBinLevel <- tempBinLevels[tempBinI]
 			  uStarTh <- sUSTAR$tempInSeason[ tempBinLevel, season.s] 
 			  dss <- subset(dsSeason,  tempBin==tempBinLevel )
-			  .plotNEEVersusUStarTempClass(dss, uStarTh, UstarColName=UstarColName, NEEColName=NEEColName, TempColName=TempColName )
+			  par( las=1 )                   #also y axis labels horizontal			  
+			  par(mar=c(2.0,3.3,0,0)+0.3 )  #margins
+			  par(tck=0.02 )                          #axe-tick length inside plots             
+			  par(mgp=c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
+			  par(cex=10/12)			# default font size 10pt
+			  .plotNEEVersusUStarTempClass(dss, uStarTh, UstarColName=UstarColName, NEEColName=NEEColName, TempColName=TempColName, ... )
 		  }
 		  
 		  # Close plot
 			  }, finally=.self$.sxClosePlot(PlotFile.s))
   }) 
+  
+  .tmp.f <- function(){
+#+++ Load data with 1 header and 1 unit row from (tab-delimited) text file
+	  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+	  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+#+++ If not provided, calculate VPD from Tair and rH
+	  EddyData.F <- cbind(EddyData.F,VPD=
+					  fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
+#+++ Add time stamp in POSIX time format
+	  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH',Year.s='Year'
+			  ,Day.s='DoY',Hour.s='Hour')
+#+++ Initalize R5 reference class sEddyProc for processing of eddy data
+#+++ with the variables needed for processing later
+	  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+			  c('NEE','Rg','Tair','VPD', 'Ustar'))
+	  uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+# plot saturation of NEE with UStar for one season -> in directory plots 
+	  EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[3] )	  
+  }
   

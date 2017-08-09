@@ -254,6 +254,8 @@ usEstUstarThreshold = function(
 	,UstarColName = "Ustar"		##<< column name for UStar
 	,NEEColName = "NEE"			##<< column name for NEE
 	,TempColName = "Tair"		##<< column name for air temperature
+	,xlab = bquote("u* ("*m~s^-1*")")
+	,ylab = bquote("NEE ("*gC~ m^-2~yr^-1*")")
 ){
 	##author<<
 	## TW
@@ -261,7 +263,10 @@ usEstUstarThreshold = function(
 	colnames(dss) <- c("NEE","Ustar","Temp","uStarBin","sDateTime")
 	##details<< for each uStarBin, mean of NEE and uStar is calculated.
 	dssm <- ddply(dss, as.quoted('uStarBin'), summarise, mUStar=mean(substitute(Ustar)), mNEE=mean(substitute(NEE)) )
-	plot( NEE ~ Ustar, dss, col=adjustcolor("brown",alpha.f=0.3), ylim=quantile(dss$NEE, c(0.02,0.98))) #col=rainbow(20)[dss$uStarBin] )
+	plot( NEE ~ Ustar, dss, col=adjustcolor("brown",alpha.f=0.3), ylim=quantile(dss$NEE, c(0.02,0.98))
+		,xlab=xlab, ylab=ylab
+		#,col=rainbow(20)[dss$uStarBin] )
+	)
 	points( mNEE ~ mUStar, dssm, pch="+", cex=1.5)
 	abline(v=uStarTh, lty="dashed",col="grey")
 	dateRange <- strftime( range(dss$sDateTime), "%d.%m.%y" )
