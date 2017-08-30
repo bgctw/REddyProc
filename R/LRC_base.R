@@ -229,7 +229,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 #		# actually the GPP at low PAR is not much affects. The difference is in explaining the variability by
 #		# respiration-T of modified GPP-VPD. Here, the VPD-based RRef is closer to the night-time estimated.
 #	}
-	if (is.na(resOpt$theta[1L]) || (resOpt$theta[1L] < 0) ){
+	if (is.na(resOpt$theta[1L]) || (resOpt$theta[1L] < 0) ){ #k
 		isUsingFixedVPD <- TRUE
 		theta0Adj[1L] <- 0
 		resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )

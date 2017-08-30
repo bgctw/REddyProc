@@ -206,7 +206,7 @@ simplifyApplyWindows <- function(
 }
 
 partGLFitNightTempSensOneWindow=function(
-		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,RRef, k) for successive periods
+		### Estimate temperature sensitivity E0 within one window
 		dss					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
 		,winInfo			##<< one-row data.frame with window information, including iWindow 
 		,prevRes			##<< component prevRes from previous result, here with item prevE0
