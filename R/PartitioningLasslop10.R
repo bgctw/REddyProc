@@ -246,7 +246,8 @@ partGLControl <- function(
 		## the first record of the window for interpolation 
 		## instead of mean across valid records inside a window
 		,isLasslopPriorsApplied=FALSE	##<< set to TRUE to apply strong fixed priors on LRC fitting.	
-		## Returned parameter estimates claimed valid for some case where not enough data was available 
+		## Returned parameter estimates claimed valid for some case where not enough data was available
+		,isUsingLasslopQualityConstraints=FALSE	##<< set to TRUE to avoid quality constraints additional to Lasslop 2010		
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
 		## of Reco and GPP for small performance increase 	
 		,isFilterMeteoQualityFlag=FALSE	##<< set to TRUE to use only records where quality flag 
@@ -265,15 +266,17 @@ partGLControl <- function(
 			## \code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
 		,replaceMissingSdNEEParms=c(perc=0.2, minSd=0.7)	##<< parameters for replacing missing standard deviation of NEE.
 			## see \code{\link{replaceMissingSdByPercentage}}.
-			## Default sets missing ucnertainty to 20% of NEE but at least 0.7 gC/m2/yr.
-			## Set to c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit. 
+			## Default sets missing uncertainty to 20% of NEE but at least 0.7 gC/m2/yr.
+			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit. 
 ){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
 	## For highest compatibility to Lasslop10 use 
-	## \code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE
+	## \code{nBootUncertainty=0L
+	##      , isAssociateParmsToMeanOfValids=FALSE
 	##		, isLasslopPriorsApplied=TRUE
+	##		, isUsingLasslopQualityConstraints=TRUE
 	##		, smoothTempSensEstimateAcrossTime=FALSE
 	##		, isBoundLowerNEEUncertainty=FALSE
 	##		, replaceMissingSdNEEParms=c(NA,NA)
@@ -286,6 +289,7 @@ partGLControl <- function(
 			,minNRecInDayWindow=minNRecInDayWindow 
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
+			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
 			,isSdPredComputed=isSdPredComputed
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
@@ -362,7 +366,7 @@ partGLFitLRCWindows=function(
 }
 
 partGLFitLRCOneWindow=function(
-		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
+		### Estimate parameters of the Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for a single window
 		ds					##<< data.frame with numeric columns NEE, sdNEE, Temp (degC), VPD, Rg, and logical columns isNight and isDay
 		,winInfo			##<< one-row data.frame with window information, including iWindow 
 		,prevRes			##<< component prevRes from previous result, here with item prevE0

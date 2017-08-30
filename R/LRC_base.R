@@ -100,7 +100,7 @@ LightResponseCurveFitter_fitLRC <- function(
 		}
 	}
 	# further parameter checking after parameter uncertainty has been computed
-	# (before other parameter checking is done in optimLRCBounds) 
+	# (before here, other parameter checking is done in optimLRCBounds) 
 	sdTheta <- thetaOpt; sdTheta[] <- NA
 	sdTheta[resOpt$iOpt] <- sqrt(diag(covParms)[resOpt$iOpt])
 	if( !.self$isParameterInBounds(thetaOpt, sdTheta, RRefNight=RRefNight, ctrl=controlGLPart) ) 
@@ -268,8 +268,8 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		resOpt$convergence <- 1002
 	}
 	##details<<
-	## No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation. 
-	if( isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
+	## No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation.
+	if( !isTRUE(ctrl$isUsingLasslopQualityConstraints) & isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
 		resOpt$theta[] <- NA
 		resOpt$convergence <- 1002
 	}
@@ -374,7 +374,8 @@ LightResponseCurveFitter_isParameterInBounds <- function(
 	## 1) larger than twice the estimate from nighttime and 2) more than 0.7 in absolute terms  
 	## Else this indicates a bad fit.
 	## This is additional to Table A1 in Lasslop 2010.
-	if( (theta[4L] > 2*RRefNight) 		&& 
+	if( 	!isTRUE(ctrl$isUsingLasslopQualityConstraints) &&
+			(theta[4L] > 2*RRefNight) 		&& 
 			((theta[4L]-RRefNight) > 0.7) 
 			){
 		return(FALSE)

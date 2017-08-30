@@ -1043,7 +1043,7 @@ test_that("partitionNEEGL",{
 			#Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
 			#dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n=45.0, Long_deg.n=1, TimeZone_h.n=0 )
 			tmp <- partitionNEEGL( dsNEE1,RadVar.s='Rg_f')
-			tmp <- partitionNEEGL( dsNEE1,RadVar.s='Rg_f', controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE))
+			#tmp <- partitionNEEGL( dsNEE1,RadVar.s='Rg_f', controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE))
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			#tmp[ is.finite(tmp$FP_beta), ]	# note FP_dRecPar is not zero, because iCentralRec != iMeanRec
 			#
@@ -1076,6 +1076,45 @@ test_that("partitionNEEGL",{
 				plot( FP_RRef ~ FP_RRef_Night, tmp)
 			}
 		})
+
+test_that("partitionNEEGL with Lasslop options",{
+			dsNEE1 <- dsNEE
+			#ds <- data.frame( NEE=dsNEE1$NEE_f, sdNEE=dsNEE1$NEE_fsd, Rg=dsNEE1$Rg_f, VPD=dsNEE1$VPD_f, Temp=dsNEE1$Temp, isDay=dsNEE1$isDay, isNight=dsNEE$isNight )
+			resEx <- resLRCEx1
+			dsNEE2 <- dsNEE 
+			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <- c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
+			tmp <- partitionNEEGL( dsNEE2, RadVar.s='Rg_f', Suffix.s="u50", controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE
+							,isLasslopPriorsApplied=TRUE
+							, isUsingLasslopQualityConstraints=TRUE
+							, smoothTempSensEstimateAcrossTime=FALSE
+							, isBoundLowerNEEUncertainty=FALSE
+							, replaceMissingSdNEEParms=c(NA,NA)				
+					))
+			#tmp <- partitionNEEGL( dsNEE2, RadVar.s='Rg_f', Suffix.s="u50", controlGLPart=partGLControl(isAssociateParmsToMeanOfValids=FALSE) )
+			expect_equal( nrow(dsNEE1), nrow(tmp) )
+			expect_true( all(is.finite(tmp$GPP_DT_u50)))
+			expect_true( all(tmp$GPP_DT_u50 >= 0))
+			expect_true( all(tmp$GPP_DT_u50 < 250))
+			expect_true( all(tmp$Reco_DT_u50 < 10))
+			expect_true( all(tmp$Reco_DT_u50 > 0))
+			expect_true( all(tmp$Reco_DT_u50_SD > 0))
+			expect_true( all(tmp$GPP_DT_u50_SD >= 0))
+			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
+			# reporting good values at central records
+			# tmp[resEx$summary$iCentralRec,]
+			expect_true( sum( is.finite(tmp$FP_alpha) ) == nrow(resEx$summary) ) 
+			expect_true( all((tmp$FP_alpha[resEx$summary$iCentralRec] - resEx$a)[resEx$parms_out_range==0L] < 1e-2) )
+			#expect_true( all((is.na(tmp$FP_alpha[resLRCEx1$iFirstRec] - resLRCEx1$a)[resLRCEx1$parms_out_range!=0L])) )
+			expect_true( length(is.finite(tmp$FP_RRef_Night)) > 0 )
+			.tmp.plot <- function(){
+				tmp$time <- dsNEE1$sDateTime
+				plot( Reco_DT_u50 ~ time, tmp)
+				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
+				plot( GPP_DT_u50 ~ time, tmp)
+				plot( FP_RRef_Night ~ time, tmp)
+				plot( FP_RRef ~ FP_RRef_Night, tmp)
+			}
+		})		
 
 
 test_that("partitionNEEGL sparse data",{
