@@ -162,7 +162,7 @@ partGLControl <- function(
 		,isAssociateParmsToMeanOfValids=TRUE	##<< set to FALSE to associate parameters to 
 			## the first record of the window for interpolation 
 			## instead of mean across valid records inside a window
-		,isLasslopPriorsApplied=FALSE	##<< set to TRUE to apply strong fixed priors on LRC fitting.	
+		,isLasslopPriorsApplied=TRUE	##<< set to TRUE to apply strong fixed priors on LRC fitting.	
 			## Returned parameter estimates claimed valid for some case where not enough data was available 
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
 			## of Reco and GPP for small performance increase 	
