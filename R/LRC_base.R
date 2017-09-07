@@ -164,10 +164,12 @@ LightResponseCurveFitter_getPriorScale <- function(
 				##details<< 
 				## The beta parameter is quite well defined. Hence use a prior with a standard deviation.
 				## The specific results are sometimes a bit sensitive to the uncertainty of the beta prior. 
-				## This uncertainty is set corresponding to 10 times the median relative flux uncertainty.
+				## This uncertainty is set corresponding to 20 times the median relative flux uncertainty.
 				## The prior is weighted n times the observations in the cost.
-				## Hence, overall it is using a weight of 1/10 of the weight of all observations.
-				sdBetaPrior <- 10*medianRelFluxUncertainty*thetaPrior[2]/sqrt(nRec)
+				## Hence, overall it is using a weight of 1/20 of the weight of all observations.
+				##
+				## However, its not well defined if PAR does not reach saturation - need to check before applying this prior 
+				sdBetaPrior <- 20*medianRelFluxUncertainty*thetaPrior[2]/sqrt(nRec)
 				c(k=NA, beta=as.vector(sdBetaPrior), alpha=NA, RRef=NA, E0=NA)
 			}
 } 
@@ -398,8 +400,20 @@ LightResponseCurveFitter_optimLRC <- function(
 	# do a first fitting with a strong prior to avoid local side minima, only afterwards use fit with a weaker prior
 	# strong prior only modified beta and alpha (2nd, and 3rd parameters)
 	thetaOrig <- theta
-	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 0.5
+	##details<< If PAR does not reach saturation, do not inlcude a prior on beta.
+	if( max(list(...)$Rg)  < 1000) sdParameterPrior[2] <- NA
+	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/2; sdStrongPrior[3] <- 10
+	# also do a prior on RRef 
+	#sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 10; sdStrongPrior[4] <- 80
+	#sdStrongPrior <- c(k=50, beta=600, alpha=10, RRef=80, E0=NA) # Gitta's Priors
+recover()	
 	#
+	.tmp.f <- function(){
+		.self$computeCost(theta1[1:4], theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
+		.self$computeCost(thetaStrong[1:4], theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
+		.self$computeCost(resOptimStrongPrior$par, theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
+		.self$computeCost(resOptim$par, theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
+	}
 	resOptimStrongPrior <- optim(thetaOrig[iOpt], .self$computeCost
 			#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
 			,theta=thetaOrig

@@ -63,6 +63,7 @@ check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 
 
 #s <- grep("CA-TP3",sites)[1]
+#s <- grep("FR-Hes",sites)[1]
 #s <- 1L
 for ( s in seq_along(sites)) {
   
@@ -98,6 +99,54 @@ for ( s in seq_along(sites)) {
 								 		         controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
                                                           isBoundLowerNEEUncertainty=FALSE),
 								 		         lrcFitter=RectangularLRCFitter())
+										 
+  .tmp.comparePriors <- function(){
+	  dfJune98 <- subset(dfall_posix, Year==1998 & Month==6) 
+	  dfDefault <- partitionNEEGL(dfJune98,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+			  TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+			  QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+			  controlGLPart=partGLControl(),
+			  lrcFitter=RectangularLRCFitter())
+	  dfLasslopPriors <- partitionNEEGL(dfJune98,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+			  TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+			  QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+			  controlGLPart=partGLControl(isLasslopPriorsApplied=TRUE),
+			  lrcFitter=RectangularLRCFitter())
+	  dfLasslopPriors$Day <- dfDefault$Day <- dfJune98$Day
+	  dfLasslopPriors$sDateTime <- dfDefault$sDateTime <- dfJune98$sDateTime
+	  plot( dfDefault$GPP_DT ~ dfLasslopPriors$GPP_DT, col=rainbow(30)[dfJune98$Day]); abline(0,1)
+	  #
+	  plot( GPP_DT ~ sDateTime, dfLasslopPriors)
+	  points( GPP_DT ~ sDateTime, dfDefault, col="red") # smaller
+	  #
+	  #subset(dfDefault, is.finite(FP_beta) )
+	  plot( dfDefault$FP_beta ~ dfLasslopPriors$FP_beta, col=rainbow(30)[dfJune98$Day]); abline(0,1)
+	  subset(data.frame(Day=dfJune98$Day, dFP_beta = dfLasslopPriors$FP_beta - dfDefault$FP_beta), is.finite(dFP_beta) )
+	  # look at day 7 and day 19
+	
+	subset(dfDefault, is.finite(FP_beta), c("Day","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night") )
+	subset(dfLasslopPriors, is.finite(FP_beta), c("Day","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night") )
+	
+	  # in partGLFitLRCOneWindow:
+	  #if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
+	  #	  save(dsDay, file="tmp/dsDay7.RData")
+	  load(file="tmp/dsDay7.RData")
+	  #library(dplyr)
+	  dsDay <- arrange_(dsDay, ~Rg)
+	  plot( -NEE ~ Rg, dsDay)
+	  (theta1 <- unlist(subset(dfDefault, Day == 7 & is.finite(FP_beta), c("FP_k","FP_beta","FP_alpha","FP_RRef","FP_E0","FP_RRef_Night") )))
+	  (thetaStrong <- unlist(subset(dfLasslopPriors, Day == 7 & is.finite(FP_beta), c("FP_k","FP_beta","FP_alpha","FP_RRef","FP_E0","FP_RRef_Night") )))
+	  lrcFitter <- RectangularLRCFitter()
+	  dsDay$GPPDefault <- lrcFitter$predictGPP( dsDay$Rg, theta1["FP_beta"], theta1["FP_alpha"])
+	  dsDay$GPPStrong <- lrcFitter$predictGPP( dsDay$Rg, thetaStrong["FP_beta"], thetaStrong["FP_alpha"])
+	  dsDay$NEPDefault <- lrcFitter$predictLRC( theta1, dsDay$Rg, dsDay$VPD, dsDay$Temp)$NEP
+	  dsDay$NEPStrong <- lrcFitter$predictLRC( thetaStrong, dsDay$Rg, dsDay$VPD, dsDay$Temp)$NEP
+	  lines( NEPDefault ~ Rg, dsDay )
+	  lines( NEPStrong ~ Rg, dsDay, col="red" )
+	  
+	  
+	  
+  }										 
 
   .tmp.debug <- function(){
 	  df.REddy$DateTime <- dfall_posix$DateTime

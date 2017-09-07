@@ -245,7 +245,7 @@ partGLControl <- function(
 		,isAssociateParmsToMeanOfValids=TRUE	##<< set to FALSE to associate parameters to 
 		## the first record of the window for interpolation 
 		## instead of mean across valid records inside a window
-		,isLasslopPriorsApplied=FALSE	##<< set to TRUE to apply strong fixed priors on LRC fitting.	
+		,isLasslopPriorsApplied=TRUE	##<< set to TRUE to apply strong fixed priors on LRC fitting.	
 		## Returned parameter estimates claimed valid for some case where not enough data was available
 		,isUsingLasslopQualityConstraints=FALSE	##<< set to TRUE to avoid quality constraints additional to Lasslop 2010		
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
@@ -423,6 +423,7 @@ partGLFitLRCOneWindow=function(
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
 	#
 	##seealso<< \code{\link{LightResponseCurveFitter_fitLRC}}
+	#lrcFitter <- RectangularLRCFitter()
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
 			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$resOpt$thetaOpt)
 	if( !is.finite(resOpt$thetaOpt[1]) ) {
@@ -432,7 +433,8 @@ partGLFitLRCOneWindow=function(
 	sdTheta[resOpt$iOpt] <- sqrt(diag(resOpt$covParms)[resOpt$iOpt])
 	#
 	# record valid fits results
-	as.data.frame(t(resOpt$thetaOpt))
+	#as.data.frame(t(resOpt$thetaOpt))
+if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
 	ans <- list(
 		 resOpt=resOpt
 		 ,summary = cbind(data.frame(
@@ -486,9 +488,9 @@ partGLFitLRCOneWindow=function(
 
 partGLInterpolateFluxes <- function(
 		### Interpolate ecoystem respiration (Reco) and Gross primary production (GPP) and associated uncertainty from two neighboring parameter sets of Light response curves 
-		Rg   	##<< photosynthetic flux density [umol/m2/s] or Global Radiation
-		,VPD 	##<< Vapor Pressure Deficit [hPa]
-		,Temp 	##<< Temperature [degC] 
+		Rg   	##<< numeric vector of photosynthetic flux density [umol/m2/s] or Global Radiation
+		,VPD 	##<< numeric vector of Vapor Pressure Deficit [hPa]
+		,Temp 	##<< numeric vector of Temperature [degC] 
 		,resParms	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,lrcFitter	##<< R5 class instance responsible for fitting the light response curve  	
@@ -515,12 +517,12 @@ partGLInterpolateFluxes <- function(
     if( length(iRecsOmit)) summaryLRC <- summaryLRC[-iRecsOmit,]
 	}
 	##details<<
-	## Parameter estimates are reported for the first record of the window, or
+	## Parameter estimates are reported for the central record of the window, or
 	## if \code{isTRUE(controlGLPart.l$isAssociateParmsToMeanOfValids)} for the mean time of all valid records within the window
 	# for each original record merge parameters assicated with previous fit or next fit respectively
 	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
 	dsAssoc <- .partGPAssociateSpecialRows(summaryLRC[[colNameAssoc]],nRec)
-	# now we have iBefore and iAfter
+	# now we have columns iBefore and iAfter, which can be used to merge the parameter estimate columns to each row
 	parNames <- lrcFitter$getParameterNames()
 	dsBefore <- merge( 
 			structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
@@ -574,6 +576,72 @@ partGLInterpolateFluxes <- function(
 	ans$dRecNextEstimate <- ifelse(isBeforeCloser, dRecBefore, dRecAfter)
 	##value<< data.frame with nrow() rows and columns  GPP, Reco, varGPP, varReco, and dRecNextEstimate
 	ans
+}
+
+computeAggregatedCovariance <- function(
+	### compute the sum of covariances between Reco and GPP predictions that are due to being based on the same uncertaint model coefficients
+	dsPred	##<< data.frame with predictors (Rg, VPD, Temp)
+	#dsBefore	##<< data.frame with predictors (Rg, VPD, Temp) and   
+	#,dsAfter	##<< data.frame with predictors () and parameters of subsequent estimate
+	,resParms	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+	,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}} with entry "isAssociateParmsToMeanOfValids"
+	,lrcFitter	##<< R5 class instance responsible for fitting the light response curve, with method getParameterNames()
+	,iAggregate=1:nrow(dsPred)	##<< row indices about which to sum over, must be contiguous
+){
+	sumCovGPP <- 0
+	sumCovReco <- 0
+	# merge parameters to predictors
+	isValidWin <- is.finite(resParms$summary$parms_out_range)
+	summaryLRC <- resParms$summary[ isValidWin, ,drop=FALSE]
+	resOptList <- resParms$resOptList[isValidWin]
+	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec" 
+	dsAssoc <- .partGPAssociateSpecialRows(summaryLRC[[colNameAssoc]],nRec)
+	# now we have columns iBefore and iAfter, which can be used to merge the parameter estimate columns to each row
+	parNames <- lrcFitter$getParameterNames()
+	dsBefore <- merge( 
+			structure(data.frame(dsAssoc$iSpecialBefore, dsAssoc$iBefore),names=c("iParRec",colNameAssoc))
+			, summaryLRC[,c(colNameAssoc, parNames)]
+	)
+	dsAfter  <- merge( structure(data.frame(dsAssoc$iSpecialAfter, dsAssoc$iAfter),names=c("iParRec",colNameAssoc)), summaryLRC[,c(colNameAssoc,lrcFitter$getParameterNames())])
+	#
+	# compute gradients (each entry is a list with components vectors Reco and GPP
+	grad2 <- lapply( list(dsBefore,dsAfter), function(dsi){
+				theta <- as.matrix(dsi[,parNames])
+				grad <- lrcFitter$computeLRCGradient(theta, dsPred$Rg, dsPred$VPD, pmax(-40,dsPred$Temp))
+			})
+	for( iRec in iAggregate[-1]){    # in first line only entry with i==j
+		iParRecBefore <- dsAssoc$iSpecialBefore[iRec]
+		resOptBefore <- resOptList[[ iParRecBefore ]]
+		iParRecAfter <- dsAssoc$iSpecialAfter[iRec]
+		resOptAfter <- resOptList[[ iParRecAfter ]]
+		gradGPPIBefore <- grad[[1]]$GPP[iRec,]
+		gradRecoIBefore <- grad[[1]]$Reco[iRec,]			  
+		gradGPPIAfter <- grad[[2]]$GPP[iRec,]
+		gradRecoIAfter <- grad[[2]]$Reco[iRec,]			  
+		for( jRec in iAggregate[1]:(iRec-1) ){ # iterate from start to one before iRec
+			# assume covariance larger than zero only in same interval between parameter estimates
+			if( (dsAssoc$iSpecialBefore[jRec] == iParRecBefore) &&
+				(dsAssoc$iSpecialAfter[jRec] == iParRecAfter)
+			){ 
+				gradGPPJBefore <- grad[[1]]$GPP[jRec,]
+				gradRecoJBefore <- grad[[1]]$Reco[jRec,]			  
+				gradGPPJAfter <- grad[[2]]$GPP[jRec,]
+				gradRecoJAfter <- grad[[2]]$Reco[jRec,]			  
+				covRecoBefore <- gradRecoIBefore %*% resOptBefore$covParms[names(gradRecoIBefore),names(gradRecoIBefore)] %*% gradRecoJBefore
+				covGPPBefore <-  gradGPPIBefore %*% resOptBefore$covParms[names(gradGPPIBefore),names(gradGPPIBefore)] %*% gradGPPJBefore
+				covRecoAfter <- gradRecoIAfter %*% resOptAfter$covParms[names(gradRecoIAfter),names(gradRecoIAfter)] %*% gradRecoJAfter
+				covGPPBAfter <-  gradGPPIAfter %*% resOptAfter$covParms[names(gradGPPIAfter),names(gradGPPIAfter)] %*% gradGPPJAfter
+				covRecoMix <- dsAssoc$wBefore[iRec]*dsAssoc$wBefore[jRec]*covRecoBefore + dsAssoc$wAfter[iRec]*dsAssoc$wAfter[jRec]*covRecoAfter 
+				covGPPMix <- dsAssoc$wBefore[iRec]*dsAssoc$wBefore[jRec]*covGPPBefore + dsAssoc$wAfter[iRec]*dsAssoc$wAfter[jRec]*covGPPAfter
+				sumCovReco <- sumCovReco + 2*covRecoMix  # matrix symmetrical, add also from transposed
+				sumCovGPP <- sumCovGPP + 2*covGPPMix
+			} # match of iParRecBefore and iParRecAfter
+		} # for jRec
+	} # for iRec
+	##value<< named numeri vector with two components: 
+	ans <- c( sumCovGPP = sumCovGPP		##<< sum_{i<>j} cov(GPP_i,GPP_j)
+			, sumCovReco = sumCovReco	##<< sum_{i<>j} cov(Reco_i,Reco_j)
+			)
 }
 
 
