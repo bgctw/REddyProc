@@ -115,7 +115,20 @@ for ( s in seq_along(sites)) {
 				lrcFitter=RectangularLRCFitter())
 		plot(dfDefaultAll$FP_E0 ~ dfall_posix$sDateTime)
 		plot(dfDefaultAll$FP_RRef_Night ~ dfall_posix$sDateTime)
+		plot(dfDefaultAll$FP_beta ~ dfall_posix$sDateTime)
 		#use E0=200 for August
+		#
+		dfOptAll <- partitionNEEGL(dfall_posix,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+				TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+				QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+				controlGLPart=partGLControl(minPropSaturation=NA),
+				lrcFitter=RectangularLRCFitter())
+		plot(dfOptAll$FP_beta ~ dfall_posix$sDateTime)
+		points(dfDefaultAll$FP_beta ~ dfall_posix$sDateTime, col="red")
+		plot(dfOptAll$FP_RRef ~ dfall_posix$sDateTime)
+		points(dfDefaultAll$FP_RRef ~ dfall_posix$sDateTime, col="red", pch="x")
+		plot(is.finite(dfOptAll$FP_RRef) ~ dfall_posix$sDateTime)
+		points(is.finite(dfDefaultAll$FP_RRef) ~ dfall_posix$sDateTime, pch="x", col="red")
 	}
 	fixedTempSens <- data.frame(E0=200, sdE0=50, RRef=3.4)
 	dfDefault <- partitionNEEGL(dfAug02,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",

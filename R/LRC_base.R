@@ -124,6 +124,7 @@ LightResponseCurveFitter_fitLRC <- function(
 				##<< ,1003: too few valid records in window
 				##<< ,1004: near zero covariance in bootstrap indicating bad fit
 				##<< ,1005: covariance from curvature of fit yieled negative variances indicating bad fit
+				##<< ,1006: prediction of highest PAR in window was far from saturation indicating insufficient data to constrain LRC
 				##<< ,1010: no temperature-respiration relationship found
 				##<< ,1011: too few valid records in window (from different location: partGLFitLRCOneWindow)
 				)
@@ -276,6 +277,28 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		resOpt$theta[] <- NA
 		resOpt$convergence <- 1002
 	}
+	##details<<
+	## Not parameters are reported if the data did not contain records that are near light saturation. 
+	## This is checked by comparing the prediction at highest PAR with the beta parameter
+	if( is.finite(resOpt$theta[1]) & !isTRUE(ctrl$isUsingLasslopQualityConstraints) & is.finite(ctrl$minPropSaturation)){
+		dsDay <- list(...)$dsDay
+		iMaxRg <- which.max(dsDay$Rg)
+		dsDayMax <- dsDay[iMaxRg,,drop=FALSE]
+		predMaxGPP <- .self$predictLRC( theta=resOpt$theta, 
+				,Rg=dsDayMax$Rg
+				,VPD=dsDayMax$VPD
+				,Temp=dsDayMax$Temp 
+				#,VPD0 = 10 			# TODO: think of providing VPD0 and TRef to this function
+				#,TRef= 15	 
+		)$GPP
+		if( predMaxGPP < ctrl$minPropSaturation*resOpt$theta["beta"]){
+			#plot(-NEE ~ Rg, dsDay)
+			resOpt$theta[] <- NA
+			resOpt$convergence <- 1006
+		}
+	}
+	
+	
 	# Further checks are done, after parameter uncertainty has been determined, by call from 
 	# fitLRC to isParameterInBounds
 	#

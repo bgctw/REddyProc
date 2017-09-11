@@ -267,7 +267,10 @@ partGLControl <- function(
 		,replaceMissingSdNEEParms=c(perc=0.2, minSd=0.7)	##<< parameters for replacing missing standard deviation of NEE.
 			## see \code{\link{replaceMissingSdByPercentage}}.
 			## Default sets missing uncertainty to 20% of NEE but at least 0.7 gC/m2/yr.
-			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit. 
+			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit.
+		,minPropSaturation=3/4	##<< quality criterion for sufficient data in window. 
+			## If GPP prediction of highest PAR of window is less than minPropSaturation*(GPP at light-saturation, i.e. beta)
+			## this indicates that PAR is not sufficiently high to constrain the shape of the LRC
 ){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -298,6 +301,7 @@ partGLControl <- function(
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
 			,fixedTempSens=fixedTempSens
 			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
+			,minPropSaturation=minPropSaturation
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
