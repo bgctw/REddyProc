@@ -434,8 +434,10 @@ partGLFitLRCOneWindow=function(
 	#
 	# record valid fits results
 	#as.data.frame(t(resOpt$thetaOpt))
-if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
-	ans <- list(
+#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
+#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 12 ) recover()
+# save(dsDay, file="tmp/dsInspectBoundNEEUnc_DE-Tha_Aug12.RData")
+ans <- list(
 		 resOpt=resOpt
 		 ,summary = cbind(data.frame(
 			nValidRec=nrow(dsDay)
@@ -484,7 +486,6 @@ if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
 	}
 	ans
 }
-
 
 partGLInterpolateFluxes <- function(
 		### Interpolate ecoystem respiration (Reco) and Gross primary production (GPP) and associated uncertainty from two neighboring parameter sets of Light response curves 

@@ -1,5 +1,5 @@
 #Script for testing the new partitioning GL for REddyProc
-library(REddyProc)
+if( !exists("sEddyProc")) library(REddyProc)
 # alternative
 .tmp.f <- function(){
 	library(Rcpp)
@@ -64,6 +64,7 @@ check_quality <- TRUE   # plot halfhourly NEE time series as a quality check?
 
 #s <- grep("CA-TP3",sites)[1]
 #s <- grep("FR-Hes",sites)[1]
+#s <- grep("DE-Hai",sites)[1]
 #s <- 1L
 for ( s in seq_along(sites)) {
   
@@ -99,7 +100,74 @@ for ( s in seq_along(sites)) {
 								 		         controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
                                                           isBoundLowerNEEUncertainty=FALSE),
 								 		         lrcFitter=RectangularLRCFitter())
-										 
+				
+	
+
+.tmp.compareBoundLowerNEEUnc <- function(){
+	# DE-Hai month 8
+	dfAug02 <- subset(dfall_posix, Year==2002 & Month==8)
+	.tmp.f <- function(){
+		# first need to get temperature sensitivity
+		dfDefaultAll <- partitionNEEGL(dfall_posix,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+				TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+				QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+				controlGLPart=partGLControl(),
+				lrcFitter=RectangularLRCFitter())
+		plot(dfDefaultAll$FP_E0 ~ dfall_posix$sDateTime)
+		plot(dfDefaultAll$FP_RRef_Night ~ dfall_posix$sDateTime)
+		#use E0=200 for August
+	}
+	fixedTempSens <- data.frame(E0=200, sdE0=50, RRef=3.4)
+	dfDefault <- partitionNEEGL(dfAug02,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+			TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+			QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+			controlGLPart=partGLControl(fixedTempSens=fixedTempSens),
+			lrcFitter=RectangularLRCFitter())
+	dfOpt <- partitionNEEGL(dfAug02,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+			TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+			QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+			controlGLPart=partGLControl(fixedTempSens=fixedTempSens, isBoundLowerNEEUncertainty=FALSE),
+			lrcFitter=RectangularLRCFitter())
+	dfOpt$Day <- dfDefault$Day <- dfAug02$Day
+	dfOpt$sDateTime <- dfDefault$sDateTime <- dfAug02$sDateTime
+	plot( dfDefault$GPP_DT ~ dfOpt$GPP_DT, col=rainbow(30)[dfAug02$Day]); abline(0,1)
+	#
+	plot( GPP_DT ~ sDateTime, dfOpt)
+	points( GPP_DT ~ sDateTime, dfDefault, col="red") # GPP is smaller with constraining lower NEE bound
+	#
+	#subset(dfDefault, is.finite(FP_beta) )
+	dfDefault$FP_beta[ is.finite(dfDefault$FP_beta) ]
+	dfOpt$FP_beta[ is.finite(dfOpt$FP_beta) ]
+	dfOpt$Day[ is.finite(dfOpt$FP_beta) ] # look at day 13
+	#plot( dfDefault$FP_beta ~ dfOpt$FP_beta, col=rainbow(30)[dfAug02$Day]); abline(0,1)
+	#subset(data.frame(Day=dfAug02$Day, dFP_beta = dfOpt$FP_beta - dfDefault$FP_beta), is.finite(dFP_beta) )
+	# look at day 7 and day 19
+	
+	subset(dfDefault, is.finite(FP_beta), c("Day","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night") )
+	subset(dfOpt, is.finite(FP_beta), c("Day","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night") )
+	
+	# in partGLFitLRCOneWindow:
+	#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
+	#	  save(dsDay, file="tmp/dsInspectBoundNEEUnc_DE-Tha_Aug12.RData")
+	load(file="tmp/dsInspectBoundNEEUnc_DE-Tha_Aug12.RData")
+	#library(dplyr)
+	dsDay <- arrange_(dsDay, ~Rg)
+	plot( -NEE ~ Rg, dsDay)
+	(thetaDef <- unlist(subset(dfDefault, Day == 13 & is.finite(FP_beta), c("FP_k","FP_beta","FP_alpha","FP_RRef","FP_E0","FP_RRef_Night") )))
+	(thetaOpt <- unlist(subset(dfOpt, Day == 13 & is.finite(FP_beta), c("FP_k","FP_beta","FP_alpha","FP_RRef","FP_E0","FP_RRef_Night") )))
+	lrcFitter <- RectangularLRCFitter()
+	dsDay$GPPDefault <- lrcFitter$predictGPP( dsDay$Rg, thetaDef["FP_beta"], thetaDef["FP_alpha"])
+	dsDay$GPPOpt <- lrcFitter$predictGPP( dsDay$Rg, thetaOpt["FP_beta"], thetaOpt["FP_alpha"])
+	dsDay$NEPDefault <- lrcFitter$predictLRC( thetaDef, dsDay$Rg, dsDay$VPD, dsDay$Temp)$NEP
+	dsDay$NEPOpt <- lrcFitter$predictLRC( thetaOpt, dsDay$Rg, dsDay$VPD, dsDay$Temp)$NEP
+	lines( NEPDefault ~ Rg, dsDay )
+	lines( NEPOpt ~ Rg, dsDay, col="red" )
+	
+	
+	
+}										 
+
+
   .tmp.comparePriors <- function(){
 	  dfJune98 <- subset(dfall_posix, Year==1998 & Month==6) 
 	  dfDefault <- partitionNEEGL(dfJune98,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",

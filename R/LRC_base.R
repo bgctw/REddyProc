@@ -105,6 +105,7 @@ LightResponseCurveFitter_fitLRC <- function(
 	sdTheta[resOpt$iOpt] <- sqrt(diag(covParms)[resOpt$iOpt])
 	if( !.self$isParameterInBounds(thetaOpt, sdTheta, RRefNight=RRefNight, ctrl=controlGLPart) ) 
 		return(getNAResult(1002L))
+	# debugging: tracing specific LRC fits:
 	##value<< a list, If none of the optimizations from different starting conditions converged,
 	## the parameters are NA
 	ans <- list(
@@ -406,7 +407,6 @@ LightResponseCurveFitter_optimLRC <- function(
 	# also do a prior on RRef 
 	#sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 10; sdStrongPrior[4] <- 80
 	#sdStrongPrior <- c(k=50, beta=600, alpha=10, RRef=80, E0=NA) # Gitta's Priors
-recover()	
 	#
 	.tmp.f <- function(){
 		.self$computeCost(theta1[1:4], theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
