@@ -249,7 +249,7 @@ partGLControl <- function(
 		## Returned parameter estimates claimed valid for some case where not enough data was available
 		,isUsingLasslopQualityConstraints=FALSE	##<< set to TRUE to avoid quality constraints additional to Lasslop 2010		
 		,isSdPredComputed=TRUE			##<< set to FALSE to avoid computing standard errors 
-		## of Reco and GPP for small performance increase 	
+			## of Reco and GPP for small performance increase 	
 		,isFilterMeteoQualityFlag=FALSE	##<< set to TRUE to use only records where quality flag 
 		## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled for parameter estimation.
 		## For prediction, the gap-filled value is used always, to produce predictions also for gaps.
@@ -275,15 +275,8 @@ partGLControl <- function(
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
 	##description<<
-	## For highest compatibility to Lasslop10 use 
-	## \code{nBootUncertainty=0L
-	##      , isAssociateParmsToMeanOfValids=FALSE
-	##		, isLasslopPriorsApplied=TRUE
-	##		, isUsingLasslopQualityConstraints=TRUE
-	##		, smoothTempSensEstimateAcrossTime=FALSE
-	##		, isBoundLowerNEEUncertainty=FALSE
-	##		, replaceMissingSdNEEParms=c(NA,NA)
-	##      }
+	## For highest compatibility to the pvWave code of G.Lasslop (used by first BGC-online tool)
+	## see function \code{\link{partGLControlLasslopCompatible}}. 
 	if( NRHRfunction ) stop("option 'NRHRfunction' is deprecated. Use instead in partitionNEEGL argument: lrcFitter=NonrectangularLRCFitter()")
 	ctrl <- list(  
 			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
@@ -293,7 +286,6 @@ partGLControl <- function(
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
 			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
-			,isSdPredComputed=isSdPredComputed
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
@@ -312,6 +304,46 @@ attr(partGLControl,"ex") <- function(){
 	partGLControl(nBootUncertainty=40L)
 }
 
+partGLControlLasslopCompatible <- function(
+		### List of parameters for daytime flux partitioning that ensure highest compatibility with the pvWave implementation of Lasslop 
+		nBootUncertainty=0L						##<< 0: Derive uncertainty from curvature of a single fit, neglecting the uncertainty of previously estimated temperature sensitivity, E0
+		,minNRecInDayWindow = 10L 				##<< Minimum number of 10 valid records for regression in a single window 
+		,isAssociateParmsToMeanOfValids=FALSE	##<< associate parameters to 
+			## the first record of the window for interpolation instead of mean across valid records inside a window
+		,isLasslopPriorsApplied=TRUE			##<< Apply fixed Lasslop priors in LRC fitting.	
+		,isUsingLasslopQualityConstraints=TRUE	##<< avoid quality constraints additional to the ones in Lasslop 2010		
+		,isBoundLowerNEEUncertainty=FALSE		##<< FALSE: avoid adjustment of very low uncertainties before
+			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
+		,smoothTempSensEstimateAcrossTime=FALSE	##<< FALSE: use independent estimates of temperature 
+			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
+		,isRefitMissingVPDWithNeglectVPDEffect=FALSE	##<< FALSE: avoid repeating estimation with \code{isNeglectVPDEffect=TRUE}
+		,replaceMissingSdNEEParms=c(NA,NA)		##<< c(NA,NA): avoid replacing missing standard deviation of NEE.
+		,minPropSaturation=NA					##<< NA: avoid quality constraint of sufficient saturation in data 
+			## This option is overruled, i.e. not considered, if option isUsingLasslopQualityConstraints=TRUE.
+		,isNeglectVPDEffect=FALSE 				##<< FALSE: do not neglect VPD effect
+		, ... 									##<< further arguemtns to \code{\link{partGLControl}}
+){
+	##author<< TW
+	##seealso<< \code{\link{partGLControl}}
+	partGLControl(
+			nBootUncertainty=nBootUncertainty
+			,minNRecInDayWindow=minNRecInDayWindow 
+			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
+			,isLasslopPriorsApplied=isLasslopPriorsApplied
+			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
+			,isSdPredComputed=isSdPredComputed
+			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
+			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
+			,isNeglectVPDEffect=isNeglectVPDEffect
+			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
+			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
+			,minPropSaturation=minPropSaturation
+			,...
+	)
+}
+attr(partGLControlLasslopCompatible,"ex") <- function(){
+	partGLControlLasslopCompatible()
+}
 
 partGLFitLRCWindows=function(
 		### Estimate temperature sensitivity and parameters of Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
