@@ -268,9 +268,11 @@ partGLControl <- function(
 			## see \code{\link{replaceMissingSdByPercentage}}.
 			## Default sets missing uncertainty to 20% of NEE but at least 0.7 gC/m2/yr.
 			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit.
-		,minPropSaturation=3/4	##<< quality criterion for sufficient data in window. 
+		,minPropSaturation=NA	##<< quality criterion for sufficient data in window. 
 			## If GPP prediction of highest PAR of window is less than minPropSaturation*(GPP at light-saturation, i.e. beta)
 			## this indicates that PAR is not sufficiently high to constrain the shape of the LRC
+		,weightMisfitPar2000=5	##<< weight of misfit of difference between saturation and prediction at PAR=2000
+			##<< one unit corresponds to one fictitious record with median standard deviation.
 ){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -286,6 +288,7 @@ partGLControl <- function(
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
 			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
+			,isSdPredComputed=isSdPredComputed
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
@@ -294,6 +297,7 @@ partGLControl <- function(
 			,fixedTempSens=fixedTempSens
 			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
 			,minPropSaturation=minPropSaturation
+			,weightMisfitPar2000=weightMisfitPar2000
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")
@@ -321,6 +325,7 @@ partGLControlLasslopCompatible <- function(
 		,minPropSaturation=NA					##<< NA: avoid quality constraint of sufficient saturation in data 
 			## This option is overruled, i.e. not considered, if option isUsingLasslopQualityConstraints=TRUE.
 		,isNeglectVPDEffect=FALSE 				##<< FALSE: do not neglect VPD effect
+		,weightMisfitPar2000=NA					##<< do not consider prior knowledge that saturation should be nearly obtained at PAR=2000			
 		, ... 									##<< further arguemtns to \code{\link{partGLControl}}
 ){
 	##author<< TW
@@ -338,6 +343,7 @@ partGLControlLasslopCompatible <- function(
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
 			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
 			,minPropSaturation=minPropSaturation
+			,weightMisfitPar2000=weightMisfitPar2000
 			,...
 	)
 }
@@ -461,7 +467,8 @@ partGLFitLRCOneWindow=function(
 	##seealso<< \code{\link{LightResponseCurveFitter_fitLRC}}
 	#lrcFitter <- RectangularLRCFitter()
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=E0, sdE0=sdE0, RRefNight=RRefNight
-			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$resOpt$thetaOpt)
+			, controlGLPart=controlGLPart, lastGoodParameters=prevRes$resOpt$thetaOpt
+	)
 	if( !is.finite(resOpt$thetaOpt[1]) ) {
 		return(getNAResult(resOpt$convergence))
 	}
@@ -470,9 +477,9 @@ partGLFitLRCOneWindow=function(
 	#
 	# record valid fits results
 	#as.data.frame(t(resOpt$thetaOpt))
-#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L == 7 ) recover()
-#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 12 ) recover()
-# save(dsDay, file="tmp/dsInspectBoundNEEUnc_DE-Tha_Aug12.RData")
+#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 11 ) recover()
+#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 27 ) recover()
+# save(dsDay, file="tmp/dsDayDebug.RData")
 ans <- list(
 		 resOpt=resOpt
 		 ,summary = cbind(data.frame(

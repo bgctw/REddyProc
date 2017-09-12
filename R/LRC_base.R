@@ -249,7 +249,8 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		if ( (is.na(resOpt$theta[3L]) || (resOpt$theta[3L] > 0.22)) && is.finite(lastGoodParameters[3L]) ){
 			isUsingFixedAlpha <- TRUE
 			theta0Adj[3L] <- lastGoodParameters[3L]
-			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha), parameterPrior = parameterPrior, ctrl, ... )
+			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt=getIOpt(isUsingFixedVPD, isUsingFixedAlpha)
+				, parameterPrior = parameterPrior, ctrl, ... )
 			# check k, if less than zero estimate parameters without VPD effect and with fixed alpha of last window 
 			if (is.na(resOpt$theta[1L]) || (resOpt$theta[1L] < 0)){
 				isUsingFixedVPD <- TRUE
@@ -442,6 +443,7 @@ LightResponseCurveFitter_optimLRC <- function(
 			,theta=thetaOrig
 			,iOpt=iOpt
 			,sdParameterPrior = sdStrongPrior
+			,weightMisfitPar2000 = ctrl$weightMisfitPar2000
 			, ...
 			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
 			,method="BFGS"
@@ -456,6 +458,7 @@ LightResponseCurveFitter_optimLRC <- function(
 			,theta=thetaOrig
 			,iOpt=iOpt
 			,sdParameterPrior = sdParameterPrior
+			,weightMisfitPar2000 = ctrl$weightMisfitPar2000
 			, ...
 			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
 			,method="BFGS", hessian=isUsingHessian)
@@ -476,10 +479,11 @@ LightResponseCurveFitter_computeCost <- function(
 		thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized 
 		,theta		##<< parameter vector with positions as in argument of \code{\link{LightResponseCurveFitter_getParameterNames}} 
 		,iOpt		##<< position in theta that are optimized 
-		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s], should not contain NA
-		,sdFlux=NA 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
+		,flux 		##<< numeric: NEP (-NEE) or GPP time series [umolCO2/m2/s], should not contain NA
+		,sdFlux 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
 		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
 		,sdParameterPrior	##<< standard deviation of parameterPrior
+		,weightMisfitPar2000=NA	##<< weight of misfit of difference between saturation and prediction at PAR=2000
 		,...				##<< other arguments to \code{\link{LightResponseCurveFitter_predictLRC}}, such as VPD0, fixVPD
 ) {
 	theta[iOpt] <- thetaOpt
@@ -491,7 +495,15 @@ LightResponseCurveFitter_computeCost <- function(
 	#}
 	misFitPrior <- (((theta - parameterPrior))/(sdParameterPrior))^2
 	misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
-	RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE)
+	##details<<
+	## There is prior knowledge that saturation should be reached at PAR of 2000.
+	## Hence, penalize the difference between saturation (beta parameter) and prediction for PAR of 2000
+    misfitPar2000 <- 0
+	if( length(weightMisfitPar2000) && !is.na(weightMisfitPar2000) ){ 
+		predPar1200 <- .self$predictLRC(theta, Rg=2000, VPD=0, Temp=NA)$GPP
+		misfitPar2000 <- ((theta[2L]-predPar1200)/median(sdFlux) )^2*weightMisfitPar2000
+	}
+	RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE) + misfitPar2000
 	#if( !is.finite(RSS) ) recover()	# debugging the fit
 	RSS
 }
