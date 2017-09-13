@@ -422,36 +422,7 @@ LightResponseCurveFitter_optimLRC <- function(
 		, ctrl				##<< list of further controls
 		, isUsingHessian	##<< scalar boolean: set to TRUE to compute Hessian at optimum
 ){
-	# do a first fitting with a strong prior to avoid local side minima, only afterwards use fit with a weaker prior
-	# strong prior only modified beta and alpha (2nd, and 3rd parameters)
 	thetaOrig <- theta
-	##details<< If PAR does not reach saturation, do not inlcude a prior on beta.
-	if( max(list(...)$Rg)  < 1000) sdParameterPrior[2] <- NA
-	sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/2; sdStrongPrior[3] <- 10
-	# also do a prior on RRef 
-	#sdStrongPrior <- sdParameterPrior; sdStrongPrior[2] <- sdParameterPrior[2]/10; sdStrongPrior[3] <- 10; sdStrongPrior[4] <- 80
-	#sdStrongPrior <- c(k=50, beta=600, alpha=10, RRef=80, E0=NA) # Gitta's Priors
-	#
-	.tmp.f <- function(){
-		.self$computeCost(theta1[1:4], theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
-		.self$computeCost(thetaStrong[1:4], theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
-		.self$computeCost(resOptimStrongPrior$par, theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
-		.self$computeCost(resOptim$par, theta=thetaOrig, iOpt=iOpt, sdParameterPrior=sdParameterPrior, ...)
-	}
-	resOptimStrongPrior <- optim(thetaOrig[iOpt], .self$computeCost
-			#tmp <- .partGLRHLightResponseCost( theta[iOpt], 
-			,theta=thetaOrig
-			,iOpt=iOpt
-			,sdParameterPrior = sdStrongPrior
-			,weightMisfitPar2000 = ctrl$weightMisfitPar2000
-			, ...
-			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
-			,method="BFGS"
-			#, hessian=isUsingHessian	# only need to compute Hessian on non-modified prior
-		)
-	
-	thetaOrig[iOpt] <- resOptimStrongPrior$par	
-	#
 	resOptim <- optim(thetaOrig[iOpt], .self$computeCost
 			#resOptim <- optim(theta, .partGLRHLightResponseCost
 			#tmp <- .partGLRHLightResponseCost( theta[iOpt] 
