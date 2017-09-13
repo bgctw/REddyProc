@@ -285,14 +285,15 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		dsDay <- list(...)$dsDay
 		iMaxRg <- which.max(dsDay$Rg)
 		dsDayMax <- dsDay[iMaxRg,,drop=FALSE]
+		# compute prediction at maximum observed PAR and and PAR=2000 and compare how close its to saturation
 		predMaxGPP <- .self$predictLRC( theta=resOpt$theta, 
-				,Rg=dsDayMax$Rg
-				,VPD=dsDayMax$VPD
-				,Temp=dsDayMax$Temp 
+				,Rg=c(dsDayMax$Rg, 2000)
+				,VPD=0#dsDayMax$VPD
+				,Temp=NA#dsDayMax$Temp 
 				#,VPD0 = 10 			# TODO: think of providing VPD0 and TRef to this function
 				#,TRef= 15	 
 		)$GPP
-		if( predMaxGPP < ctrl$minPropSaturation*resOpt$theta["beta"]){
+		if( predMaxGPP[1] < ctrl$minPropSaturation*predMaxGPP[2]){
 			#plot(-NEE ~ Rg, dsDay)
 			resOpt$theta[] <- NA
 			resOpt$convergence <- 1006

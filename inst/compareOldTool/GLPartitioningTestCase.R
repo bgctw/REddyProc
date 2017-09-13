@@ -58,15 +58,19 @@ scen <- "default"
 #scen <- "omitSaturationFilter"
 #scen <- "SaturationPenalty50"
 #scen <- "SaturationPenalty5"
+#scen <- "omitBoundLowerNEEUnc"
+#scen <- "filterParSaturationProp50"
 
 scenarioConfigurations = tribble(
-		~scenario, ~ouputPath,  ~ctrl, ~comment,
+		~scenario, ~ouputPath,  ~ctrl, ~comment
 		#"Lasslop10", "Lasslop10",  partGLControlLasslopCompatible(), "most Lasslop compatible"			
-		"default", "default1709",  partGLControl(), "",
-		"omitSaturationPenalty","default_options1709/omitSaturationPenalty", partGLControl(minPropSaturation=NA, weightMisfitPar2000=NA), "omit filtering windows that did not go to saturation: minPropSaturation=NA", 
-		"SaturationPenalty50","default_options1709/saturationPenalty50", partGLControl(minPropSaturation=NA, weightMisfitPar2000=50), "omit filtering saturation but penalize misfit (weight=50) in saturation at PAR=2000" 
-		,"SaturationPenalty5","default_options1709/saturationPenalty5", partGLControl(minPropSaturation=NA, weightMisfitPar2000=5), "omit filtering saturation but moderately penalize misfit (weight=5) in saturation at PAR=2000" 
-	)
+		,"default", "default1709",  partGLControl(), ""
+		,"omitSaturationPenalty","default_options1709/omitSaturationPenalty", partGLControl(minPropSaturation=NA), "omit filtering windows that did not go to saturation: minPropSaturation=NA" 
+		,"SaturationPenalty50","default_options1709/saturationPenalty50", partGLControl(minPropSaturation=NA), "omit filtering saturation but penalize misfit (weight=50) in saturation at PAR=2000" 
+		,"SaturationPenalty5","default_options1709/saturationPenalty5", partGLControl(minPropSaturation=NA), "omit filtering saturation but moderately penalize misfit (weight=5) in saturation at PAR=2000" 
+		,"omitBoundLowerNEEUnc","default_options1709/omitBoundLowerNEEUnc", partGLControl(isBoundLowerNEEUncertainty=FALSE), "omit lower bound on NEE uncertainty allowing for high leverage" 
+		,"filterParSaturationProp50","default_options1709/filterParSaturationProp50", partGLControl(minPropSaturation=0.5), "filter those windows where GPP prediction at highest PAR is less than 50% of GPP at PAR=2000" 
+				)
 scenConf <- as.list(subset(scenarioConfigurations, scenario==scen))
 
 
@@ -112,10 +116,11 @@ if( !dir.exists(file.path(path,"Results",scenConf$ouputPath)) ) dir.create( file
 
 
 #s <- grep("CA-TP3",sites)[1]
+s <- grep("DE-Hai",sites)[1]
 s <- grep("DE-Tha",sites)[1]
 s <- grep("FR-Gri",sites)[1]
 s <- grep("ES-VDA",sites)[1]
-s <- grep("IL-Yat",sites)[1]
+s <- grep("IL-Yat",sites)[1]  # high PAR with low temp-diff, subsetting data does not impar estimates here
 
 siteName 	   <- sites[s] 
 fname        <- flist[s]
@@ -141,10 +146,11 @@ computeSite <- function(siteName, fileName, scenConf){
 	# here fake potential radiation to be high on all records where Lasslop Partitioning quantified non night 
 	dfall$day    <- (1 - dfall$night)*100  
 	dfall_posix  <- ds <- fConvertTimeToPosix(dfall, 'YMDH', Year.s = 'Year', Month.s='Month', Day.s = 'Day', Hour.s = 'Hr')
-	# ds <- subset(dfall_posix, Month==5L)
+	# ds <- subset(dfall_posix, Month==8L) #& DateTime >= "2002-08-09 00:00:00" & DateTime <= "2002-08-12 23:30:00")
 	#
 	# START - RUN THE REddyProc DT partitioning
 	ctrl <- scenConf$ctrl[[1]]
+	#ctrl$fixedTempSens=data.frame(E0=220, sdE0=50, RRef=2.7)
 	dsRes <- partitionNEEGL(ds,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
 			TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
 			QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
@@ -152,15 +158,22 @@ computeSite <- function(siteName, fileName, scenConf){
 	)
 	dsRes$DateTime <- ds$DateTime
 	.tmp.debug <- function(){
+		ctrlDefault <- partGLControl()
+		#ctrlDefault$fixedTempSens <- ctrl$fixedTempSens 
 		dsResDefault <- partitionNEEGL(ds,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
 				TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
 				QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
-				controlGLPart=partGLControl()
+				controlGLPart=ctrlDefault
 		)
-		dsResDefault$DateTime <- ds$DateTime
+		dsResDefault$DateTime <- dsRes$DateTime <- ds$DateTime
 		dsRes$Day <- dsResDefault$Day <- ds$Day
+		dsRes$julday <- dsResDefault$julday <- ds$julday
 		plot(FP_beta ~ DateTime, dsRes, col="red", pch="x")
 		points(FP_beta ~ DateTime, dsResDefault)
+		dsRes$diffFP_beta <- dsRes$FP_beta - dsResDefault$FP_beta
+		#plot(diffFP_beta ~ julday, dsRes, col="red", pch="x")
+		#plot(diffFP_beta ~ DateTime, subset(dsRes, julday %in% 200:250), col="red", pch="x")
+		#plot(diffFP_beta ~ julday, subset(dsRes, julday %in% 210:230 & is.finite(FP_beta), col="red", pch="x")
 		# in partGLFitLRCOneWindow:
 		#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L > 27 ) recover()
 		# save(dsDay, file="tmp/dsDayDebug.RData")
@@ -169,7 +182,7 @@ computeSite <- function(siteName, fileName, scenConf){
 		plot( -NEE ~ Rg, dsDay)
 		subset( dsResDefault, is.finite(FP_beta), c("Day","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night"))
 		subset( dsRes, is.finite(FP_beta), c("Day","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night"))
-		DayInspect <- 11
+		DayInspect <- 7#11
 		(thetaDef <- unlist(subset(dsResDefault, Day == DayInspect & is.finite(FP_beta), c("FP_k","FP_beta","FP_alpha","FP_RRef","FP_E0","FP_RRef_Night") )))
 		(thetaOpt <- unlist(subset(dsRes, Day == DayInspect & is.finite(FP_beta), c("FP_k","FP_beta","FP_alpha","FP_RRef","FP_E0","FP_RRef_Night") )))
 		lrcFitter <- RectangularLRCFitter()
@@ -249,35 +262,51 @@ save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_an
 .tmp.lookForHighPar <- function(){
 	#duplated column names?
 	#ds <- dfall_posix[,!(names(dfall) %in% c("Day","Hour"))]
-	ds <- dfall_posix[,c("DateTime","Year","Month","julday","Rg","NEE_f","NEE_fs_unc","Tair","VPD","PotRad")]
+	ds <- dfall_posix[,c("DateTime","Year","Month","julday","Rg","NEE_f","NEEorig","NEE_fqc","NEE_fs_unc","Tair","VPD","PotRad")]
 	dailyMaxPar <- ds %>% group_by_(~julday) %>% summarize_(Rg=~max(Rg, na.rm=TRUE))
 	arrange_(dailyMaxPar, ~desc(Rg))
 	ggplot( dailyMaxPar, aes(julday, Rg)) + geom_point()
 	# extract data of day 174
-	dss <- subset(ds, julday %in% (142+(0:3)))
+	dss <- subset(ds, julday %in% (220+(0:4)))
+	#dss <- subset(ds, julday %in% (226+(0:4)))  # low PAR at DE-Hai
 	dss$Temp <- dss$Tair
 	dss$isDay <- (dss$PotRad > 20)
-	dss$sdNEE <- dss$NEE_fs_unc
-	dss$NEE <- dss$NEE_f
+	dss$NEE <- dss$NEE_f  # commented: partitioning proceeds only on qualtity flag 0, i.e non gapfilled NEE
+	dss$NEE[ dss$NEE_fqc != 0] <- NA
+	dss$sdNEE <- replaceMissingSdByPercentage(dss$NEE_fs_unc, dss$NEE) 
 	isValidDayRecNoVPDConstraint <- !is.na(dss$isDay) & dss$isDay & !is.na(dss$NEE) & !is.na(dss$sdNEE) & !is.na(dss$Temp) & !is.na(dss$Rg)
 	dsDay <- dss[isValidDayRecNoVPDConstraint,]  
 	p1 <- ggplot( dsDay, aes(Rg,-NEE, col=Temp)) + geom_point(); p1
 	
-	ctrl <- partGLControl( isUsingLasslopQualityConstraints=TRUE )
-	#ctrl <- partGLControl( )
+	ctrl <- partGLControl( )
 	lrcFitter <- RectangularLRCFitter()
-	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=130, sdE0=50, RRefNight=1
+	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay
+			#, E0=130, sdE0=50, RRefNight=1		# IL-Yat day 148
+			, E0=120, sdE0=50, RRefNight=3		# IL-Yat day 148
 			, controlGLPart=ctrl)
 	(thetaOpt <- resOpt$thetaOpt)
+	#(thetaOpt <- resOpt$theta)
 	dsPred <- data.frame(Rg = seq(0,2000, length.out=80), Temp=median(dsDay$Temp))
 	dsPred$GPP <- lrcFitter$predictLRC( thetaOpt, Rg=dsPred$Rg, VPD=0, Temp=dsPred$Temp)$GPP
 	#ggplot( dsPred, aes(Rg, GPP)) + geom_line()
-	p1 + geom_line(data=dsPred, aes(Rg, GPP))
+	p1 + geom_line(data=dsPred, aes(Rg, GPP)) +  
+			xlab(bquote('Rg ('*W~m^-2*')')) + 
+			ylab(bquote(NEP[Obs]*" & "*GPP[mod]*' ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')) +
+			theme_bw(base_size = 9) +
+			theme(legend.position = c(0.95,0.05), legend.justification=c(1,0))
 	
 	dsDay$NEP <- lrcFitter$predictLRC( thetaOpt, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)$NEP
 	p1 + geom_line(data=dsDay, aes(Rg, NEP))
 	
 	
+	maxRgs <- c(1200,1000,800,600,400)
+	thetaOptRg <- cbind( maxRg=maxRgs, as.data.frame(t(sapply( maxRgs, function(maxRg){
+				dsDay <- subset(dsDay, Rg <= maxRg)
+				resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, controlGLPart=ctrl
+					, E0=120, sdE0=50, RRefNight=3)
+				c(nRec = nrow(dsDay), resOpt$thetaOpt)
+			}))))
+	thetaOptRg
 }
 
 
