@@ -73,7 +73,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		# plot saturation of NEE with UStar for one season
 		EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[3] )
 		# Gapfilling by default it takes the annually aggregated estimate is used to mark periods with low uStar
-		# for other options see Example 4
+		# for other options see vignette DEGebExample
 		EddyProc.C$sMDSGapFillAfterUstar('NEE')
 		colnames(EddyProc.C$sExportResults()) # Note the collumns with suffix _WithUstar	
 		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
@@ -96,24 +96,75 @@ attr(sEddyProc.example,'ex') <- function( ){
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		
 		#+++ Initialize new sEddyProc processing class
-		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-		EddySetups.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
+		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
 		
+		#+++ Estimate the distribution of uStar values
+		uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L) 
+		subset(uStarTh, aggregationMode=="year")
 		#+++ When running several processing setup, a string suffix declaration is needed
 		#+++ Here: Gap filling with and without ustar threshold
-		EddySetups.C$sMDSGapFill('NEE', FillAll.b=FALSE, Suffix.s='NoUstar')
-		EddySetups.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.3, UstarSuffix.s='Thres1')
-		EddySetups.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.4, UstarSuffix.s='Thres2')
-		EddySetups.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
-		EddySetups.C$sMDSGapFill('VPD', FillAll.b=FALSE)    # Gap-filled VPD needed for daytime partitioning
-		colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns
+		EddyProc.C$sMDSGapFill('NEE', FillAll.b=FALSE, Suffix.s='NoUstar')
+		EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.3, UstarSuffix.s='Thres1')
+		EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE, UstarThres.df=0.4, UstarSuffix.s='Thres2')
+		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)    # Gap-filled Tair needed for partitioning
+		EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)    # Gap-filled VPD needed for daytime partitioning
+		colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
 		
 		#+++ Flux partitioning of the different gap filling setups
-		EddySetups.C$sMRFluxPartition(Suffix.s='NoUstar')
-		EddySetups.C$sMRFluxPartition(Suffix.s='Thres1')
-		EddySetups.C$sMRFluxPartition(Suffix.s='Thres2')
-		EddySetups.C$sGLFluxPartition(Suffix.s='NoUstar')
-		colnames(EddySetups.C$sExportResults()) # Note the suffix in output columns also of GPP, Reco, GPP_DT, and Reco_DT
+		EddyProc.C$sMRFluxPartition(Suffix.s='NoUstar')
+		EddyProc.C$sMRFluxPartition(Suffix.s='Thres1')
+		EddyProc.C$sMRFluxPartition(Suffix.s='Thres2')
+		EddyProc.C$sGLFluxPartition(Suffix.s='NoUstar')
+		colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns also of GPP, Reco, GPP_DT, and Reco_DT
+
+		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		#+++ Example 1b: Processing with different quantiles of the estimated uStar threshold distribution
+		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		
+		#+++ Initialize new sEddyProc processing class
+		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  #Location of DE-Tharandt
+		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)     
+		EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)    
+	
+		#+++ Estimate the distribution of uStar by bootstrapping the data
+		uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L, probs = c(0.05, 0.5, 0.95)) 
+		print(uStarTh)
+		# for using seasonal threshold, see vignette DEGebExample
+		uStarThAnnual <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)[-2]
+		# as in example 1, we use suffixes to distinguish the setups of different quantiles
+		uStarSuffixes <- colnames(uStarThAnnual)[-1]
+		
+		#+++ Run the gapfilling for each of the quantiles (specified by arguments probs above)
+		EddyProc.C$sMDSGapFillAfterUStarDistr('NEE',
+				UstarThres.df = uStarThAnnual,
+				UstarSuffix.V.s = uStarSuffixes,
+				FillAll=TRUE
+		)
+		# a look at the diffrent output column names:
+		grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value=TRUE)
+		
+		#+++ Run the partitioning on each of the gap-filled NEE columns
+		for( suffix in uStarSuffixes) {
+			EddyProc.C$sMRFluxPartition(Suffix.s=suffix)
+		}
+		# a look at the diffrent output column names:
+		grep("GPP.*_f$|Reco",names(EddyProc.C$sExportResults()), value=TRUE)
+
+		#+++ Aggregate to annual values with neglecting covariances and missing values
+		dsRes <- EddyProc.C$sExportResults()
+		GPPAgg <- sapply( uStarSuffixes, function(suffix) {
+			GPPHalfHour <- dsRes[,paste0("GPP_",suffix,"_f")] 
+			mean(GPPHalfHour, na.rm=TRUE)
+		})
+		print(GPPAgg)
+		# The difference is a first estimate of uncertainty in GPP due to uncertaint uStar threshold
+		(max(GPPAgg) - min(GPPAgg))/ median(GPPAgg) 
+		# here a relative error of about 3%
+		# for a better but time consuming uncertainty estimate, specify a larger sample in uStar estimation above
+		#   sEstUstarThresholdDistribution( nSample=200, probs=seq(0.025,0.975,length.out=39) )
+		# and run statistics across the larger sample of computed GPP-scenarios
 		
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		# Example 2 for advanced users: Extended usage of the gap filling algorithm
@@ -174,13 +225,13 @@ attr(sEddyProc.example,'ex') <- function( ){
 		FilledEddyData.F <- EddyTestMDS.C$sExportResults()
 		
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		# Example 4 for advanced users: Processing of different UStar-Threshold setups
+		# Example 4 for advanced users: Processing with user-defined uStar threshold
 		#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		
 		#+++ Provide a single user-defined uStarThreshold
-		EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 		Ustar.V.n <- 0.46  
-		EddySetups.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
+		EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
 		
 		# See vignette DEGebExample for
 		#  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)

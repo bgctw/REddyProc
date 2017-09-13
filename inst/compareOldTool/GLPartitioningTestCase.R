@@ -238,8 +238,8 @@ REddy.yy.all <- do.call( rbind, REddy.yys)
 
 ## save as RData:
 #save(NT_vs_DT_REddy,DT_REddy_vs_pvwave,file=file.path(path,"Results",scenConf$ouputPath,"/eval_metrics.RData")) # 1) evaluation metrics
-save(REddy.mm.all,file=file.path(path,"Results/",scenConf$ouputPath,"all_sites_monthly.RData"))   # 2) monthly aggregated results for all sites
-save(REddy.yy.all,file=file.path(path,"Results/",scenConf$ouputPath,"all_sites_annual.RData"))    # 3) annual aggregated results for all sites
+save(REddy.mm.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_monthly.RData"))   # 2) monthly aggregated results for all sites
+save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_annual.RData"))    # 3) annual aggregated results for all sites
 
 
 
