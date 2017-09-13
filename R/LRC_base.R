@@ -429,7 +429,6 @@ LightResponseCurveFitter_optimLRC <- function(
 			,theta=thetaOrig
 			,iOpt=iOpt
 			,sdParameterPrior = sdParameterPrior
-			,weightMisfitPar2000 = ctrl$weightMisfitPar2000
 			, ...
 			,control=list(reltol=ctrl$LRCFitConvergenceTolerance)
 			,method="BFGS", hessian=isUsingHessian)
@@ -454,7 +453,7 @@ LightResponseCurveFitter_computeCost <- function(
 		,sdFlux 	##<< numeric: standard deviation of Flux [umolCO2/m2/s], should not contain NA
 		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)
 		,sdParameterPrior	##<< standard deviation of parameterPrior
-		,weightMisfitPar2000=NA	##<< weight of misfit of difference between saturation and prediction at PAR=2000
+		#,weightMisfitPar2000=NA	##<< weight of misfit of difference between saturation and prediction at PAR=2000
 		,...				##<< other arguments to \code{\link{LightResponseCurveFitter_predictLRC}}, such as VPD0, fixVPD
 ) {
 	theta[iOpt] <- thetaOpt
@@ -466,15 +465,7 @@ LightResponseCurveFitter_computeCost <- function(
 	#}
 	misFitPrior <- (((theta - parameterPrior))/(sdParameterPrior))^2
 	misFitObs <- sum(((NEP_mod-flux)/sdFlux)^2)
-	##details<<
-	## There is prior knowledge that saturation should be reached at PAR of 2000.
-	## Hence, penalize the difference between saturation (beta parameter) and prediction for PAR of 2000
-    misfitPar2000 <- 0
-	if( length(weightMisfitPar2000) && !is.na(weightMisfitPar2000) ){ 
-		predPar1200 <- .self$predictLRC(theta, Rg=2000, VPD=0, Temp=NA)$GPP
-		misfitPar2000 <- ((theta[2L]-predPar1200)/median(sdFlux) )^2*weightMisfitPar2000
-	}
-	RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE) + misfitPar2000
+	RSS <- misFitObs + sum(misFitPrior, na.rm=TRUE) 
 	#if( !is.finite(RSS) ) recover()	# debugging the fit
 	RSS
 }

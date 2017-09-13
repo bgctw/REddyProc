@@ -271,8 +271,6 @@ partGLControl <- function(
 		,minPropSaturation=NA	##<< quality criterion for sufficient data in window. 
 			## If GPP prediction of highest PAR of window is less than minPropSaturation*(GPP at light-saturation, i.e. beta)
 			## this indicates that PAR is not sufficiently high to constrain the shape of the LRC
-		,weightMisfitPar2000=5	##<< weight of misfit of difference between saturation and prediction at PAR=2000
-			##<< one unit corresponds to one fictitious record with median standard deviation.
 ){
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -297,7 +295,6 @@ partGLControl <- function(
 			,fixedTempSens=fixedTempSens
 			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
 			,minPropSaturation=minPropSaturation
-			,weightMisfitPar2000=weightMisfitPar2000
 	)
 	#display warning message for the following variables that we advise not to be changed
 	#if (corrCheck != 0.5) warning("WARNING: parameter corrCheck set to non default value!")

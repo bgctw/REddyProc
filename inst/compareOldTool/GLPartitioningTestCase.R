@@ -263,8 +263,8 @@ save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_an
 	dsDay <- dss[isValidDayRecNoVPDConstraint,]  
 	p1 <- ggplot( dsDay, aes(Rg,-NEE, col=Temp)) + geom_point(); p1
 	
-	ctrl <- partGLControl( weightMisfitPar2000 = NA, isUsingLasslopQualityConstraints=TRUE )
-	#ctrl <- partGLControl( weightMisfitPar2000 = NA )
+	ctrl <- partGLControl( isUsingLasslopQualityConstraints=TRUE )
+	#ctrl <- partGLControl( )
 	lrcFitter <- RectangularLRCFitter()
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=130, sdE0=50, RRefNight=1
 			, controlGLPart=ctrl)
