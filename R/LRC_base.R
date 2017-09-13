@@ -397,16 +397,16 @@ LightResponseCurveFitter_isParameterInBounds <- function(
 	##details<< check the Beta bounds that depend on uncertainty: outside if (beta > 100 and sdBeta >= beta)
 	if( !is.finite(theta[2]) ) return(FALSE)
 	if(isTRUE(as.vector( (theta[2] > 100) && (sdTheta[2] >= theta[2]) ))) return(FALSE)
-	##details<< check that RRef estimated from daytime is not both:
-	## 1) larger than twice the estimate from nighttime and 2) more than 0.7 in absolute terms  
-	## Else this indicates a bad fit.
-	## This is additional to Table A1 in Lasslop 2010.
-	if( 	!isTRUE(ctrl$isUsingLasslopQualityConstraints) &&
-			(theta[4L] > 2*RRefNight) 		&& 
-			((theta[4L]-RRefNight) > 0.7) 
-			){
-		return(FALSE)
-	}
+#	##details<< check that RRef estimated from daytime is not both:
+#	## 1) larger than three times the estimate from nighttime and 2) more than 0.7 in absolute terms  
+#	## Else this indicates a bad fit.
+#	## This is additional to Table A1 in Lasslop 2010.
+#	if( 	!isTRUE(ctrl$isUsingLasslopQualityConstraints) &&
+#			(theta[4L] > 3*RRefNight) 		&& 
+#			((theta[4L]-RRefNight) > 0.7) 
+#			){
+#		return(FALSE)
+#	}
 	##value<< FALSE if parameters are outisde reasonable bounds, TRUE otherwise 
 	return(TRUE)
 }

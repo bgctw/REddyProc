@@ -114,6 +114,9 @@ if( !dir.exists(file.path(path,"Results",scenConf$ouputPath)) ) dir.create( file
 #s <- grep("CA-TP3",sites)[1]
 s <- grep("DE-Tha",sites)[1]
 s <- grep("FR-Gri",sites)[1]
+s <- grep("ES-VDA",sites)[1]
+s <- grep("IL-Yat",sites)[1]
+
 siteName 	   <- sites[s] 
 fname        <- flist[s]
 
@@ -242,6 +245,40 @@ save(REddy.mm.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_mo
 save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_annual.RData"))    # 3) annual aggregated results for all sites
 
 
+
+.tmp.lookForHighPar <- function(){
+	#duplated column names?
+	#ds <- dfall_posix[,!(names(dfall) %in% c("Day","Hour"))]
+	ds <- dfall_posix[,c("DateTime","Year","Month","julday","Rg","NEE_f","NEE_fs_unc","Tair","VPD","PotRad")]
+	dailyMaxPar <- ds %>% group_by_(~julday) %>% summarize_(Rg=~max(Rg, na.rm=TRUE))
+	arrange_(dailyMaxPar, ~desc(Rg))
+	ggplot( dailyMaxPar, aes(julday, Rg)) + geom_point()
+	# extract data of day 174
+	dss <- subset(ds, julday %in% (142+(0:3)))
+	dss$Temp <- dss$Tair
+	dss$isDay <- (dss$PotRad > 20)
+	dss$sdNEE <- dss$NEE_fs_unc
+	dss$NEE <- dss$NEE_f
+	isValidDayRecNoVPDConstraint <- !is.na(dss$isDay) & dss$isDay & !is.na(dss$NEE) & !is.na(dss$sdNEE) & !is.na(dss$Temp) & !is.na(dss$Rg)
+	dsDay <- dss[isValidDayRecNoVPDConstraint,]  
+	p1 <- ggplot( dsDay, aes(Rg,-NEE, col=Temp)) + geom_point(); p1
+	
+	ctrl <- partGLControl( weightMisfitPar2000 = NA, isUsingLasslopQualityConstraints=TRUE )
+	#ctrl <- partGLControl( weightMisfitPar2000 = NA )
+	lrcFitter <- RectangularLRCFitter()
+	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay, E0=130, sdE0=50, RRefNight=1
+			, controlGLPart=ctrl)
+	(thetaOpt <- resOpt$thetaOpt)
+	dsPred <- data.frame(Rg = seq(0,2000, length.out=80), Temp=median(dsDay$Temp))
+	dsPred$GPP <- lrcFitter$predictLRC( thetaOpt, Rg=dsPred$Rg, VPD=0, Temp=dsPred$Temp)$GPP
+	#ggplot( dsPred, aes(Rg, GPP)) + geom_line()
+	p1 + geom_line(data=dsPred, aes(Rg, GPP))
+	
+	dsDay$NEP <- lrcFitter$predictLRC( thetaOpt, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)$NEP
+	p1 + geom_line(data=dsDay, aes(Rg, NEP))
+	
+	
+}
 
 
 

@@ -161,7 +161,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		print(GPPAgg)
 		# The difference is a first estimate of uncertainty in GPP due to uncertaint uStar threshold
 		(max(GPPAgg) - min(GPPAgg))/ median(GPPAgg) 
-		# here a relative error of about 3%
+		# here a relative error of about 2 to 4 percent (differs by runs with different uStar sample)
 		# for a better but time consuming uncertainty estimate, specify a larger sample in uStar estimation above
 		#   sEstUstarThresholdDistribution( nSample=200, probs=seq(0.025,0.975,length.out=39) )
 		# and run statistics across the larger sample of computed GPP-scenarios
