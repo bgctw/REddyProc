@@ -32,13 +32,13 @@ library(foreach)
 #library(doMC)		#twutz: doMC is not supported for Windows any more, may swith to same functionality with doParallel	
 library(doParallel)
 
-CLUSTER<- if( .Platform$OS.type=="windows") FALSE else TRUE
+isCluster<- if( .Platform$OS.type=="windows") FALSE else TRUE
 #CLUSTER<-FALSE
 
 #registerDoMC(8) 
 #doMC::registerDoMC(cores=48) # or however many cores you have access to
-if( CLUSTER ){
-	registerDoParallel(cores=32L)
+if( isCluster ){
+	registerDoParallel(cores=29L)	# having 29 sites
 } else {
 	registerDoParallel(cores=2L)
 }
@@ -54,12 +54,17 @@ aggregate.sd <- function(x){  # where x is the sd of the variable
 ##############
 ## settings ##
 ##############
-scen <- "default"
+#scen <- "default"
 #scen <- "omitSaturationFilter"
 #scen <- "SaturationPenalty50"
 #scen <- "SaturationPenalty5"
 #scen <- "omitBoundLowerNEEUnc"
-#scen <- "filterParSaturationProp50"
+scen <- "filterParSaturationProp50"
+
+# uncomment the scenario in quesiton and then run
+# cd inst/compareOldTool
+# bsub -q all -M 4194304 -n 32 -R span[hosts=1] R CMD BATCH --vanilla GLPartitioningTestCase.R GLPartitioningTestCase_log.txt 
+# bsub -q mpi_large -M 4194304 -n 29 R CMD BATCH --vanilla GLPartitioningTestCase.R GLPartitioningTestCase_log.txt 
 
 scenarioConfigurations = tribble(
 		~scenario, ~ouputPath,  ~ctrl, ~comment
@@ -113,28 +118,30 @@ if( !dir.exists(file.path(path,"Results",scenConf$ouputPath)) ) dir.create( file
 # the seasons are computed in a different manner (not e.g. JFM) 
 # gapfilling according to Reichstein_2005
 
-
-
-#s <- grep("CA-TP3",sites)[1]
-s <- grep("DE-Hai",sites)[1]
-s <- grep("DE-Tha",sites)[1]
-s <- grep("FR-Gri",sites)[1]
-s <- grep("ES-VDA",sites)[1]
-s <- grep("IL-Yat",sites)[1]  # high PAR with low temp-diff, subsetting data does not impar estimates here
-
-siteName 	   <- sites[s] 
-fname        <- flist[s]
-
 iProcSites <- seq_along(sites)
-#iProcSites <- 2:3
-#try(rm(REddy.mm.all)); try(REddy.yy.all)
+
+
+.tmp.f <- function(){
+	#s <- grep("CA-TP3",sites)[1]
+	s <- grep("DE-Hai",sites)[1]
+	s <- grep("DE-Tha",sites)[1]
+	s <- grep("FR-Gri",sites)[1]
+	s <- grep("ES-VDA",sites)[1]
+	s <- grep("IL-Yat",sites)[1]  # high PAR with low temp-diff, subsetting data does not impar estimates here
+	
+	siteName 	   <- sites[s] 
+	fname        <- flist[s]
+	
+	#iProcSites <- 2:3
+	#try(rm(REddy.mm.all)); try(REddy.yy.all)
+}
 
 
 computeSite <- function(siteName, fileName, scenConf){
-	year         <- as.numeric(substr(fname, nchar(fname)-28, nchar(fname)-25))
+	year         <- as.numeric(substr(fileName, nchar(fileName)-28, nchar(fileName)-25))
 	latLongSite  <- unlist(subset(latLongSites, site==siteName)[1,2:4])
 	#+++ Loading data from MR partitioning and data for running the partitioning
-	dfall             <- fLoadTXTIntoDataframe(fname, file.path(path,"MR_GL_partitioning"))
+	dfall             <- fLoadTXTIntoDataframe(fileName, file.path(path,"MR_GL_partitioning"))
 	.tmp.readPvWave <- function(){
 		fname.PVwave <- paste(siteName,'.',year,'.','DataSetafterFluxpartGL2010.txt', sep="")
 		dfall.Lass.PVwave <- read.table(file.path(path,"MR_GL_partitioning",fname.PVwave,sep=""),skip=2)
@@ -221,13 +228,13 @@ computeSite <- function(siteName, fileName, scenConf){
 	# sd
 	df.REddy.mm$Reco_DT_SD   <- aggregate(dsRes$Reco_DT_SD,by=list(Year_agg=Year_agg, Month_agg=Month_agg),aggregate.sd)[,2]
 	df.REddy.mm$GPP_DT_SD    <- aggregate(dsRes$GPP_DT_SD,by=list(Year_agg=Year_agg, Month_agg=Month_agg),aggregate.sd)[,2]
-	df.REddy.mm  <- cbind(siteName,df.REddy.mm)
+	df.REddy.mm  <- cbind(Site=siteName,df.REddy.mm)
 	# Aggregation Annual
 	df.REddy.yy  <- aggregate(dsRes,by=list(Year_agg=Year_agg),mean,na.rm=T)
 	# sd
 	df.REddy.yy$Reco_DT_SD   <- aggregate(dsRes$Reco_DT_SD,by=list(Year_agg=Year_agg),aggregate.sd)[,2]
 	df.REddy.yy$GPP_DT_SD    <- aggregate(dsRes$GPP_DT_SD,by=list(Year_agg=Year_agg),aggregate.sd)[,2]
-	df.REddy.yy  <- cbind(siteName,df.REddy.yy)
+	df.REddy.yy  <- cbind(Site=siteName,df.REddy.yy)
 	#
 	list(
 			mm = df.REddy.mm
@@ -235,13 +242,22 @@ computeSite <- function(siteName, fileName, scenConf){
 	)
 }
 
+.tmp.f <- function(){
+	REddy.mm.all$Site <- REddy.mm.all$siteName
+	save(REddy.mm.all, file="all_sites_monthly.RData")
+	#
+	REddy.yy.all$Site <- REddy.yy.all$siteName
+	save(REddy.yy.all, file="all_sites_annual.RData")
+	
+}
+
 
 #ansList <- lapply( iProcSites, function(s){
 ansList <- foreach (s=iProcSites, .errorhandling="pass", .packages=c("REddyProc","plyr","mlegp","logitnorm")) %dopar% {
-	siteName 	   <- sites[s] 
-	fname        <- flist[s]
+	siteName <- sites[s] 
+	fileName    <- flist[s]
 	message("-------- starting site ",siteName)
-	computeSite(siteName,fname, scenConf)
+	computeSite(siteName,fileName, scenConf)
 }# end of site loop
 #) 
 
@@ -254,26 +270,39 @@ REddy.yy.all <- do.call( rbind, REddy.yys)
 
 ## save as RData:
 #save(NT_vs_DT_REddy,DT_REddy_vs_pvwave,file=file.path(path,"Results",scenConf$ouputPath,"/eval_metrics.RData")) # 1) evaluation metrics
-save(REddy.mm.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_monthly.RData"))   # 2) monthly aggregated results for all sites
-save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_annual.RData"))    # 3) annual aggregated results for all sites
+outputDir <- file.path(path,"Results",scenConf$ouputPath)
+save(REddy.mm.all,file=file.path(outputDir,"all_sites_monthly.RData"))   # 2) monthly aggregated results for all sites
+save(REddy.yy.all,file=file.path(outputDir,"all_sites_annual.RData"))    # 3) annual aggregated results for all sites
 
+# write scenario information
+save(scenConf, file=file.path(outputDir,"scenConf.RData"))
+
+# generate readmegen.txt
+sink(file.path(outputDir,'readmegen.txt')); {
+	cat("Generated be REddyProc/inst/compareOldTool/GLPartitioningTestCase.R\n")
+	cat(date(),"\n\n")
+	cat("scenConf.RData: list of information on scenario.\n")
+	cat("all_sites_monthly.RData: data.frame of partitioning outputs across sites and months.\n")
+	cat("all_sites_annual.RData: data.frame of partitioning outputs across sites for a single year.\n\n")
+	cat("scenConf: ")
+	str(scenConf, max.level=3)
+}; sink()
 
 
 .tmp.lookForHighPar <- function(){
 	#duplated column names?
 	#ds <- dfall_posix[,!(names(dfall) %in% c("Day","Hour"))]
-	ds <- dfall_posix[,c("DateTime","Year","Month","julday","Rg","NEE_f","NEEorig","NEE_fqc","NEE_fs_unc","Tair","VPD","PotRad")]
+	ds <- partGLExtractStandardData(dfall_posix,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
+			TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
+			QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+			controlGLPart=ctrl)
+	ds$julday <- dfall_posix$julday
+	#ds <- dfall_posix[,c("DateTime","Year","Month","julday","Rg","NEE_f","NEEorig","NEE_fqc","NEE_fs_unc","Tair","VPD","PotRad")]
 	dailyMaxPar <- ds %>% group_by_(~julday) %>% summarize_(Rg=~max(Rg, na.rm=TRUE))
 	arrange_(dailyMaxPar, ~desc(Rg))
 	ggplot( dailyMaxPar, aes(julday, Rg)) + geom_point()
 	# extract data of day 174
 	dss <- subset(ds, julday %in% (220+(0:4)))
-	#dss <- subset(ds, julday %in% (226+(0:4)))  # low PAR at DE-Hai
-	dss$Temp <- dss$Tair
-	dss$isDay <- (dss$PotRad > 20)
-	dss$NEE <- dss$NEE_f  # commented: partitioning proceeds only on qualtity flag 0, i.e non gapfilled NEE
-	dss$NEE[ dss$NEE_fqc != 0] <- NA
-	dss$sdNEE <- replaceMissingSdByPercentage(dss$NEE_fs_unc, dss$NEE) 
 	isValidDayRecNoVPDConstraint <- !is.na(dss$isDay) & dss$isDay & !is.na(dss$NEE) & !is.na(dss$sdNEE) & !is.na(dss$Temp) & !is.na(dss$Rg)
 	dsDay <- dss[isValidDayRecNoVPDConstraint,]  
 	p1 <- ggplot( dsDay, aes(Rg,-NEE, col=Temp)) + geom_point(); p1
@@ -282,13 +311,14 @@ save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_an
 	lrcFitter <- RectangularLRCFitter()
 	resOpt <- resOpt0 <- lrcFitter$fitLRC(dsDay
 			#, E0=130, sdE0=50, RRefNight=1		# IL-Yat day 148
-			, E0=120, sdE0=50, RRefNight=3		# IL-Yat day 148
+			, E0=120, sdE0=50, RRefNight=3		# DE-Hai day 
 			, controlGLPart=ctrl)
 	(thetaOpt <- resOpt$thetaOpt)
 	#(thetaOpt <- resOpt$theta)
 	dsPred <- data.frame(Rg = seq(0,2000, length.out=80), Temp=median(dsDay$Temp))
 	dsPred$GPP <- lrcFitter$predictLRC( thetaOpt, Rg=dsPred$Rg, VPD=0, Temp=dsPred$Temp)$GPP
 	#ggplot( dsPred, aes(Rg, GPP)) + geom_line()
+	# in paper example DE-Hai, julday %in% (220+(0:4))
 	p1 + geom_line(data=dsPred, aes(Rg, GPP)) +  
 			xlab(bquote('Rg ('*W~m^-2*')')) + 
 			ylab(bquote(NEP[Obs]*" & "*GPP[mod]*' ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')) +
@@ -297,8 +327,9 @@ save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_an
 	
 	dsDay$NEP <- lrcFitter$predictLRC( thetaOpt, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp)$NEP
 	p1 + geom_line(data=dsDay, aes(Rg, NEP))
-	
-	
+
+	# on period of high PAR-range, e.g. Yatir, experiment with decreasing dataset to lower bounds
+	# result: similar estimates also from constrained dataset -> not not constrain GPP2000, only filter extrem cases
 	maxRgs <- c(1200,1000,800,600,400)
 	thetaOptRg <- cbind( maxRg=maxRgs, as.data.frame(t(sapply( maxRgs, function(maxRg){
 				dsDay <- subset(dsDay, Rg <= maxRg)
@@ -311,3 +342,4 @@ save(REddy.yy.all,file=file.path(path,"Results",scenConf$ouputPath,"all_sites_an
 
 
 
+stopImplicitCluster()

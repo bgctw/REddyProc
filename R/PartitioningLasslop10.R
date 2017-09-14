@@ -1,19 +1,11 @@
 partitionNEEGL=function(
 		### Partitioning NEE fluxes into GP and Reco after daytime method. 
-		ds							##<< dataset with all the specified input columns and full days in equidistant times		
+		ds							##<< dataset with all the specified input columns and full days in equidistant times
 		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
-		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')	##<< Quality flag of variable
-		,QFNEEValue.n=0         						##<< Value of quality flag for _good_ (original) data
-		,NEESdVar.s=paste0('NEE',SuffixDash.s,'_fsd')	##<< Variable of standard deviation of net ecosystem fluxes
-		,TempVar.s=paste0('Tair_f')     ##<< Filled air or soil temperature variable (degC)
-		,QFTempVar.s=paste0('Tair_fqc') ##<< Quality flag of filled temperature variable
-		,QFTempValue.n=0       		##<< Value of temperature quality flag for _good_ (original) data
-		,VPDVar.s=paste0('VPD_f')     ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
-		,QFVPDVar.s=paste0('VPD_fqc') ##<< Quality flag of filled VPD variable    
-		,QFVPDValue.n=0        		##<< Value of VPD quality flag for _good_ (original) data
-		,RadVar.s='Rg'         		##<< Unfilled (original) radiation variable
-		,PotRadVar.s="PotRad_NEW"	##<< Variable name of potential radiation (W/m2)			   
+		,TempVar.s=paste0('Tair_f') ##<< Filled air or soil temperature variable (degC)
+		,VPDVar.s=paste0('VPD_f')   ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
 		,Suffix.s = ""		   		##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).
+		,...						##<< further arguments to \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar.s}
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
 		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
@@ -33,34 +25,26 @@ partitionNEEGL=function(
 ## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187208
 {
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
-	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="")
-	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
-	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
-	fCheckColNum(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
-	fCheckColPlausibility(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
-	NEEFiltered <- fSetQF(ds, NEEVar.s, QFNEEVar.s, QFNEEValue.n, 'sGLFluxPartition')
+	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="") # used to compute default NEEVar.s 
 	if( isVerbose ) message('Start daytime flux partitioning for variable ', NEEVar.s, ' with temperature ', TempVar.s, '.')
-	##value<< data.frame with columns
+	dsR <- partGLExtractStandardData(ds, NEEVar.s=NEEVar.s, TempVar.s=TempVar.s, VPDVar.s=VPDVar.s, Suffix.s=Suffix.s
+		, ..., controlGLPart = controlGLPart)
+	##value<< 
 	## \itemize{
 	## \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/second}
 	## \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/second}
 	## }
-	RecoDTVar.s <- paste0('Reco_DT',SuffixDash.s) 
-	GPPDTVar.s <- paste0('GPP_DT',SuffixDash.s) 
-	RecoDTSdVar.s <- paste0(RecoDTVar.s,"_SD") 
-	GPPDTSdVar.s <- paste0(GPPDTVar.s,"_SD") 
 	dsAns0 <- data.frame(
 			FP_VARnight=rep(NA_real_,nrow(ds))	##<< NEE filtered for nighttime records (others NA)
 			,FP_VARday=NA_real_		##<< NEE filtered for daytime recores (others NA)
-			,NEW_FP_Temp=NA_real_	##<< temperature after filtering for quality flag degree Celsius
-			,NEW_FP_VPD=NA_real_	##<< vapour pressure deficit after filtering for quality flag, hPa
+			,NEW_FP_Temp=dsR$Temp	##<< temperature after filtering for quality flag degree Celsius
+			,NEW_FP_VPD=dsR$VPD		##<< vapour pressure deficit after filtering for quality flag, hPa
 			,FP_RRef_Night=NA_real_	##<< basal respiration estimated from nighttime (W/m2)
 			,FP_qc=NA_integer_		##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away
 			,FP_dRecPar=NA_integer_	##<< records until or after closest record that has a parameter estimate associated
+			,FP_errorcode=NA_integer_ ##<< information why LRC-fit was not successful or was rejected, see result of \code{\link{LightResponseCurveFitter_fitLRC}}
 	)
-	## \item{<LRC>}{Furhter light response curve (LRC) parameters and their standard deviation depend on the used LRC
+	## \item{<LRC>}{Further light response curve (LRC) parameters and their standard deviation depend on the used LRC
 	## (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
 	## They are estimated for windows and are reported with the first record of the window}
 	##end<<
@@ -70,44 +54,15 @@ partitionNEEGL=function(
 	FP_lrcParNames <- paste0("FP_",lrcParNames)
 	tmp <- matrix( NA_real_, nrow=nrow(ds), ncol=length(FP_lrcParNames), dimnames=list(NULL,FP_lrcParNames) )
 	dsAns <- cbind(dsAns0, tmp)
-	# Filter night time values only
-	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E_0.n
-	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	isNight <- (ds[,RadVar.s] <= 4 & ds[[PotRadVar.s]] == 0)
-	dsAns$FP_VARnight <- ifelse(isNight, NEEFiltered, NA)
-	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(NEEFiltered, 'varnames'), '_night', sep='')
-	attr(dsAns$FP_VARnight, 'units') <- attr(NEEFiltered, 'units')
-	# Filter day time values only
-	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
-	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-	isDay=(ds[,RadVar.s] > 4 & ds[[PotRadVar.s]] != 0)
-	dsAns$FP_VARday <- ifelse(isDay, NEEFiltered, NA)
-	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(NEEFiltered, 'varnames'), '_day', sep='')
-	attr(dsAns$FP_VARday, 'units') <- attr(NEEFiltered, 'units')
-	#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
-	# Apply quality flag for temperature and VPD
-	# TODO: docu meteo filter, standard FALSE
-	dsAns$NEW_FP_Temp <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'partitionNEEGL') else ds[[TempVar.s]]
-	dsAns$NEW_FP_VPD <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'partitionNEEGL') else ds[[VPDVar.s]]
+	dsAns$FP_VARnight <- ifelse(dsR$isNight, dsR$NEE, NA)
+	attr(dsAns$FP_VARnight, 'varnames') <- paste(attr(dsR$NEE, 'varnames'), '_night', sep='')
+	attr(dsAns$FP_VARnight, 'units') <- attr(dsR$NEE, 'units')
+	dsAns$FP_VARday <- ifelse(dsR$isDay, dsR$NEE, NA)
+	attr(dsAns$FP_VARday, 'varnames') <- paste(attr(dsR$NEE, 'varnames'), '_day', sep='')
+	attr(dsAns$FP_VARday, 'units') <- attr(dsR$NEE, 'units')
+	#
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 	# save(ds, file="tmp/dsTestPartitioningLasslop10.RData")
-	# extract the relevant columns in df with defined names (instead of passing many variables)
-	dsR <- data.frame(
-			sDateTime=ds[[1]]		# not used, but usually first column is a dateTime is kept for aiding debug
-			,NEE=NEEFiltered
-			,sdNEE=ds[[NEESdVar.s]]
-			, Temp=dsAns$NEW_FP_Temp
-			, VPD=dsAns$NEW_FP_VPD
-			, Rg=ds[[RadVar.s]]
-			, isDay=isDay
-			, isNight=isNight
-	)
-	##details<<
-	## The LRC fit ususally weights NEE records by its uncertainty. In order to also use
-	## records with missing \code{NEESdVar.s}, uncertainty of the missing is by default set 
-	## to a conservatively high value, parameterized by \code{controlGLPart$replaceMissingSdNEEParms).
-	dsR$sdNEE <- replaceMissingSdByPercentage(dsR$sdNEE, dsR$NEE
-		, controlGLPart$replaceMissingSdNEEParms[1], controlGLPart$replaceMissingSdNEEParms[2] )
 	#
 	##seealso<< \code{\link{partGLFitNightTimeTRespSens}}
 	isUsingFixedTempSens <- length(controlGLPart$fixedTempSens) && 
@@ -158,13 +113,13 @@ partitionNEEGL=function(
 	# default is isAssociateParmsToMeanOfValids=TRUE (double check partGLControl argument)
 	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec"
 	# for the output, always report at central record
-	dsAns[resParms$summary$iCentralRec,c("FP_RRef_Night","FP_qc",FP_lrcParNames)] <- 
-					resParms$summary[,c("RRef_night","parms_out_range",lrcParNames)]
+	dsAns[resParms$summary$iCentralRec,c("FP_RRef_Night","FP_qc","FP_errorcode",FP_lrcParNames)] <- 
+					resParms$summary[,c("RRef_night","parms_out_range","convergence",lrcParNames)]
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
-	dsAnsFluxes <- partGLInterpolateFluxes( ds[,RadVar.s]
+	dsAnsFluxes <- partGLInterpolateFluxes( dsR$Rg
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
-					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction also using gap-Filled values
+					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction using non-filtered, i.e. gap-filled, values
 					, resParms
 					, controlGLPart=controlGLPart
 					, lrcFitter = lrcFitter
@@ -186,7 +141,7 @@ partitionNEEGL=function(
 					, controlGLPart=ctrl2
 					, lrcFitter=lrcFitter
 			)
-			dsAnsFluxes2 <- partGLInterpolateFluxes( ds[,RadVar.s]
+			dsAnsFluxes2 <- partGLInterpolateFluxes( dsR$Rg
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
 					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction also using gap-Filled values
 					, resParms2
@@ -210,19 +165,23 @@ partitionNEEGL=function(
 	dsAns$FP_qc[ abs(dsAns$FP_dRecPar) > (14*nRecInDay)] <- 2L	# set quality flag to 2 for records where next estimate is more than 14 days away
 	#dsAns[is.finite(dsAns$FP_beta),]
 	#
+	RecoDTVar.s <- paste0('Reco_DT',SuffixDash.s) 
+	GPPDTVar.s <- paste0('GPP_DT',SuffixDash.s) 
+	RecoDTSdVar.s <- paste0(RecoDTVar.s,"_SD") 
+	GPPDTSdVar.s <- paste0(GPPDTVar.s,"_SD")
 	dsAns[[RecoDTVar.s]] <- dsAnsFluxes$Reco
 	attr(dsAns[[RecoDTVar.s]], 'varnames') <- RecoDTVar.s
-	attr(dsAns[[RecoDTVar.s]], 'units') <- attr(NEEFiltered, 'units')
+	attr(dsAns[[RecoDTVar.s]], 'units') <- attr(dsR$NEE, 'units')
 	dsAns[[GPPDTVar.s]] <- dsAnsFluxes$GPP
 	attr(dsAns[[GPPDTVar.s]], 'varnames') <- GPPDTVar.s
-	attr(dsAns[[GPPDTVar.s]], 'units') <- attr(NEEFiltered, 'units')
+	attr(dsAns[[GPPDTVar.s]], 'units') <- attr(dsR$NEE, 'units')
 	if( controlGLPart$isSdPredComputed ){
 		dsAns[[RecoDTSdVar.s]] <- dsAnsFluxes$sdReco
 		attr(dsAns[[RecoDTSdVar.s]], 'varnames') <- RecoDTSdVar.s
-		attr(dsAns[[RecoDTSdVar.s]], 'units') <- attr(NEEFiltered, 'units')
+		attr(dsAns[[RecoDTSdVar.s]], 'units') <- attr(dsR$NEE, 'units')
 		dsAns[[GPPDTSdVar.s]] <- dsAnsFluxes$sdGPP
 		attr(dsAns[[GPPDTSdVar.s]], 'varnames') <- GPPDTSdVar.s
-		attr(dsAns[[GPPDTSdVar.s]], 'units') <- attr(NEEFiltered, 'units')
+		attr(dsAns[[GPPDTSdVar.s]], 'units') <- attr(dsR$NEE, 'units')
 	}
 	#sTEMP$GPP_DT_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
 	#! New code: MDS gap filling information are not copied from NEE_fmet and NEE_fwin to GPP_fmet and GPP_fwin
@@ -268,6 +227,8 @@ partGLControl <- function(
 			## see \code{\link{replaceMissingSdByPercentage}}.
 			## Default sets missing uncertainty to 20% of NEE but at least 0.7 gC/m2/yr.
 			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit.
+		,neglectNEEUncertaintyOnMissing=FALSE	##<< If set to TRUE: if there are records with missing uncertainty of NEE inside one window, set all uncertainties to 1. 
+			## This overules option replaceMissingSdNEEParms.
 		,minPropSaturation=NA	##<< quality criterion for sufficient data in window. 
 			## If GPP prediction of highest PAR of window is less than minPropSaturation*(GPP at light-saturation, i.e. beta)
 			## this indicates that PAR is not sufficiently high to constrain the shape of the LRC
@@ -294,6 +255,7 @@ partGLControl <- function(
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
 			,fixedTempSens=fixedTempSens
 			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
+			,neglectNEEUncertaintyOnMissing = neglectNEEUncertaintyOnMissing
 			,minPropSaturation=minPropSaturation
 	)
 	#display warning message for the following variables that we advise not to be changed
@@ -318,11 +280,12 @@ partGLControlLasslopCompatible <- function(
 		,smoothTempSensEstimateAcrossTime=FALSE	##<< FALSE: use independent estimates of temperature 
 			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,isRefitMissingVPDWithNeglectVPDEffect=FALSE	##<< FALSE: avoid repeating estimation with \code{isNeglectVPDEffect=TRUE}
-		,replaceMissingSdNEEParms=c(NA,NA)		##<< c(NA,NA): avoid replacing missing standard deviation of NEE.
 		,minPropSaturation=NA					##<< NA: avoid quality constraint of sufficient saturation in data 
 			## This option is overruled, i.e. not considered, if option isUsingLasslopQualityConstraints=TRUE.
 		,isNeglectVPDEffect=FALSE 				##<< FALSE: do not neglect VPD effect
-		,weightMisfitPar2000=NA					##<< do not consider prior knowledge that saturation should be nearly obtained at PAR=2000			
+		,replaceMissingSdNEEParms=c(NA,NA)		##<< do not replace missing NEE, but see option 
+		,neglectNEEUncertaintyOnMissing=TRUE	##<< if there are records with missing uncertainty of NEE inside one window, set all sdNEE to 1. 
+			## This overules option replaceMissingSdNEEParms.
 		, ... 									##<< further arguemtns to \code{\link{partGLControl}}
 ){
 	##author<< TW
@@ -333,20 +296,87 @@ partGLControlLasslopCompatible <- function(
 			,isAssociateParmsToMeanOfValids=isAssociateParmsToMeanOfValids
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
 			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
-			,isSdPredComputed=isSdPredComputed
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
-			,replaceMissingSdNEEParms=replaceMissingSdNEEParms
+			,replaceMissingSdNEEParms = replaceMissingSdNEEParms
+			,neglectNEEUncertaintyOnMissing = neglectNEEUncertaintyOnMissing
 			,minPropSaturation=minPropSaturation
-			,weightMisfitPar2000=weightMisfitPar2000
 			,...
 	)
 }
 attr(partGLControlLasslopCompatible,"ex") <- function(){
 	partGLControlLasslopCompatible()
 }
+
+partGLExtractStandardData <- function(
+		### extract the relevant columns from original input to generate dataset with defined names 
+		ds								##<< dataset with all the specified input columns and full days in equidistant times
+		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
+		,QFNEEVar.s=paste0('NEE',SuffixDash.s,'_fqc')	##<< Quality flag of variable
+		,QFNEEValue.n=0         						##<< Value of quality flag for _good_ (original) data
+		,NEESdVar.s=paste0('NEE',SuffixDash.s,'_fsd')	##<< Variable of standard deviation of net ecosystem fluxes
+		,TempVar.s=paste0('Tair_f')     ##<< Filled air or soil temperature variable (degC)
+		,QFTempVar.s=paste0('Tair_fqc') ##<< Quality flag of filled temperature variable
+		,QFTempValue.n=0       			##<< Value of temperature quality flag for _good_ (original) data
+		,VPDVar.s=paste0('VPD_f')     	##<< Filled Vapor Pressure Deficit - VPD - (hPa)
+		,QFVPDVar.s=paste0('VPD_fqc') 	##<< Quality flag of filled VPD variable    
+		,QFVPDValue.n=0        			##<< Value of VPD quality flag for _good_ (original) data
+		,RadVar.s='Rg'         			##<< Unfilled (original) radiation variable
+		,PotRadVar.s="PotRad_NEW"		##<< Variable name of potential radiation (W/m2)			   
+		,Suffix.s = ""		   			##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).
+		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
+){	
+	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
+	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="")
+	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
+	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
+	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
+	fCheckColNum(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
+	fCheckColPlausibility(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
+	NEEFiltered <- fSetQF(ds, NEEVar.s, QFNEEVar.s, QFNEEValue.n, 'sGLFluxPartition')
+	#
+	# Apply quality flag for temperature and VPD
+	# TODO: docu meteo filter, standard FALSE
+	NEW_FP_Temp <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'partGLExtractStandardData') else ds[[TempVar.s]]
+	NEW_FP_VPD <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'partGLExtractStandardData') else ds[[VPDVar.s]]
+	#
+	# Filter night time values only
+	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E_0.n
+	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
+	#! New code: PotRad in sGLFluxPartition: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
+	isNight <- (ds[,RadVar.s] <= 4 & ds[[PotRadVar.s]] == 0)
+	# Filter day time values only
+	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
+	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only, twutz does not understand this comment
+	isDay=(ds[,RadVar.s] > 4 & ds[[PotRadVar.s]] != 0)
+	#	
+	##value<< a data.frame with columns
+	dsR <- data.frame(
+			sDateTime=ds[[1]]			##<< first column of ds, usually the time stamp
+			## not used, but usually first column is a dateTime is kept for aiding debug
+			,NEE=NEEFiltered			##<< NEE filtered for quality flay
+			,sdNEE=ds[[NEESdVar.s]]		##<< standard deviation of NEE with missing values replaced 
+			, Temp=NEW_FP_Temp			##<< Temperature, quality filtered if isTRUE(controlGLPart$isFilterMeteoQualityFlag)
+			, VPD=NEW_FP_VPD			##<< Water pressure deficit, quality filtered if isTRUE(controlGLPart$isFilterMeteoQualityFlag)
+			, Rg=ds[[RadVar.s]]			##<< Incoming radiation
+			, isDay=isDay				##<< Flag that is true for daytime records
+			, isNight=isNight			##<< Flag that is true for nighttime records
+	)
+	##end<<
+	##details<<
+	## The LRC fit ususally weights NEE records by its uncertainty. In order to also use
+	## records with missing \code{NEESdVar.s}, uncertainty of the missing values is by default set 
+	## to a conservatively high value, parameterized by \code{controlGLPart$replaceMissingSdNEEParms).
+	## Controlled by argument \code{replaceMissingSdNEEParms} in \code{\link{partGLControl}}, but overruled
+	## by argument \code{neglectNEEUncertaintyOnMissing}.
+	if( !controlGLPart$neglectNEEUncertaintyOnMissing )
+		dsR$sdNEE <- replaceMissingSdByPercentage(dsR$sdNEE, dsR$NEE
+				, controlGLPart$replaceMissingSdNEEParms[1], controlGLPart$replaceMissingSdNEEParms[2] )
+	dsR
+}
+
 
 partGLFitLRCWindows=function(
 		### Estimate temperature sensitivity and parameters of Rectangular Hyperbolic Light Response Curve function (a,b,R_ref, k) for successive periods
@@ -420,9 +450,17 @@ partGLFitLRCOneWindow=function(
 	#requiredCols <- c("NEE", "sdNEE", "Temp", "VPD", "Rg", "isNight", "isDay")
 	#iMissing <- which( is.na(match( requiredCols, names(ds) )))
 	#if( length(iMissing) ) stop("missing columns: ",paste0(requiredCols[iMissing],collapse=","))
-	isValidDayRecNoVPDConstraint <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$sdNEE) & !is.na(ds$Temp) & !is.na(ds$Rg)
 	##details<< Fitting is done on a subset of the data where isDay, NEE, sdNEE, Temp, Rg, and VPD are all non-NA 
 	## and isDay is TRUE 
+	isValidDayRecNoSdNEEConstraint <- !is.na(ds$isDay) & ds$isDay & !is.na(ds$NEE) & !is.na(ds$Temp) & !is.na(ds$Rg)
+	##details<<
+	## With option \code{controlGLPart$neglectNEEUncertaintyOnMissing=TRUE} all sdNEE are set to 1 if there is any missing sdNEE at otherwise valid records
+	if( isTRUE(controlGLPart$neglectNEEUncertaintyOnMissing) && any(!is.finite(ds$sdNEE[isValidDayRecNoSdNEEConstraint])) ){
+		ds$sdNEE <- 1L
+	}
+	isValidDayRecNoVPDConstraint <- isValidDayRecNoSdNEEConstraint & !is.na(ds$sdNEE) 
+	##details<<
+	## If  \code{controlGLPart$isNeglectVPDEffect=TRUE}, also records with VPD=NA maybe valid
 	isValidDayRec <- if( isTRUE(controlGLPart$isNeglectVPDEffect) ) 
 				isValidDayRecNoVPDConstraint else isValidDayRecNoVPDConstraint & !is.na(ds$VPD)
 	iMeanRecInDayWindow <- as.integer(round(mean(which(isValidDayRec))))

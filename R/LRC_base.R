@@ -80,6 +80,7 @@ LightResponseCurveFitter_fitLRC <- function(
 			covParms[5L,5L] <- sdE0^2
 			covParms[resOpt$iOpt,resOpt$iOpt] <- covParmsLRC  
 			if( any(diag(covParms) < 0)){
+				#ggplot(dsDay, aes(Rg, -NEE, color=Temp)) + geom_point()
 				return( getNAResult(1005L) )
 			} 
 		} else {
@@ -340,6 +341,7 @@ LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
 	if( !all(is.finite(theta))) stop("need to provide finite starting values.")
 	##details<<
 	## Only those records are used for optimization where both NEE and sdNEE are finite.
+	## In larger settings, already filtered at 
 	dsDayFinite <- dsDay[ is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
 	if( nrow(dsDayFinite) < ctrl$minNRecInDayWindow){
 		stop("inspect too few records, should be already filtered in partGLFitLRCOneWindow")
