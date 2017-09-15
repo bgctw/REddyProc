@@ -12,8 +12,8 @@ LightResponseCurveFitter_getParameterNames <- function(
 	c(k="k"						##<< VPD effect
 	, beta="beta"				##<< saturation of GPP at high radiation
 	, alpha="alpha"				##<< initial slope
-	, RRef="RRef"				##<< basal respiration 
-	, E0="E0")					##<< temperature sensitivity estimated from night-time data
+	, RRef="RRef"				##<< basal respiration (units of provided NEE, usually mumol CO2 m-^-2 s^-2)
+	, E0="E0")					##<< temperature sensitivity estimated from night-time data (K)
 }
 LightResponseCurveFitter$methods(getParameterNames = LightResponseCurveFitter_getParameterNames)
 

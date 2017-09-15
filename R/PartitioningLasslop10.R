@@ -225,7 +225,7 @@ partGLControl <- function(
 			## \code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
 		,replaceMissingSdNEEParms=c(perc=0.2, minSd=0.7)	##<< parameters for replacing missing standard deviation of NEE.
 			## see \code{\link{replaceMissingSdByPercentage}}.
-			## Default sets missing uncertainty to 20% of NEE but at least 0.7 gC/m2/yr.
+			## Default sets missing uncertainty to 20% of NEE but at least 0.7 flux-units (usually mumo CO2/m2/s).
 			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit.
 		,neglectNEEUncertaintyOnMissing=FALSE	##<< If set to TRUE: if there are records with missing uncertainty of NEE inside one window, set all uncertainties to 1. 
 			## This overules option replaceMissingSdNEEParms.
@@ -419,9 +419,10 @@ partGLFitLRCWindows=function(
 			,summary = cbind( resLRC$winInfo, rbind.fill(lrcSummary)) 
 	)
 	#table(resParms$summary$convergence)
-	#E0_night equals E0, but uncertaint might differ 
-	#resParms$summary$E0_night <- dsTempSens$E0
-	resParms$summary$E0_night_sd <- dsTempSens$sdE0
+	#E0_night equals E0, but uncertainty might differ
+	resParms$summary$E0_bootstrap_sd <- resParms$summary$E0_sd		# due to bootstrap, this may differ, save before overriding by night-time estimate
+	resParms$summary$E0 <- dsTempSens$E0				# report E0 and E0_sd from nighttime even when LRC fit did not converge
+	resParms$summary$E0_sd <- dsTempSens$sdE0				
 	resParms$summary$RRef_night <- dsTempSens$RRef
 	# summary$iMeanRec yet based on window instead of entire time, need to add beginning of window
 	resParms$summary$iMeanRec <- resParms$summary$iRecStart-1L + resParms$summary$iMeanRec
@@ -587,11 +588,12 @@ partGLInterpolateFluxes <- function(
 	nRec <- length(Rg) 
 	Temp_Kelvin <- Temp+273.15
 	if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ){
-	  # there might be several rows with the same iMeanRec, omit those rows unless the first of each reoccuring iMeanRec
-    tabMeanRec <- table(summaryLRC$iMeanRec) 
-    iRecsDouble <- as.integer(names(tabMeanRec[ tabMeanRec > 1L ]))
-    iRecsOmit <- do.call(c, lapply( iRecsDouble, function(iRecDouble){
-      which(summaryLRC$iMeanRec==iRecDouble)[-1L]
+		# there might be several rows with the same iMeanRec, omit those rows unless the first of each reoccuring iMeanRec
+		# they all will be based on the same valid data, if iMeanRec is equal
+	    tabMeanRec <- table(summaryLRC$iMeanRec) 
+	    iRecsDouble <- as.integer(names(tabMeanRec[ tabMeanRec > 1L ]))
+	    iRecsOmit <- do.call(c, lapply( iRecsDouble, function(iRecDouble){
+	      which(summaryLRC$iMeanRec==iRecDouble)[-1L]
     }))
     if( length(iRecsOmit)) summaryLRC <- summaryLRC[-iRecsOmit,]
 	}
