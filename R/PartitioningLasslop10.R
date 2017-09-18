@@ -213,9 +213,11 @@ partGLControl <- function(
 		## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled for parameter estimation.
 		## For prediction, the gap-filled value is used always, to produce predictions also for gaps.
 		,isBoundLowerNEEUncertainty=TRUE	##<< set to FALSE to avoid adjustment of very low uncertainties before
-		## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
+			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
+		,fixedTRefAtNightTime=NA		##<< if a finite value (degree Centigrade) is given, 
+			## it is used instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data
 		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
-		## sensitivity on each windows instead of a vector of E0 that is smoothed over time
+			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
 		,isNeglectVPDEffect=FALSE 		##<< set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.
 		,isRefitMissingVPDWithNeglectVPDEffect=TRUE	##<< set to FALSE to avoid repeating estimation with \code{isNeglectVPDEffect=TRUE} trying to predict when VPD is missing
@@ -250,6 +252,7 @@ partGLControl <- function(
 			,isSdPredComputed=isSdPredComputed
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
+			,fixedTRefAtNightTime=fixedTRefAtNightTime
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
@@ -277,6 +280,8 @@ partGLControlLasslopCompatible <- function(
 		,isUsingLasslopQualityConstraints=TRUE	##<< avoid quality constraints additional to the ones in Lasslop 2010		
 		,isBoundLowerNEEUncertainty=FALSE		##<< FALSE: avoid adjustment of very low uncertainties before
 			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
+		,fixedTRefAtNightTime=15				##<< use fixed (degree Centigrade) temperature sensitivity 
+			## instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data
 		,smoothTempSensEstimateAcrossTime=FALSE	##<< FALSE: use independent estimates of temperature 
 			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,isRefitMissingVPDWithNeglectVPDEffect=FALSE	##<< FALSE: avoid repeating estimation with \code{isNeglectVPDEffect=TRUE}
@@ -297,6 +302,7 @@ partGLControlLasslopCompatible <- function(
 			,isLasslopPriorsApplied=isLasslopPriorsApplied
 			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
+			,fixedTRefAtNightTime=fixedTRefAtNightTime
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect

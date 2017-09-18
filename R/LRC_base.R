@@ -273,12 +273,13 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		resOpt$theta[] <- NA
 		resOpt$convergence <- 1002
 	}
-	##details<<
-	## No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation.
-	if( !isTRUE(ctrl$isUsingLasslopQualityConstraints) & isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
-		resOpt$theta[] <- NA
-		resOpt$convergence <- 1002
-	}
+	#  deprecated: better use a non-finite ctrl$minPropSaturation 
+	#	##details<<
+	#	## No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation.
+	#	if( !isTRUE(ctrl$isUsingLasslopQualityConstraints) & isTRUE(as.vector(resOpt$theta[2L] > 4*parameterPrior[2L])) ){
+	#		resOpt$theta[] <- NA
+	#		resOpt$convergence <- 1002
+	#	}
 	##details<<
 	## Not parameters are reported if the data did not contain records that are near light saturation. 
 	## This is checked by comparing the prediction at highest PAR with the beta parameter

@@ -230,8 +230,17 @@ partGLFitNightTempSensOneWindow=function(
 	#TODO here only E0 is of interest, do not need to reestimate RRef
 	#resNightFitOld <- partGLEstimateTempSensInBounds(dssNight$NEE, fConvertCtoK(dssNight$Temp)
 	#			, prevE0=prevRes$prevE0)
+	##details<< 
+	## The reference temperature is taken as the median of the temperatures of valid records,
+	## unless a fixed reference temperature (in degree Celsius) is specified 
+	## by argument \code{controlGLPart$fixedTRefAtNightTime}.
+	TRefFitCelsius <- if( length(controlGLPart$fixedTRefAtNightTime) && is.finite(controlGLPart$fixedTRefAtNightTime)){
+				controlGLPart$fixedTRefAtNightTime 
+			} else{
+				median(dssNight$Temp, na.rm=TRUE)
+			} 
 	resNightFit <- partGLEstimateTempSensInBoundsE0Only(dssNight$NEE, fConvertCtoK(dssNight$Temp)
-			, prevE0=prevRes$E0)
+			, prevE0=prevRes$E0, TRefFit=fConvertCtoK(TRefFitCelsius))
 	ans <- data.frame(E0=resNightFit$E0, sdE0=resNightFit$sdE0, TRefFit=resNightFit$TRefFit, RRefFit=resNightFit$RRefFit)
 	ans
 }
