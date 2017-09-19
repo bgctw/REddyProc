@@ -60,7 +60,8 @@ aggregate.sd <- function(x){  # where x is the sd of the variable
 #scen <- "SaturationPenalty5"
 #scen <- "omitBoundLowerNEEUnc"
 #scen <- "filterParSaturationProp50"
-scen <- "omitSmoothTempSens"
+#scen <- "omitSmoothTempSens"
+scen <- "neglectNEEUncertaintyOnMissing"
 #scen <- "Lasslop10"	# wait for Gittas answer, how to treat missing sdNEE
 
 nBoot = 3L
@@ -68,7 +69,7 @@ nBoot = 3L
 
 # uncomment the scenario in quesiton and then run
 # cd inst/compareOldTool
-# bsub -q mpi_large -M 20971520 -n 29 -R span[hosts=1] R CMD BATCH --vanilla GLPartitioningTestCase.R GLPartitioningTestCase_log.txt 
+# bsub -q mpi_large -M 20971520 -n 28 -R span[hosts=1] R CMD BATCH --vanilla GLPartitioningTestCase.R GLPartitioningTestCase_log.txt 
 
 scenarioConfigurations = tribble(
 		~scenario, ~ouputPath,  ~ctrl, ~comment
@@ -77,8 +78,10 @@ scenarioConfigurations = tribble(
 		,"omitBoundLowerNEEUnc","default_options1709/omitBoundLowerNEEUnc", partGLControl(isBoundLowerNEEUncertainty=FALSE), "omit lower bound on NEE uncertainty allowing for high leverage" 
 		,"filterParSaturationProp50","default_options1709/filterParSaturationProp50", partGLControl(minPropSaturation=0.5), "filter those windows where GPP prediction at highest PAR is less than 50% of GPP at PAR=2000" 
 		,"omitSmoothTempSens","default_options1709/omitSmoothTempSens", partGLControl(smoothTempSensEstimateAcrossTime=FALSE), "use raw Temperature nighttime sensitivity estimates instead of smoothing them over time" 
+		,"neglectNEEUncertaintyOnMissing","default_options1709/neglectNEEUncertaintyOnMissing", partGLControl(neglectNEEUncertaintyOnMissing=TRUE), "neglectNEEUncertaintyOnMissing=TRUE: omit weighting on NA in sdNEE" 
 )
 scenConf <- as.list(subset(scenarioConfigurations, scenario==scen))
+scenConf$ctrl[[1]]$nBootUncertainty <- nBoot
 
 str(scenConf, max.level=3)
 
@@ -163,8 +166,9 @@ computeSite <- function(siteName, fileName, scenConf){
 	# dsMonth <- subset(dfall_posix, Month %in% 1:12) #& DateTime >= "2002-08-09 00:00:00" & DateTime <= "2002-08-12 23:30:00")
 	#
 	# START - RUN THE REddyProc DT partitioning
-	ctrlOpt <- scenConf$ctrl[[1]]; ctrlOpt$isAssociateParmsToMeanOfValids <- FALSE; nBootUncertainty=3L # in order to match exact source data
-	#ctrl$fixedTempSens=data.frame(E0=220, sdE0=50, RRef=2.7)
+	ctrlOpt <- scenConf$ctrl[[1]]
+	#ctrlOpt$isAssociateParmsToMeanOfValids <- FALSE # in order to match exact source data
+	#ctrlOpt$fixedTempSens=data.frame(E0=220, sdE0=50, RRef=2.7)
 	dsResOpt <- partitionNEEGL(dsMonth,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
 			TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
 			QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
@@ -199,9 +203,14 @@ computeSite <- function(siteName, fileName, scenConf){
 					cbind( method="Default", subset( dsResDefault, isInPeriod & is.finite(FP_E0)))
 					,cbind( method=scenConf$scen, subset( dsResOpt, isInPeriod & is.finite(FP_E0)))
 			)
-			ggplot( dss, aes(DateTime, FP_E0, color=method)) + geom_line() + theme_bw() + theme(legend.position = "bottom") +
+			ggplot( dss, aes(DateTime, FP_E0, color=method, fill=method)) +
+					#geom_ribbon(aes(ymin=FP_E0-1.96*FP_E0_sd, ymax=FP_E0+1.96*FP_E0_sd), alpha=0.3) + ylim(-250,750) +					
+					#geom_ribbon(aes(ymin=FP_E0-FP_E0_sd, ymax=FP_E0+FP_E0_sd), alpha=0.3) +  ylim(-50,550) +					
+					geom_line() + theme_bw() + theme(legend.position = "bottom") +
 					ylab(bquote(E[0]*' (K)')) + 
-					theme(axis.title.x=element_blank())					
+					theme(legend.position = "none") +
+					theme(axis.title.x=element_blank()) + theme( legend.title= element_blank() )
+			# 
 			
 			isInPeriod <- (dsMonth$DateTime >= "2004-04-01" & dsMonth$DateTime <= "2004-04-20") 
 			dss <- rbind(
@@ -209,7 +218,9 @@ computeSite <- function(siteName, fileName, scenConf){
 					,cbind( method=scenConf$scen, subset( dsResOpt, isInPeriod))
 			)
 			ggplot( dss, aes(DateTime, GPP_DT, color=method)) + geom_line() + theme_bw() + theme(legend.position = "bottom") +
-					ylab(bquote(GPP*' ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')) + theme(axis.title.x=element_blank())					
+					ylab(bquote(GPP*' ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')) + 
+					theme(axis.title.x=element_blank()) + theme( legend.title= element_blank() )
+			#ggsave("../../eclipse46_R/paper17_REddyProc/figOrig/part_LRC_SmoothTempSensGPP_PT-Esp.pdf", width=3.27, height=2.5)
 		}
 		# in partGLFitLRCOneWindow:
 		#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L > 27 ) recover()
@@ -254,8 +265,8 @@ computeSite <- function(siteName, fileName, scenConf){
 	# Aggregation Monthly per site
 	df.REddy.mm  <- aggregate(dsResOpt,by=list(Year_agg=Year_agg, Month_agg=Month_agg),mean,na.rm=T)
 	# sd
-	df.REddy.mm$Reco_DT_SD   <- aggregate(dsResOpt$Reco_DT_SD,by=list(Year_agg=Year_agg, Month_agg=Month_agg),aggregate.sd)[,2]
-	df.REddy.mm$GPP_DT_SD    <- aggregate(dsResOpt$GPP_DT_SD,by=list(Year_agg=Year_agg, Month_agg=Month_agg),aggregate.sd)[,2]
+	df.REddy.mm$Reco_DT_SD   <- aggregate(dsResOpt$Reco_DT_SD,by=list(Year_agg=Year_agg, Month_agg=Month_agg),aggregate.sd)[,3]
+	df.REddy.mm$GPP_DT_SD    <- aggregate(dsResOpt$GPP_DT_SD,by=list(Year_agg=Year_agg, Month_agg=Month_agg),aggregate.sd)[,3]
 	df.REddy.mm  <- cbind(Site=siteName,df.REddy.mm)
 	# Aggregation Annual
 	df.REddy.yy  <- aggregate(dsResOpt,by=list(Year_agg=Year_agg),mean,na.rm=T)

@@ -241,6 +241,7 @@ partGLControl <- function(
 	## For highest compatibility to the pvWave code of G.Lasslop (used by first BGC-online tool)
 	## see function \code{\link{partGLControlLasslopCompatible}}. 
 	if( NRHRfunction ) stop("option 'NRHRfunction' is deprecated. Use instead in partitionNEEGL argument: lrcFitter=NonrectangularLRCFitter()")
+	if( isTRUE(neglectNEEUncertaintyOnMissing) ) replaceMissingSdNEEParms <- c(NA,NA)
 	ctrl <- list(  
 			LRCFitConvergenceTolerance=LRCFitConvergenceTolerance
 			,nLRCFitConvergenceTolerance=nLRCFitConvergenceTolerance
