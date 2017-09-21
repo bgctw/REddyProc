@@ -49,7 +49,7 @@ partitionNEEGL=function(
 	## \item{<LRC>}{Further light response curve (LRC) parameters and their standard deviation depend on the used LRC
 	## (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
 	## They are estimated for windows and are reported with the first record of the window}
-	##end<<
+	#
 	# append LRC parameter result columns
 	lrcParNames <- lrcFitter$getParameterNames()
 	lrcParNames <- c(lrcParNames, paste0(lrcParNames,"_sd"))
@@ -377,7 +377,6 @@ partGLExtractStandardData <- function(
 			, isDay=isDay				##<< Flag that is true for daytime records
 			, isNight=isNight			##<< Flag that is true for nighttime records
 	)
-	##end<<
 	##details<<
 	## The LRC fit ususally weights NEE records by its uncertainty. In order to also use
 	## records with missing \code{NEESdVar.s}, uncertainty of the missing values is by default set 

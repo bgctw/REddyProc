@@ -608,13 +608,13 @@ fCheckColPlausibility <- function(
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', 0), SubCallFunc.s)
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 2500), SubCallFunc.s)
     }
-    ## 'Ta' - air temperature in °C
+    ## 'Ta' - air temperature in degree Celsius
     if( grepl('Ta', VarName.V.s[v.i]) )
     {
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -70), SubCallFunc.s)
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('>', 60), SubCallFunc.s)
     }
-    ## 'Ts' - soil temperature in °C
+    ## 'Ts' - soil temperature in degree Celsius
     if( grepl('Ts', VarName.V.s[v.i]) )
     {
       fCheckOutsideRange(Data.F, VarName.V.s[v.i], c('<', -20), SubCallFunc.s)

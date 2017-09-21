@@ -412,22 +412,22 @@ sEddyProc$methods(
       } 
     
     #+++ Full MDS algorithm
-    # Step 1: Look-up table (method 1) with window size ±7 days
+    # Step 1: Look-up table (method 1) with window size +-7 days
     if( Met.n == 3 ) sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-	# Step 2: Look-up table (method 1) with window size ±14 days
+	# Step 2: Look-up table (method 1) with window size +-14 days
     if( Met.n == 3 ) sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-    # Step 3: Look-up table, Rg only (method 2) with window size ±7 days, 
+    # Step 3: Look-up table, Rg only (method 2) with window size +-7 days, 
     if( Met.n == 3 || Met.n == 1) sFillLUT(7, V1.s, T1.n, Verbose.b=Verbose.b)
 	# Step 4: Mean diurnal course (method 3) with window size 0 (same day)
     sFillMDC(0, Verbose.b=Verbose.b)
-	# Step 5: Mean diurnal course (method 3) with window size ±1, ±2 days
+	# Step 5: Mean diurnal course (method 3) with window size +-1, +-2 days
     sFillMDC(1, Verbose.b=Verbose.b)
     sFillMDC(2, Verbose.b=Verbose.b)
-    # Step 6: Look-up table (method 1) with window size ±21, ±28, ..., ±70   
+    # Step 6: Look-up table (method 1) with window size +-21, +-28, ..., +-70   
     if( Met.n == 3 ) for( WinDays.i in seq(21,70,7) ) sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b=Verbose.b)
-    # Step 7: Look-up table (method 2) with window size ±14, ±21, ..., ±70  
+    # Step 7: Look-up table (method 2) with window size +-14, +-21, ..., +-70  
     if( Met.n == 3 || Met.n == 1) for( WinDays.i in seq(14,70,7) ) sFillLUT(WinDays.i, V1.s, T1.n, Verbose.b=Verbose.b)
-    # Step 8: Mean diurnal course (method 3) with window size ±7, ±14, ..., ±210 days 
+    # Step 8: Mean diurnal course (method 3) with window size +-7, +-14, ..., +-210 days 
     for( WinDays.i in seq(7,210,7) ) sFillMDC(WinDays.i, Verbose.b=Verbose.b)
     
     # Set long gaps again to NA

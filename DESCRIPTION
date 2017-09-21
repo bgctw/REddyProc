@@ -1,7 +1,7 @@
 Package: REddyProc
-Version: 1.0.0
-Date: 2016-01-29
-Title: Data processing and plotting utilities of (half-)hourly eddy-covariance measurements
+Version: 1.0.1
+Date: 2017-09-21
+Title: Data Processing and Plotting Utilities of (Half-)Hourly Eddy-Covariance Measurements
 Author: (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)
 Maintainer: Department for Biogeochemical Integration <REddyProc-help@bgc.mpg.de>
 Authors@R: c( person("Markus", "Reichstein", role=c("aut"), email="mreichstein@bgc-jena.mpg.de")
@@ -14,7 +14,7 @@ Authors@R: c( person("Markus", "Reichstein", role=c("aut"), email="mreichstein@b
 Description: R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
 URL: http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb, http://r-forge.r-project.org/projects/reddyproc/
 Depends: R (>= 3.0.0), methods
-Imports: Rcpp, plyr, mlegp, logitnorm 
+Imports: Rcpp, dplyr, mlegp, logitnorm, tibble 
 Suggests: ncdf4, RNetCDF, testthat, minpack.lm, segmented, knitr
 LinkingTo: Rcpp
 License: GPL (>= 2)
