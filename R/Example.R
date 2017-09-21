@@ -82,6 +82,7 @@ attr(sEddyProc.example,'ex') <- function( ){
 		
 		#+++ Export gap filled and partitioned data to standard data frame
 		FilledEddyData.F <- EddyProc.C$sExportResults()
+		#tmp <- EddyProc.C$sExportResults(isListColumnsExported=TRUE); str(head(tmp))
 		#+++ Save results into (tab-delimited) text file in directory \out
 		CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
 		#+++ May rename variables to correspond to Ameriflux 

@@ -178,7 +178,10 @@ sEddyProc$methods(
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc$methods(
-  sExportResults = function( )
+  sExportResults = function(
+		  isListColumnsExported=FALSE	##<< if TRUE export list columns in addition to numeric columns, 
+			## such as the covariance matrices of the the day-time-partitioning LRC fits
+	)
     ##title<<
     ## sEddyProc$sExportData - Export internal sTEMP data frame with result columns
     ##description<<
@@ -187,8 +190,9 @@ sEddyProc$methods(
     ## AMM
   {
     'Export class internal sTEMP data frame with result columns'
-    
-    sTEMP[,-1]
+	iListColumns <- which( sapply( sTEMP, is.list ) )
+	iOmit <- if( isListColumnsExported ) c(1L) else c(1L, iListColumns)
+    sTEMP[,-iOmit]
     ##value<< 
     ## Return data frame sTEMP with results.
   })
