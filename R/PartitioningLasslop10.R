@@ -428,7 +428,7 @@ partGLFitLRCWindows=function(
 	## the uncertainty of temperature sensitivity \code{E0_night_sd}, 
 	## the respiration at reference temperature \code{RRef_night}.
 	## and a list column\code{resOpt} with the optimization results
-	resParms <- as.tibble(cbind( resLRC$winInfo, rbind.fill(lrcSummary), resOptDf)) 
+	resParms <- as.tibble(cbind( resLRC$winInfo, bind_rows(lrcSummary), resOptDf)) 
 	#table(resParms$convergence)
 	#E0_night equals E0, but uncertainty might differ
 	resParms$E0_bootstrap_sd <- resParms$E0_sd		# due to bootstrap, this may differ, save before overriding by night-time estimate

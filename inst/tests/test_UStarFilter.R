@@ -4,7 +4,6 @@
 # Author: TW
 #require(testthat)
 context("UStarFilter")
-require(plyr)
 # Furher context: fCheckColNames, fCheckColNumeric, fCheckOutsideRange
 
 if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
@@ -32,8 +31,8 @@ test_that(".binUstar classes are correct",{
 	#ds.f$bin[1:(UstarClasses*Ust_bin_size)]	 <-	 rep(1:UstarClasses, each=Ust_bin_size)
 	ds.f$bin <- rep(1:nrow(res), times=res$nRec)		
 	# do the averaging
-	tmp1 <- ddply( ds.f, .(bin), function(dsBin){ c(Ust_avg=mean(dsBin[,2], na.rm=TRUE),NEE_avg=mean(dsBin[,1], na.rm=TRUE))})
-	expect_that( res[,1:2], equals(tmp1[,-1]))
+	tmp1 <- do.call( rbind ,ds.f %>% split(.$bin) %>% map( function(dsBin){ c(Ust_avg=mean(dsBin[,2], na.rm=TRUE),NEE_avg=mean(dsBin[,1], na.rm=TRUE))}))
+	expect_that( res[,1:2], equals(tmp1))
 })
 
 test_that(".binUstar example file",{
@@ -77,10 +76,11 @@ test_that("usEstUstarThresholdSingleFw2Binned",{
 
 test_that("sEstUstarThreshold: standard case",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-			(res <- EddyProc.C$sEstUstarThreshold())
+			(res <- EddyProc.C$sEstUstarThreshold())$uStarTh
 			expect_equal( res$uStarTh$uStar[1], 0.42, tolerance = 0.01, scale = 1 )	# regresssion test: 0.42 by former run
 			expect_equal( dim(res$tempInSeason)
 				, c( usControlUstarSubsetting()$taClasses,length(unique(usCreateSeasonFactorMonth(EddyProc.C$sDATA$sDateTime))) ))
+			.plotNEEVersusUStarTempClass(subset(EddyProc.C$sDATA, season=="1998001" & tempBin==5 & is.finite(NEE)), uStarTh=0.65)
 		})
 
 
@@ -121,7 +121,7 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			# construct in a way so that that in each seasons there are not enough valid values in 98
 			nRec <- max(usControlUstarSubsetting()$minRecordsWithinSeason, usControlUstarSubsetting()$taClasses*usControlUstarSubsetting()$minRecordsWithinTemp) -50
 			dsAll$seasonFactor <- usCreateSeasonFactorMonthWithinYear(dsAll$DateTime)
-			dsFew <- ddply(dsAll, .(seasonFactor), function(dss){
+			dsFew <- dsAll %>% split(.$seasonFactor) %>% map_df(function(dss){
 				isValid <- usGetValidUstarIndices(dss)
 				if( sum(isValid) >= nRec)
 					dss$NEE[isValid][(nRec):sum(isValid)] <- NA
@@ -130,7 +130,7 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 				dss
 			})
 			dsFew$seasonFactor <- NULL
-			dsFew <- arrange(dsFew, DateTime)
+			dsFew <- arrange_(dsFew, ~DateTime)
 			dsComb <- rbind(dsFew,EddyDataWithPosix.F99)
 			EddyProc.C <- sEddyProc$new('DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
 			expect_warning(

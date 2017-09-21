@@ -198,7 +198,7 @@ simplifyApplyWindows <- function(
 	## A single data.frame with columns of winInfo and results of FUN
 	if( !length(resApply$winInfo) ) return(resApply$winInfo)
 	ansFUN <- if( is.data.frame(resApply$resFUN[[1]]) ){
-				rbind.fill( resApply$resFUN )
+				bind_rows( resApply$resFUN )
 			} else {
 				do.call( rbind, resApply$resFUN)
 			}

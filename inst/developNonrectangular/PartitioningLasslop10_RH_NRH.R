@@ -544,7 +544,7 @@ applyWindows <- function(
 	#res2List <- tmp
 	# rbind res2List, but keep NULL results, therefore add dummy dataframe, and delete dummy column afterward
 	res2List[ sapply(res2List, is.null) ] <- list(data.frame(..DUMMY=1))
-	res2 <- rbind.fill(res2List)	# maybe later upgrade to dplyr
+	res2 <- bind_rows(res2List)	# maybe later upgrade to dplyr
 	res2$..DUMMY <- NULL
 	dsSummary <- cbind(dsRec, res2)
 	##value<< a list with components that correspond to the three result components of FUN

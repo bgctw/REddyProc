@@ -140,6 +140,8 @@ test_that("Test sMDSGapFill",{
 	
 }
 
+
+
 test_that("Test sMDSGapFillAfterUStar default case",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
 			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
