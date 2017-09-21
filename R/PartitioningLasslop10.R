@@ -96,7 +96,7 @@ partitionNEEGL=function(
 				dsTempSens
 			}
 	##seealso<< \code{\link{partGLFitLRCWindows}}
-	resParms <- partGLFitLRCWindows( dsR
+	resParms <- resParms1 <- partGLFitLRCWindows( dsR
 			, nRecInDay=nRecInDay
 			, dsTempSens=dsTempSens
 			, controlGLPart=controlGLPart
@@ -126,26 +126,29 @@ partitionNEEGL=function(
 			)
 	if( !controlGLPart$isNeglectVPDEffect && controlGLPart$isRefitMissingVPDWithNeglectVPDEffect){
 		##details<<
-		## There common case where VPD is missing for predicting GPP, the default 
+		## While the extrapolation uses filled data, the parameter optimization 
+		## uses only measured data, i.e. with specified quality flag.
+		## With the common case where VPD is missing for fitting the LRC, by default 
 		## (with \code{controlGLPart$isRefitMissingVPDWithNeglectVPDEffect=TRUE})
 		## is to redo the estimation of LRC parameters with neglecting the VPD-effect.
-		## The cases (rows) with missing VPD are then replaced with predictions based on LRC-fits that neglected the VPD effect.  
+		## Next, in the preditions (rows) with missing VPD are then replaced with predictions 
+		## based on LRC-fits that neglected the VPD effect.  
 		iNAVPD <- which(is.na(ds[[VPDVar.s]] & is.na(dsAnsFluxes$GPP)))
 		if( length(iNAVPD)){
 			message("  could not predict GPP in ",length(iNAVPD)," cases due to missing VPD.")
 			message("    Therefore refitting LightResponseCurve with option isNeglectVPDEffect=TRUE")
-			ctrl2 <- within(controlGLPart, isNeglectVPDEffect<-TRUE)
-			resParms2 <- partGLFitLRCWindows( dsR
+			ctrlNeglectVPD <- within(controlGLPart, isNeglectVPDEffect<-TRUE)
+			resParms <- resParms2 <- partGLFitLRCWindows( dsR
 					, nRecInDay=nRecInDay
 					, dsTempSens=dsTempSens
-					, controlGLPart=ctrl2
+					, controlGLPart=ctrlNeglectVPD
 					, lrcFitter=lrcFitter
 			)
 			dsAnsFluxes2 <- partGLInterpolateFluxes( dsR$Rg
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
 					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction also using gap-Filled values
 					, resParms2
-					, controlGLPart=ctrl2
+					, controlGLPart=ctrlNeglectVPD
 					, lrcFitter = lrcFitter
 			)
 			dsAnsFluxes[iNAVPD,] <- dsAnsFluxes2[iNAVPD,]
@@ -671,7 +674,8 @@ computeAggregatedCovariance <- function(
 	dsPred	##<< data.frame with predictors (Rg, VPD, Temp)
 	#dsBefore	##<< data.frame with predictors (Rg, VPD, Temp) and   
 	#,dsAfter	##<< data.frame with predictors () and parameters of subsequent estimate
-	,resParms	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+	,resParms	##<< data.frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+	,resParmsNoVPD	##<< data.frame like resParms, but was fitted with option isNeglectVPDEffect=TRUE, for predicting if VPD is missing
 	,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}} with entry "isAssociateParmsToMeanOfValids"
 	,lrcFitter	##<< R5 class instance responsible for fitting the light response curve, with method getParameterNames()
 	,iAggregate=1:nrow(dsPred)	##<< row indices about which to sum over, must be contiguous
