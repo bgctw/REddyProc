@@ -1,9 +1,9 @@
-\name{sGLFluxPartition}
-\alias{sGLFluxPartition}
+\name{sEddyProc_sGLFluxPartition}
+\alias{sEddyProc_sGLFluxPartition}
 \title{sGLFluxPartition: Flux partitioning after Lasslop et al. (2010)}
 \description{Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) 
 and ecosystem respiration (Reco)}
-\usage{sGLFluxPartition(..., debug.l = list(useLocaltime.b = FALSE), 
+\usage{sEddyProc_sGLFluxPartition(..., debug.l = list(useLocaltime.b = FALSE), 
     isWarnReplaceColumns = TRUE)}
 \arguments{
   \item{\dots}{arguments to \code{\link{partitionNEEGL}} additional to the dataset \code{ds}

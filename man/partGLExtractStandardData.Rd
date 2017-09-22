@@ -25,7 +25,7 @@
   \item{QFVPDValue.n}{Value of VPD quality flag for _good_ (original) data}
   \item{RadVar.s}{Unfilled (original) radiation variable}
   \item{PotRadVar.s}{Variable name of potential radiation (W/m2)}
-  \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).}
+  \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).}
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}
 }
 \details{The LRC fit usually weights NEE records by its uncertainty. In order to also use

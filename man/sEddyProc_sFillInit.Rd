@@ -1,9 +1,9 @@
-\name{sFillInit}
-\alias{sFillInit}
+\name{sEddyProc_sFillInit}
+\alias{sEddyProc_sFillInit}
 \title{sEddyProc$sFillInit - Initialize gap filling}
 \description{Initializes data frame sTEMP for newly generated gap filled data and qualifiers.}
-\usage{sFillInit(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    FillAll.b = TRUE)}
+\usage{sEddyProc_sFillInit(Var.s, QFVar.s = "none", 
+    QFValue.n = NA_real_, FillAll.b = TRUE)}
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}

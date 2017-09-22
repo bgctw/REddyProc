@@ -1,8 +1,8 @@
-\name{sPrintFrames}
-\alias{sPrintFrames}
+\name{sEddyProc_sPrintFrames}
+\alias{sEddyProc_sPrintFrames}
 \title{sEddyProc$sPrintFrames - Print internal sDATA and sTEMP data frame}
 \description{Print class internal sDATA and sTEMP data frame}
-\usage{sPrintFrames(NumRows.i = 100)}
+\usage{sEddyProc_sPrintFrames(NumRows.i = 100)}
 \arguments{
   \item{NumRows.i}{Number of rows to print}
 }

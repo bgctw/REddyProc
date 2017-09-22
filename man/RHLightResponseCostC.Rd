@@ -5,6 +5,11 @@
 \usage{RHLightResponseCostC(theta, flux, sdFlux, 
     parameterPrior, sdParameterPrior, Rg, 
     VPD, Temp, VPD0, fixVPD)}
+    
+\description{
+	Computing residual sum of sqares for predictions vs. data of NEE implemented in C
+}
+    
 \arguments{
   \item{theta}{
 }

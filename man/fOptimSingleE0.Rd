@@ -13,7 +13,7 @@ using a Newton type optimization.}
 }
   \item{Trim.n}{Percentile to trim residual (\%)}
   \item{recoverOnError}{Set to TRUE to debug errors instead of catching them}
-  \item{algorithm}{optimization algorithm used (see \code{\link{nls}}}
+  \item{algorithm}{optimization algorithm used (see \code{\link{nls}})}
 }
 
 \value{Numeric vector with following components:

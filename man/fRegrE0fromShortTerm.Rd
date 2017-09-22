@@ -27,7 +27,7 @@
 for successive periods in steps of \code{DayStep.i} days.
 Only those windows with a sufficient number or records and with a sufficient temperature range \code{TempRange.n}
 are used for the \code{\link{fLloydTaylor}} regression of E0 using the optimization \code{\link{fOptimSingleE0}}.
-Unreasonable estimates are discarded (95\% confidence interval inside \code{MinE_0.n} and \code{MaxE_0.n} and
+Unreasonable estimates are discarded (95\% confidence interval inside \code{MinE_0.n} and \code{MaxE_0.n}) and
 the others are ordered by their standard deviations.
 The mean across the best (=lowest standard deviation) E0 estimates is reported 
 with \code{NumE_0.n} defining the number of best estimates to use.

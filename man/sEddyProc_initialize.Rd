@@ -1,8 +1,9 @@
-\name{sEddyProc.new}
-\alias{sEddyProc.new}
-\title{sEddyProc$new - Initialization of sEddyProc}
-\description{Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data}
-\usage{sEddyProc.new(ID.s, Data.F, ColNames.V.s, 
+\name{sEddyProc_initialize}
+\alias{sEddyProc_initialize}
+\title{sEddyProc_initialize - Initialization of sEddyProc}
+\description{This function is called when writing \code{sEddyProc$new}.
+It creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data}
+\usage{sEddyProc_initialize(ID.s, Data.F, ColNames.V.s, 
     ColPOSIXTime.s = "DateTime", DTS.n = 48, 
     ColNamesNonNumeric.V.s = character(0), 
     Lat_deg.n = NA_real_, Long_deg.n = NA_real_, 
@@ -43,7 +44,7 @@ sINFO is a list containing the time series information.\describe{
 \item{Y.NAME}{Name for years}
 }
 
-sLOCATION is a list of information on site location and timezone (see \code{\link{sSetLocationInfo}}.
+sLOCATION is a list of information on site location and timezone (see \code{\link{sEddyProc_sSetLocationInfo}}).
 
 sTEMP is a data frame used only temporally.}
 \value{Initialized fields of sEddyProc.}

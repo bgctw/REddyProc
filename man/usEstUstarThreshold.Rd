@@ -19,7 +19,7 @@
 }
 \details{The threshold for sufficiently turbulent conditions u* (Ustar) 
 is estimated for different subsets of the time series.
-From the estimates for each season (each value in \code{seasonFactor.v} 
+From the estimates for each season (each value in \code{seasonFactor.v}) 
 the maximum of all seasons of one year is reported as estimate for this year.
 Within each season the time series is split by temperature classes. 
 Among these Ustar estimates, the median is reported as season value.
@@ -42,11 +42,11 @@ The estimation of Ustar on a single binned series can be selected argument \code
 
 This function is called by
 \itemize{
-\item{ \code{\link{sEstUstarThreshold}} which stores the result in the class variables (sUSTAR and sDATA).}
-\item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
+\item{ \code{\link{sEddyProc_sEstUstarThreshold}} which stores the result in the class variables (sUSTAR and sDATA).}
+\item{ \code{\link{sEddyProc_sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
 } 
 
-For inspecting the NEE~uStar relationship plotting is provided by \code{\link{sPlotNEEVersusUStarForSeason}}
+For inspecting the NEE~uStar relationship plotting is provided by \code{\link{sEddyProc_sPlotNEEVersusUStarForSeason}}
 
 \describe{\item{change point detection (CPT) method}{
 With specifying \code{ctrlUstarEst.l=usControlUstarEst(isUsingCPTSeveralT=TRUE)}
@@ -66,7 +66,7 @@ Note, that this method often gives higher estimates of the u* threshold.
 If there are too few records within one year, of when no season yielded a finite u*Threshold estimate, then
 the yearly u*Th is estimated by pooling the data from seasons within one seasonYear.
 The user can suppress using pooled data on few records by providing option
-\code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{usControlUstarSubsetting}}
+\code{ctrlUstarSub.l$isUsingOneBigSeasonOnFewRecords = FALSE} (see \code{\link{usControlUstarSubsetting}})
 }}}
 \value{A list with entries
 \item{uStarTh}{data.frame with columns "aggregationMode","seasonYear","season","uStar"

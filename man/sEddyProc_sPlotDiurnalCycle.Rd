@@ -1,8 +1,8 @@
-\name{sPlotDiurnalCycle}
-\alias{sPlotDiurnalCycle}
+\name{sEddyProc_sPlotDiurnalCycle}
+\alias{sEddyProc_sPlotDiurnalCycle}
 \title{sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month}
 \description{Generates image in specified format ('pdf' or 'png') with diurnal cycles.}
-\usage{sPlotDiurnalCycle(Var.s, QFVar.s = "none", 
+\usage{sEddyProc_sPlotDiurnalCycle(Var.s, QFVar.s = "none", 
     QFValue.n = NA_real_, Format.s = "pdf", 
     Dir.s = "plots")}
 \arguments{

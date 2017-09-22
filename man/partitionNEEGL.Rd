@@ -12,7 +12,7 @@
   \item{NEEVar.s}{Variable of Net Ecosystem Exchange flux}
   \item{TempVar.s}{Filled air or soil temperature variable (degC)}
   \item{VPDVar.s}{Filled Vapor Pressure Deficit - VPD - (hPa)}
-  \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).}
+  \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).}
   \item{\dots}{further arguments to \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar.s}}
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}
   \item{isVerbose}{set to FALSE to suppress output messages}

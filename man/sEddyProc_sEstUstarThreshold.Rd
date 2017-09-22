@@ -1,8 +1,8 @@
-\name{sEstUstarThreshold}
-\alias{sEstUstarThreshold}
+\name{sEddyProc_sEstUstarThreshold}
+\alias{sEddyProc_sEstUstarThreshold}
 \title{sEddyProc$sEstUstarThreshold - Estimating ustar threshold}
 \description{Calling \code{\link{usEstUstarThreshold}} for class data and storing results}
-\usage{sEstUstarThreshold(UstarColName = "Ustar", 
+\usage{sEddyProc_sEstUstarThreshold(UstarColName = "Ustar", 
     NEEColName = "NEE", TempColName = "Tair", 
     RgColName = "Rg", ...)}
 \arguments{

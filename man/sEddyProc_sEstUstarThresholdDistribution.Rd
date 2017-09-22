@@ -1,8 +1,8 @@
-\name{sEstUstarThresholdDistribution}
-\alias{sEstUstarThresholdDistribution}
-\title{sEstUstarThresholdDistribution}
+\name{sEddyProc_sEstUstarThresholdDistribution}
+\alias{sEddyProc_sEstUstarThresholdDistribution}
+\title{sEddyProc sEstUstarThresholdDistribution}
 \description{Estimating the distribution of u* threshold by bootstrapping over data}
-\usage{sEstUstarThresholdDistribution(ctrlUstarEst.l = usControlUstarEst(), 
+\usage{sEddyProc_sEstUstarThresholdDistribution(ctrlUstarEst.l = usControlUstarEst(), 
     ctrlUstarSub.l = usControlUstarSubsetting(), 
     UstarColName = "Ustar", NEEColName = "NEE", 
     TempColName = "Tair", RgColName = "Rg", 
@@ -17,7 +17,7 @@
   \item{NEEColName}{column name for NEE}
   \item{TempColName}{column name for air temperature}
   \item{RgColName}{column name for solar radiation for omitting night time data}
-  \item{\dots}{further arguments to \code{\link{sEstUstarThreshold}}}
+  \item{\dots}{further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}}
   \item{seasonFactor.v}{factor of seasons to split (data is resampled only within the seasons)}
   \item{seasonFactorsYear}{named integer vector: for each seasonFactor level, get the year that this season belongs to}
   \item{nSample}{the number of repetitions in the bootstrap}
@@ -34,12 +34,12 @@ no quantiles (i.e. NA) are reported.
 }}		}
 \value{A data.frame with columns aggregationMode, year, and UStar estimate based on the unresampled data. 
 The other columns correpond to the quantiles of Ustar estimate
-for given probabilities (argument \code{probs} based on the distribution of estimates using resampled the data.}
+for given probabilities (argument \code{probs}) based on the distribution of estimates using resampled the data.}
 
 \author{TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
 
 
-\seealso{\code{\link{sEstUstarThreshold}}, \code{\link{sMDSGapFillAfterUStarDistr}}}
+\seealso{\code{\link{sEddyProc_sEstUstarThreshold}}, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}}
 

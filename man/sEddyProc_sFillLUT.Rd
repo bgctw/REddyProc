@@ -1,11 +1,12 @@
-\name{sFillLUT}
-\alias{sFillLUT}
+\name{sEddyProc_sFillLUT}
+\alias{sEddyProc_sFillLUT}
 \title{sEddyProc$sFillLUT - Gap filling with Look-Up Table (LUT)}
 \description{Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size}
-\usage{sFillLUT(WinDays.i, V1.s = "none", T1.n = NA_real_, 
-    V2.s = "none", T2.n = NA_real_, V3.s = "none", 
-    T3.n = NA_real_, V4.s = "none", T4.n = NA_real_, 
-    V5.s = "none", T5.n = NA_real_, Verbose.b = TRUE)}
+\usage{sEddyProc_sFillLUT(WinDays.i, V1.s = "none", 
+    T1.n = NA_real_, V2.s = "none", T2.n = NA_real_, 
+    V3.s = "none", T3.n = NA_real_, V4.s = "none", 
+    T4.n = NA_real_, V5.s = "none", T5.n = NA_real_, 
+    Verbose.b = TRUE)}
 \arguments{
   \item{WinDays.i}{Window size for filling in days}
   \item{V1.s}{Condition variable 1}

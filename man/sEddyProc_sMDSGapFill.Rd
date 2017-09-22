@@ -1,11 +1,12 @@
-\name{sMDSGapFill}
-\alias{sMDSGapFill}
+\name{sEddyProc_sMDSGapFill}
+\alias{sEddyProc_sMDSGapFill}
 \title{sEddyProc$sMDSGapFill - MDS gap filling algorithm}
 \description{MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.}
-\usage{sMDSGapFill(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    V1.s = "Rg", T1.n = 50, V2.s = "VPD", 
-    T2.n = 5, V3.s = "Tair", T3.n = 2.5, 
-    FillAll.b = TRUE, Verbose.b = TRUE, Suffix.s = "")}
+\usage{sEddyProc_sMDSGapFill(Var.s, QFVar.s = "none", 
+    QFValue.n = NA_real_, V1.s = "Rg", T1.n = 50, 
+    V2.s = "VPD", T2.n = 5, V3.s = "Tair", 
+    T3.n = 2.5, FillAll.b = TRUE, Verbose.b = TRUE, 
+    Suffix.s = "")}
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}
@@ -20,12 +21,12 @@
   \item{Verbose.b}{Print status information to screen}
   \item{Suffix.s}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
 }
-\details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
+\details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
 
-MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
-and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sEddyProc_sFillLUT}} 
+and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different window sizes as described in the reference.
 
-To run dataset only with MDC algorithm \code{\link{sFillMDC}}, set condition variable V1.s to 'none'.
+To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}}, set condition variable V1.s to 'none'.
 
 \describe{\item{Different processing setups on the same dataset}{
 Attention: When processing the same site data set with different setups for the gap filling or flux partitioning 

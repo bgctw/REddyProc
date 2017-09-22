@@ -1,8 +1,8 @@
-\name{sPlotFingerprintY}
-\alias{sPlotFingerprintY}
+\name{sEddyProc_sPlotFingerprintY}
+\alias{sEddyProc_sPlotFingerprintY}
 \title{sEddyProc$sPlotFingerprintY - Plot fingerprint of specified year}
 \description{The fingerprint for a single year is plotted to the current device, scaled to all data.}
-\usage{sPlotFingerprintY(Var.s, QFVar.s = "none", 
+\usage{sEddyProc_sPlotFingerprintY(Var.s, QFVar.s = "none", 
     QFValue.n = NA_real_, Year.i, Legend.b = F, 
     Col.V = colorRampPalette(c("#00007F", 
         "blue", "#007FFF", "cyan", "#7FFF7F", 

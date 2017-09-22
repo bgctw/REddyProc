@@ -1,16 +1,16 @@
-\name{sPlotNEEVersusUStarForSeason}
-\alias{sPlotNEEVersusUStarForSeason}
+\name{sEddyProc_sPlotNEEVersusUStarForSeason}
+\alias{sEddyProc_sPlotNEEVersusUStarForSeason}
 \title{sEddyProc$sPlotNEEVersusUStarForSeason - Image with NEE versus UStar for each Temperature class of given season}
 \description{Generates image in specified format ('pdf' or 'png')}
-\usage{sPlotNEEVersusUStarForSeason(season.s = levels(sDATA$season)[1], 
-    Format.s = "pdf", Dir.s = "plots", UstarColName = "Ustar", 
+\usage{sEddyProc_sPlotNEEVersusUStarForSeason(season = levels(sDATA$season)[1], 
+    format = "pdf", dir = "plots", UstarColName = "Ustar", 
     NEEColName = "NEE", TempColName = "Tair", 
     WInch = 16 * 0.394, HInchSingle = 6 * 
         0.394, ...)}
 \arguments{
-  \item{season.s}{season, i.e. time period, to plot}
-  \item{Format.s}{Graphics file format ('pdf' or 'png')}
-  \item{Dir.s}{Directory for plotting}
+  \item{season}{string of season, i.e. time period, to plot}
+  \item{format}{string of Graphics file format ('pdf' or 'png')}
+  \item{dir}{string of Directory for plotting}
   \item{UstarColName}{column name for UStar}
   \item{NEEColName}{column name for NEE}
   \item{TempColName}{column name for air temperature}
