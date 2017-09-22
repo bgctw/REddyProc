@@ -3,9 +3,9 @@
 \title{RectangularLRCFitterCVersion computeCost}
 \description{Computing residual sum of sqares for predictions vs. data of NEE}
 \usage{RectangularLRCFitterCVersion_computeCost(thetaOpt, 
-    theta, iOpt, flux = NA, sdFlux = NA, parameterPrior, 
-    sdParameterPrior, ..., VPD0 = 10, fixVPD = (k == 
-        0))}
+    theta, iOpt, flux = NA, sdFlux = NA, 
+    parameterPrior, sdParameterPrior, ..., 
+    VPD0 = 10, fixVPD = (k == 0))}
 \arguments{
   \item{thetaOpt}{parameter vecotr with components of theta0 that are optimized}
   \item{theta}{parameter vector with positions as in argument of \code{\link{LightResponseCurveFitter_getParameterNames}}}

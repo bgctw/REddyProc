@@ -10,16 +10,15 @@ partitionNEEGL=function(
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
 		,nRecInDay=48L		 		##<< number of records within one day (for half-hourly data its 48)
 		,lrcFitter=RectangularLRCFitter()	##<< R5 class instance responsible for fitting the light response curve.
-			## Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. (See details)
+			## Current possibilities are \code{RectangularLRCFitter()}, \code{NonrectangularLRCFitter()}, and \code{LogisticSigmoidLRCFitter()}. 
 )
 ##details<<
 ## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)
 ##
 ## The fit to the light-response-curve is done by default using the Rectangular hyperbolic function, as in Lasslop et al. (2010)
-## Alternative fittings can be used by providing the correspodning subclass of \code{LightResponseCurveFitter-class} to \code{lrcFitter} argument.
+## Alternative fittings can be used by providing the correspodning subclass of \code{\link{LightResponseCurveFitter-class}} to \code{lrcFitter} argument.
 ## (see \code{\link{LightResponseCurveFitter_predictGPP}})
-##author<<
-## MM, TW
+##author<< TW
 ##references<<
 ## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
 ## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187208
@@ -30,10 +29,11 @@ partitionNEEGL=function(
 	dsR <- partGLExtractStandardData(ds, NEEVar.s=NEEVar.s, TempVar.s=TempVar.s, VPDVar.s=VPDVar.s, Suffix.s=Suffix.s
 		, ..., controlGLPart = controlGLPart)
 	##value<< 
-	## \itemize{
-	## \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/second}
-	## \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/second}
-	## }
+	## \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/s}
+	## \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
+	## \item{<LRC>}{Further light response curve (LRC) parameters and their standard deviation depend on the used LRC
+	## (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
+	## They are estimated for windows and are reported with the first record of the window}
 	dsAns0 <- tibble(
 			FP_VARnight=rep(NA_real_,nrow(ds))	##<< NEE filtered for nighttime records (others NA)
 			,FP_VARday=NA_real_		##<< NEE filtered for daytime recores (others NA)
@@ -46,9 +46,6 @@ partitionNEEGL=function(
 			,FP_OPT_VPD=vector(mode = "list", length =  nrow(ds))	##<< list object of fitting results including iOpt and covParms
 			,FP_OPT_NoVPD=vector(mode = "list", length =  nrow(ds))	##<< same as FP_OPT_VPD holding optimization results with fit neglecting the VPD effect
 	)
-	## \item{<LRC>}{Further light response curve (LRC) parameters and their standard deviation depend on the used LRC
-	## (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
-	## They are estimated for windows and are reported with the first record of the window}
 	#
 	# append LRC parameter result columns
 	lrcParNames <- lrcFitter$getParameterNames()
@@ -226,7 +223,8 @@ partGLControl <- function(
 			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
 		,isNeglectVPDEffect=FALSE 		##<< set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.
-		,isRefitMissingVPDWithNeglectVPDEffect=TRUE	##<< set to FALSE to avoid repeating estimation with \code{isNeglectVPDEffect=TRUE} trying to predict when VPD is missing
+		,isRefitMissingVPDWithNeglectVPDEffect=TRUE	##<< set to FALSE to avoid repeating estimation 
+			## with \code{isNeglectVPDEffect=TRUE} trying to predict when VPD is missing
 		,fixedTempSens=data.frame(E0=NA_real_, sdE0=NA_real_, RRef=NA_real_)	##<< data.frame of one row or nRow=nWindow
 			## corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
 			## While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
@@ -378,9 +376,9 @@ partGLExtractStandardData <- function(
 			, isNight=isNight			##<< Flag that is true for nighttime records
 	)
 	##details<<
-	## The LRC fit ususally weights NEE records by its uncertainty. In order to also use
+	## The LRC fit usually weights NEE records by its uncertainty. In order to also use
 	## records with missing \code{NEESdVar.s}, uncertainty of the missing values is by default set 
-	## to a conservatively high value, parameterized by \code{controlGLPart$replaceMissingSdNEEParms).
+	## to a conservatively high value, parameterized by \code{controlGLPart$replaceMissingSdNEEParms)}.
 	## Controlled by argument \code{replaceMissingSdNEEParms} in \code{\link{partGLControl}}, but overruled
 	## by argument \code{neglectNEEUncertaintyOnMissing}.
 	if( !controlGLPart$neglectNEEUncertaintyOnMissing )
@@ -423,11 +421,6 @@ partGLFitLRCWindows=function(
 	}
 	resOptList <- lapply(resLRC$resFUN, "[[", "resOpt")
 	resOptDf <- tibble(resOpt=resOptList)
-	##value<< a tibble listing winInfo, LRC parameters, and their standard deviation  
-	## and estimated from night-time data after smoothing and forward-filling: 
-	## the uncertainty of temperature sensitivity \code{E0_night_sd}, 
-	## the respiration at reference temperature \code{RRef_night}.
-	## and a list column\code{resOpt} with the optimization results
 	resParms <- as.tibble(cbind( resLRC$winInfo, bind_rows(lrcSummary), resOptDf)) 
 	#table(resParms$convergence)
 	#E0_night equals E0, but uncertainty might differ
@@ -443,6 +436,13 @@ partGLFitLRCWindows=function(
 #		resParms <- resParms[-iWinNoFit, ]
 #		resParms$resOptList <- resParms$resOptList[-iWinNoFit] 
 #	}
+	##value<< a tibble with a row for each window
+	## providing information on window size, parameters estimated from light response curve (LRC),
+	## and their standard deviation.  
+	## Moreover,and estimated from night-time data after smoothing and forward-filling: 
+	## the uncertainty of temperature sensitivity \code{E0_night_sd}, 
+	## And the respiration at reference temperature \code{RRef_night}.
+	## Finally it contains a list column\code{resOpt} with the optimization results.
 	resParms
 }
 
@@ -675,6 +675,7 @@ partGLInterpolateFluxes <- function(
 	ans
 }
 
+.tmp.f <- function(){ # omit declaration for now
 computeAggregatedCovariance <- function(
 	### compute the sum of covariances between Reco and GPP predictions that are due to being based on the same uncertaint model coefficients
 	dsPred	##<< data.frame with predictors (Rg, VPD, Temp)
@@ -741,6 +742,7 @@ computeAggregatedCovariance <- function(
 			, sumCovReco = sumCovReco	##<< sum_{i<>j} cov(Reco_i,Reco_j)
 			)
 }
+} # .tmp.f
 
 
 .tmp.f <- function(){

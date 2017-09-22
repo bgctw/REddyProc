@@ -2,7 +2,8 @@
 \alias{sMDSGapFillAfterUStarDistr}
 \title{GapFilling for several filters of estimated friction velocity Ustar thresholds.}
 \description{sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar}
-\usage{sMDSGapFillAfterUStarDistr(..., UstarThres.df, UstarSuffix.V.s = colnames(UstarThres.df)[-1])}
+\usage{sMDSGapFillAfterUStarDistr(..., UstarThres.df, 
+    UstarSuffix.V.s = colnames(UstarThres.df)[-1])}
 \arguments{
   \item{\dots}{other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}}
   \item{UstarThres.df}{data.frame with first column, season names, and remaining columns different estimates of uStar Threshold.

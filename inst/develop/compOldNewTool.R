@@ -8,7 +8,7 @@
 # Author: AMM
 
 
-# Generate output data from PV-Wave webtool: http://www.bgc-jena.mpg.de/~MDIwork/eddyproc/
+# Generate output data from PV-Wave webtool: https://www.bgc-jena.mpg.de/~MDIwork/eddyproc/
 # 1. Generate files with data format of PV-Webtool using the script 'genOldToolData.R'
 # 2. Load up data in online tool input form with the following settings:
 #   Year=..., Time Format 'Julian day, hour', Delimter <TAB>, GF with Uncertainties? <YES>, u*-Filtering before GF? <YES>, 

@@ -2,8 +2,8 @@
 \alias{NonrectangularLRCFitter_computeGPPGradient}
 \title{NonrectangularLRCFitter computeGPPGradient}
 \description{Logistic Sigmoid Light Response function for GPP}
-\usage{NonrectangularLRCFitter_computeGPPGradient(Rg, Amax, 
-    alpha, logitconv)}
+\usage{NonrectangularLRCFitter_computeGPPGradient(Rg, 
+    Amax, alpha, logitconv)}
 \arguments{
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation}
   \item{Amax}{numeric scalar or vector of length(Rg): beta parameter adjusted for VPD effect}

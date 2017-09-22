@@ -2,7 +2,8 @@
 \alias{fSetQF}
 \title{Check and set quality flag}
 \description{Generate new vector from data and quality flag column.}
-\usage{fSetQF(Data.F, Var.s, QFVar.s, QFValue.n, CallFunction.s = "")}
+\usage{fSetQF(Data.F, Var.s, QFVar.s, QFValue.n, 
+    CallFunction.s = "")}
 \arguments{
   \item{Data.F}{Data frame}
   \item{Var.s}{Variable to be filtered}

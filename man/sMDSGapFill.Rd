@@ -3,9 +3,9 @@
 \title{sEddyProc$sMDSGapFill - MDS gap filling algorithm}
 \description{MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.}
 \usage{sMDSGapFill(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    V1.s = "Rg", T1.n = 50, V2.s = "VPD", T2.n = 5, 
-    V3.s = "Tair", T3.n = 2.5, FillAll.b = TRUE, Verbose.b = TRUE, 
-    Suffix.s = "")}
+    V1.s = "Rg", T1.n = 50, V2.s = "VPD", 
+    T2.n = 5, V3.s = "Tair", T3.n = 2.5, 
+    FillAll.b = TRUE, Verbose.b = TRUE, Suffix.s = "")}
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}

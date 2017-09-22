@@ -8,9 +8,9 @@ If the original unit is not "per day", then it need to be converted to "per day"
 Furthermore, a change of the mass unit is provided by argument \code{massFactor.n}.
 The default parameters assume original units of mumol CO2/m2/second and convert to gC/m2/day.
 The conversion factors allow plotting variables with different units}
-\usage{sPlotDailySumsY(Var.s, VarUnc.s = "none", Year.i, timeFactor.n = 3600 * 
-    24, massFactor.n = (44.0096/1e+06) * (12.011/44.0096), 
-    unit.s = "gC/m2/day")}
+\usage{sPlotDailySumsY(Var.s, VarUnc.s = "none", 
+    Year.i, timeFactor.n = 3600 * 24, massFactor.n = (44.0096/1e+06) * 
+        (12.011/44.0096), unit.s = "gC/m2/day")}
 \arguments{
   \item{Var.s}{(Filled) variable to plot}
   \item{VarUnc.s}{Uncertainty estimates for variable}

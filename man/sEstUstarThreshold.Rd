@@ -2,8 +2,9 @@
 \alias{sEstUstarThreshold}
 \title{sEddyProc$sEstUstarThreshold - Estimating ustar threshold}
 \description{Calling \code{\link{usEstUstarThreshold}} for class data and storing results}
-\usage{sEstUstarThreshold(UstarColName = "Ustar", NEEColName = "NEE", 
-    TempColName = "Tair", RgColName = "Rg", ...)}
+\usage{sEstUstarThreshold(UstarColName = "Ustar", 
+    NEEColName = "NEE", TempColName = "Tair", 
+    RgColName = "Rg", ...)}
 \arguments{
   \item{UstarColName}{column name for UStar}
   \item{NEEColName}{column name for NEE}

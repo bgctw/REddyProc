@@ -2,19 +2,23 @@
 \alias{partGLControl}
 \title{partGLControl}
 \description{Default list of parameters for Lasslop 2010 daytime flux partitioning
-For highest compatibility to Lasslop10 use 
-\code{nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE
-, isLasslopPriorsApplied=TRUE, isBoundLowerNEEUncertainty=FALSE
-, smoothTempSensEstimateAcrossTime=FALSE
-}}
-\usage{partGLControl(LRCFitConvergenceTolerance = 0.001, nLRCFitConvergenceTolerance = 0.001, 
+For highest compatibility to the pvWave code of G.Lasslop (used by first BGC-online tool)
+see function \code{\link{partGLControlLasslopCompatible}}. }
+\usage{partGLControl(LRCFitConvergenceTolerance = 0.001, 
+    nLRCFitConvergenceTolerance = 0.001, 
     nBootUncertainty = 30L, minNRecInDayWindow = 10L, 
-    isAssociateParmsToMeanOfValids = TRUE, isLasslopPriorsApplied = FALSE, 
+    isAssociateParmsToMeanOfValids = TRUE, 
+    isLasslopPriorsApplied = TRUE, isUsingLasslopQualityConstraints = FALSE, 
     isSdPredComputed = TRUE, isFilterMeteoQualityFlag = FALSE, 
-    isBoundLowerNEEUncertainty = TRUE, smoothTempSensEstimateAcrossTime = TRUE, 
+    isBoundLowerNEEUncertainty = TRUE, fixedTRefAtNightTime = NA, 
+    smoothTempSensEstimateAcrossTime = TRUE, 
     NRHRfunction = FALSE, isNeglectVPDEffect = FALSE, 
-    fixedTempSens = data.frame(E0 = NA_real_, sdE0 = NA_real_, 
-        RRef = NA_real_))}
+    isRefitMissingVPDWithNeglectVPDEffect = TRUE, 
+    fixedTempSens = data.frame(E0 = NA_real_, 
+        sdE0 = NA_real_, RRef = NA_real_), 
+    replaceMissingSdNEEParms = c(perc = 0.2, 
+        minSd = 0.7), neglectNEEUncertaintyOnMissing = FALSE, 
+    minPropSaturation = NA)}
 \arguments{
   \item{LRCFitConvergenceTolerance}{convergence criterion for rectangular light response curve fit.
 If relative improvement of reducing residual sum of squares between predictions and 
@@ -29,7 +33,8 @@ Set to zero to derive uncertainty from curvature of a single fit}
 the first record of the window for interpolation 
 instead of mean across valid records inside a window}
   \item{isLasslopPriorsApplied}{set to TRUE to apply strong fixed priors on LRC fitting.
-Returned parameter estimates claimed valid for some case where not enough data was available }
+Returned parameter estimates claimed valid for some case where not enough data was available}
+  \item{isUsingLasslopQualityConstraints}{set to TRUE to avoid quality constraints additional to Lasslop 2010}
   \item{isSdPredComputed}{set to FALSE to avoid computing standard errors
 of Reco and GPP for small performance increase 	}
   \item{isFilterMeteoQualityFlag}{set to TRUE to use only records where quality flag
@@ -37,15 +42,27 @@ of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e. non-gapfilled for pa
 For prediction, the gap-filled value is used always, to produce predictions also for gaps.}
   \item{isBoundLowerNEEUncertainty}{set to FALSE to avoid adjustment of very low uncertainties before
 day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.}
+  \item{fixedTRefAtNightTime}{if a finite value (degree Centigrade) is given,
+it is used instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data}
   \item{smoothTempSensEstimateAcrossTime}{set to FALSE to use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
   \item{NRHRfunction}{deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}}
   \item{isNeglectVPDEffect}{set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.}
+  \item{isRefitMissingVPDWithNeglectVPDEffect}{set to FALSE to avoid repeating estimation
+with \code{isNeglectVPDEffect=TRUE} trying to predict when VPD is missing}
   \item{fixedTempSens}{data.frame of one row or nRow=nWindow
 corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
 While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
-\code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
-Definition of the LRC Model}
+\code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.}
+  \item{replaceMissingSdNEEParms}{parameters for replacing missing standard deviation of NEE.
+see \code{\link{replaceMissingSdByPercentage}}.
+Default sets missing uncertainty to 20\% of NEE but at least 0.7 flux-units (usually mumo CO2/m2/s).
+Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit.}
+  \item{neglectNEEUncertaintyOnMissing}{If set to TRUE: if there are records with missing uncertainty of NEE inside one window, set all uncertainties to 1.
+This overules option replaceMissingSdNEEParms.}
+  \item{minPropSaturation}{quality criterion for sufficient data in window.
+If GPP prediction of highest PAR of window is less than minPropSaturation*(GPP at light-saturation, i.e. beta)
+this indicates that PAR is not sufficiently high to constrain the shape of the LRC}
 }
 
 \value{list with entries of given arguments.}

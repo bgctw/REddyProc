@@ -5,7 +5,8 @@
 \usage{usEstUstarThreshold(ds, seasonFactor.v = usCreateSeasonFactorMonth(ds$sDateTime), 
     seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, 
         ds$sDateTime), ctrlUstarEst.l = usControlUstarEst(), 
-    ctrlUstarSub.l = usControlUstarSubsetting(), fEstimateUStarBinned = usEstUstarThresholdSingleFw2Binned, 
+    ctrlUstarSub.l = usControlUstarSubsetting(), 
+    fEstimateUStarBinned = usEstUstarThresholdSingleFw2Binned, 
     isCleaned = FALSE)}
 \arguments{
   \item{ds}{data.frame with columns "sDateTime", "Ustar", "NEE", "Tair", and "Rg"}

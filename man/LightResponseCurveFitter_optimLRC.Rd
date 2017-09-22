@@ -2,8 +2,8 @@
 \alias{LightResponseCurveFitter_optimLRC}
 \title{LightResponseCurveFitter optimLRC}
 \description{call the optimization function}
-\usage{LightResponseCurveFitter_optimLRC(theta, iOpt, sdParameterPrior, 
-    ..., ctrl, isUsingHessian)}
+\usage{LightResponseCurveFitter_optimLRC(theta, 
+    iOpt, sdParameterPrior, ..., ctrl, isUsingHessian)}
 \arguments{
   \item{theta}{numeric vector: starting parameters}
   \item{iOpt}{integer vector: positions of paramters to optimize}

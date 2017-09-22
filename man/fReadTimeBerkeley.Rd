@@ -2,8 +2,8 @@
 \alias{fReadTimeBerkeley}
 \title{fReadTimeBerkeley}
 \description{Reads time columns (year, month, day, hour) from column in ISODate integer format}
-\usage{fReadTimeBerkeley(Data.F, FileName.s, Dir.s, NcPackage.s, 
-    CallFunction.s = "", colTime = "TIMESTAMP_END", 
+\usage{fReadTimeBerkeley(Data.F, FileName.s, Dir.s, 
+    NcPackage.s, CallFunction.s = "", colTime = "TIMESTAMP_END", 
     ...)}
 \arguments{
   \item{Data.F}{Data frame}

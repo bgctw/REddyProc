@@ -10,12 +10,7 @@
   \item{RRefNight}{numeric scalar: night-time based estimate of basal respiration}
   \item{ctrl}{list of further controls}
 }
-\details{check the Beta bounds that depend on uncertainty: outside if (beta > 100 and sdBeta >= beta)
-
-check that RRef estimated from daytime is not both:
-1) larger than twice the estimate from nighttime and 2) more than 0.7 in absolute terms  
-Else this indicates a bad fit.
-This is additional to Table A1 in Lasslop 2010.}
+\details{check the Beta bounds that depend on uncertainty: outside if (beta > 100 and sdBeta >= beta)}
 \value{FALSE if parameters are outisde reasonable bounds, TRUE otherwise }
 
 \author{TW, MM

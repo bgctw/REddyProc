@@ -117,17 +117,17 @@ LightResponseCurveFitter_fitLRC <- function(
 			,thetaInitialGuess=			##<< the initial guess from data
 					thetaInitials[1,]	
 			,covParms=covParms			##<< numeric matrix of the covariance matrix of parameters, including E0
-			,convergence=resOpt$convergence	##<< integer code specifying convergence problems
-				##<< 0: good convergence
-				##<< ,1-1000: see \code{\link{optim}}
-				##<< ,1001: too few bootstraps converged
-				##<< ,1002: fitted parameters were outside reasonable bounds
-				##<< ,1003: too few valid records in window
-				##<< ,1004: near zero covariance in bootstrap indicating bad fit
-				##<< ,1005: covariance from curvature of fit yieled negative variances indicating bad fit
-				##<< ,1006: prediction of highest PAR in window was far from saturation indicating insufficient data to constrain LRC
-				##<< ,1010: no temperature-respiration relationship found
-				##<< ,1011: too few valid records in window (from different location: partGLFitLRCOneWindow)
+			,convergence=resOpt$convergence	##<< integer code specifying convergence problems: \\
+				## 0: good convergence \\
+				## ,1-1000: see \code{\link{optim}} \\
+				## ,1001: too few bootstraps converged \\
+				## ,1002: fitted parameters were outside reasonable bounds \\
+				## ,1003: too few valid records in window \\
+				## ,1004: near zero covariance in bootstrap indicating bad fit \\
+				## ,1005: covariance from curvature of fit yieled negative variances indicating bad fit \\
+				## ,1006: prediction of highest PAR in window was far from saturation indicating insufficient data to constrain LRC \\
+				## ,1010: no temperature-respiration relationship found \\
+				## ,1011: too few valid records in window (from different location: partGLFitLRCOneWindow) \\ 
 				)
 } 
 LightResponseCurveFitter$methods(fitLRC = LightResponseCurveFitter_fitLRC)

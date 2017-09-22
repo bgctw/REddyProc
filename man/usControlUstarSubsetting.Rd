@@ -3,8 +3,9 @@
 \title{usControlUstarSubsetting}
 \description{Default list of parameters for subsetting the data for uStarThreshold estimation into classes with similar environmental conditions 	}
 \usage{usControlUstarSubsetting(taClasses = 7, UstarClasses = 20, 
-    swThr = 10, minRecordsWithinTemp = 100, minRecordsWithinSeason = 160, 
-    minRecordsWithinYear = 3000, isUsingOneBigSeasonOnFewRecords = TRUE)}
+    swThr = 10, minRecordsWithinTemp = 100, 
+    minRecordsWithinSeason = 160, minRecordsWithinYear = 3000, 
+    isUsingOneBigSeasonOnFewRecords = TRUE)}
 \arguments{
   \item{taClasses}{set number of air temperature classes}
   \item{UstarClasses}{set number of Ustar classes}

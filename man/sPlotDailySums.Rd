@@ -2,8 +2,9 @@
 \alias{sPlotDailySums}
 \title{sEddyProc$sPlotDailySums - Image with daily sums of each year}
 \description{Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sPlotDailySumsY}}.}
-\usage{sPlotDailySums(Var.s, VarUnc.s = "none", Format.s = "pdf", 
-    Dir.s = "plots", unit.s = "gC/m2/day", ...)}
+\usage{sPlotDailySums(Var.s, VarUnc.s = "none", 
+    Format.s = "pdf", Dir.s = "plots", unit.s = "gC/m2/day", 
+    ...)}
 \arguments{
   \item{Var.s}{(Filled) variable to plot}
   \item{VarUnc.s}{Uncertainty estimates for variable}

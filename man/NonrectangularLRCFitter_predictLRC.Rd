@@ -2,8 +2,9 @@
 \alias{NonrectangularLRCFitter_predictLRC}
 \title{NonrectangularLRCFitter predictLRC}
 \description{Nonrectangular Hyperbolic Light Response function: (Gilmanov et al., 2003)}
-\usage{NonrectangularLRCFitter_predictLRC(theta, Rg, VPD, 
-    Temp, VPD0 = 10, fixVPD = (k == 0), TRef = 15)}
+\usage{NonrectangularLRCFitter_predictLRC(theta, 
+    Rg, VPD, Temp, VPD0 = 10, fixVPD = (k == 
+        0), TRef = 15)}
 \arguments{
   \item{theta}{theta [numeric] see \code{\link{NonrectangularLRCFitter_getParameterNames}}}
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation}

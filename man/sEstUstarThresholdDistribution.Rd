@@ -3,8 +3,9 @@
 \title{sEstUstarThresholdDistribution}
 \description{Estimating the distribution of u* threshold by bootstrapping over data}
 \usage{sEstUstarThresholdDistribution(ctrlUstarEst.l = usControlUstarEst(), 
-    ctrlUstarSub.l = usControlUstarSubsetting(), UstarColName = "Ustar", 
-    NEEColName = "NEE", TempColName = "Tair", RgColName = "Rg", 
+    ctrlUstarSub.l = usControlUstarSubsetting(), 
+    UstarColName = "Ustar", NEEColName = "NEE", 
+    TempColName = "Tair", RgColName = "Rg", 
     ..., seasonFactor.v = usCreateSeasonFactorMonth(sDATA$sDateTime), 
     seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, 
         ds$sDateTime), nSample = 100L, probs = c(0.05, 

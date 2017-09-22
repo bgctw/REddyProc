@@ -2,8 +2,9 @@
 \alias{LightResponseCurveFitter_optimLRCBounds}
 \title{LightResponseCurveFitter optimLRCBounds}
 \description{Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds}
-\usage{LightResponseCurveFitter_optimLRCBounds(theta0, parameterPrior, 
-    ..., lastGoodParameters, ctrl)}
+\usage{LightResponseCurveFitter_optimLRCBounds(theta0, 
+    parameterPrior, ..., lastGoodParameters, 
+    ctrl)}
 \arguments{
   \item{theta0}{initial parameter estimate}
   \item{parameterPrior}{prior estimate of model parameters}
@@ -16,7 +17,8 @@ to values from fit of previous window.
 
 No parameters are reported if alpha<0 or RRef < 0 or beta0 < 0 or beta0 > 250 
 
-No parameters are reported if beta0 > 4*initialEstimate, to avoid cases where data is far away from saturation. }
+Not parameters are reported if the data did not contain records that are near light saturation. 
+This is checked by comparing the prediction at highest PAR with the beta parameter}
 \value{list result of optimization as of \code{\link{LightResponseCurveFitter_optimLRCOnAdjustedPrior}} with entries 
 \item{theta}{ numeric parameter vector that includes the fixed components}
 \item{iOpt}{ integer vector of indices of the vector that have been optimized}

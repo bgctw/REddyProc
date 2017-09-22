@@ -7,6 +7,7 @@
 ^NEWS\.Rmd$          
 ^vignettes/figure/.*$
 ^vignettes/cache/.*$	
+^vignettes/cache$
 ^scratch$
 ^out$
 ^plots$
@@ -15,4 +16,5 @@
 ^.gitignore$
 ^.project$	    # added by eclipse 
 ^cranComments.md$
+^cache$
 

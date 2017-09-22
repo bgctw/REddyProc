@@ -12,9 +12,11 @@
 }
 \details{The beta parameter is quite well defined. Hence use a prior with a standard deviation.
 The specific results are sometimes a bit sensitive to the uncertainty of the beta prior. 
-This uncertainty is set corresponding to 10 times the median relative flux uncertainty.
+This uncertainty is set corresponding to 20 times the median relative flux uncertainty.
 The prior is weighted n times the observations in the cost.
-Hence, overall it is using a weight of 1/10 of the weight of all observations.}
+Hence, overall it is using a weight of 1/20 of the weight of all observations.
+
+However, its not well defined if PAR does not reach saturation - need to check before applying this prior }
 \value{a numeric vector with prior estimates of the parameters}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

@@ -5,8 +5,8 @@
 \usage{sMDSGapFillAfterUstar(FluxVar.s, UstarVar.s = "Ustar", 
     UstarThres.df = usGetAnnualSeasonUStarMappingFromDistributionResult(sUSTAR$uStarTh), 
     UstarSuffix.s = "WithUstar", FlagEntryAfterLowTurbulence.b = FALSE, 
-    isFilterDayTime = FALSE, swThr = 10, RgColName = "Rg", 
-    ...)}
+    isFilterDayTime = FALSE, swThr = 10, 
+    RgColName = "Rg", ...)}
 \arguments{
   \item{FluxVar.s}{Flux variable to gap fill after ustar filtering}
   \item{UstarVar.s}{Column name of friction velocity u* (ms-1), default 'Ustar'}

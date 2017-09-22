@@ -2,8 +2,9 @@
 \alias{LightResponseCurveFitter_predictLRC}
 \title{LightResponseCurveFitter predictLRC}
 \description{Light Response Function}
-\usage{LightResponseCurveFitter_predictLRC(theta, Rg, VPD, 
-    Temp, VPD0 = 10, fixVPD = (k == 0), TRef = 15)}
+\usage{LightResponseCurveFitter_predictLRC(theta, 
+    Rg, VPD, Temp, VPD0 = 10, fixVPD = (k == 
+        0), TRef = 15)}
 \arguments{
   \item{theta}{numeric vector of parameters}
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation}

@@ -2,8 +2,9 @@
 \alias{sPlotDiurnalCycle}
 \title{sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month}
 \description{Generates image in specified format ('pdf' or 'png') with diurnal cycles.}
-\usage{sPlotDiurnalCycle(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    Format.s = "pdf", Dir.s = "plots")}
+\usage{sPlotDiurnalCycle(Var.s, QFVar.s = "none", 
+    QFValue.n = NA_real_, Format.s = "pdf", 
+    Dir.s = "plots")}
 \arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}

@@ -2,8 +2,8 @@
 \alias{fWriteDataframeToFile}
 \title{fWriteDataframeToFile}
 \description{Write data frame to ASCII tab-separated text file}
-\usage{fWriteDataframeToFile(Data.F, FileName.s, Dir.s = "", 
-    Digits.n = 5)}
+\usage{fWriteDataframeToFile(Data.F, FileName.s, 
+    Dir.s = "", Digits.n = 5)}
 \arguments{
   \item{Data.F}{Data frame}
   \item{FileName.s}{File base name as a string}

@@ -2,8 +2,8 @@
 \alias{partGLEstimateTempSensInBoundsE0Only}
 \title{partGLEstimateTempSensInBoundsE0Only}
 \description{Estimate temperature sensitivity E0 and RRef of ecosystem respiration, and apply bounds or previous estimate}
-\usage{partGLEstimateTempSensInBoundsE0Only(REco, temperatureKelvin, 
-    prevE0 = NA, TRefFit = median(temperatureKelvin, 
+\usage{partGLEstimateTempSensInBoundsE0Only(REco, 
+    temperatureKelvin, prevE0 = NA, TRefFit = median(temperatureKelvin, 
         na.rm = TRUE))}
 \arguments{
   \item{REco}{numeric vector: night time NEE, i.e. ecosytem respiration}

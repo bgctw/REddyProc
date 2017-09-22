@@ -689,7 +689,7 @@ sEddyProc$methods(
   ,TempColName = "Tair"		##<< column name for air temperature
   ,WInch = 16*0.394		##<< width of the plot in inches, defaults to 16cm
   ,HInchSingle = 6*0.394	##<< height of a subplot in inches, defaults to 6cm
-  ,...						##<< other arguments to \code{\link{.plotNEEVersusUStarTempClass}}
+  ,...						##<< other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings
 )
   ##author<< TW  
   {

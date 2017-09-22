@@ -47,6 +47,9 @@ for (File.i in 1:length(CodeIn.V.s)) {
   if( Develop.b==T && File.i != 1) eval(parse(text=Code.s)) 
 }
 
+# deprecated: R CMD check tweaks: define .self variable to omit notice on missing binding
+# writeLines('.self = ".self"', con="R/RcheckTweaks.R")
+
 
 #+++ Generate new inlinedocs documentation
 
@@ -61,19 +64,23 @@ if( !all(file.rename(paste('R',CodeIn.V.s,sep='/'), paste('tmp',CodeIn.V.s,sep='
 
 package.skeleton.dx('.') 	# produces *.Rd files in ./man directory
 
+# Did not generte documentation for classes 
 # Remove files generated only for the code documentation, and move original files back
 system('rm -f R/Dummy*')
 file.rename(paste('tmp',CodeIn.V.s,sep='/'), paste('R',CodeIn.V.s,sep='/') )
 
 # Overwrite automatically generated documentation with (self-written) versions
 # from inst/develop/genDocu
-DocuIn.V.s <- fInitFilesDir('inst/develop/genDocu/','.Rd')
-file.copy(paste('inst/develop/genDocu',DocuIn.V.s,sep='/'),'man', overwrite=T)
+DocuIn.V.s <- fInitFilesDir('inst/genData/','.Rd')
+file.copy(paste('inst/genData',DocuIn.V.s,sep='/'),'man', overwrite=T)
 # If package twDev from TW is used for documenation generation
 if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) { 
   genRd(execInlinedocs = FALSE)
-  system("dos2unix man/*.Rd")  
+  tmp <- system("dos2unix man/*.Rd", intern=TRUE)  
 }
+
+# only do after running R CMD check
+# unlink('R/RcheckTweaks.R')	# deprcated, better define global objects in zzzDebugCode.R
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

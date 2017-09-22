@@ -3,9 +3,10 @@
 \title{sEddyProc$sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)}
 \description{Nighttime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)}
 \usage{sMRFluxPartition(FluxVar.s = "NEE_f", QFFluxVar.s = "NEE_fqc", 
-    QFFluxValue.n = 0, TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
-    QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, 
-    Long_deg.n, TimeZone_h.n, T_ref.n = 273.15 + 15, 
+    QFFluxValue.n = 0, TempVar.s = "Tair_f", 
+    QFTempVar.s = "Tair_fqc", QFTempValue.n = 0, 
+    RadVar.s = "Rg", Lat_deg.n, Long_deg.n, 
+    TimeZone_h.n, T_ref.n = 273.15 + 15, 
     Suffix.s = "", debug.l = list(useLocaltime.b = FALSE), 
     parsE0Regression = list())}
 \arguments{

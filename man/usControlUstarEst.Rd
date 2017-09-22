@@ -3,10 +3,11 @@
 \title{usControlUstarEst}
 \description{Default list of parameters for determining UStar of a single binned series	}
 \usage{usControlUstarEst(ustPlateauFwd = 10, ustPlateauBack = 6, 
-    plateauCrit = 0.95, corrCheck = 0.5, firstUStarMeanCheck = 0.2, 
-    isOmitNoThresholdBins = TRUE, isUsingCPTSeveralT = FALSE, 
-    isUsingCPT = FALSE, minValidUStarTempClassesProp = 0.2, 
-    minValidBootProp = 0.4, minNuStarPlateau = 3L)}
+    plateauCrit = 0.95, corrCheck = 0.5, 
+    firstUStarMeanCheck = 0.2, isOmitNoThresholdBins = TRUE, 
+    isUsingCPTSeveralT = FALSE, isUsingCPT = FALSE, 
+    minValidUStarTempClassesProp = 0.2, minValidBootProp = 0.4, 
+    minNuStarPlateau = 3L)}
 \arguments{
   \item{ustPlateauFwd}{number of subsequent uStar bin values to compare to in fwd mode}
   \item{ustPlateauBack}{number of subsequent uStar bin values to compare to in back mode}

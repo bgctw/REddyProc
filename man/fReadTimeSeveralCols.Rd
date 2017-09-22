@@ -2,8 +2,9 @@
 \alias{fReadTimeSeveralCols}
 \title{fReadTimeSeveralCols}
 \description{Reading }
-\usage{fReadTimeSeveralCols(Data.F, FileName.s, Dir.s, NcPackage.s, 
-    CallFunction.s = "", colYear = "year", colMonth = "month", 
+\usage{fReadTimeSeveralCols(Data.F, FileName.s, 
+    Dir.s, NcPackage.s, CallFunction.s = "", 
+    colYear = "year", colMonth = "month", 
     colDay = "day", colHour = "hour", defaultHour = 0, 
     ...)}
 \arguments{

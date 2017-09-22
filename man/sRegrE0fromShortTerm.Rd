@@ -3,8 +3,8 @@
 \title{sEddyProc$sRegrE0fromShortTerm - Estimation of the temperature sensitivity E_0}
 \description{Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor}} 
 for short periods by calling \code{\link{fRegrE0fromShortTerm}}}
-\usage{sRegrE0fromShortTerm(NightFlux.s, TempVar.s, ..., CallFunction.s = "", 
-    debug.l = list(fixedE0 = NA))}
+\usage{sRegrE0fromShortTerm(NightFlux.s, TempVar.s, 
+    ..., CallFunction.s = "", debug.l = list(fixedE0 = NA))}
 \arguments{
   \item{NightFlux.s}{Variable with (original) nighttime ecosystem carbon flux, i.e. respiration}
   \item{TempVar.s}{Variable with (original) air or soil temperature (degC)}

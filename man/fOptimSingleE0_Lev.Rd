@@ -3,8 +3,9 @@
 \title{Estimate temperature sensitivity E_0 using Levenberg-Marquard optimization}
 \description{Estimate temperature sensitivity E_0 of \code{\link{fLloydTaylor}} for a single time series
 using Levenberg-Marquard optimization.}
-\usage{fOptimSingleE0_Lev(NEEnight.V.n, Temp_degK.V.n, T_ref.n, 
-    Trim.n = 5, recoverOnError = FALSE, algorithm = "LM")}
+\usage{fOptimSingleE0_Lev(NEEnight.V.n, Temp_degK.V.n, 
+    T_ref.n, Trim.n = 5, recoverOnError = FALSE, 
+    algorithm = "LM")}
 \arguments{
   \item{NEEnight.V.n}{(Original) nighttime ecosystem carbon flux, i.e. respiration vector}
   \item{Temp_degK.V.n}{(Original) air or soil temperature vector (degC)}

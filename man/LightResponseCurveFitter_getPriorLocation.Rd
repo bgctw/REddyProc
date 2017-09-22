@@ -2,8 +2,8 @@
 \alias{LightResponseCurveFitter_getPriorLocation}
 \title{LightResponseCurveFitter getPriorLocation}
 \description{return the prior distribution of parameters}
-\usage{LightResponseCurveFitter_getPriorLocation(NEEDay, RRefNight, 
-    E0)}
+\usage{LightResponseCurveFitter_getPriorLocation(NEEDay, 
+    RRefNight, E0)}
 \arguments{
   \item{NEEDay}{numeric vector of daytime NEE}
   \item{RRefNight}{numeric scalar of basal respiration estimated from night-time data}

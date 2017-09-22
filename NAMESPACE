@@ -13,9 +13,10 @@ importFrom(Rcpp, sourceCpp, evalCpp)
 #importFrom(plyr, arrange, ddply, rbind.fill)	# problems with function "." ...,  just do import(plyr)
 #import (plyr)	# moved to dplyr rbind.fill -> bind_rows
 import( dplyr )
+importFrom(purrr, map, map_df)	
+importFrom(tibble, tibble, as.tibble)	
 importFrom(mlegp, mlegp, predict.gp)	# smoothing E0 in day-time partitioning by a Gaussian Process
 importFrom(logitnorm, logit, invlogit)	# smoothing E0 in day-time partitioning by a Gaussian Process
-import( tibble )
 
 # only checked in code by require(), let R CMD check complain (only NOTE)
 #importFrom(boot, boot)

@@ -2,8 +2,8 @@
 \alias{NonrectangularLRCFitter_predictGPP}
 \title{NonrectangularLRCFitter predictGPP}
 \description{Nonrectangluar hyperbolic Light Response function for GPP}
-\usage{NonrectangularLRCFitter_predictGPP(Rg, Amax, alpha, 
-    conv)}
+\usage{NonrectangularLRCFitter_predictGPP(Rg, Amax, 
+    alpha, conv)}
 \arguments{
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [mumol/m2/s] or Global Radiation}
   \item{Amax}{numeric scalar or vector of length(Rg): beta parameter adjusted for VPD effect}

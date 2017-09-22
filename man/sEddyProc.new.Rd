@@ -2,10 +2,11 @@
 \alias{sEddyProc.new}
 \title{sEddyProc$new - Initialization of sEddyProc}
 \description{Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data}
-\usage{sEddyProc.new(ID.s, Data.F, ColNames.V.s, ColPOSIXTime.s = "DateTime", 
-    DTS.n = 48, ColNamesNonNumeric.V.s = character(0), 
-    Lat_deg.n = NA_real_, Long_deg.n = NA_real_, TimeZone_h.n = NA_integer_, 
-    ...)}
+\usage{sEddyProc.new(ID.s, Data.F, ColNames.V.s, 
+    ColPOSIXTime.s = "DateTime", DTS.n = 48, 
+    ColNamesNonNumeric.V.s = character(0), 
+    Lat_deg.n = NA_real_, Long_deg.n = NA_real_, 
+    TimeZone_h.n = NA_integer_, ...)}
 \arguments{
   \item{ID.s}{String with site ID}
   \item{Data.F}{Data frame with at least three month of half-hourly site-level eddy data}

@@ -7,7 +7,7 @@ R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave 
 
 The official R-Forge site of this package is here: url{http://r-forge.r-project.org/projects/reddyproc/}.
 
-A general description and an online tool based on this package can be found here: \url{http://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb}.
+A general description and an online tool based on this package can be found here: \url{https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb}.
 }
 \details{
 A first overview of the REddyProc functions:

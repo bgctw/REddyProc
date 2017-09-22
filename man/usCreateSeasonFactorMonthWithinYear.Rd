@@ -2,9 +2,9 @@
 \alias{usCreateSeasonFactorMonthWithinYear}
 \title{usCreateSeasonFactorMonthWithinYear}
 \description{calculate factors to denote the season for uStar-Filtering by specifying starting months, with seasons not spanning year boundaries}
-\usage{usCreateSeasonFactorMonthWithinYear(dates, month = as.POSIXlt(dates)$mon + 
-    1, year = as.POSIXlt(dates)$year + 1900, startMonth = c(3, 
-    6, 9, 12))}
+\usage{usCreateSeasonFactorMonthWithinYear(dates, 
+    month = as.POSIXlt(dates)$mon + 1, year = as.POSIXlt(dates)$year + 
+        1900, startMonth = c(3, 6, 9, 12))}
 \arguments{
   \item{dates}{POSIXct vector of length of the data set to be filled, specifying the center-time of each record}
   \item{month}{integer (1-12) vector of length of the data set to be filled, specifying the month for each record}

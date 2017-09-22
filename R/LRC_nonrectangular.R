@@ -48,7 +48,11 @@ getPriorScale = function(
 
 # getParameterInitials inherited
 
-NonrectangularLRCFitter_getOptimizedParameterPositions <- function( isUsingFixedVPD, isUsingFixedAlpha){
+NonrectangularLRCFitter_getOptimizedParameterPositions <- function(
+		### get the positions of the parameters to optimize for given conditions on fixing alpha or VPD effect 
+		isUsingFixedVPD			##<< boolean scalar: if TRUE, VPD effect set to zero and is not optimized
+		, isUsingFixedAlpha		##<< boolean scalar: if TRUE, initial slope is fixed and is not optimized
+){
 	iOpt <- callSuper(isUsingFixedVPD=isUsingFixedVPD, isUsingFixedAlpha=isUsingFixedAlpha)
 	iOpt <- c(iOpt,6)	# add the convexity parameter
 	iOpt

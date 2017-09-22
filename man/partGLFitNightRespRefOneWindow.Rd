@@ -3,8 +3,9 @@
 \title{partGLFitNightRespRefOneWindow}
 \description{Estimate Reference temperature from nicht-time and given temperature sensitivity E0  
 Estimation of respiration at reference temperature (RRef) and temperature (E0) for one window.}
-\usage{partGLFitNightRespRefOneWindow(dss, winInfo, prevRes = list(), 
-    E0Win, controlGLPart = partGLControl(), TRef = 15)}
+\usage{partGLFitNightRespRefOneWindow(dss, winInfo, 
+    prevRes = list(), E0Win, controlGLPart = partGLControl(), 
+    TRef = 15)}
 \arguments{
   \item{dss}{data.frame with numeric columns NEE, isNight, Temp, Rg}
   \item{winInfo}{one-row data.frame with window information, including iWindow}

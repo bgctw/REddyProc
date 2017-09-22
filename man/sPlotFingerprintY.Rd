@@ -2,11 +2,12 @@
 \alias{sPlotFingerprintY}
 \title{sEddyProc$sPlotFingerprintY - Plot fingerprint of specified year}
 \description{The fingerprint for a single year is plotted to the current device, scaled to all data.}
-\usage{sPlotFingerprintY(Var.s, QFVar.s = "none", QFValue.n = NA_real_, 
-    Year.i, Legend.b = F, Col.V = colorRampPalette(c("#00007F", 
-        "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", 
-        "#FF7F00", "red", "#7F0000"))(50), valueLimits = range(Plot.V.n, 
-        na.rm = TRUE))}
+\usage{sPlotFingerprintY(Var.s, QFVar.s = "none", 
+    QFValue.n = NA_real_, Year.i, Legend.b = F, 
+    Col.V = colorRampPalette(c("#00007F", 
+        "blue", "#007FFF", "cyan", "#7FFF7F", 
+        "yellow", "#FF7F00", "red", "#7F0000"))(50), 
+    valueLimits = range(Plot.V.n, na.rm = TRUE))}
 \arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}

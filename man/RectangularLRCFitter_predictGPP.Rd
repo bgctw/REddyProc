@@ -2,7 +2,8 @@
 \alias{RectangularLRCFitter_predictGPP}
 \title{RectangularLRCFitter predictGPP}
 \description{Retangular hyperbolic Light Response function for GPP}
-\usage{RectangularLRCFitter_predictGPP(Rg, Amax, alpha)}
+\usage{RectangularLRCFitter_predictGPP(Rg, Amax, 
+    alpha)}
 \arguments{
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [mumol/m2/s] or Global Radiation}
   \item{Amax}{vector of length(Rg): saturation (beta parameter) adjusted for effect of VPD for each line of Rg}

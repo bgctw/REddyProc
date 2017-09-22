@@ -13,10 +13,11 @@
   \item{\dots}{further arguments to \code{\link{LightResponseCurveFitter_optimLRC}} (passed to \code{\link{LightResponseCurveFitter_computeCost}})}
 }
 \details{Only those records are used for optimization where both NEE and sdNEE are finite.
+In larger settings, already filtered at 
 
 Optimization of LRC parameters takes into account the uncertainty of the flux values.
-In order to avoid very strong leverage, values with a very low uncertainty (< median) are assigned
-the median of the uncertainty.
+In order to avoid very strong leverage, values with a very low uncertainty (< a lower quantile) are assigned
+the lower quantile is assigned.
 This procedure downweighs records with a high uncertainty, but does not apply a large leverage for
 records with a very low uncertainty. Avoid this correction by suppyling setting \code{ctrl$isBoundLowerNEEUncertainty = FALSE}
 

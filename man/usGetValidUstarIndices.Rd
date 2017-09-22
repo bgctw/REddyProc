@@ -3,8 +3,8 @@
 \title{usGetValidUstarIndices}
 \description{getremove non-finite cases and omit night time data.}
 \usage{usGetValidUstarIndices(ds, UstarColName = "Ustar", 
-    NEEColName = "NEE", TempColName = "Tair", RgColName = "Rg", 
-    swThr = usControlUstarSubsetting()$swThr)}
+    NEEColName = "NEE", TempColName = "Tair", 
+    RgColName = "Rg", swThr = usControlUstarSubsetting()$swThr)}
 \arguments{
   \item{ds}{data.frame with columns}
   \item{UstarColName}{column name for UStar}

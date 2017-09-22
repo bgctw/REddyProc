@@ -2,7 +2,8 @@
 \alias{LogisticSigmoidLRCFitter_predictGPP}
 \title{LogisticSigmoidLRCFitter predictGPP}
 \description{Logistic Sigmoid Light Response function for GPP}
-\usage{LogisticSigmoidLRCFitter_predictGPP(Rg, Amax, alpha)}
+\usage{LogisticSigmoidLRCFitter_predictGPP(Rg, Amax, 
+    alpha)}
 \arguments{
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation}
   \item{Amax}{numeric scalar or vector of length(Rg): beta parameter adjusted for VPD effect}

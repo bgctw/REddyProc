@@ -2,8 +2,9 @@
 \alias{NonrectangularLRCFitter_computeLRCGradient}
 \title{NonrectangularLRCFitter computeLRCGradient}
 \description{Gradient of \code{\link{NonrectangularLRCFitter_predictLRC}}}
-\usage{NonrectangularLRCFitter_computeLRCGradient(theta, Rg, 
-    VPD, Temp, VPD0 = 10, fixVPD = (k == 0), TRef = 15)}
+\usage{NonrectangularLRCFitter_computeLRCGradient(theta, 
+    Rg, VPD, Temp, VPD0 = 10, fixVPD = (k == 
+        0), TRef = 15)}
 \arguments{
   \item{theta}{theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=RRef (rb), theta[4]=E0, theta[5]=logitconv)}
   \item{Rg}{ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation}

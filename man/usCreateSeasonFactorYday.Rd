@@ -3,8 +3,8 @@
 \title{usCreateSeasonFactorYday}
 \description{calculate factors to denote the season for uStar-Filtering by specifying starting day of years}
 \usage{usCreateSeasonFactorYday(dates, yday = as.POSIXlt(dates)$yday + 
-    1L, year = as.POSIXlt(dates)$year + 1900L, startYday = c(335, 
-    60, 152, 244))}
+    1L, year = as.POSIXlt(dates)$year + 1900L, 
+    startYday = c(335, 60, 152, 244))}
 \arguments{
   \item{dates}{POSIXct vector of length of the data set to be filled, specifying the center-time of each record}
   \item{yday}{integer (1-366) vector of length of the data set to be filled, specifying the day of the year (1..366) for each record}
