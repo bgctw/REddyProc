@@ -359,7 +359,7 @@ sEddyProc$methods(
     
     TimeStart.p <- Sys.time()
     ##details<<
-    ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sFillInit}} for explanations on suffixes.
+    ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
 	# sTEMP <<- sTEMP[,1L,drop=FALSE]
     if ( !is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b )) ) #! , QF.V.b = QF.V.b)) )
       return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
@@ -388,10 +388,10 @@ sEddyProc$methods(
     
     # Run gap filling scheme depending on auxiliary meteo data availability
     ##details<<
-    ## MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sFillLUT}} 
-    ## and Mean Diurnal Course \code{\link{sFillMDC}} with different window sizes as described in the reference.
+    ## MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sEddyProc_sFillLUT}} 
+    ## and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different window sizes as described in the reference.
     ##details<<
-    ## To run dataset only with MDC algorithm \code{\link{sFillMDC}}, set condition variable V1.s to 'none'.
+    ## To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}}, set condition variable V1.s to 'none'.
     
     # Check availablility of meteorological data for LUT
     Met.n <- 
@@ -463,10 +463,10 @@ sEddyProc$methods(
     ##title<< 
     ## sEddyProc$sMDSGapFillAfterUstar - MDS gap filling algorithm after u* filtering
     ##description<<
-    ## Calling \code{\link{sMDSGapFill}} after filtering for (provided) friction velocity u*
+    ## Calling \code{\link{sEddyProc_sMDSGapFill}} after filtering for (provided) friction velocity u*
     FluxVar.s             ##<< Flux variable to gap fill after ustar filtering
     ,UstarVar.s='Ustar'   ##<< Column name of friction velocity u* (ms-1), default 'Ustar'
-	,UstarThres.df=usGetAnnualSeasonUStarMappingFromDistributionResult(sUSTAR$uStarTh)		  ##<< data.frame with first column, season names, and second column estimates of uStar Threshold.
+	,UstarThres.df=usGetAnnualSeasonUStarMap(sUSTAR$uStarTh)		  ##<< data.frame with first column, season names, and second column estimates of uStar Threshold.
 		##<< Alternatively, a single value to be used as threshold for all records
     #,UstarThres.V.n       ##<< numeric vector (length times in data): u* threshold (ms-1) for each time in the data.
 		## If only one value is given, it is used for all records.
@@ -475,7 +475,7 @@ sEddyProc$methods(
 	,isFilterDayTime=FALSE		##<< Set to TRUE to also filter day-time values, default only filters night-time data
 	,swThr = 10			  ##<< threshold of solar radiation below which data is marked as night time respiration.
 	,RgColName = "Rg"     ##<< Column name of incoming short wave radiation
-	,...                  ##<< Other arguments passed to \code{\link{sMDSGapFill}}
+	,...                  ##<< Other arguments passed to \code{\link{sEddyProc_sMDSGapFill}}
   )
   ##author<<
   ## AMM, TW
@@ -484,12 +484,12 @@ sEddyProc$methods(
     
     ##details<< 
     ## The u* threshold(s) are provided with argument \code{UstarThres.df} for filtering the conditions of low turbulence.
-    ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sMDSGapFill}}.
+    ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sEddyProc_sMDSGapFill}}.
     
     ##seealso<<
 	## \itemize{
-    ## \item \code{\link{sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
-	## \item \code{\link{sEstUstarThreshold}} for estimating the u* threshold from the data.
+    ## \item \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
+	## \item \code{\link{sEddyProc_sEstUstarThreshold}} for estimating the u* threshold from the data.
 	## }
 	
 	UstarThres.V.n <- if( is.numeric(UstarThres.df) ){
@@ -558,7 +558,7 @@ sEddyProc$methods(
     
     ##value<< 
     ## Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence, 3: no threshold available, 4: missing uStar value)
-    ## Gap filling results are in sTEMP data frame (with renamed columns) that can be retrieved by \code{\link{sExportResults}}.
+    ## Gap filling results are in sTEMP data frame (with renamed columns) that can be retrieved by \code{\link{sEddyProc_sExportResults}}.
     return(invisible(QFustar.V.n))
     
     # example in Eddy.R sEddyProc.example
@@ -569,21 +569,21 @@ sEddyProc$methods(
     ##title<< 
     ## GapFilling for several filters of estimated friction velocity Ustar thresholds.
     ##description<<
-    ## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
-	...                   ##<< other arguments to \code{\link{sMDSGapFillAfterUstar}} and \code{\link{sMDSGapFill}}
+    ## sEddyProc$sMDSGapFillUStarDistr - calling \code{\link{sEddyProc_sMDSGapFillAfterUstar}} for several filters of friction velocity Ustar
+	...                   ##<< other arguments to \code{\link{sEddyProc_sMDSGapFillAfterUstar}} and \code{\link{sEddyProc_sMDSGapFill}}
 	,UstarThres.df		  ##<< data.frame with first column, season names, and remaining columns different estimates of uStar Threshold. 
 	## If the data.frame has only one row, then each uStar threshold estimate is applied to the entire dataset. 
 	## Entries in first column must match levels in argument \code{seasonFactor.v}
 	,UstarSuffix.V.s = colnames(UstarThres.df)[-1]  ##<< String vector 
     ## to distinguish result columns for different ustar values.
     ## Its length must correspond to column numbers in \code{UstarThres.m.n}.
-	# return value function \code{\link{sEstUstarThresholdDistribution}} 
+	# return value function \code{\link{sEddyProc_sEstUstarThresholdDistribution}} 
   )
   ##author<< TW
 {
     ##details<< 
     ## The eddy covariance method does not work with low turbulence conditions. Hence the periods with low turbulence
-    ## indicated by a low friction velocity u* needs to be filtered out and gapfilled (see \code{\link{sMDSGapFill}}).
+    ## indicated by a low friction velocity u* needs to be filtered out and gapfilled (see \code{\link{sEddyProc_sMDSGapFill}}).
     ## The threshold value of a sufficient u* causes one of the largest uncertainty components within the gap-filled data. 
     ## Hence, it is good practice to compare derived quantities based on gap-filled data using different u* threshold values.
 	##
@@ -601,7 +601,7 @@ sEddyProc$methods(
     
     ##seealso<<
 	## Advanced Example 1b in \code{\link{sEddyProc.example}}
-    # # \code{\link{sEstUstarThresholdDistribution}}
+    # # \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
     
 	#if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
 	if( !("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Add column 'season' to dataset with entries matching column season in UstarThres.df.")
@@ -628,7 +628,7 @@ sEddyProc$methods(
     ##value<< 
     ## Matrix (columns correspond to u*Scenarios) with quality flag from filtering ustar (0 - good data, 1 - filtered data)
     ##
-    ## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sExportResults}}.
+    ## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sEddyProc_sExportResults}}.
     ## Each of the columns is calculated for several u*r-estimates and distinguished by a suffix after the variable. 
     ## E.g. with an first entry "U05" in \code{UstarSuffix.V.s} corresponding to the first column in  \code{UstarThres.m.n}, 
 	## the corresponding filled NEE can be found in output collumn "NEE_U05_f".

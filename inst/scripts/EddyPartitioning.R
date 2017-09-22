@@ -65,12 +65,12 @@ sEddyProc$methods(
 				,TimeZone_h.n          ##<< Time zone (in hours)
 				,T_ref.n=273.15+15     ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
 				,Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
-				,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}).
+				,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sEddyProc_sRegrE0fromShortTerm}}).
 						##describe<< 
 						useLocaltime.b=FALSE	##<< see details on solar vs local time	
 				##end<< 
 				)      
-				,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n} 
+				,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sEddyProc_sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n} 
 		)
 		##author<<
 		## AMM,TW
@@ -94,8 +94,8 @@ sEddyProc$methods(
 			##details<< \describe{\item{Background}{
 			## This partitioning is based on the regression of nighttime respiration with temperature 
 			## using the Lloyd-Taylor-Function \code{\link{fLloydTaylor}}.
-			## First the temperature sensitivity E_0 is estimated from short term data, see \code{\link{sRegrE0fromShortTerm}}.
-			## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{\link{sRegrRref}}).
+			## First the temperature sensitivity E_0 is estimated from short term data, see \code{\link{sEddyProc_sRegrE0fromShortTerm}}.
+			## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{\link{sEddyProc_sRegrRref}}).
 			## These estimates are then used to calculate the respiration during daytime and nighttime and with this GPP.
 			## Attention: Gap filling of the net ecosystem fluxes (NEE) and temperature measurements (Tair or Tsoil) is required
 			## prior to the partitioning!
@@ -473,7 +473,7 @@ sEddyProc$methods(
     ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sRegrE0fromShortTerm}}
+	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sEddyProc_sRegrE0fromShortTerm}}
 	,T_ref.n #=273.15+15   ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
 	,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
     ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor}} regression in days

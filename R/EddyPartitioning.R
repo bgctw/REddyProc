@@ -10,45 +10,43 @@
 #TEST: sDATA <- EddyProc.C$sDATA; sTEMP <- EddyProc.C$sTEMP
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-sEddyProc$methods(
-		sGLFluxPartition=function(
-				##title<<
-				## sGLFluxPartition: Flux partitioning after Lasslop et al. (2010)
-				##description<<
-				## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) 
-				## and ecosystem respiration (Reco)
-				...		##<< arguments to \code{\link{partitionNEEGL}} additional to the dataset \code{ds}
-					## such as \code{Suffix.s}
-				,debug.l=list(		     ##<< List with debugging control.
-						##describe<< 
-						useLocaltime.b=FALSE	##<< if TRUE use local time zone instead of geo-solar time to compute potential radiation 	
-						##end<< 
-					)   
-				,isWarnReplaceColumns=TRUE		##<< set to FALSE to avoid the warning on replacing output columns
-	
-		){
-			##author<<
-			## MM, TW
-			##references<<
-			## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
-			## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208
-			.self$sCalcPotRadiation(useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )	
-			dsAns <- partitionNEEGL( cbind(sDATA, sTEMP), ...
-					, nRecInDay=sINFO$DTS
-							)
-			iExisting <- na.omit(match( colnames(dsAns), colnames(sTEMP)  ))
-			if( length(iExisting) ){
-				if(isWarnReplaceColumns) warning("replacing existing output columns", paste(colnames(sTEMP)[iExisting],collapse=","))
-				sTEMP <<- sTEMP[,-iExisting] 
-			}
-			sTEMP <<- cbind(sTEMP, dsAns)
-			return(invisible(NULL))
-			##value<< 
-			## Flux partitioning results are in sTEMP data frame of the class.
-		})
+sEddyProc_sGLFluxPartition <- function(
+	##title<<
+	## sGLFluxPartition: Flux partitioning after Lasslop et al. (2010)
+	##description<<
+	## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP) 
+	## and ecosystem respiration (Reco)
+	...		##<< arguments to \code{\link{partitionNEEGL}} additional to the dataset \code{ds}
+		## such as \code{Suffix.s}
+	,debug.l=list(		     ##<< List with debugging control.
+			##describe<< 
+			useLocaltime.b=FALSE	##<< if TRUE use local time zone instead of geo-solar time to compute potential radiation 	
+			##end<< 
+		)   
+	,isWarnReplaceColumns=TRUE		##<< set to FALSE to avoid the warning on replacing output columns
+){
+	##author<<
+	## MM, TW
+	##references<<
+	## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using 
+	## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208
+	.self$sCalcPotRadiation(useSolartime.b=!isTRUE(debug.l$useLocaltime.b) )	
+	dsAns <- partitionNEEGL( cbind(.self$sDATA, .self$sTEMP), ...
+			, nRecInDay=sINFO$DTS
+					)
+	iExisting <- na.omit(match( colnames(dsAns), colnames(.self$sTEMP)  ))
+	if( length(iExisting) ){
+		if(isWarnReplaceColumns) warning("replacing existing output columns", paste(colnames(.self$sTEMP)[iExisting],collapse=","))
+		sTEMP <<- .self$sTEMP[,-iExisting] 
+	}
+	sTEMP <<- cbind(.self$sTEMP, dsAns)
+	return(invisible(NULL))
+	##value<< 
+	## Flux partitioning results are in sTEMP data frame of the class.
+}
+sEddyProc$methods( sGLFluxPartition=sEddyProc_sGLFluxPartition )
 
-sEddyProc$methods(
-		sMRFluxPartition = function(
+sEddyProc_sMRFluxPartition <- function(
 				##title<<
 				## sEddyProc$sMRFluxPartition - Flux partitioning after Reichstein et al. (2005)
 				##description<<
@@ -65,19 +63,18 @@ sEddyProc$methods(
 				,TimeZone_h.n          ##<< Time zone (in hours)
 				,T_ref.n=273.15+15     ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
 				,Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
-				,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sRegrE0fromShortTerm}}).
+				,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sEddyProc_sRegrE0fromShortTerm}}).
 						##describe<< 
 						useLocaltime.b=FALSE	##<< see details on solar vs local time	
 				##end<< 
 				)      
-				,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n} 
-		)
+				,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sEddyProc_sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n} 
+){
 		##author<<
 		## AMM,TW
 		##references<<
 		## Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange 
 		## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
-		{
 			'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco)'
 			##details<< \describe{\item{Description of newly generated variables with partitioning results:}{
 			## \itemize{
@@ -94,8 +91,8 @@ sEddyProc$methods(
 			##details<< \describe{\item{Background}{
 			## This partitioning is based on the regression of nighttime respiration with temperature 
 			## using the Lloyd-Taylor-Function \code{\link{fLloydTaylor}}.
-			## First the temperature sensitivity E_0 is estimated from short term data, see \code{\link{sRegrE0fromShortTerm}}.
-			## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{\link{sRegrRref}}).
+			## First the temperature sensitivity E_0 is estimated from short term data, see \code{\link{sEddyProc_sRegrE0fromShortTerm}}.
+			## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{\link{sEddyProc_sRegrRref}}).
 			## These estimates are then used to calculate the respiration during daytime and nighttime and with this GPP.
 			## Attention: Gap filling of the net ecosystem fluxes (NEE) and temperature measurements (Tair or Tsoil) is required
 			## prior to the partitioning!
@@ -110,10 +107,10 @@ sEddyProc$methods(
 			# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
 			# TODO: avoid repeated cbind
 			# TODO: checking column names this does not need a full combined data.frame
-			fCheckColNames(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
-			fCheckColNum(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
-			fCheckColPlausibility(cbind(sDATA,sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
-			Var.V.n <- fSetQF(cbind(sDATA,sTEMP), FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sMRFluxPartition')
+			fCheckColNames(cbind(.self$sDATA,.self$sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
+			fCheckColNum(cbind(.self$sDATA,.self$sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
+			fCheckColPlausibility(cbind(.self$sDATA,.self$sTEMP), c(FluxVar.s, QFFluxVar.s, TempVar.s, QFTempVar.s, RadVar.s), 'sMRFluxPartition')
+			Var.V.n <- fSetQF(cbind(.self$sDATA,.self$sTEMP), FluxVar.s, QFFluxVar.s, QFFluxValue.n, 'sMRFluxPartition')
 			
 			message('Start flux partitioning for variable ', FluxVar.s, ' with temperature ', TempVar.s, '.')
 			
@@ -132,33 +129,33 @@ sEddyProc$methods(
 			# Filter night time values only
 			#! Note: Rg <= 10 congruent with MR PV-Wave, in paper Rg <= 20
 			# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
-			sTEMP$FP_VARnight <<- ifelse(sDATA[,RadVar.s] > 10 | sTEMP$PotRad_NEW > 0, NA,  Var.V.n)
+			sTEMP$FP_VARnight <<- ifelse(sDATA[,RadVar.s] > 10 | .self$sTEMP$PotRad_NEW > 0, NA,  Var.V.n)
 			attr(sTEMP$FP_VARnight, 'varnames') <<- paste(attr(Var.V.n, 'varnames'), '_night', sep='')
 			attr(sTEMP$FP_VARnight, 'units') <<- attr(Var.V.n, 'units')
 			#! New code: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
 			
 			# Apply quality flag for temperature
-			sTEMP$FP_Temp_NEW <<- fSetQF(cbind(sDATA,sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
+			sTEMP$FP_Temp_NEW <<- fSetQF(cbind(.self$sDATA,.self$sTEMP), TempVar.s, QFTempVar.s, QFTempValue.n, 'sMRFluxPartition')
 			
 			# Estimate E_0 and R_ref (results are saved in sTEMP)
 			# twutz1508: changed to do.call in order to allow passing further parameters when calling sMRFluxPartition
 			sTEMP$E_0_NEW <<- do.call( .self$sRegrE0fromShortTerm, c(
 							list('FP_VARnight', 'FP_Temp_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition', debug.l=debug.l)
 							, parsE0Regression)) 
-			if( sum(sTEMP$E_0_NEW==-111) != 0 )
+			if( sum(.self$sTEMP$E_0_NEW==-111) != 0 )
 				return(invisible(-111)) # Abort flux partitioning if regression of E_0 failed
 			
 			# Reanalyse R_ref with E_0 fixed
 			sTEMP$R_ref_NEW <<- .self$sRegrRref('FP_VARnight', 'FP_Temp_NEW', 'E_0_NEW', T_ref.n=T_ref.n, CallFunction.s='sMRFluxPartition')
 			
 			# Calculate the ecosystem respiration Reco
-			sTEMP$Reco_NEW <<- fLloydTaylor(sTEMP$R_ref_NEW, sTEMP$E_0_NEW, fConvertCtoK(cbind(sDATA,sTEMP)[,TempVar.s]), T_ref.n=T_ref.n)
+			sTEMP$Reco_NEW <<- fLloydTaylor(.self$sTEMP$R_ref_NEW, .self$sTEMP$E_0_NEW, fConvertCtoK(cbind(.self$sDATA,.self$sTEMP)[,TempVar.s]), T_ref.n=T_ref.n)
 			attr(sTEMP$Reco_NEW, 'varnames') <<- 'Reco'
 			attr(sTEMP$Reco_NEW, 'units') <<- attr(Var.V.n, 'units')
 			
 			# Calculate the gross primary production GPP_f
-			sTEMP$GPP_NEW_f <<- -cbind(sDATA,sTEMP)[,FluxVar.s] + sTEMP$Reco_NEW
-			sTEMP$GPP_NEW_fqc <<- cbind(sDATA,sTEMP)[,QFFluxVar.s]
+			sTEMP$GPP_NEW_f <<- -cbind(.self$sDATA,.self$sTEMP)[,FluxVar.s] + .self$sTEMP$Reco_NEW
+			sTEMP$GPP_NEW_fqc <<- cbind(.self$sDATA,.self$sTEMP)[,QFFluxVar.s]
 			#! New code: MDS gap filling information are not copied from NEE_fmet and NEE_fwin to GPP_fmet and GPP_fwin
 			#           (since not known within this pure partitioning function)
 			attr(sTEMP$GPP_NEW_f, 'varnames') <<- 'GPP_f'
@@ -174,11 +171,11 @@ sEddyProc$methods(
 			## }}
 			# Rename new columns generated during flux partitioning:
 			# For nighttime NEE (FP_NEEnight or FP_NEEnight_Suffix)
-			colnames(sTEMP) <<- gsub('_VARnight', paste('_NEEnight', (if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
+			colnames(sTEMP) <<- gsub('_VARnight', paste('_NEEnight', (if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(.self$sTEMP))
 			# For the results columns, the _NEW is dropped and the suffix added
-			colnames(sTEMP) <<- gsub('_NEW', paste((if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(sTEMP))
+			colnames(sTEMP) <<- gsub('_NEW', paste((if(fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep=''), colnames(.self$sTEMP))
 			# Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
-			if( length(names(iDupl <- which(table(colnames(sTEMP)) > 1))) )  {
+			if( length(names(iDupl <- which(table(colnames(.self$sTEMP)) > 1))) )  {
 				warning(paste0('sMRFluxPartition::: Duplicated columns found! (',
 								paste(names(iDupl),collapse=",")
 								,')  Deleting each first of duplicate columns.'
@@ -191,23 +188,26 @@ sEddyProc$methods(
 			## Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
 			## On success, return value is NULL. On failure an integer scalar error code is returned:
 			## -111 if regression of E_0 failed due to insufficient relationship in the data.
-})
+}
+sEddyProc$methods( sMRFluxPartition = sEddyProc_sMRFluxPartition )
 
-sEddyProc$methods(
-	sCalcPotRadiation = function(
-			### compute potential radiation from position and time
-			useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
-				##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
+
+sEddyProc_sCalcPotRadiation <- function(
+	### compute potential radiation from position and time
+	useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
+		##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
 ){
-		DoY.V.n <- as.POSIXlt(sDATA$sDateTime)$yday + 1L
-		Hour.V.n <- as.POSIXlt(sDATA$sDateTime)$hour + as.POSIXlt(sDATA$sDateTime)$min/60
-		# Check that location info has been set
-		if( !( is.finite(sLOCATION$Lat_deg.n) & is.finite(sLOCATION$Long_deg.n) & is.finite(sLOCATION$TimeZone_h.n)))
-			stop("Need to set valid location information (sSetLocationInfo) before calling sCalcPotRadiation.")
-		##value<< column PotRad_NEW in sTEMP 
-		sTEMP$PotRad_NEW <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, sLOCATION$Lat_deg.n, sLOCATION$Long_deg.n, sLOCATION$TimeZone_h.n
-				, useSolartime.b=useSolartime.b )
-})  
+	DoY.V.n <- as.POSIXlt(sDATA$sDateTime)$yday + 1L
+	Hour.V.n <- as.POSIXlt(sDATA$sDateTime)$hour + as.POSIXlt(sDATA$sDateTime)$min/60
+	# Check that location info has been set
+	if( !( is.finite(sLOCATION$Lat_deg.n) & is.finite(sLOCATION$Long_deg.n) & is.finite(sLOCATION$TimeZone_h.n)))
+		stop("Need to set valid location information (sSetLocationInfo) before calling sCalcPotRadiation.")
+	##value<< column PotRad_NEW in sTEMP 
+	sTEMP$PotRad_NEW <<- fCalcPotRadiation(DoY.V.n, Hour.V.n, sLOCATION$Lat_deg.n, sLOCATION$Long_deg.n, sLOCATION$TimeZone_h.n
+			, useSolartime.b=useSolartime.b )
+}
+sEddyProc$methods(sCalcPotRadiation = sEddyProc_sCalcPotRadiation )
+
 
 fOptimSingleE0 <- function(
   ##title<<
@@ -398,8 +398,7 @@ fRegrE0fromShortTerm = function(
 }
 
 
-sEddyProc$methods(
-  sRegrE0fromShortTerm = function(
+sEddyProc_sRegrE0fromShortTerm <- function(
     ##title<<
     ## sEddyProc$sRegrE0fromShortTerm - Estimation of the temperature sensitivity E_0
     ##description<<
@@ -410,17 +409,16 @@ sEddyProc$methods(
     ,...				  ##<< Parameters passed to \code{\link{fRegrE0fromShortTerm}}
     ,CallFunction.s=''    ##<< Name of function called from
     ,debug.l = list(fixedE0=NA) ##<< List with controls for debugging, see details
-  )
+  ){
     ##author<<
     ## AMM, TW
-  {
     'Estimation of the temperature sensitivity E_0 from regression of fLloydTaylor() for short periods by calling fRegrE0fromShortTerm()'
     ##details<< For further details see \code{\link{fRegrE0fromShortTerm}}.
     #
     # Check if specified columns are numeric
     SubCallFunc.s <- paste(CallFunction.s,'sRegrE0fromShortTerm', sep=':::')
-    fCheckColNames(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
-    fCheckColNum(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
+    fCheckColNames(cbind(.self$sDATA,.self$sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
+    fCheckColNum(cbind(.self$sDATA,.self$sTEMP), c(NightFlux.s, TempVar.s), SubCallFunc.s)
     #
     ##details<< \describe{ \item{Debugging control}{
     ## When supplying a finite scalar value \code{debug.l$fixedE0}, then this value 
@@ -431,8 +429,8 @@ sEddyProc$methods(
       message('Using prescribed temperature sensitivity E_0 of: ', format(E_0_trim.n, digits=5), '.')
     }else{
       # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
-      NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
-      TempVar.V.n <- cbind(sDATA,sTEMP)[,TempVar.s]
+      NightFlux.V.n <- cbind(.self$sDATA,.self$sTEMP)[,NightFlux.s]
+      TempVar.V.n <- cbind(.self$sDATA,.self$sTEMP)[,TempVar.s]
       DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
       #
       # Check for validity of E_0 regression results
@@ -453,7 +451,7 @@ sEddyProc$methods(
     }
     
     # Add constant value of E_0 as column vector to sTEMP
-    E_0.V.n <- rep(E_0_trim.n, nrow(sTEMP))
+    E_0.V.n <- rep(E_0_trim.n, nrow(.self$sTEMP))
     attr(E_0.V.n, 'varnames') <- 'E_0'
     attr(E_0.V.n, 'units') <- 'degK'
     
@@ -461,24 +459,24 @@ sEddyProc$methods(
     ##value<< 
     ## Data vector with (constant) temperature sensitivity (E_0, degK) 
 	## On failure, all entries are set to -111
-  })
+}
+sEddyProc$methods( sRegrE0fromShortTerm = sEddyProc_sRegrE0fromShortTerm )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sRegrRref = function(
+sEddyProc_sRegrRref <- function(
     ##title<<
     ## sEddyProc$sRegrRref - Estimation of the time series of reference respiration Rref 
     ##description<<
     ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sRegrE0fromShortTerm}}
+	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sEddyProc_sRegrE0fromShortTerm}}
 	,T_ref.n #=273.15+15   ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature  
 	,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
     ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor}} regression in days
     ,CallFunction.s=''    ##<< Name of function called from
-  )
+){
   ##author<<
   ## AMM
   ##details<<
@@ -489,21 +487,20 @@ sEddyProc$methods(
   ##
   ## For some of the windows, it maybe not be possible to estimate Rref. These missing values are filled by linear
   ## interpolation by function \code{\link{fInterpolateGaps}}.
-{
     'Estimation of the reference respiration Rref of fLloydTaylor() for successive periods'
     
     # Check if specified columns are numeric
     SubCallFunc.s <- paste(CallFunction.s,'sRegrRref', sep=':::')
-    fCheckColNames(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
-    fCheckColNum(cbind(sDATA,sTEMP), c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
+    fCheckColNames(cbind(.self$sDATA,.self$sTEMP), c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
+    fCheckColNum(cbind(.self$sDATA,.self$sTEMP), c(NightFlux.s, TempVar.s, E_0.s), SubCallFunc.s)
     
     # Regression settings
     LMRes.F <- data.frame(NULL) #Results of linear regression
     MinData.n <- 2 # Minimum number of data points for regression
     
     # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
-    NightFlux.V.n <- cbind(sDATA,sTEMP)[,NightFlux.s]
-    TempVar.V.n <- cbind(sDATA,sTEMP)[,TempVar.s]
+    NightFlux.V.n <- cbind(.self$sDATA,.self$sTEMP)[,NightFlux.s]
+    TempVar.V.n <- cbind(.self$sDATA,.self$sTEMP)[,TempVar.s]
     
     # Loop regression periods
     DayCounter.V.i <- c(1:sINFO$DIMS) %/% sINFO$DTS
@@ -520,7 +517,7 @@ sEddyProc$methods(
       NEEnight.V.n <- subset(NightFlux.V.n, Subset.b)
       Temp.V.n <- subset(TempVar.V.n, Subset.b)
       Temp_degK.V.n <- fConvertCtoK(Temp.V.n)
-      E_0.V.n <- subset(sTEMP[,E_0.s], Subset.b) # (Constant value)
+      E_0.V.n <- subset(.self$sTEMP[,E_0.s], Subset.b) # (Constant value)
       
       if( length(NEEnight.V.n) > MinData.n ) {
         CountRegr.i <- CountRegr.i+1
@@ -530,7 +527,7 @@ sEddyProc$methods(
                                           R_ref=coef(summary(LM.L))[1], R_ref_SD=coef(summary(LM.L))[2]))
           #! Note on PV-Wave code: trimmed linear regression not used in the end, i.e. in online webtool
           
-          if( F ) { # Plot for testing
+          tmp.f <- function(x) { # Plot for testing, twutz: transformed debug code into function because check was complaining of undefined x
             plot(NEEnight.V.n ~ fLloydTaylor(1, E_0.V.n, Temp_degK.V.n, T_ref.n=T_ref.n))
             curve(coef(LM.L)[1] * x, add=T, col='green')
           }  
@@ -552,12 +549,14 @@ sEddyProc$methods(
     Rref.V.n[LMRes.F$MeanH] <- LMRes.F$R_ref_ok
     Rref.V.n <- fInterpolateGaps(Rref.V.n)
     attr(Rref.V.n, 'varnames') <- 'R_ref'
-    attr(Rref.V.n, 'units') <- attr(sTEMP[,NightFlux.s], 'units')
+    attr(Rref.V.n, 'units') <- attr(.self$sTEMP[,NightFlux.s], 'units')
     
     message('Regression of reference temperature R_ref for ', sum(!is.na(LMRes.F$R_ref_ok)), ' periods.')
     
     Rref.V.n
     ##value<< 
     ## Data vector (length number of windows) with reference respiration (R_ref, flux units)
-  })
+}
+sEddyProc$methods( sRegrRref = sEddyProc_sRegrRref )
+
 

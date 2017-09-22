@@ -4,7 +4,7 @@ partitionNEEGL=function(
 		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
 		,TempVar.s=paste0('Tair_f') ##<< Filled air or soil temperature variable (degC)
 		,VPDVar.s=paste0('VPD_f')   ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
-		,Suffix.s = ""		   		##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).
+		,Suffix.s = ""		   		##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		,...						##<< further arguments to \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar.s}
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,isVerbose=TRUE			 	##<< set to FALSE to suppress output messages
@@ -336,7 +336,7 @@ partGLExtractStandardData <- function(
 		,QFVPDValue.n=0        			##<< Value of VPD quality flag for _good_ (original) data
 		,RadVar.s='Rg'         			##<< Unfilled (original) radiation variable
 		,PotRadVar.s="PotRad_NEW"		##<< Variable name of potential radiation (W/m2)			   
-		,Suffix.s = ""		   			##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sMDSGapFillAfterUstar}}).
+		,Suffix.s = ""		   			##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 ){	
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag

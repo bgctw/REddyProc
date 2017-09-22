@@ -18,6 +18,27 @@ if ( length(grep( "amoffat", Sys.getenv('HOME'))) != 0 ) {
 source('R/DataFunctions.R')
 source('R/FileHandling.R')
 
+.generateRd <- function(){
+	#library(inlinedocs)
+	package.skeleton.dx('.') 
+	# Overwrite automatically generated documentation with (self-written) versions
+	# from inst/genData
+	file.copy( Sys.glob(file.path("inst","genData","*.Rd")), "man", overwrite=TRUE )		
+	varsRdToBeRemoved <- c("sID","sDATA","sINFO","sLOCATION","sTEMP","sUSTAR")
+	unlink(file.path('man',paste0(varsRdToBeRemoved,".Rd")))
+	# If package twDev from TW is used for documenation generation
+	if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) { 
+		genRd(execInlinedocs = FALSE)
+		tmp <- system("dos2unix man/*.Rd", intern=TRUE)  
+	}
+}
+
+
+.deprecated <- function(){
+	# formerly changed code before generating documentation
+	# 170922 twutz: changed to defining plain functions and assining them to the R5 class.
+	# Need to define global variables in zzzDebugCode.R, so that <<- is properly defined in R CMD check
+	
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Parse R5 methods to generate documentation with inlinedocs
@@ -30,7 +51,7 @@ for (File.i in 1:length(CodeIn.V.s)) {
   #Parse reference class methods to normal function code
   Code.s <- readLines(ScriptIn.s)
   Code.s <- gsub('sEddyProc\\$methods\\(','', Code.s)
-  Code.s <- gsub('initialize =','sEddyProc.new =', Code.s)
+  Code.s <- gsub('initialize =','sEddyProc_initialize =', Code.s)
   Code.s <- gsub('\\}\\)','}',Code.s)
   Code.s <- gsub('<<-','<-',Code.s)
   # Delete definition of R5 class - need to complete setRefClass with a line starting with '))' and not use it before
@@ -81,14 +102,17 @@ if ( length(grep( "twutz", Sys.getenv('HOME'))) != 0 ) {
 
 # only do after running R CMD check
 # unlink('R/RcheckTweaks.R')	# deprcated, better define global objects in zzzDebugCode.R
+} # .deprecated
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 # Update example file
 if (T==F) { #Only needs to be executed if example files changed...
   # Provide (update) example data for package from txt file
-  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
-  save('EddyData.F', file='data/Example_DETha98.Rdata')
+	Example_DETha98 <- fLoadTXTIntoDataframe('Example_DETha98.txt','inst/examples')
+	save('Example_DETha98', file='data/Example_DETha98.Rdata')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

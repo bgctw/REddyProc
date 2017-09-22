@@ -161,7 +161,7 @@ test_that("Test sMDSGapFillAfterUStar single value",{
 test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
 			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
-			UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)[-1, ,drop=FALSE]
+			UstarThres.df <- usGetAnnualSeasonUStarMap(uStarTh)[-1, ,drop=FALSE]
 			expect_error(
 				EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
 			)		
@@ -170,7 +170,7 @@ test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
 test_that("Test sMDSGapFillAfterUStar error on na-values",{
 			EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
 			uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
-			UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)
+			UstarThres.df <- usGetAnnualSeasonUStarMap(uStarTh)
 			UstarThres.df[1,2] <- NA
 			expect_error(
 					EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
@@ -182,7 +182,7 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
 			EddySetups.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 			# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		
 			(uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample=3L ))
-			(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes))
+			(UstarThres.df <- usGetAnnualSeasonUStarMap(uStarRes))
 			EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
 			# Note the columns with differnt suffixes for different uStar estimates (uStar, U05, U50, U95)		
 			cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
@@ -208,7 +208,7 @@ test_that("Test sMDSGapFillAfterUStarDistr single row",{
 			# Note that for each period a distribution of estimates is obtained, and quantiles are reported 		
 			(uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample=3L ))
 			# take only the first row, would throw an error in test on season mismatch, but with one row applied for all
-			(UstarThres.df <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarRes)[1, c(1,3,4),drop=FALSE])
+			(UstarThres.df <- usGetAnnualSeasonUStarMap(uStarRes)[1, c(1,3,4),drop=FALSE])
 			EddySetups.C$sMDSGapFillAfterUStarDistr('NEE', UstarThres.df=UstarThres.df, FillAll.b = FALSE)
 			# Note the columns with differnt suffixes for different uStar estimates (uStar, U05, U50, U95)		
 			cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)

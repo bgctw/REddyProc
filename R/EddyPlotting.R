@@ -14,8 +14,7 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Internal helper functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-sEddyProc$methods(  
-  .sxSetTitle = function(
+.sEddyProc_sxSetTitle <- function(
     ##title<<
     ## sEddyProc - Internal function
     ##description<<
@@ -25,10 +24,9 @@ sEddyProc$methods(
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Name.s             ##<< Name of plot
 	,unit.s = attr(cbind(sDATA,sTEMP)[,Var.s], 'units')		##<< unit string, defaults to attribute of the variable
-  )
+){
     ##author<<
     ## KS, AMM
-  {
     'Set title of plot'
     # Check for unit of variable
     if (fCheckValString(unit.s) && unit.s != '[#]'  && unit.s != '--' ) unit.s <- paste(' (', unit.s, ') ', sep='') else unit.s <- ' (-) '
@@ -42,12 +40,13 @@ sEddyProc$methods(
     return(Title.s)
     ##value<< 
     ## String with plot title
-  })
+}
+sEddyProc$methods( .sxSetTitle = .sEddyProc_sxSetTitle)
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(  
-  .sxOpenPlot = function(
+.sEddyProc_sxOpenPlot <- function(
     ##title<<
     ## sEddyProc - Internal function
     ##description<<
@@ -62,10 +61,9 @@ sEddyProc$methods(
     ,Dir.s              ##<< Directory for plotting
     ,CallFunction.s=''  ##<< Name of function called from
 	  ,DotsPerInc.n=72	  ##<< Number of dots per inch for converting width and height to pixels on png output
-  )
+){
   ##author<<
   ## AMM, KS, TW
-{ 
     'Open graphics device.'
     # Check if variable names exist and numeric before opening plot
     SubCallFunc.s <- paste(CallFunction.s, '.self$.sxOpenPlot', sep=':::')
@@ -88,13 +86,13 @@ sEddyProc$methods(
     
     # Prepare the name and open the plot output file
     if (Format.s == 'png') {
-      png(file=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n) )
+      png(filename=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n) )
     } else if (Format.s == 'pdf') {
       pdf(file=PlotFile.s, width=WInch.n, height=HInch.n)
     } else if (Format.s == 'cairo') { #Should work on Mac but needs bug fix by developer, see http://tolstoy.newcastle.edu.au/R/e17/devel/12/01/0128.html
-      png(file=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n), type = 'cairo')
+      png(filename=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n), type = 'cairo')
     } else if (Format.s == 'cairo-png') {
-      png(file=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n), type = 'cairo-png')
+      png(filename=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n), type = 'cairo-png')
     } else {
       stop(SubCallFunc.s, '::: Format.s not valid: ', Format.s, '!')
     }
@@ -102,28 +100,30 @@ sEddyProc$methods(
     PlotFile.s
     ##value<<
     ## Name of opened graphics device
-  })
+}
+sEddyProc$methods(.sxOpenPlot = .sEddyProc_sxOpenPlot )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(  
-  .sxClosePlot = function(
+.sEddyProc_sxClosePlot <- function(
     ##title<<
     ## sEddyProc - Internal function
     ##description<<
     ## Close screens and save graphics device to file.
     PlotFile.s          ##<< Name of opened graphics device
-  )
-    ##author<<
+){
+##author<<
     ## KS, AMM
-  { 
     'Close screens and save graphics device to file'
     # Close screen
-    close.screen( all=TRUE )
+    close.screen( all.screens=TRUE )
     # Save graphics file
     dev.off()
     message(paste('Saved plot to:', PlotFile.s))
-  })
+}
+sEddyProc$methods( .sxClosePlot = .sEddyProc_sxClosePlot )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Fingerprint
@@ -195,8 +195,7 @@ sEddyProc$methods(
 #}
 
 
-sEddyProc$methods(
-  sPlotFingerprintY = function(
+sEddyProc_sPlotFingerprintY <- function(
     ##title<<
     ## sEddyProc$sPlotFingerprintY - Plot fingerprint of specified year
     ##description<<
@@ -210,12 +209,11 @@ sEddyProc$methods(
 		colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))(50)
 	,valueLimits=range(Plot.V.n, na.rm=TRUE)	##<< values outside this range will be set to the range borders to avoid distorting colour scale
 		##<< e.g. valueLimits=quantile(EddyProc.C$sDATA$NEE, prob=c(0.05,0.95),na.rm=TRUE)	
-  )
+){
     ##author<<
     ## AMM, KS, TW
     # TEST: sPlotFingerprintY('NEE', 'none', NA, 1998); sPlotFingerprintY('NEE_f', 'NEE_fqc', 1, 1998)
 	# 
-  {
     'Plot fingerprint of specified year'
     # Set plot contents
     Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
@@ -264,28 +262,28 @@ sEddyProc$methods(
             xlab=Var.s, yaxt='n', ylab='', main=Title.s)
       box()
     }
-  })
+}
+sEddyProc$methods( sPlotFingerprintY = sEddyProc_sPlotFingerprintY )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPlotFingerprint = function(
+sEddyProc_sPlotFingerprint <- function(
     ##title<<
     ## sEddyProc$sPlotFingerprint - Image with fingerprints of each year
     ##description<<
     ## Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
-	  ## with fingerprint, see also \code{\link{sPlotFingerprintY}}.
+	  ## with fingerprint, see also \code{\link{sEddyProc_sPlotFingerprintY}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') 
     ,Dir.s='plots'      ##<< Directory for plotting
-	,...				##<< further arguments to \code{\link{sPlotFingerprintY}}
-  )
+	,...				##<< further arguments to \code{\link{sEddyProc_sPlotFingerprintY}}
+){
     ##author<<
     ## KS, AMM
     # TEST: sPlotFingerprint('NEE'); sPlotFingerprint('NEE_f', 'NEE_fqc', 1)
-  {
     'Image with fingerprints of each year'
     # Calculate number of screens and width and heigth
     Screens.n <- (sINFO$Y.NUMS +3) %/% 3
@@ -309,14 +307,15 @@ sEddyProc$methods(
       
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
-  })
+}
+sEddyProc$methods( sPlotFingerprint = sEddyProc_sPlotFingerprint )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Diurnal cycles
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  .sPlotDiurnalCycleM = function(
+.sEddyProc_sPlotDiurnalCycleM <- function(
     ##title<<
     ## sEddyProc$.sPlotDiurnalCycleM - Plot diurnal cycles of specified month
     ##description<<
@@ -326,11 +325,10 @@ sEddyProc$methods(
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Month.i            ##<< Month to plot
     ,Legend.b=T         ##<< Plot with legend
-  )
+){
     ##author<<
     ## AMM, KS
     # TEST: .sPlotDiurnalCycleM('NEE', 'none', NA, 10)
-  {
     'Plot diurnal cycles of specified month'
     # Set plot contents
     # Diurnal cycles 
@@ -369,12 +367,12 @@ sEddyProc$methods(
       box()
       warning('.sPlotDiurnalCycleM::: No data available for month: ', month.name[Month.i], '!')
     }
-  })
+}
+sEddyProc$methods(.sPlotDiurnalCycleM = .sEddyProc_sPlotDiurnalCycleM )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPlotDiurnalCycle = function(
+sEddyProc_sPlotDiurnalCycle <- function(
     ##title<<  
     ## sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month
     ##description<<
@@ -384,11 +382,10 @@ sEddyProc$methods(
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
-  )
+){
     ##author<<
     ## KS, AMM
     # TEST: sPlotDiurnalCycle('NEE')
-  {
     'Image with diurnal cycles of each month'
     # Open plot
     PlotType.s <- 'DC'
@@ -423,14 +420,15 @@ sEddyProc$methods(
       
       # Close plot  
     }, finally=.self$.sxClosePlot(PlotFile.s))
-  })
+}
+sEddyProc$methods( sPlotDiurnalCycle = sEddyProc_sPlotDiurnalCycle )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Yearly half-hourly fluxes with daily means
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPlotHHFluxesY = function(
+sEddyProc_sPlotHHFluxesY <- function(
     ##title<<  
     ## sEddyProc$sPlotHHFluxesY -  Plot half-hourly fluxes of specified year
     ##description<<
@@ -439,11 +437,10 @@ sEddyProc$methods(
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
-  )
-    ##author<<
+){
+##author<<
     ## AMM, KS
     # TEST: sPlotHHFluxesY('NEE', 'none', NA, 1998)
-  {
     'Plot half-hourly fluxes of specified year'
     # Set plot contents
     Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotHHFluxesY')
@@ -478,27 +475,27 @@ sEddyProc$methods(
       box()
       warning('sPlotHHFluxesY::: No data available in year: ', Year.i, '!')
     }
-  })
+}
+sEddyProc$methods( sPlotHHFluxesY = sEddyProc_sPlotHHFluxesY )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPlotHHFluxes = function(
+sEddyProc_sPlotHHFluxes <- function(
     ##title<<  
     ## sEddyProc$sPlotHHFluxes - Image with half-hourly fluxes for each year
     ##description<< 
     ## Generates image in specified format ('pdf' or 'png') with half-hourly fluxes and their daily means,
-    ## see also \code{\link{sPlotHHFluxesY}}.
+    ## see also \code{\link{sEddyProc_sPlotHHFluxesY}}.
     Var.s               ##<< (Filled) variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
-  )
+){
     ##author<<
     ## KS, AMM
     # TEST: sPlotHHFluxes('NEE')   
-  {
     'Image with half-hourly fluxes for each year'
     # Open plot
     PlotType.s <- 'Flux'
@@ -523,14 +520,15 @@ sEddyProc$methods(
       
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
-  }) 
+}
+sEddyProc$methods( sPlotHHFluxes = sEddyProc_sPlotHHFluxes)
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Daily sums with and without uncertainties
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPlotDailySumsY = function(
+sEddyProc_sPlotDailySumsY <- function(
     ##title<<
     ## sEddyProc$sPlotDailySumsY - Plot daily sum of specified year
     ##description<<
@@ -542,11 +540,10 @@ sEddyProc$methods(
 	,timeFactor.n=3600*24	##<< time conversion factor with default per second to per day
 	,massFactor.n=(44.0096/1000000)*(12.011/44.0096) ##<< mass conversion factor with default from mumol CO2 to g C
 	,unit.s = "gC/m2/day"	##<< resulting unit
-  )
+){
     ##author<<
     ## AMM, KS
     # TEST: sPlotDailySumsY('NEE_f', 'NEE_fsd', 1998)
-  {
     'Plot daily sum of specified year'
 	##description<<
 	## This function first computes the everage flux for each day.
@@ -619,27 +616,27 @@ sEddyProc$methods(
         warning('sPlotDailySumsY::: Missing data in year: ', Year.i, '!')
       }
     }
-  })
+}
+sEddyProc$methods( sPlotDailySumsY = sEddyProc_sPlotDailySumsY )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPlotDailySums = function(
+sEddyProc_sPlotDailySums <- function(
     ##title<<  
     ## sEddyProc$sPlotDailySums - Image with daily sums of each year
     ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sPlotDailySumsY}}.
+    ## Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sEddyProc_sPlotDailySumsY}}.
     Var.s               ##<< (Filled) variable to plot
     ,VarUnc.s='none'    ##<< Uncertainty estimates for variable
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
 	,unit.s='gC/m2/day' ##<< unit of the daily sums
-	,...				##<< further arguments to \code{\link{sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.
-  )
+	,...				##<< further arguments to \code{\link{sEddyProc_sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.
+){
     ##author<<
     ## KS, AMM  
     # TEST: sPlotDailySums('NEE'); sPlotDailySums('NEE_f','NEE_fsd')
-  {
     'Image with daily sums of each year'
     # Open plot
     PlotType.s <- if (VarUnc.s == 'none') 'DSum' else 'DSumU'
@@ -668,39 +665,39 @@ sEddyProc$methods(
       
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
-  })
+}
+sEddyProc$methods(sPlotDailySums = sEddyProc_sPlotDailySums)
+
   
   
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ NEE vs UStar for diagnosing uStar Threshold estimation
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
-sEddyProc$methods(
-  sPlotNEEVersusUStarForSeason = function(
+sEddyProc_sPlotNEEVersusUStarForSeason <- function(
 	##title<<  
   	## sEddyProc$sPlotNEEVersusUStarForSeason - Image with NEE versus UStar for each Temperature class of given season
   	##description<<
   	## Generates image in specified format ('pdf' or 'png')
-  season.s=levels(sDATA$season)[1]	 ##<< season, i.e. time period, to plot 
-  ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
-  ,Dir.s='plots'      ##<< Directory for plotting
+  season=levels(sDATA$season)[1]	 ##<< string of season, i.e. time period, to plot 
+  ,format='pdf'     ##<< string of Graphics file format ('pdf' or 'png')
+  ,dir='plots'      ##<< string of Directory for plotting
   ,UstarColName = "Ustar"		##<< column name for UStar
   ,NEEColName = "NEE"			##<< column name for NEE
   ,TempColName = "Tair"		##<< column name for air temperature
   ,WInch = 16*0.394		##<< width of the plot in inches, defaults to 16cm
   ,HInchSingle = 6*0.394	##<< height of a subplot in inches, defaults to 6cm
   ,...						##<< other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings
-)
+){
   ##author<< TW  
-  {
-	  'Image with daily sums of each year'
+  'Image with daily sums of each year'
   # generate subset of data
-  dsSeason <- subset(.self$sDATA, season==season.s)
+  dsSeason <- subset(.self$sDATA, season==season)
   tempBinLevels <- sort(unique(dsSeason$tempBin)) 
   # Open plot
-  PlotType.s <- paste('NEEvsUStar',season.s,sep="_")
+  PlotType.s <- paste('NEEvsUStar',season,sep="_")
   HInch <- HInchSingle * (length(tempBinLevels)+1)
-  PlotFile.s <- .self$.sxOpenPlot('none', 'none', NA, PlotType.s, WInch, HInch, Format.s, Dir.s, 'sPlotNEEVersusUStarForSeason')
+  PlotFile.s <- .self$.sxOpenPlot('none', 'none', NA, PlotType.s, WInch, HInch, format, dir, 'sPlotNEEVersusUStarForSeason')
   
   tryCatch({
 			  # Split screen 
@@ -708,15 +705,15 @@ sEddyProc$methods(
 		  split.screen(c(3,1), screen=1)
 		  # Set title of plot
 		  screen(length(tempBinLevels) + 3)
-		  mtext(.self$.sxSetTitle('NEE', 'none', NA, paste('NEE versus uStar for season',season.s)), line=-3, side=3, cex=1.1)
+		  mtext(.self$.sxSetTitle('NEE', 'none', NA, paste('NEE versus uStar for season',season)), line=-3, side=3, cex=1.1)
 		  
 		  # Loop over all temperature classes
 		  # tempBinI <- 1L
 		  for( tempBinI in seq_along(tempBinLevels) ) {
 			  screen(1L + tempBinI)
 			  tempBinLevel <- tempBinLevels[tempBinI]
-			  uStarTh <- sUSTAR$tempInSeason[ tempBinLevel, season.s] 
-			  dss <- subset(dsSeason,  tempBin==tempBinLevel )
+			  uStarTh <- sUSTAR$tempInSeason[ tempBinLevel, season] 
+			  dss <- filter_(dsSeason,  ~tempBin==tempBinLevel )
 			  par( las=1 )                   #also y axis labels horizontal			  
 			  par(mar=c(2.0,3.3,0,0)+0.3 )  #margins
 			  par(tck=0.02 )                          #axe-tick length inside plots             
@@ -727,7 +724,9 @@ sEddyProc$methods(
 		  
 		  # Close plot
 			  }, finally=.self$.sxClosePlot(PlotFile.s))
-  }) 
+}
+sEddyProc$methods( sPlotNEEVersusUStarForSeason = sEddyProc_sPlotNEEVersusUStarForSeason )
+
   
   .tmp.f <- function(){
 #+++ Load data with 1 header and 1 unit row from (tab-delimited) text file

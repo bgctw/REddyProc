@@ -4,8 +4,7 @@
 #+++ Dependencies: Eddy.R
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-	sEstUstarThreshold = function(
+sEddyProc_sEstUstarThreshold <- function(
 	  ##title<<
 	  ## sEddyProc$sEstUstarThreshold - Estimating ustar threshold
 	  ##description<<
@@ -18,7 +17,7 @@ sEddyProc$methods(
 ){
 	##author<<
 	## TW
-	ds <- sDATA[,c("sDateTime", UstarColName,NEEColName,TempColName,RgColName)]
+	ds <- .self$sDATA[,c("sDateTime", UstarColName,NEEColName,TempColName,RgColName)]
 	colnames(ds) <- c("sDateTime","Ustar","NEE","Tair","Rg")
 	resEst <- usEstUstarThreshold( ds, ...)
 	sUSTAR <<- resEst[c("uStarTh","seasonYear","season","tempInSeason")]
@@ -28,7 +27,9 @@ sEddyProc$methods(
 	##value<< restult of \code{\link{usEstUstarThreshold}}. In addition the result is stored
 	## in class variable sUSTAR and the bins as additional columsn to sDATA
 	resEst
-})
+}
+sEddyProc$methods(sEstUstarThreshold = sEddyProc_sEstUstarThreshold)
+
 
 usEstUstarThreshold = function(
 		##title<<
@@ -76,11 +77,11 @@ usEstUstarThreshold = function(
 	##
 	## This function is called by
 	## \itemize{
-	## \item{ \code{\link{sEstUstarThreshold}} which stores the result in the class variables (sUSTAR and sDATA).}
-	## \item{ \code{\link{sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
+	## \item{ \code{\link{sEddyProc_sEstUstarThreshold}} which stores the result in the class variables (sUSTAR and sDATA).}
+	## \item{ \code{\link{sEddyProc_sEstUstarThresholdDistribution}} which additionally estimates median and confidence intervals for each year by bootstrapping the original data within seasons.}
 	## } 
 	##
-	## For inspecting the NEE~uStar relationship plotting is provided by \code{\link{sPlotNEEVersusUStarForSeason}}
+	## For inspecting the NEE~uStar relationship plotting is provided by \code{\link{sEddyProc_sPlotNEEVersusUStarForSeason}}
 	#
 	# add index columns to locate which season/tempClass/uStarBin each record belongs
 	# cannot directly change sDATA, in EddyProcC, because will be overwritten in each bootstrap 
@@ -267,7 +268,7 @@ usEstUstarThreshold = function(
 
 .plotNEEVersusUStarTempClass <- function(
 	### plot NEE versus uStar for data of a subset with estimates
-	NEEUStar.F		##<< data.frame with columns of NEE, Ustar and Temperature, and columns 'uStarBin' and 'sDateTime',  
+	NEEUStar.F		##<< data.frame or tibble with columns of NEE, Ustar and Temperature, and columns 'uStarBin' and 'sDateTime',  
 	,uStarTh		##<< value of uStar of an estimated threshold		
 	,UstarColName = "Ustar"		##<< column name for UStar
 	,NEEColName = "NEE"			##<< column name for NEE
@@ -919,9 +920,9 @@ usGetValidUstarIndices <- function(
 	bo
 }
 
-usGetAnnualSeasonUStarMappingFromDistributionResult <- function(
+usGetAnnualSeasonUStarMap <- function(
 		### extract mapping season -> uStar columns from Distribution result 
-		uStarTh		##<< result of \code{\link{sEstUstarThresholdDistribution}} or \code{\link{sEstUstarThreshold}}$uStarTh
+		uStarTh		##<< result of \code{\link{sEddyProc_sEstUstarThresholdDistribution}} or \code{\link{sEddyProc_sEstUstarThreshold}}$uStarTh
 ){
 	##author<<
 	## TW
@@ -944,10 +945,9 @@ usGetAnnualSeasonUStarMappingFromDistributionResult <- function(
 	res2
 }
 
-usGetSeaonalSeasonUStarMappingFromDistributionResult <- 
-usGetSeasonalSeasonUStarMappingFromDistributionResult <- function(
-		### extract mapping season -> uStar columns from Distribution result (\code{\link{sEstUstarThresholdDistribution}})
-		uStarTh		##<< result of \code{\link{sEstUstarThresholdDistribution}} or \code{\link{sEstUstarThreshold}}$uStarTh
+usGetSeasonalSeasonUStarMap <- function(
+		### extract mapping season -> uStar columns from Distribution result (\code{\link{sEddyProc_sEstUstarThresholdDistribution}})
+		uStarTh		##<< result of \code{\link{sEddyProc_sEstUstarThresholdDistribution}} or \code{\link{sEddyProc_sEstUstarThreshold}}$uStarTh
 ){
 	##author<<
 	## TW
@@ -959,10 +959,10 @@ usGetSeasonalSeasonUStarMappingFromDistributionResult <- function(
 	# deprecated: already done in uStar estimation
 	##details<<
 #	## missing thresholds are replaced by corresponding estimates based on annually aggregated estimates
-#	## (\code{\link{usGetAnnualSeasonUStarMappingFromDistributionResult}})
+#	## (\code{\link{usGetAnnualSeasonUStarMap}})
 #	naLines <- apply(dsSeasons[,-(1),drop=FALSE],1,function(x){ all(is.na(x))} )
 #	if( length(naLines) ){
-#		dsYears <- usGetAnnualSeasonUStarMappingFromDistributionResult(uStarTh)
+#		dsYears <- usGetAnnualSeasonUStarMap(uStarTh)
 #		dsSeasons[naLines,] <- dsYears[naLines,]
 #	}
 	##value<< a data frame with first column the season, and other columns different uStar threshold estimates
@@ -972,17 +972,16 @@ usGetSeasonalSeasonUStarMappingFromDistributionResult <- function(
 }
 
 
-sEddyProc$methods(
-		sEstUstarThresholdDistribution = structure(function(
+sEddyProc_sEstUstarThresholdDistribution <- function(
 		### Estimating the distribution of u* threshold by bootstrapping over data
-		#ds					    ##<< data.frame with columns see \code{\link{sEstUstarThreshold}}
+		#ds					    ##<< data.frame with columns see \code{\link{sEddyProc_sEstUstarThreshold}}
 		ctrlUstarEst.l = usControlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{usControlUstarEst}}
 		,ctrlUstarSub.l = usControlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{usControlUstarSubsetting}} 
 		,UstarColName = "Ustar"		##<< column name for UStar
 		,NEEColName = "NEE"			##<< column name for NEE
 		,TempColName = "Tair"		##<< column name for air temperature
 		,RgColName = "Rg"			##<< column name for solar radiation for omitting night time data
-		,...						##<< further arguments to \code{\link{sEstUstarThreshold}}
+		,...						##<< further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}
 		,seasonFactor.v = usCreateSeasonFactorMonth(sDATA$sDateTime)   ##<< factor of seasons to split (data is resampled only within the seasons)
 		,seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, ds$sDateTime)   ##<< named integer vector: for each seasonFactor level, get the year that this season belongs to  
 		,nSample = 100L				##<< the number of repetitions in the bootstrap
@@ -1002,7 +1001,7 @@ sEddyProc$methods(
 		## By default it returns the 90% confidence interval (arguement \code{probs}). 
 		## For larger intervals the sample number need to be increased (arguement \code{probs}). 
 		
-		##seealso<< \code{\link{sEstUstarThreshold}}, \code{\link{sMDSGapFillAfterUStarDistr}}
+		##seealso<< \code{\link{sEddyProc_sEstUstarThreshold}}, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}
 		res0 <- suppressMessages(.self$sEstUstarThreshold(
 				UstarColName = UstarColName
 				,NEEColName = NEEColName
@@ -1066,7 +1065,9 @@ sEddyProc$methods(
 		## A data.frame with columns aggregationMode, year, and UStar estimate based on the unresampled data. 
 		## The other columns correpond to the quantiles of Ustar estimate
 		## for given probabilities (argument \code{probs}) based on the distribution of estimates using resampled the data.
-}))
+}
+sEddyProc$methods( sEstUstarThresholdDistribution = sEddyProc_sEstUstarThresholdDistribution )
+
 
 .tmp.f <-  function(){
 		# load the data and generate DateTime column
@@ -1075,6 +1076,6 @@ sEddyProc$methods(
 		EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 		(res <- EddyProc.C$sEstUstarThresholdDistribution(nSample=10))	# for real applications use larger sample size
-		usGetAnnualSeasonUStarMappingFromDistributionResult(res)
+		usGetAnnualSeasonUStarMap(res)
 }
 

@@ -21,23 +21,23 @@ These functions help with the preparation of your data for the analysis:
 \item{ Calculating latent variables, e.g. VPD: \code{\link{fCalcVPDfromRHandTair}} }
 }%itemize
 
-Then the data can be processed in an R5 reference class framework:
+Then the data can be processed with the \code{\link{sEddyProc-class}} R5 reference class:
 \itemize{
-\item{ Initalizing the R5 reference class: \code{\link{sEddyProc.new}} }
+\item{ Initalizing the R5 reference class: \code{\link{sEddyProc_initialize}} }
 \item{ Estimating the turbulence criterion, Ustar threshold, for omitting data from periods of low turbulence: 
-Functions \code{\link{sEstUstarThreshold}} and \code{\link{sEstUstarThresholdDistribution}} }.
-\item{ Gap filling: \code{\link{sMDSGapFill}} and  \code{\link{sMDSGapFillAfterUstar}}. 
+Functions \code{\link{sEddyProc_sEstUstarThreshold}} and \code{\link{sEddyProc_sEstUstarThresholdDistribution}} }.
+\item{ Gap filling: \code{\link{sEddyProc_sMDSGapFill}} and  \code{\link{sEddyProc_sMDSGapFillAfterUstar}}. 
 }
-\item{ Flux partitioning based on Night-Time: \code{\link{sMRFluxPartition}} }
-\item{ Flux partitioning based on Day-Time: \code{\link{sGLFluxPartition}} }
+\item{ Flux partitioning based on Night-Time: \code{\link{sEddyProc_sMRFluxPartition}} }
+\item{ Flux partitioning based on Day-Time: \code{\link{sEddyProc_sGLFluxPartition}} }
 }%itemize
 
 Before or after processing, the data can be plotted:
 \itemize{
-\item{ Fingerprint: \code{\link{sPlotFingerprint}} }
-\item{ Half-hourly fluxes and their daily means: \code{\link{sPlotHHFluxes}} }
-\item{ Daily sums (and their uncertainties): \code{\link{sPlotDailySums}} }
-\item{ Diurnal cycle: \code{\link{sPlotDiurnalCycle}} }
+\item{ Fingerprint: \code{\link{sEddyProc_sPlotFingerprint}} }
+\item{ Half-hourly fluxes and their daily means: \code{\link{sEddyProc_sPlotHHFluxes}} }
+\item{ Daily sums (and their uncertainties): \code{\link{sEddyProc_sPlotDailySums}} }
+\item{ Diurnal cycle: \code{\link{sEddyProc_sPlotDiurnalCycle}} }
 }%itemize
 
 A \bold{complete list} of REddyProc functions be viewed by clicking on the \bold{Index} link at the bottom of this help page.

@@ -99,7 +99,7 @@ sEddyProc$methods(
 	##end<<
 	
 	##details<<
-	## sLOCATION is a list of information on site location and timezone (see \code{\link{sSetLocationInfo}}).
+	## sLOCATION is a list of information on site location and timezone (see \code{\link{sEddyProc_sSetLocationInfo}}).
 	.self$sSetLocationInfo(  Lat_deg.n ,Long_deg.n ,TimeZone_h.n ) 
     
     ##details<<

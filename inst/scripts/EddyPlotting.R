@@ -274,13 +274,13 @@ sEddyProc$methods(
     ## sEddyProc$sPlotFingerprint - Image with fingerprints of each year
     ##description<<
     ## Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
-	  ## with fingerprint, see also \code{\link{sPlotFingerprintY}}.
+	  ## with fingerprint, see also \code{\link{sEddyProc_sPlotFingerprintY}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') 
     ,Dir.s='plots'      ##<< Directory for plotting
-	,...				##<< further arguments to \code{\link{sPlotFingerprintY}}
+	,...				##<< further arguments to \code{\link{sEddyProc_sPlotFingerprintY}}
   )
     ##author<<
     ## KS, AMM
@@ -488,7 +488,7 @@ sEddyProc$methods(
     ## sEddyProc$sPlotHHFluxes - Image with half-hourly fluxes for each year
     ##description<< 
     ## Generates image in specified format ('pdf' or 'png') with half-hourly fluxes and their daily means,
-    ## see also \code{\link{sPlotHHFluxesY}}.
+    ## see also \code{\link{sEddyProc_sPlotHHFluxesY}}.
     Var.s               ##<< (Filled) variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
@@ -628,13 +628,13 @@ sEddyProc$methods(
     ##title<<  
     ## sEddyProc$sPlotDailySums - Image with daily sums of each year
     ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sPlotDailySumsY}}.
+    ## Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sEddyProc_sPlotDailySumsY}}.
     Var.s               ##<< (Filled) variable to plot
     ,VarUnc.s='none'    ##<< Uncertainty estimates for variable
     ,Format.s='pdf'     ##<< Graphics file format ('pdf' or 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
 	,unit.s='gC/m2/day' ##<< unit of the daily sums
-	,...				##<< further arguments to \code{\link{sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.
+	,...				##<< further arguments to \code{\link{sEddyProc_sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.
   )
     ##author<<
     ## KS, AMM  

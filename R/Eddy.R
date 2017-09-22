@@ -23,12 +23,12 @@ sEddyProc <- setRefClass('sEddyProc', fields=list(
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  initialize = function(
+sEddyProc_initialize <- function(
     ##title<<
-    ## sEddyProc$new - Initialization of sEddyProc
+    ## sEddyProc_initialize - Initialization of sEddyProc
     ##description<<
-    ## Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data
+	## This function is called when writing \code{sEddyProc$new}.
+    ## It creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data
     ID.s                ##<< String with site ID
     ,Data.F             ##<< Data frame with at least three month of half-hourly site-level eddy data
     ,ColNames.V.s       ##<< Vector with selected column names, the less columns the faster the processing
@@ -42,8 +42,8 @@ sEddyProc$methods(
     ##author<<
     ## AMM
     # TEST: ID.s <- 'Tha'; Data.F <- EddyDataWithPosix.F; ColPOSIXTime.s <- 'DateTime'; ColNames.V.s <- c('NEE','Rg', 'Tair', 'VPD'); DTS.n=48
-  )
-{
+){
+	##detail<< A method of class \code{\link{sEddyProc-class}}.
     'Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data'
     # Check entries
     if( !fCheckValString(ID.s) || is.na(ID.s) )
@@ -71,10 +71,10 @@ sEddyProc$methods(
     sID <<- ID.s
     ##details<<
     ## sDATA is a data frame with site data.
-    sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s, drop=FALSE])
+	sDATA <<- cbind(sDateTime=Time.V.p, Data.F[,ColNames.V.s, drop=FALSE])
     ##details<<
     ## sTEMP is a temporal data frame with the processing results.
-    sTEMP <<- data.frame(sDateTime=Time.V.p)
+	sTEMP <<- data.frame(sDateTime=Time.V.p)
     #Initialization of site data information from POSIX time stamp.
     YStart.n <- as.numeric(format(sDATA$sDateTime[1], '%Y'))
     YEnd.n <- as.numeric(format(sDATA$sDateTime[length(sDATA$sDateTime)], '%Y'))
@@ -88,7 +88,7 @@ sEddyProc$methods(
     ##details<<
     ## sINFO is a list containing the time series information.
 	##describe<<
-    sINFO <<- list(
+	sINFO <<- list(
       DIMS=length(sDATA$sDateTime) ##<< Number of data rows
       ,DTS=DTS.n                   ##<< Number of daily time steps (24 or 48)
       ,Y.START=YStart.n            ##<< Starting year
@@ -99,7 +99,7 @@ sEddyProc$methods(
 	##end<<
 	
 	##details<<
-	## sLOCATION is a list of information on site location and timezone (see \code{\link{sSetLocationInfo}}).
+	## sLOCATION is a list of information on site location and timezone (see \code{\link{sEddyProc_sSetLocationInfo}}).
 	.self$sSetLocationInfo(  Lat_deg.n ,Long_deg.n ,TimeZone_h.n ) 
     
     ##details<<
@@ -111,36 +111,37 @@ sEddyProc$methods(
     callSuper(...) # Required for initialization of class fields as last call of function
     ##value<< 
     ## Initialized fields of sEddyProc.
-  })
+}
+sEddyProc$methods(  initialize = sEddyProc_initialize )
+  
   
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ sEddyProc class: Data handling functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-		sSetLocationInfo = function( 
-				### set Location and time Zone information to sLOCATION
-				Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to +90)
-				,Long_deg.n		##<< Longitude in (decimal) degrees (-180 to +180)
-				,TimeZone_h.n	##<< Time zone (in hours) shift to UTC, e.g. 1 for Berlin
-		){
-			##author<< TW
-			# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
-			# and therefore should be stored with the class, instead of passed each time.
-			if( !is.na(Lat_deg.n) & (Lat_deg.n < -90 | Lat_deg.n > 90)) stop("Latitude must be in interval -90 to +90")
-			if( !is.na(Long_deg.n) & (Long_deg.n < -180 | Long_deg.n > 180)) stop("Longitude must be in interval -180 to +180")
-			if( !is.na(TimeZone_h.n) & (TimeZone_h.n < -12 | TimeZone_h.n > +12 | TimeZone_h.n != as.integer(TimeZone_h.n))) stop("Timezone must be an integer in interval -12 to 12")
-			sLOCATION <<- list(
-					Lat_deg.n = Lat_deg.n
-					,Long_deg.n = Long_deg.n
-					,TimeZone_h.n = TimeZone_h.n
-			)
-		})  
+sEddyProc_sSetLocationInfo <-function( 
+	### set Location and time Zone information to sLOCATION
+	Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to +90)
+	,Long_deg.n		##<< Longitude in (decimal) degrees (-180 to +180)
+	,TimeZone_h.n	##<< Time zone (in hours) shift to UTC, e.g. 1 for Berlin
+){
+	##author<< TW
+	# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
+	# and therefore should be stored with the class, instead of passed each time.
+	if( !is.na(Lat_deg.n) & (Lat_deg.n < -90 | Lat_deg.n > 90)) stop("Latitude must be in interval -90 to +90")
+	if( !is.na(Long_deg.n) & (Long_deg.n < -180 | Long_deg.n > 180)) stop("Longitude must be in interval -180 to +180")
+	if( !is.na(TimeZone_h.n) & (TimeZone_h.n < -12 | TimeZone_h.n > +12 | TimeZone_h.n != as.integer(TimeZone_h.n))) stop("Timezone must be an integer in interval -12 to 12")
+	sLOCATION <<- list(
+			Lat_deg.n = Lat_deg.n
+			,Long_deg.n = Long_deg.n
+			,TimeZone_h.n = TimeZone_h.n
+	)
+}
+sEddyProc$methods( sSetLocationInfo = sEddyProc_sSetLocationInfo) 
 
 
-sEddyProc$methods(
-  sGetData = function( )
+sEddyProc_sGetData <- function() 
   ##title<<
   ## sEddyProc$sGetData - Get internal sDATA data frame
   ##description<<
@@ -152,55 +153,56 @@ sEddyProc$methods(
     sDATA
     ##value<< 
     ## Return data frame sDATA.
-})
+}
+sEddyProc$methods(  sGetData = sEddyProc_sGetData )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sExportData = function( )
+sEddyProc_sExportData <- function( )
     ##title<<
     ## sEddyProc$sExportData - Export internal sDATA data frame
     ##description<<
     ## Export class internal sDATA data frame
     ##author<<
     ## AMM
-  {
+{
     'Export class internal sDATA data frame'
-    lDATA <- sDATA
-    lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
-    colnames(lDATA) <- c('DateTime', colnames(lDATA)[-1])
-    
-    lDATA
-    ##value<< 
-    ## Return data frame sDATA with time stamp shifted back to original.
-  })
+	lDATA <- sDATA
+	lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
+	colnames(lDATA) <- c('DateTime', colnames(lDATA)[-1])
+	lDATA
+	##value<< 
+	## Return data frame sDATA with time stamp shifted back to original.
+}
+sEddyProc$methods(  sExportData = sEddyProc_sExportData)
+  
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-sEddyProc$methods(
-  sExportResults = function(
-		  isListColumnsExported=FALSE	##<< if TRUE export list columns in addition to numeric columns, 
-			## such as the covariance matrices of the the day-time-partitioning LRC fits
-	)
+sEddyProc_sExportResults <- function(
+	  isListColumnsExported=FALSE	##<< if TRUE export list columns in addition to numeric columns, 
+		## such as the covariance matrices of the the day-time-partitioning LRC fits
+)
     ##title<<
     ## sEddyProc$sExportData - Export internal sTEMP data frame with result columns
     ##description<<
     ## Export class internal sTEMP data frame with result columns
     ##author<<
     ## AMM
-  {
+{
     'Export class internal sTEMP data frame with result columns'
 	iListColumns <- which( sapply( sTEMP, is.list ) )
 	iOmit <- if( isListColumnsExported ) c(1L) else c(1L, iListColumns)
     sTEMP[,-iOmit]
     ##value<< 
     ## Return data frame sTEMP with results.
-  })
+}
+sEddyProc$methods( sExportResults = sEddyProc_sExportResults)
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc$methods(
-  sPrintFrames = function(
+sEddyProc_sPrintFrames <- function(
     ##title<<
     ## sEddyProc$sPrintFrames - Print internal sDATA and sTEMP data frame
     ##description<<
@@ -209,14 +211,16 @@ sEddyProc$methods(
 )
     ##author<<
     ## AMM
-  {
+{
     'Print class internal sDATA data frame'
     NumRows.i <- min(nrow(sDATA),nrow(sTEMP),NumRows.i)
 
     print(cbind(sDATA,sTEMP[,-1])[1:NumRows.i,])
     ##value<< 
     ## Print the first rows of class internal sDATA and sTEMP data frame.
-  })
+}
+sEddyProc$methods( sPrintFrames = sEddyProc_sPrintFrames )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
