@@ -28,7 +28,7 @@ test_that("fCalcPotRadiation: warn on non-matching day-hour length",{
 			expect_warning( potRadSolar <- fCalcPotRadiation(160:161, hour, 39.94, -5.77, TimeZone=+1) )
 		})
 
-test_that("fCalcPotRadiation: warn on non-matching day-hour length",{
+test_that("fCalcVPDfromRHandTair",{
 			T <- 32.2
 			relHum <- 63.8
 			VPD <- fCalcVPDfromRHandTair(relHum, T)
