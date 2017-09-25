@@ -6,18 +6,10 @@
 context("sEddyProc-Class")
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Example is accessible if package is installed, otherwise need to load it from data directory below package root
+if( !exists("Example_DETha98")) load("data/Example_DETha98.RData")
+EddyData.F <- Example_DETha98 
 
-#Load example data directly from package or (if not available) from txt file
-data('Example_DETha98', package='REddyProc')
-if( sum(grepl('EddyData.F',ls())) == 0 ) {
-  if( file.exists('../examples/Example_DETha98.txt') ) {
-    EddyData.F <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../examples'))
-  } else {
-  message('Unit test directory: ', getwd())
-  message('Workspace: ', ls())
-  stop('test_sEddyProc.R::: Example data could not be loaded.')
-  }
-}
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
 # construct multiyear dataset

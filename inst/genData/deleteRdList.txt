@@ -1,0 +1,3 @@
+ # comma separated list of entries, whose Rd files should be deleted after inlinedocs generation
+sID,sDATA,sINFO,sLOCATION,sTEMP,sUSTAR  # also some comment here
+  

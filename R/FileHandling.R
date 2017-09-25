@@ -56,8 +56,8 @@ fLoadTXTIntoDataframe <- function(
 
 attr(fLoadTXTIntoDataframe, 'ex') <- function() {
   if( FALSE ) { #Do not always execute example code (e.g. on package installation)
-    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-    EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt',Dir.s)
+	  examplePath <- getExamplePath('Example_DETha98.txt')	  	
+	  EddyData.F <- fLoadTXTIntoDataframe(examplePath)
   }
 }
 
@@ -81,9 +81,9 @@ fLoadFluxNCIntoDataframe <- function(
 ) 
   ##author<<
   ## AMM, KS
-  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples';
+  # TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly_selVars.nc'; Dir.s <- 'inst/examples';
   # TEST: VarList.V.s <- c('NEE', 'Rg', 'rH', 'Tair', 'NEE_f'); NcPackage.s <- 'ncdf4'
-  # TEST: str(tmp <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg'), 'Example_DE-Tha.1996.1998.hourly.nc', 'inst/examples', count=c(1L,1L,4000L) ))
+  # TEST: str(tmp <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg'), 'Example_DE-Tha.1996.1998.hourly_selVars.nc', 'inst/examples', count=c(1L,1L,4000L) ))
 {
   # Check for R NetCDF packages
   if( !(( NcPackage.s=='ncdf4' && suppressWarnings(requireNamespace("ncdf4")) )
@@ -110,7 +110,7 @@ attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
   if( FALSE ) { #Do not always execute example code (e.g. on package installation)
     Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
     EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
-		, 'Example_DE-Tha.1996.1998.hourly.nc', Dir.s)
+		, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc'))
   }
 }
 
@@ -194,7 +194,7 @@ fAddNCFVar <- function(
 )
   ##author<<
   ## AMM, KS, TW
-  #TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples'
+  #TEST: Data.F <- NULL; Var.s <- 'NEE'; FileName.s <- 'Example_DE-Tha.1996.1998.hourly_selVars.nc'; Dir.s <- 'inst/examples'
   #TEST: NcPackage.s <- 'ncdf4'
 {
   if( length(VarNew.s) != length(Var.s) ) stop("VarNew.s must have the same length as Var.s")
@@ -215,7 +215,7 @@ fAddNCFVar <- function(
 	stop(CallFunction.s, ':::fAddNCFVar::: NC file ', InputNCF.s, ' could not be opened!')
   }
   #
-	NCFile.C <- fOpen(InputNCF.s)
+	NCFile.C <- fOpen(InputNCF.s)	# NCFile.C <- nc_open(InputNCF.s)
 	tmpFilename <- tempfile(); tmpFile <- file(tmpFilename, open = "wt")
 	tryCatch({
 				newCols <- lapply( seq_along(Var.s), function(i){
@@ -264,9 +264,9 @@ fLoadFluxNCInfo <- function(
 )
   ##author<<
   ## AMM
-  #TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly.nc'; Dir.s <- 'inst/examples'
+  #TEST: FileName.s <- 'Example_DE-Tha.1996.1998.hourly_selVars.nc'; Dir.s <- 'inst/examples'
   #TEST: NcPackage.s <- 'ncdf4'
-  #TEST: fLoadFluxNCInfo('Example_DE-Tha.1996.1998.hourly.nc','inst/examples','ncdf4')
+  #TEST: fLoadFluxNCInfo('Example_DE-Tha.1996.1998.hourly_selVars.nc','inst/examples','ncdf4')
 {
   # Check for R NetCDF packages
   if( !(( NcPackage.s=='ncdf4' && suppressWarnings(requireNamespace("ncdf4")) )

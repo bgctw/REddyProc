@@ -247,9 +247,7 @@ usEstUstarThreshold = function(
 
 
 .tmp.f <- function(){
-    Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-    EddyData.F <- ds <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-    EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+    EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
     EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))   
     #ds <- head(ds,2000)
     (Result.L <- EddyProc.C$sEstUstarThreshold())
@@ -343,7 +341,7 @@ attr(.plotNEEVersusUStarTempClass,"ex") <- function(){
 		dsiSortTclass <- dsiSort[isCurrentTclass,]
 		#constraint: u* threshold only accepted if T and u* are not or only weakly correlated..
 		Cor1 = suppressWarnings( abs(cor(dsiSortTclass[["Ustar"]],dsiSortTclass[["Tair"]])) ) # maybe too few or degenerate cases
-		if( inherits(Cor1,"try-error") ) recover()
+		#if( inherits(Cor1,"try-error") ) recover()
 		# TODO: check more correlations here? [check C code]
 		#      Cor2 = abs(cor(dataMthTsort$Ustar,dataMthTsort$nee))
 		#      Cor3 = abs(cor(dataMthTsort$tair,dataMthTsort$nee))
@@ -543,14 +541,9 @@ usCreateSeasonFactorMonth <- function(
 }
 
 .tmp.f <- function(){
-	pkgDir <- system.file(package='REddyProc')
-	if( nzchar(pkgDir) ){
-		Dir.s <- paste(pkgDir, 'examples', sep='/')
-		EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-		EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-		(res <- usCreateSeasonFactorMonth(ds$DateTime))
-		plot.default( res ~ ds$DateTime, type="p")
-	}
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	(res <- usCreateSeasonFactorMonth(ds$DateTime))
+	plot.default( res ~ ds$DateTime, type="p")
 }
 
 
@@ -592,9 +585,7 @@ usCreateSeasonFactorMonthWithinYear <- function(
 }
 
 .tmp.f <- function(){
-	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 	table(res <- usCreateSeasonFactorMonthWithinYear(ds$DateTime-1))  #-1 to move last record of newYear to 1998 
 }
 
@@ -619,9 +610,7 @@ usCreateSeasonFactorYday <- function(
 }
 
 .tmp.f  <- function(){
-	Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-	EddyData.F <- dss <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(dss, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 	table(res <- usCreateSeasonFactorYday(ds$DateTime))
 	plot.default( res ~ ds$DateTime)
 }
@@ -1056,6 +1045,7 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 		resQuantiles <-	t(apply( stat, 2, quantile, probs=probs, na.rm=TRUE ))
 		iInvalid <- colSums(is.finite(stat))/nrow(stat) < ctrlUstarEst.l$minValidBootProp 
 		resQuantiles[iInvalid,] <- NA_real_
+		rownames(resQuantiles) <- NULL
 		resDf <- cbind(res0$uStarTh, resQuantiles)
 		message(paste("Estimated UStar distribution of:\n", paste(capture.output(resDf[resDf$aggregationMode=="single",-(1:3)]),collapse="\n")
 						,"\nby using ",nSample,"bootstrap samples and controls:\n", paste(capture.output(unlist(ctrlUstarSub.l)),collapse="\n")
@@ -1071,9 +1061,7 @@ sEddyProc$methods( sEstUstarThresholdDistribution = sEddyProc_sEstUstarThreshold
 
 .tmp.f <-  function(){
 		# load the data and generate DateTime column
-		Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-		EddyData.F <- ds <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-		EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+		EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 		(res <- EddyProc.C$sEstUstarThresholdDistribution(nSample=10))	# for real applications use larger sample size
 		usGetAnnualSeasonUStarMap(res)

@@ -14,7 +14,7 @@ test_that_("fLoadFluxNCIntoDataframe",{
 			for( ncPack in c("ncdf4","RNetCDF")){
 				if( tmp <- requireNamespace(ncPack, quietly=TRUE) ){
 					ds <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
-							, 'Example_DE-Tha.1996.1998.hourly.nc', Dir.s
+							, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc')
 							, NcPackage.s=ncPack
 					)
 					colNames <- c("DateTime", "year", "month", "day", "hour", "NEE", "Rg", "NEE_f")

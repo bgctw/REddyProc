@@ -14,7 +14,9 @@
 ^tmp$
 ^.git$
 ^.gitignore$
-^.project$	    # added by eclipse 
+^.project$	     
 ^cranComments.md$
+^examples$
+^develop$
 ^cache$
-
+^inst/examples/

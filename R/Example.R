@@ -1,3 +1,33 @@
+getExamplePath <- function(
+		### checks if given example filename is existing and if not tries to download it.
+		filename = "Example_DETha98.txt"
+		,dir = paste(system.file(package='REddyProc'), 'examples', sep='/')
+		,isTryDownload = TRUE
+		,remoteDir = "https://github.com/bgctw/REddyProc/raw/master/examples"
+){
+	##details<<
+	## Example input text data files are not distributed with the package, because
+	## it exceeds allowed package size.
+	## Rather, the example files will be downloaded when required from github by this function.
+	## 
+	## The remoteDir (github) must be reachable, and the writing directory must be writeable.
+	## If the default dir (below the installed REddyProc package) is not writeable for the user, 
+	## the user can provide an alternative directory with argument \code{dir}.
+	fullname <- file.path(dir, filename)
+	if( file.exists(fullname) ) return(fullname)
+	if( isTRUE(isTryDownload) ){
+		if( !dir.exists(dir) ) dir.create(dir)
+		url <- file.path(remoteDir, filename)
+		retCode <- try( download.file(url, fullname) )
+		if( !inherits(retCode,"try-error") && retCode==0) return(fullname)
+	}
+	##value<< the full path name to the example data or if not available an zero-length character.
+	## Allows to check for if( length(existsExampleFile()) ) ...
+	return( character(0) )	
+}
+
+
+
 sEddyProc.example <- function( ) {
 	##title<<
 	## sEddyProc - Example code
@@ -10,15 +40,23 @@ sEddyProc.example <- function( ) {
 attr(sEddyProc.example,'ex') <- function( ){
 #+++ Simple example code for using the sEddyProc reference class +++
 if( FALSE ) { #Do not always execute example code (e.g. on package installation)
-		
+# library(REddyProc) # user should load the package before executing any example
+	
 #+++ Load data with one header and one unit row from (tab-delimited) text file
-Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-# note: use \code{fFilterAttr} to subset rows while keeping the units attributes
+examplePath <- getExamplePath('Example_DETha98.txt')
+if( length(examplePath)){
+	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
+} else {
+	warning(
+			"Could not find example data file. In order to execute this example code,"
+			," please, allow downloading it from github. " 
+			," Type '?getExamplePath' for more information."
+			," Using the RData version provided with the package")
+	EddyData.F <- Example_DETha98
+}
 
 #+++ If not provided, calculate VPD from Tair and rH
-EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH
-	, EddyData.F$Tair))
+EddyData.F$VPD  <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
 
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year'

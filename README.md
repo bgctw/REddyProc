@@ -5,6 +5,7 @@ output: github_document
 <!-- 
 README.md is generated from README.Rmd. Please edit that file
 knitr::knit("README.Rmd") 
+maybe clear cache before
 -->
 
 
@@ -40,14 +41,24 @@ devtools::install_github("bgctw/REddyProc")
 A simple example performs Lookuptable-based gapFilling of
 Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled
 values.
- 
+
 
 ```r
 #library(REddyProc)
-Dir.s <- system.file('examples', package='REddyProc')
-EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+#+++ Input data from csv (example needs to be downloaded)
+examplePath <- getExamplePath('Example_DETha98.txt')
+if( length(examplePath)){
+	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
+} else {
+	warning(
+			"Could not find example data file. In order to execuet this example code,"
+			," please, allow downloading it from github. " 
+			," Type '?getExamplePath' for more information.")
+	# using RData version distributed with the package instead
+	EddyData.F <- Example_DETha98
+}
 #+++ If not provided, calculate VPD from Tair and rH
-EddyData.F <- cbind(EddyData.F,VPD=fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
+EddyData.F$VPD <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 #+++ Initalize R5 reference class sEddyProc for processing of eddy data
@@ -66,6 +77,8 @@ EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
 ```
 
 ![plot of chunk example](README-example-1.png)
+
+
 
 Further examples are in
 [vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)

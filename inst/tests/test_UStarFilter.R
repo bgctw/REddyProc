@@ -9,14 +9,14 @@ context("UStarFilter")
 if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
+# Example is accessible if package is installed, otherwise need to load it from data directory below package root
+tmp <- Example_DETha98
+if( !exists("Example_DETha98")) load("data/Example_DETha98.RData")
+EddyData.F <- Example_DETha98 
+
 EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
-
-
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
 test_that(".binUstar classes are correct",{
 	res <- .binUstar(dss$NEE, dss$Ustar)$binAverages
@@ -34,22 +34,6 @@ test_that(".binUstar classes are correct",{
 	tmp1 <- do.call( rbind ,ds.f %>% split(.$bin) %>% map( function(dsBin){ c(Ust_avg=mean(dsBin[,2], na.rm=TRUE),NEE_avg=mean(dsBin[,1], na.rm=TRUE))}))
 	expect_that( res[,1:2], equals(tmp1))
 })
-
-test_that(".binUstar example file",{
-			pkgDir <- system.file(package='REddyProc')
-			if( nzchar(pkgDir) ){
-				Dir.s <- paste(pkgDir, 'examples', sep='/')
-				EddyData.F <- ds <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-				EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-				dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250 & Rg<10)
-				(res <- .binUstar(dss$NEE, dss$Ustar)$binAverages)
-				expect_true( nrow(res) >= 18)
-				#(resFW1 <- usEstUstarThresholdSingleFw1Binned(res))
-				#(resFW2 <- usEstUstarThresholdSingleFw2Binned(res))
-			}
-		})
-
-
 
 test_that("usEstUstarThresholdSingleFw2Binned",{
 			# regression test

@@ -730,9 +730,10 @@ sEddyProc$methods( sPlotNEEVersusUStarForSeason = sEddyProc_sPlotNEEVersusUStarF
   
   .tmp.f <- function(){
 #+++ Load data with 1 header and 1 unit row from (tab-delimited) text file
-	  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
-	  EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-#+++ If not provided, calculate VPD from Tair and rH
+# Example is accessible if package is installed, otherwise need to load it from data directory below package root
+	if( !exists("Example_DETha98")) load("data/Example_DETha98.RData")
+	EddyData.F <- Example_DETha98 
+	#+++ If not provided, calculate VPD from Tair and rH
 	  EddyData.F <- cbind(EddyData.F,VPD=
 					  fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
 #+++ Add time stamp in POSIX time format

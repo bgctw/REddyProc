@@ -6,7 +6,21 @@ exportPattern("^[^\\.]")	#exports all variables that do not start with a period.
 
 import( methods )		# R5 classes
 
-useDynLib(REddyProc)
+useDynLib(REddyProc, .registration = TRUE)
+
+
+  importFrom("grDevices", "adjustcolor", "colorRampPalette", "dev.off",
+             "pdf", "png", "rgb")
+  importFrom("graphics", "abline", "axis", "box", "close.screen",
+             "curve", "image", "legend", "lines", "mtext", "par", "plot",
+             "points", "polygon", "screen", "split.screen")
+  importFrom("stats", "aggregate", "anova", "approx", "coef", "cor",
+             "cov", "lm", "median", "na.omit", "nls", "nls.control",
+             "optim", "predict", "quantile", "resid", "rnorm", "sd")
+  importFrom("utils", "capture.output", "download.file", "read.csv",
+             "recover", "write.table")
+
+
 importFrom(Rcpp, sourceCpp, evalCpp)
 #import( inline )		# c++ code
 
