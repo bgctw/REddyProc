@@ -3,8 +3,11 @@
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 if(require("testthat", quietly=TRUE)) {
-	library(REddyProc)	# need to call library to make lazyData objects available
-	test_package("REddyProc")
+	pkg <- "REddyProc"
+	#library(pkg, character.only = TRUE)
+	#test_package(pkg)
+	test_check(pkg)
 } else {
 	warning("cannot run unit tests -- package testthat is not available")
 }
+
