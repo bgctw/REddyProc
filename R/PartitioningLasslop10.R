@@ -2,8 +2,9 @@ partitionNEEGL=function(
 		### Partitioning NEE fluxes into GP and Reco after daytime method. 
 		ds							##<< dataset with all the specified input columns and full days in equidistant times
 		,NEEVar.s=paste0('NEE',SuffixDash.s,'_f')		##<< Variable of Net Ecosystem Exchange flux
-		,TempVar.s=paste0('Tair_f') ##<< Filled air or soil temperature variable (degC)
-		,VPDVar.s=paste0('VPD_f')   ##<< Filled Vapor Pressure Deficit - VPD - (hPa)
+		,TempVar.s='Tair_f' 		##<< Filled air or soil temperature variable (degC)
+		,VPDVar.s='VPD_f'   		##<< Filled Vapor Pressure Deficit - VPD - (hPa)
+		,RadVar.s='Rg_f'         		##<< Filled radiation variable
 		,Suffix.s = ""		   		##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		,...						##<< further arguments to \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar.s}
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
@@ -26,7 +27,8 @@ partitionNEEGL=function(
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="") # used to compute default NEEVar.s 
 	if( isVerbose ) message('Start daytime flux partitioning for variable ', NEEVar.s, ' with temperature ', TempVar.s, '.')
-	dsR <- partGLExtractStandardData(ds, NEEVar.s=NEEVar.s, TempVar.s=TempVar.s, VPDVar.s=VPDVar.s, Suffix.s=Suffix.s
+	dsR <- partGLExtractStandardData(ds, NEEVar.s=NEEVar.s, TempVar.s=TempVar.s
+		, VPDVar.s=VPDVar.s, RadVar.s=RadVar.s ,Suffix.s=Suffix.s
 		, ..., controlGLPart = controlGLPart)
 	##value<< 
 	## \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/s}
@@ -118,7 +120,9 @@ partitionNEEGL=function(
 					resParms[,c("RRef_night","parms_out_range","convergence",lrcParNames,"GPP2000","resOpt")]
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
-	dsAnsFluxes <- partGLInterpolateFluxes( dsR$Rg
+	dsAnsFluxes <- partGLInterpolateFluxes( 
+					#dsR$Rg
+					ds[[RadVar.s]]
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp		
 					, ds[[VPDVar.s]], ds[[TempVar.s]]		# do prediction using non-filtered, i.e. gap-filled, values
 					, resParms
@@ -342,7 +346,9 @@ partGLExtractStandardData <- function(
 		,VPDVar.s=paste0('VPD_f')     	##<< Filled Vapor Pressure Deficit - VPD - (hPa)
 		,QFVPDVar.s=paste0('VPD_fqc') 	##<< Quality flag of filled VPD variable    
 		,QFVPDValue.n=0        			##<< Value of VPD quality flag for _good_ (original) data
-		,RadVar.s='Rg'         			##<< Unfilled (original) radiation variable
+		,RadVar.s='Rg_f'         		##<< Filled radiation variable
+		,QFRadVar.s=paste0('Rg_fqc') 	##<< Quality flag of filled radiation variable
+		,QFRadValue.n=0       			##<< Value of radiation quality flag for _good_ (original) data
 		,PotRadVar.s="PotRad_NEW"		##<< Variable name of potential radiation (W/m2)			   
 		,Suffix.s = ""		   			##<< string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		,controlGLPart=partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
@@ -351,25 +357,26 @@ partGLExtractStandardData <- function(
 	SuffixDash.s <- paste( (if(fCheckValString(Suffix.s)) "_" else ""), Suffix.s, sep="")
 	'Partitioning of measured net ecosystem fluxes into gross primary production (GPP) and ecosystem respiration (Reco) using Lasslop et al., 2010'
 	# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
-	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
-	fCheckColNum(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
-	fCheckColPlausibility(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, PotRadVar.s), 'sGLFluxPartition')
+	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, QFRadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
+	fCheckColNum(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, QFRadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
+	fCheckColPlausibility(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s, QFRadVar.s, PotRadVar.s), 'sGLFluxPartition')
 	NEEFiltered <- fSetQF(ds, NEEVar.s, QFNEEVar.s, QFNEEValue.n, 'sGLFluxPartition')
 	#
 	# Apply quality flag for temperature and VPD
 	# TODO: docu meteo filter, standard FALSE
 	NEW_FP_Temp <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'partGLExtractStandardData') else ds[[TempVar.s]]
 	NEW_FP_VPD <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'partGLExtractStandardData') else ds[[VPDVar.s]]
+	NEW_FP_Rg <- if( isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(ds, RadVar.s, QFRadVar.s, QFRadValue.n, 'partGLExtractStandardData') else ds[[RadVar.s]]
 	#
 	# Filter night time values only
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E_0.n
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
 	#! New code: PotRad in sGLFluxPartition: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
-	isNight <- (ds[,RadVar.s] <= 4 & ds[[PotRadVar.s]] == 0)
+	isNight <- (ds[[RadVar.s]] <= 4 & ds[[PotRadVar.s]] == 0)
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only, twutz does not understand this comment
-	isDay=(ds[,RadVar.s] > 4 & ds[[PotRadVar.s]] != 0)
+	isDay=(ds[[RadVar.s]] > 4 & ds[[PotRadVar.s]] != 0)
 	#	
 	##value<< a data.frame with columns
 	dsR <- data.frame(
@@ -379,7 +386,7 @@ partGLExtractStandardData <- function(
 			,sdNEE=ds[[NEESdVar.s]]		##<< standard deviation of NEE with missing values replaced 
 			, Temp=NEW_FP_Temp			##<< Temperature, quality filtered if isTRUE(controlGLPart$isFilterMeteoQualityFlag)
 			, VPD=NEW_FP_VPD			##<< Water pressure deficit, quality filtered if isTRUE(controlGLPart$isFilterMeteoQualityFlag)
-			, Rg=ds[[RadVar.s]]			##<< Incoming radiation
+			, Rg=NEW_FP_Rg				##<< Incoming radiation
 			, isDay=isDay				##<< Flag that is true for daytime records
 			, isNight=isNight			##<< Flag that is true for nighttime records
 	)
