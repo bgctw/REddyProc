@@ -35,6 +35,7 @@ Next, in the preditions (rows) with missing VPD are then replaced with predictio
 based on LRC-fits that neglected the VPD effect.  }
 \value{\item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/s}
 \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
+\item{GPP2000}{predicted gross primary production mumol CO2/m2/s for VPD=0 at Rg=2000}
 \item{<LRC>}{Further light response curve (LRC) parameters and their standard deviation depend on the used LRC
 (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
 They are estimated for windows and are reported with the first record of the window}

@@ -993,6 +993,8 @@ test_that("partitionNEEGL",{
 			#tmp <- partitionNEEGL( dsNEE1,RadVar.s='Rg_f', controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE))
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			#tmp[ is.finite(tmp$FP_beta), ]	# note FP_dRecPar is not zero, because iCentralRec != iMeanRec
+			#iPar <- which(is.finite(tmp$FP_E0))
+			#plot( tmp$FP_beta[iPar] ~ dsNEE1$sDateTime[iPar],type="l", ylim=range(c(tmp$FP_beta[iPar],tmp$FP_GPP2000[iPar]))); lines( tmp$FP_GPP2000[iPar] ~ dsNEE1$sDateTime[iPar], col="red")
 			#
 			# now test with different suffix: u50
 			dsNEE2 <- dsNEE 

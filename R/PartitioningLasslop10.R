@@ -31,6 +31,7 @@ partitionNEEGL=function(
 	##value<< 
 	## \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/s}
 	## \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
+	## \item{GPP2000}{predicted gross primary production mumol CO2/m2/s for VPD=0 at Rg=2000}
 	## \item{<LRC>}{Further light response curve (LRC) parameters and their standard deviation depend on the used LRC
 	## (e.g. for the non-rectangular LRCC see \code{\link{NonrectangularLRCFitter_getParameterNames}}). 
 	## They are estimated for windows and are reported with the first record of the window}
@@ -43,6 +44,7 @@ partitionNEEGL=function(
 			,FP_qc=NA_integer_		##<< quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away
 			,FP_dRecPar=NA_integer_	##<< records until or after closest record that has a parameter estimate associated
 			,FP_errorcode=NA_integer_ ##<< information why LRC-fit was not successful or was rejected, see result of \code{\link{LightResponseCurveFitter_fitLRC}}
+			,FP_GPP2000=NA_real_ 	##<< predicted GPP at VPD=0 and PAR=2000: a surrogate for maximum photosynthethic capacity 
 			,FP_OPT_VPD=vector(mode = "list", length =  nrow(ds))	##<< list object of fitting results including iOpt and covParms
 			,FP_OPT_NoVPD=vector(mode = "list", length =  nrow(ds))	##<< same as FP_OPT_VPD holding optimization results with fit neglecting the VPD effect
 	)
@@ -112,8 +114,8 @@ partitionNEEGL=function(
 	# default is isAssociateParmsToMeanOfValids=TRUE (double check partGLControl argument)
 	colNameAssoc <- if( isTRUE(controlGLPart$isAssociateParmsToMeanOfValids) ) "iMeanRec" else "iCentralRec"
 	# for the output, always report at central record
-	dsAns[resParms$iCentralRec,c("FP_RRef_Night","FP_qc","FP_errorcode",FP_lrcParNames,"FP_OPT_VPD")] <- 
-					resParms[,c("RRef_night","parms_out_range","convergence",lrcParNames,"resOpt")]
+	dsAns[resParms$iCentralRec,c("FP_RRef_Night","FP_qc","FP_errorcode",FP_lrcParNames,"FP_GPP2000","FP_OPT_VPD")] <- 
+					resParms[,c("RRef_night","parms_out_range","convergence",lrcParNames,"GPP2000","resOpt")]
 	#	
 	##seealso<< \code{\link{partGLInterpolateFluxes}}
 	dsAnsFluxes <- partGLInterpolateFluxes( dsR$Rg
@@ -534,11 +536,13 @@ partGLFitLRCOneWindow=function(
 	#
 	# record valid fits results
 	#as.data.frame(t(resOpt$thetaOpt))
-#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 11 ) recover()
-#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 27 ) recover()
-# save(dsDay, file="tmp/dsDayDebug.RData")
-  	
-ans <- list(
+	#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 11 ) recover()
+	#if( as.POSIXlt(dsDay$sDateTime[1])$mday+2L >= 27 ) recover()
+	# save(dsDay, file="tmp/dsDayDebug.RData")
+	#
+	# compute GPP2000 without VPD effect 
+	GPP2000 <- lrcFitter$predictLRC(resOpt$thetaOpt, 2000, VPD=NA, Temp=NA, fixVPD = TRUE)$GPP
+	ans <- list(
 		 resOpt=resOpt
 		 ,summary = cbind(data.frame(
 			nValidRec=nrow(dsDay)
@@ -548,7 +552,8 @@ ans <- list(
 			)
 			,as.data.frame(t(resOpt$thetaOpt))
 			,as.data.frame(t(structure(sdTheta,names=paste0(names(sdTheta),"_sd"))))
-		,isValid=TRUE
+			,GPP2000 = GPP2000
+			,isValid=TRUE
 		)
 	)
 	return(ans)

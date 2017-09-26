@@ -26,8 +26,6 @@ if( !exists("partitionNEEGL") ) library(REddyProc)	# only load library if not so
 	source("R/RcppExports.R")
 }
 
-library(tibble)
-
 library(foreach)
 #library(doMC)		#twutz: doMC is not supported for Windows any more, may swith to same functionality with doParallel	
 library(doParallel)
@@ -61,23 +59,25 @@ aggregate.sd <- function(x){  # where x is the sd of the variable
 #scen <- "omitBoundLowerNEEUnc"
 #scen <- "filterParSaturationProp50"
 #scen <- "omitSmoothTempSens"
-scen <- "neglectNEEUncertaintyOnMissing"
+#scen <- "neglectNEEUncertaintyOnMissing"
+scen <- "TempLasslop10"
 #scen <- "Lasslop10"	# wait for Gittas answer, how to treat missing sdNEE
 
 nBoot = 3L
 #nBoot = 60L	# for the default scenario
 
 # uncomment the scenario in quesiton and then run
-# cd inst/compareOldTool
+# cd develop/compareOldTool
 # bsub -q mpi_large -M 20971520 -n 28 -R span[hosts=1] R CMD BATCH --vanilla GLPartitioningTestCase.R GLPartitioningTestCase_log.txt 
 
-scenarioConfigurations = tribble(
+scenarioConfigurations = tibble::tribble(
 		~scenario, ~ouputPath,  ~ctrl, ~comment
 		,"Lasslop10", "Lasslop10_1709",  partGLControlLasslopCompatible(), "most Lasslop compatible"			
 		,"default", "default1709",  partGLControl(), ""
 		,"omitBoundLowerNEEUnc","default_options1709/omitBoundLowerNEEUnc", partGLControl(isBoundLowerNEEUncertainty=FALSE), "omit lower bound on NEE uncertainty allowing for high leverage" 
 		,"filterParSaturationProp50","default_options1709/filterParSaturationProp50", partGLControl(minPropSaturation=0.5), "filter those windows where GPP prediction at highest PAR is less than 50% of GPP at PAR=2000" 
 		,"omitSmoothTempSens","default_options1709/omitSmoothTempSens", partGLControl(smoothTempSensEstimateAcrossTime=FALSE), "use raw Temperature nighttime sensitivity estimates instead of smoothing them over time" 
+		,"TempLasslop10","default_options1709/TempLasslop10", partGLControl(smoothTempSensEstimateAcrossTime=FALSE, fixedTRefAtNightTime=15, isExtendTRefWindow=FALSE), "similar E0 from nighttime as Lallop (RRef=15, do not extend window, not Smooth E0" 
 		,"neglectNEEUncertaintyOnMissing","default_options1709/neglectNEEUncertaintyOnMissing", partGLControl(neglectNEEUncertaintyOnMissing=TRUE), "neglectNEEUncertaintyOnMissing=TRUE: omit weighting on NA in sdNEE" 
 )
 scenConf <- as.list(subset(scenarioConfigurations, scenario==scen))
@@ -255,8 +255,10 @@ computeSite <- function(siteName, fileName, scenConf){
 	}
 	### add modelled NEE
 	dsResOpt$NEE_DT <- -(dsResOpt$GPP_DT - dsResOpt$Reco_DT)
-	## save data frames 
-	write.table(dsResOpt,file=file.path(path,"Results",scenConf$ouputPath,paste0(siteName,".txt")),row.names=F,col.names=T)
+	## save data frames, but omit list columns 
+	iListColumns <- which( sapply( dsResOpt, is.list ) )
+	dsResOptNotListCol <- if( length(iListColumns)) dsResOpt[-iListColumns] else dsResOpt
+	write.table(dsResOptNotListCol,file=file.path(path,"Results",scenConf$ouputPath,paste0(siteName,".txt")),row.names=F,col.names=T)
 	#  
 	## the _agg columns are used for aggregation in aggregate() function below
 	julday_agg <- c(1,dfall$julday[1:(nrow(dsResOpt)-1)])
@@ -291,8 +293,8 @@ computeSite <- function(siteName, fileName, scenConf){
 }
 
 
-#ansList <- lapply( iProcSites, function(s){
 ansList <- foreach (s=iProcSites, .errorhandling="pass", .packages=c("REddyProc","plyr","mlegp","logitnorm")) %dopar% {
+#ansList <- lapply( iProcSites, function(s){
 	siteName <- sites[s] 
 	fileName    <- flist[s]
 	message("-------- starting site ",siteName)
