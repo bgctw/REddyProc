@@ -427,7 +427,7 @@ partGLFitLRCWindows=function(
 	}
 	resOptList <- lapply(resLRC$resFUN, "[[", "resOpt")
 	resOptDf <- tibble(resOpt=resOptList)
-	resParms <- as.tibble(cbind( resLRC$winInfo, bind_rows(lrcSummary), resOptDf)) 
+	resParms <- as_tibble(cbind( resLRC$winInfo, bind_rows(lrcSummary), resOptDf)) 
 	#table(resParms$convergence)
 	#E0_night equals E0, but uncertainty might differ
 	resParms$E0_bootstrap_sd <- resParms$E0_sd		# due to bootstrap, this may differ, save before overriding by night-time estimate
