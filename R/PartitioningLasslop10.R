@@ -219,6 +219,8 @@ partGLControl <- function(
 			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 		,fixedTRefAtNightTime=NA		##<< if a finite value (degree Centigrade) is given, 
 			## it is used instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data
+		,isExtendTRefWindow=TRUE		##<< set to FALSE to avoid successively extending the night-time window
+			## in order to estimate a temperature sensitivity where previous estimates failed
 		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
 			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
@@ -258,6 +260,7 @@ partGLControl <- function(
 			,isFilterMeteoQualityFlag=isFilterMeteoQualityFlag
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,fixedTRefAtNightTime=fixedTRefAtNightTime
+			,isExtendTRefWindow=isExtendTRefWindow
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
@@ -287,6 +290,8 @@ partGLControlLasslopCompatible <- function(
 			## day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.
 		,fixedTRefAtNightTime=15				##<< use fixed (degree Centigrade) temperature sensitivity 
 			## instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data
+		,isExtendTRefWindow=FALSE				##<< avoid successively extending the night-time window
+				## in order to estimate a temperature sensitivity where previous estimates failed
 		,smoothTempSensEstimateAcrossTime=FALSE	##<< FALSE: use independent estimates of temperature 
 			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
 		,isRefitMissingVPDWithNeglectVPDEffect=FALSE	##<< FALSE: avoid repeating estimation with \code{isNeglectVPDEffect=TRUE}
@@ -308,6 +313,7 @@ partGLControlLasslopCompatible <- function(
 			,isUsingLasslopQualityConstraints=isUsingLasslopQualityConstraints
 			,isBoundLowerNEEUncertainty=isBoundLowerNEEUncertainty
 			,fixedTRefAtNightTime=fixedTRefAtNightTime
+			,isExtendTRefWindow=isExtendTRefWindow
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect

@@ -20,9 +20,16 @@ partGLFitNightTimeTRespSens=function(
 			))
 	iNoSummary <- which( is.na(resNight$E0) )
 	iExtend <- 1
+	##details<< 
+	## Window sizes are successively increased to \code{winExtendSizes} in order
+	## to obtain parameter estimates where fits with smaller window size failed.
+	## This behaviour of repeated attempts can be avoid by setting 
+	## \code{controlGLPart$isExtendTRefWindow=FALSE}.
+	if( !isTRUE(controlGLPart$isExtendTRefWindow) ){ winExtendSizes <- numeric(0) } 
 	while( length(iNoSummary) && (iExtend <= length(winExtendSizes)) ){
 		if( isVerbose ) message("    increase window size to ",winExtendSizes[iExtend], appendLF = FALSE)
-		resNightExtend <- simplifyApplyWindows( applyWindows(ds, partGLFitNightTempSensOneWindow, prevRes=data.frame(E0=NA)
+		resNightExtend <- simplifyApplyWindows( applyWindows(ds, partGLFitNightTempSensOneWindow
+						, prevRes=data.frame(E0=NA)
 						, winSizeRefInDays = winSizeRefInDays
 						,winSizeInDays=winExtendSizes[iExtend]
 						,isVerbose=isVerbose		
@@ -38,7 +45,8 @@ partGLFitNightTimeTRespSens=function(
 	##seealso<< \code{\link{partGLSmoothTempSens}}
 	# remember E0 and sdE0 before overidden by smoothing
 	nFiniteE0 <- sum(is.finite(resNight$E0)) 
-	if( (nFiniteE0 < 5) && (nFiniteE0 < 0.1*nrow(resNight)) ) stop("Estimated valid temperature sensitivity for only ",nFiniteE0, " windows. Stopping.")
+	if( (nFiniteE0 < 5) && (nFiniteE0 < 0.1*nrow(resNight)) ) stop(
+				"Estimated valid temperature sensitivity for only ",nFiniteE0, " windows. Stopping.")
 	resNight$E0Fit <- resNight$E0
 	resNight$sdE0Fit <- resNight$sdE0
 	E0Smooth <- if( isTRUE(controlGLPart$smoothTempSensEstimateAcrossTime) ){

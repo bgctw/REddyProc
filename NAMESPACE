@@ -1,4 +1,9 @@
-exportPattern("^[^\\.]")	#exports all variables that do not start with a period. or uncerscore _
+exportPattern("^[^\\.]")	
+#exportPattern("(?=^[^\\.])(?=^(?!REddyProc_))")	
+# exports all variables that do not start with a period and does not start with REddyProc_ 
+#  https://stackoverflow.com/questions/899422/regular-expression-for-a-string-that-does-not-start-with-a-sequence
+#  https://stackoverflow.com/questions/469913/regular-expressions-is-there-an-and-operator
+
 
 #import(aNamespace)	# only required when extending S3 methods 
 

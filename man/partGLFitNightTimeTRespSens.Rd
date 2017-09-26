@@ -16,7 +16,10 @@
   \item{nRecInDay}{number of records within one day (for half-hourly data its 48)}
   \item{controlGLPart}{list of further default parameters}
 }
-
+\details{Window sizes are successively increased to \code{winExtendSizes} in order
+to obtain parameter estimates where fits with smaller window size failed.
+This behaviour of repeated attempts can be avoid by setting 
+\code{controlGLPart$isExtendTRefWindow=FALSE}.}
 \value{data.frame with columns of \code{winInfo} from applyWindows, E0, sdE0, RRef}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

@@ -6,7 +6,7 @@
     minNRecInDayWindow = 10L, isAssociateParmsToMeanOfValids = FALSE, 
     isLasslopPriorsApplied = TRUE, isUsingLasslopQualityConstraints = TRUE, 
     isBoundLowerNEEUncertainty = FALSE, fixedTRefAtNightTime = 15, 
-    smoothTempSensEstimateAcrossTime = FALSE, 
+    isExtendTRefWindow = FALSE, smoothTempSensEstimateAcrossTime = FALSE, 
     isRefitMissingVPDWithNeglectVPDEffect = FALSE, 
     minPropSaturation = NA, isNeglectVPDEffect = FALSE, 
     replaceMissingSdNEEParms = c(NA, NA), 
@@ -23,6 +23,8 @@ the first record of the window for interpolation instead of mean across valid re
 day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.}
   \item{fixedTRefAtNightTime}{use fixed (degree Centigrade) temperature sensitivity
 instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data}
+  \item{isExtendTRefWindow}{avoid successively extending the night-time window
+in order to estimate a temperature sensitivity where previous estimates failed}
   \item{smoothTempSensEstimateAcrossTime}{FALSE: use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
   \item{isRefitMissingVPDWithNeglectVPDEffect}{FALSE: avoid repeating estimation with \code{isNeglectVPDEffect=TRUE}}

@@ -11,7 +11,7 @@ see function \code{\link{partGLControlLasslopCompatible}}. }
     isLasslopPriorsApplied = TRUE, isUsingLasslopQualityConstraints = FALSE, 
     isSdPredComputed = TRUE, isFilterMeteoQualityFlag = FALSE, 
     isBoundLowerNEEUncertainty = TRUE, fixedTRefAtNightTime = NA, 
-    smoothTempSensEstimateAcrossTime = TRUE, 
+    isExtendTRefWindow = TRUE, smoothTempSensEstimateAcrossTime = TRUE, 
     NRHRfunction = FALSE, isNeglectVPDEffect = FALSE, 
     isRefitMissingVPDWithNeglectVPDEffect = TRUE, 
     fixedTempSens = data.frame(E0 = NA_real_, 
@@ -44,6 +44,8 @@ For prediction, the gap-filled value is used always, to produce predictions also
 day-Time fitting that avoids the high leverage those records with unreasonable low uncertainty.}
   \item{fixedTRefAtNightTime}{if a finite value (degree Centigrade) is given,
 it is used instead of median data temperature as reference temperature in estimation of temperatue sensitivity from night data}
+  \item{isExtendTRefWindow}{set to FALSE to avoid successively extending the night-time window
+in order to estimate a temperature sensitivity where previous estimates failed}
   \item{smoothTempSensEstimateAcrossTime}{set to FALSE to use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
   \item{NRHRfunction}{deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}}
