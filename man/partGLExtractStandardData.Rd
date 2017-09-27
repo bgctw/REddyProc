@@ -9,8 +9,10 @@
         "_fsd"), TempVar.s = paste0("Tair_f"), 
     QFTempVar.s = paste0("Tair_fqc"), QFTempValue.n = 0, 
     VPDVar.s = paste0("VPD_f"), QFVPDVar.s = paste0("VPD_fqc"), 
-    QFVPDValue.n = 0, RadVar.s = "Rg", PotRadVar.s = "PotRad_NEW", 
-    Suffix.s = "", controlGLPart = partGLControl())}
+    QFVPDValue.n = 0, RadVar.s = "Rg_f", 
+    QFRadVar.s = paste0("Rg_fqc"), QFRadValue.n = 0, 
+    PotRadVar.s = "PotRad_NEW", Suffix.s = "", 
+    controlGLPart = partGLControl())}
 \arguments{
   \item{ds}{dataset with all the specified input columns and full days in equidistant times}
   \item{NEEVar.s}{Variable of Net Ecosystem Exchange flux}
@@ -23,7 +25,9 @@
   \item{VPDVar.s}{Filled Vapor Pressure Deficit - VPD - (hPa)}
   \item{QFVPDVar.s}{Quality flag of filled VPD variable}
   \item{QFVPDValue.n}{Value of VPD quality flag for _good_ (original) data}
-  \item{RadVar.s}{Unfilled (original) radiation variable}
+  \item{RadVar.s}{Filled radiation variable}
+  \item{QFRadVar.s}{Quality flag of filled radiation variable}
+  \item{QFRadValue.n}{Value of radiation quality flag for _good_ (original) data}
   \item{PotRadVar.s}{Variable name of potential radiation (W/m2)}
   \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).}
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}

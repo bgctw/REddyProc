@@ -95,8 +95,6 @@ EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
 EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)  	 
 EddyProc.C$sMRFluxPartition()	# night time partitioning -> Reco, GPP
 EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
-#EddyProc.C$sGLFluxPartition(controlGLPart.l=
-#	partGLControl(isBoundLowerNEEUncertainty=FALSE))	
 #plot( EddyProc.C$sTEMP$GPP_DT ~ EddyProc.C$sTEMP$GPP_f); abline(0,1)
 #plot( -EddyProc.C$sTEMP$GPP_DT + EddyProc.C$sTEMP$Reco_DT ~ EddyProc.C$sTEMP$NEE_f )
 # abline(0,1)
@@ -105,7 +103,6 @@ EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
 # e.g. in the tropics the required temperature range might be too large.
 # Its possible to change these constraints
 #EddyProc.C$sMRFluxPartition(parsE0Regression=list(TempRange.n=2.0, optimAlgorithm="LM"))  
-
 
 #+++ Example plots of calculated GPP and respiration 
 EddyProc.C$sPlotFingerprintY('GPP_f', Year.i=1998)
@@ -161,9 +158,10 @@ EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE
 	, UstarThres.df=0.3, UstarSuffix.s='Thres1')
 EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE
 	, UstarThres.df=0.4, UstarSuffix.s='Thres2')
-# Gap-filled Tair and VPD needed for partitioning
+# Gap-filled Tair, VPD, and Rg needed for partitioning
 EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)    
 EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)    
+EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)    
 colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
 
 #+++ Flux partitioning of the different gap filling setups
@@ -171,7 +169,7 @@ EddyProc.C$sMRFluxPartition(Suffix.s='NoUstar')
 EddyProc.C$sMRFluxPartition(Suffix.s='Thres1')
 EddyProc.C$sMRFluxPartition(Suffix.s='Thres2')
 EddyProc.C$sGLFluxPartition(Suffix.s='NoUstar')
-colnames(EddyProc.C$sExportResults())
+grep("GPP.*$|Reco",names(EddyProc.C$sExportResults()), value=TRUE)
 # Note the suffix in output columns also of GPP, Reco, GPP_DT, and Reco_DT
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -184,6 +182,7 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
 EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)     
 EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)    
+EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)    
 
 #+++ Estimate the distribution of uStar by bootstrapping the data
 uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L
@@ -301,6 +300,7 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE','Rg','Tair','VPD','Ustar'))
 Ustar.V.n <- 0.46  
 EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
+grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value=TRUE)
 
 # See vignette DEGebExample for
 #  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)

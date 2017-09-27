@@ -3,15 +3,16 @@
 \title{partitionNEEGL}
 \description{Partitioning NEE fluxes into GP and Reco after daytime method. }
 \usage{partitionNEEGL(ds, NEEVar.s = paste0("NEE", 
-    SuffixDash.s, "_f"), TempVar.s = paste0("Tair_f"), 
-    VPDVar.s = paste0("VPD_f"), Suffix.s = "", 
-    ..., controlGLPart = partGLControl(), 
+    SuffixDash.s, "_f"), TempVar.s = "Tair_f", 
+    VPDVar.s = "VPD_f", RadVar.s = "Rg_f", 
+    Suffix.s = "", ..., controlGLPart = partGLControl(), 
     isVerbose = TRUE, nRecInDay = 48L, lrcFitter = RectangularLRCFitter())}
 \arguments{
   \item{ds}{dataset with all the specified input columns and full days in equidistant times}
   \item{NEEVar.s}{Variable of Net Ecosystem Exchange flux}
   \item{TempVar.s}{Filled air or soil temperature variable (degC)}
   \item{VPDVar.s}{Filled Vapor Pressure Deficit - VPD - (hPa)}
+  \item{RadVar.s}{Filled radiation variable}
   \item{Suffix.s}{string inserted into column names before identifier for NEE column defaults (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).}
   \item{\dots}{further arguments to \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar.s}}
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}
@@ -47,6 +48,7 @@ They are estimated for windows and are reported with the first record of the win
 \item{FP_qc}{quality flag: 0: good parameter fit, 1: some parameters out of range, required refit, 2: next parameter estimate is more than two weeks away}
 \item{FP_dRecPar}{records until or after closest record that has a parameter estimate associated}
 \item{FP_errorcode}{information why LRC-fit was not successful or was rejected, see result of \code{\link{LightResponseCurveFitter_fitLRC}}}
+\item{FP_GPP2000}{predicted GPP at VPD=0 and PAR=2000: a surrogate for maximum photosynthethic capacity}
 \item{FP_OPT_VPD}{list object of fitting results including iOpt and covParms}
 \item{FP_OPT_NoVPD}{same as FP_OPT_VPD holding optimization results with fit neglecting the VPD effect
 }}

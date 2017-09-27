@@ -26,6 +26,8 @@ if( !exists("partitionNEEGL") ) library(REddyProc)	# only load library if not so
 	source("R/RcppExports.R")
 }
 
+library(dplyr)
+library(tibble)
 library(foreach)
 #library(doMC)		#twutz: doMC is not supported for Windows any more, may swith to same functionality with doParallel	
 library(doParallel)
@@ -60,8 +62,8 @@ aggregate.sd <- function(x){  # where x is the sd of the variable
 #scen <- "filterParSaturationProp50"
 #scen <- "omitSmoothTempSens"
 #scen <- "neglectNEEUncertaintyOnMissing"
-scen <- "TempLasslop10"
-#scen <- "Lasslop10"	# wait for Gittas answer, how to treat missing sdNEE
+#scen <- "TempLasslop10"
+scen <- "Lasslop10"	# wait for Gittas answer, how to treat missing sdNEE
 
 nBoot = 3L
 #nBoot = 60L	# for the default scenario
@@ -260,6 +262,10 @@ computeSite <- function(siteName, fileName, scenConf){
 	dsResOptNotListCol <- if( length(iListColumns)) dsResOpt[-iListColumns] else dsResOpt
 	write.table(dsResOptNotListCol,file=file.path(path,"Results",scenConf$ouputPath,paste0(siteName,".txt")),row.names=F,col.names=T)
 	#  
+	# extract those rows where fitting object is not NULL abd save
+	dsFits <- as_tibble(dsResOpt)[,iListColumns] %>% mutate_(row=~1:n()) %>% rowwise() %>% filter_(~!is.null(FP_OPT_VPD[[1]])) 
+	save( dsFits ,file=file.path(path,"Results",scenConf$ouputPath,paste0(siteName,"_fits.RData")))
+	
 	## the _agg columns are used for aggregation in aggregate() function below
 	julday_agg <- c(1,dfall$julday[1:(nrow(dsResOpt)-1)])
 	Month_agg  <- c(1,dfall$Month[1:(nrow(dsResOpt)-1)])
@@ -324,7 +330,9 @@ sink(file.path(outputDir,'readmegen.txt')); {
 	cat(date(),"\n\n")
 	cat("scenConf.RData: list of information on scenario.\n")
 	cat("all_sites_monthly.RData: data.frame of partitioning outputs across sites and months.\n")
-	cat("all_sites_annual.RData: data.frame of partitioning outputs across sites for a single year.\n\n")
+	cat("all_sites_annual.RData: data.frame of partitioning outputs across sites for a single year.\n")
+	cat("<siteName>.txt: csv file of partitioning outputs\n")
+	cat("<siteName>_fits.RData: tibble of fitted objects and central row number of corresponding window rows\n\n")
 	cat("scenConf: ")
 	str(scenConf, max.level=3)
 }; sink()
