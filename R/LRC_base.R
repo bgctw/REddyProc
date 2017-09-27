@@ -510,7 +510,8 @@ LightResponseCurveFitter_predictLRC <- function(
 			stop("Length of vector argument fixVPD must correspond to rows in theta.")
 	Amax <- ifelse( fixVPD, beta, 
 				#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
-				ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
+				#twutz: 170927: introduced pmax(1,...) after looking at pvWave code, can happen if k is negative
+				ifelse((VPD > VPD0), beta*pmax(1,exp(-k*(VPD-VPD0))), beta)
 			)
 	Reco<-RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha)
