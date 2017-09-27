@@ -162,9 +162,16 @@ computeSite <- function(siteName, fileName, scenConf){
 				what=list(rep('character',17))) 
 		names(dfallPv) <- title[[1]]
 		dfallPv$julday <- dfall$julday
+		#
+		iRowEst <- seq(97, 17473, by=96)
+		dsE0Pv <- data.frame(E0  = dfallPv$E0[iRowEst], sdE0=20, RRef=dfallPv$rb[iRowEst])
+		dsE0Pv[ dsE0Pv==-9999 ] <- NA
+		dsE0Pv$E0 <- fillNAForward(dsE0Pv$E0)
+		dsE0Pv$RRef <- fillNAForward(dsE0Pv$RRef)
 	}
 	ctrlOpt <- scenConf$ctrl[[1]]
 	#ctrlOpt$isNeglectPotRadForNight <- TRUE
+	#ctrlOpt$fixedTempSens = dsE0Pv
 	useSolarTime <- if( length(ctrlOpt$useSolarTime) )  ctrlOpt$useSolarTime else TRUE
 	dfall$PotRadSolar <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"], useSolartime.b=TRUE))
 	dfall$PotRad <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"], useSolartime.b=useSolarTime))
@@ -431,9 +438,10 @@ sink(file.path(outputDir,'readmegen.txt')); {
 	parR <- dsResOpt[ iRowEst, c("julday","FP_errorcode","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night")]
 	names(parR) <- c("julday","FP_errorcode","beta","alpha","E0","k","rb","rbN")
 	parP <- dfallPv[ iRowEst, ]
-	parP$E0[ parP$E0 == -9999] <- NA
+	parP[ parP == -9999] <- NA
 	plot( parP$E0 ~ parR$E0 ); abline(0,1)	# large differences
-	plot( Rg_f ~ DateTime, dfall_posix[dfall$night==1,] )
+	#plot( Rg_f ~ DateTime, dfall_posix[dfall$night==1,] )
+	plot( parP$beta ~ parR$beta ); abline(0,1)	# large differences
 }
 
 
