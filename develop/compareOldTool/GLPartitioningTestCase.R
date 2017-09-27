@@ -74,7 +74,7 @@ nBoot = 3L
 
 scenarioConfigurations = tibble::tribble(
 		~scenario, ~ouputPath,  ~ctrl, ~comment
-		,"Lasslop10", "Lasslop10_1709",  partGLControlLasslopCompatible(), "most Lasslop compatible"			
+		,"Lasslop10", "Lasslop10_1709",  within(partGLControlLasslopCompatible(), useSolarTime<-FALSE), "most Lasslop compatible"			
 		,"default", "default1709",  partGLControl(), ""
 		,"omitBoundLowerNEEUnc","default_options1709/omitBoundLowerNEEUnc", partGLControl(isBoundLowerNEEUncertainty=FALSE), "omit lower bound on NEE uncertainty allowing for high leverage" 
 		,"filterParSaturationProp50","default_options1709/filterParSaturationProp50", partGLControl(minPropSaturation=0.5), "filter those windows where GPP prediction at highest PAR is less than 50% of GPP at PAR=2000" 
@@ -140,6 +140,7 @@ iProcSites <- seq_along(sites)
 	s <- grep("ES-VDA",sites)[1]
 	s <- grep("IL-Yat",sites)[1]  # high PAR with low temp-diff, subsetting data does not impar estimates here
 	s <- grep("PT-Esp",sites)[1]  # largest differences with omitSmoothTempSens  month 4 (but consider entire data for effect of smoothing)
+	s <- grep("IT-Amp",sites)[1]  # largest differences with pvWave in month 7
 	
 	siteName 	   <- sites[s] 
 	fileName        <- flist[s]
@@ -156,27 +157,36 @@ computeSite <- function(siteName, fileName, scenConf){
 	dfall             <- fLoadTXTIntoDataframe(fileName, file.path(path,"MR_GL_partitioning"))
 	.tmp.readPvWave <- function(){
 		fname.PVwave <- paste(siteName,'.',year,'.','DataSetafterFluxpartGL2010.txt', sep="")
-		dfall.Lass.PVwave <- read.table(file.path(path,"MR_GL_partitioning",fname.PVwave,sep=""),skip=2)
+		dfallPv <- read.table(file.path(path,"MR_GL_partitioning",fname.PVwave,sep=""),skip=2)
 		title <- scan(file.path(path,"MR_GL_partitioning",fname.PVwave,sep=""), nlines = 1, sep = "", strip.white=TRUE,
 				what=list(rep('character',17))) 
-		names(dfall.Lass.PVwave) <- title[[1]]
+		names(dfallPv) <- title[[1]]
+		dfallPv$julday <- dfall$julday
 	}
-	dfall$PotRad <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"]))
-	# here fake potential radiation to be high on all records where Lasslop Partitioning quantified non night 
+	ctrlOpt <- scenConf$ctrl[[1]]
+	useSolarTime <- if( length(ctrlOpt$useSolarTime) )  ctrlOpt$useSolarTime else TRUE
+	dfall$PotRadSolar <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"], useSolartime.b=TRUE))
+	dfall$PotRad <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"], useSolartime.b=useSolarTime))
+	#plot( PotRad ~ PotRadSolar, dfall)
+	# here fake potential radiation to be high on all records where Lasslop Partitioning quantified non-night 
 	dfall$day    <- (1 - dfall$night)*100  
 	dfall_posix  <- dsMonth <- fConvertTimeToPosix(dfall, 'YMDH', Year.s = 'Year', Month.s='Month', Day.s = 'Day', Hour.s = 'Hr')
-	# dsMonth <- subset(dfall_posix, Month %in% 1:12) #& DateTime >= "2002-08-09 00:00:00" & DateTime <= "2002-08-12 23:30:00")
+	# dsMonth <- subset(dfall_posix, Month %in% 6:8) #& DateTime >= "2002-08-09 00:00:00" & DateTime <= "2002-08-12 23:30:00")
 	#
 	# START - RUN THE REddyProc DT partitioning
-	ctrlOpt <- scenConf$ctrl[[1]]
 	#ctrlOpt$isAssociateParmsToMeanOfValids <- FALSE # in order to match exact source data
 	#ctrlOpt$fixedTempSens=data.frame(E0=220, sdE0=50, RRef=2.7)
 	dsResOpt <- partitionNEEGL(dsMonth,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
 			TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
-			QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s="",
+			QFVPDValue.n=0
+			,RadVar.s="Rg_f"
+			#,PotRadVar.s="day"
+			,PotRadVar.s="PotRad"
+			,Suffix.s="",
 			controlGLPart=ctrlOpt
 	)
 	dsResOpt$DateTime <- dsMonth$DateTime
+	dsResOpt$julday <- dsMonth$julday
 	.tmp.debug <- function(){
 		ctrlDefault <- partGLControl();  ctrlDefault$isAssociateParmsToMeanOfValids <- FALSE; nBootUncertainty=3L # in order to match exact source data
 		#ctrlDefault$fixedTempSens <- ctrl$fixedTempSens 
@@ -413,6 +423,16 @@ sink(file.path(outputDir,'readmegen.txt')); {
 										c(nRec = nrow(dsDay), resOpt$thetaOpt)
 									}))))
 	thetaOptRg
+}
+
+.tmp.comparePvWaveREddyProc <- function(){
+	iRowEst <- which(is.finite(dsResOpt$FP_errorcode))
+	parR <- dsResOpt[ iRowEst, c("julday","FP_errorcode","FP_beta","FP_alpha","FP_E0","FP_k","FP_RRef","FP_RRef_Night")]
+	names(parR) <- c("julday","FP_errorcode","beta","alpha","E0","k","rb","rbN")
+	parP <- dfallPv[ iRowEst, ]
+	parP$E0[ parP$E0 == -9999] <- NA
+	plot( parP$E0 ~ parR$E0 ); abline(0,1)	# large differences
+	plot( Rg_f ~ DateTime, dfall_posix[dfall$night==1,] )
 }
 
 
