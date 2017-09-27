@@ -229,6 +229,7 @@ partGLControl <- function(
 			## in order to estimate a temperature sensitivity where previous estimates failed
 		,smoothTempSensEstimateAcrossTime=TRUE	##<< set to FALSE to use independent estimates of temperature 
 			## sensitivity on each windows instead of a vector of E0 that is smoothed over time
+		,isNeglectPotRadForNight=FALSE	##<< set to TRUE to not use potential radiation in determining night-time data.
 		,NRHRfunction=FALSE				##<< deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}
 		,isNeglectVPDEffect=FALSE 		##<< set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.
 		,isRefitMissingVPDWithNeglectVPDEffect=TRUE	##<< set to FALSE to avoid repeating estimation 
@@ -268,6 +269,7 @@ partGLControl <- function(
 			,fixedTRefAtNightTime=fixedTRefAtNightTime
 			,isExtendTRefWindow=isExtendTRefWindow
 			,smoothTempSensEstimateAcrossTime=smoothTempSensEstimateAcrossTime
+			,isNeglectPotRadForNight=isNeglectPotRadForNight
 			,isNeglectVPDEffect=isNeglectVPDEffect
 			,isRefitMissingVPDWithNeglectVPDEffect=isRefitMissingVPDWithNeglectVPDEffect
 			,fixedTempSens=fixedTempSens
@@ -372,11 +374,13 @@ partGLExtractStandardData <- function(
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night for the calculation of E_0.n
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only
 	#! New code: PotRad in sGLFluxPartition: Slightly different subset than PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
-	isNight <- (ds[[RadVar.s]] <= 4 & ds[[PotRadVar.s]] == 0)
+	isPotRadZero <- if( isTRUE(controlGLPart$isNeglectPotRadForNight) ) TRUE else (ds[[PotRadVar.s]] <= 0)
+	isNotPotRadZero <- if( isTRUE(controlGLPart$isNeglectPotRadForNight) ) TRUE else (ds[[PotRadVar.s]] > 0)
+	isNight <- (ds[[RadVar.s]] <= 4 & isPotRadZero)
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the calculation of paremeters of Light Response Curve 
 	# Should be unfilled (original) radiation variable, therefore dataframe set to sDATA only, twutz does not understand this comment
-	isDay=(ds[[RadVar.s]] > 4 & ds[[PotRadVar.s]] != 0)
+	isDay=(ds[[RadVar.s]] > 4 & isNotPotRadZero)
 	#	
 	##value<< a data.frame with columns
 	dsR <- data.frame(

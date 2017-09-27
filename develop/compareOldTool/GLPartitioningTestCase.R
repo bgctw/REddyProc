@@ -164,6 +164,7 @@ computeSite <- function(siteName, fileName, scenConf){
 		dfallPv$julday <- dfall$julday
 	}
 	ctrlOpt <- scenConf$ctrl[[1]]
+	#ctrlOpt$isNeglectPotRadForNight <- TRUE
 	useSolarTime <- if( length(ctrlOpt$useSolarTime) )  ctrlOpt$useSolarTime else TRUE
 	dfall$PotRadSolar <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"], useSolartime.b=TRUE))
 	dfall$PotRad <- as.numeric(fCalcPotRadiation(dfall$julday,dfall$Hour,latLongSite["lat"],latLongSite["long"],latLongSite["timeOffset"], useSolartime.b=useSolarTime))
