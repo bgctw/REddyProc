@@ -13,7 +13,8 @@ if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
 # create meteo-gapfilled dataset
 # cache in ReddyProc example directory
 exampleBaseName <- "Example_DETha98_Filled.RData"
-if( !length(getExamplePath(exampleBaseName)) ){
+examplePath <- getExamplePath(exampleBaseName)
+if( !length(examplePath) ){
 	Example_DETha98_Date <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 	Example_DETha98_sDate <- cbind(sDateTime=Example_DETha98_Date$DateTime - 15*60,  Example_DETha98_Date)
 	EddyProc.C <- sEddyProc$new('DE-Tha', Example_DETha98_sDate, c('NEE','Rg','Tair','VPD', 'Ustar'))
@@ -25,9 +26,10 @@ if( !length(getExamplePath(exampleBaseName)) ){
 	EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
 	Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EddyProc.C$sExportResults() )
 	save( Example_DETha98_Filled, file=file.path(system.file(package='REddyProc'), 'examples', exampleBaseName))
+	examplePath <- getExamplePath(exampleBaseName)	
 }
 # 10 days from June from Example_DETha98.txt shipped with REddyProc
-load(getExamplePath(exampleBaseName))
+load(examplePath)
 dsNEE <- subset(Example_DETha98_Filled, sDateTime >= "1998-06-01 00:15:00 GMT" & sDateTime <= "1998-06-09 21:45:00 GMT")
 		
 dsNEE$Temp <- dsNEE$Tair_f

@@ -547,6 +547,7 @@ test_predictLRC <- function(lrcFitter){
 			dssDay <- do.call( rbind, lapply(1:nRow, function(i){ subset(dss, isDay==TRUE)[1,] }))
 			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
 			#
+			# lrcFitter$trace("predictLRC", browser)   # lrcFitter$untrace("predictLRC")
 			gpp <- gpp0 <- lrcFitter$predictLRC(theta0M, Rg=dsDay$Rg, VPD=dsDay$VPD, Temp=dsDay$Temp, VPD0=0)$GPP
 			expect_equal( length(gpp), nRow )
 			expect_true( all(gpp[-iRowK] == gpp[1]) )
@@ -631,20 +632,20 @@ test_that("NonrectangularLRCFitter$predictLRC vector form",{
 			test_LRCGRadient_vectorForm(lrcFitter)
 		})
 
-test_LRCGradient <- function(LRC){
+test_LRCGradient <- function(lrcFitter){
 	#str(ds)
 	ds <- dsNEE
 	theta0 <- structure(c(0.05, 27.3333395589509, 0.162207578338878, 2.59392002410639, 185, 1.1
 			), .Names = c("k", "beta", "alpha", "RRef","E0","logitconv"))
-	res <- LRC$computeLRCGradient(theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
+	res <- lrcFitter$computeLRCGradient(theta0, Rg=ds$Rg_f, VPD=ds$VPD_f, Temp=ds$Temp)
 	.numDerivLRC <- function(theta, eps=0.0001, ..., varName="NEP"){
 		ans <- matrix( NA, nrow=length(list(...)[[1]]), ncol=length(theta), dimnames=list(NULL,names(theta)))
 		i <- 1L
 		for( i in seq_along(theta)){
 			thetaMinus <- theta; thetaMinus[i] <- theta[i]-eps
 			thetaPlus <- theta; thetaPlus[i] <- theta[i]+eps
-			fMinus <- LRC$predictLRC(thetaMinus, ...)[[varName]]
-			fPlus <- LRC$predictLRC(thetaPlus, ...)[[varName]]
+			fMinus <- lrcFitter$predictLRC(thetaMinus, ...)[[varName]]
+			fPlus <- lrcFitter$predictLRC(thetaPlus, ...)[[varName]]
 			ans[,i] <- derivI <- (fPlus - fMinus)/(2*eps)
 		}
 		ans
@@ -663,8 +664,8 @@ test_LRCGradient <- function(LRC){
 test_that("RectangularLRCFitter$computeLRCGradient matches numerical estimates",{
 			lrcFitter <- RectangularLRCFitter()
 			test_LRCGradient(lrcFitter)
-			#LRC <- LogisticSigmoidLRCFitter()
-			#LRC <- NonrectangularLRCFitter()
+			#lrcFitter <- LogisticSigmoidLRCFitter()
+			#lrcFitter <- NonrectangularLRCFitter()
 		})
 
 
@@ -712,7 +713,7 @@ test_that("fitLRC",{
 			dssDay <- subset(dss, isDay==TRUE)
 			dssNight <- subset(dss, isNight==TRUE)
 			dsDay <- data.frame( NEE=dssDay$NEE_f, sdNEE=dssDay$NEE_fsd, Rg=dssDay$Rg_f, Temp=dssDay$Temp, VPD=dssDay$VPD_f)
-			#LRC <- RectangularLRCFitter()
+			#lrcFitter <- RectangularLRCFitter()
 			res <- resRect <- lrcFitter$fitLRC(dsDay, E0=185, sdE0=.05*185,RRefNight=mean(dssNight$NEE_f, na.rm=TRUE), lastGoodParameters=NA_real_
 					,controlGLPart=partGLControl(nBootUncertainty=10L)
 			)
@@ -744,9 +745,9 @@ test_that("fitLRC",{
 
 #----------------------------- Logistic Sigmoid
 test_that("LogisticSigmoidLRCFitter$computeLRCGradient matches numerical estimates",{
-			#LRC <- RectangularLRCFitter()
+			#lrcFitter <- RectangularLRCFitter()
 			lrcFitter <- LogisticSigmoidLRCFitter()
-			#LRC <- NonrectangularLRCFitter()
+			#lrcFitter <- NonrectangularLRCFitter()
 			test_LRCGradient(lrcFitter)
 		})
 
@@ -813,8 +814,8 @@ test_that("NonrectangularLRCFitter$computeGPPGradient matches numerical estimate
 		})
 
 test_that("NonrectangularLRCFitter$computeLRCGradient matches numerical estimates",{
-			#LRC <- RectangularLRCFitter()
-			#LRC <- LogisticSigmoidLRCFitter()
+			#lrcFitter <- RectangularLRCFitter()
+			#lrcFitter <- LogisticSigmoidLRCFitter()
 			lrcFitter <- NonrectangularLRCFitter()
 			test_LRCGradient(lrcFitter)
 		})
