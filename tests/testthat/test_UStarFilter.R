@@ -14,7 +14,7 @@ tmp <- Example_DETha98
 if( !exists("Example_DETha98")) load("data/Example_DETha98.RData")
 EddyData.F <- Example_DETha98 
 
-EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+EddyDataWithPosix.F <- ds <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
 dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
