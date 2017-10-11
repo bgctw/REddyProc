@@ -661,7 +661,7 @@ usGetYearOfSeason <- function(
 ){
 	##author<<
 	## TW
-	originCt <- as.POSIXct("1970-01-01 00:00.00 UTC")
+	originCt <- as.POSIXct("1970-01-01 00:00.00",tz="UTC")
 	timezone <- attr(sDateTime.v[1],"tzone")
 	#dates <- sDateTime.v[seasonFactor.v == seasonFactor.v[1]]
 	res <- tapply(sDateTime.v, seasonFactor.v, FUN=function(dates){

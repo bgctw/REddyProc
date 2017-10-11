@@ -58,7 +58,9 @@ test_that("fOptimSingleE0",{
 			expect_true( length(res)> 1 )
 			expect_true( all(is.finite(res) ))
 			
-			resL <- fOptimSingleE0_Lev( NEEnight.V.n, Temp_degK.V.n,T_ref.n=273.15+15, recoverOnError=TRUE)
+			if( require("minpack.lm")){
+				resL <- fOptimSingleE0_Lev( NEEnight.V.n, Temp_degK.V.n,T_ref.n=273.15+15, recoverOnError=TRUE)
+			}
 			expect_true( is.numeric(res) )
 			expect_true( length(res)> 1 )
 			expect_true( all(is.finite(res) ))
