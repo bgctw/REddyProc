@@ -1,5 +1,5 @@
 #require(REddyProc)
-context('fLoadFluxNCIntoDataframe')
+context('readNcdf')
 
 exPath <- getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc', isTryDownload = FALSE)
 if( !length(exPath) ) warning("Example_DE-Tha.1996.1998.hourly_selVars.nc not available. Skipping corresponding tests.")
@@ -39,8 +39,10 @@ test_that('RNetCDF missing col',{
 			if( !length(exPath) ) return(NULL)
 			if( !require('RNetCDF') ) warning("ncdf4 package not installed, skipping test") else { 
 				expect_warning(
-						ds <- fLoadFluxNCIntoDataframe(c(VarList.V.s,"bla"), exPath, count=c(1L,1L,nRec)
-								,NcPackage.s='RNetCDF'
+						suppressMessages(
+							ds <- fLoadFluxNCIntoDataframe(c("bla",VarList.V.s), exPath, count=c(1L,1L,nRec)
+									,NcPackage.s='RNetCDF'
+							)
 						)
 				)
 				expectDefaults(ds)
@@ -51,8 +53,10 @@ test_that('ncdf4 missing col',{
 			if( !length(exPath) ) return(NULL)
 			if( !require('ncdf4') ) warning("ncdf4 package not installed, skipping test") else { 
 				expect_warning(
-						ds <- fLoadFluxNCIntoDataframe(c(VarList.V.s,"bla"), exPath, count=c(1L,1L,nRec)
-								,NcPackage.s='ncdf4'
+						suppressMessages(
+							ds <- fLoadFluxNCIntoDataframe(c("bla",VarList.V.s), exPath, count=c(1L,1L,nRec)
+									,NcPackage.s='ncdf4'
+							)
 						)
 				)
 				expectDefaults(ds)

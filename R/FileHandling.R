@@ -89,7 +89,7 @@ fLoadFluxNCIntoDataframe <- function(
   if( !(( NcPackage.s=='ncdf4' && suppressWarnings(requireNamespace("ncdf4")) )
         || ( NcPackage.s=='RNetCDF' && suppressWarnings(requireNamespace("RNetCDF")) )) )
     stop('fLoadFluxNCIntoDataframe::: Required package \'', NcPackage.s, '\' could not be loaded!')
-  
+
   # Read in time variables
   Data.F <- fReadTime(NULL, FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe', ...)
   # Convert time format to POSIX
@@ -97,11 +97,13 @@ fLoadFluxNCIntoDataframe <- function(
   Data.F <- fConvertTimeToPosix(Data.F, 'YMDH', Year.s = 'year', Month.s='month', Day.s = 'day', Hour.s = 'hour')
   
   # Read in variables from a given list of needed variables
-  Data.F <- 
-		  tmp <- fAddNCFVar(Data.F, setdiff(VarList.V.s, colnames(Data.F)), FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe', ...)
+  # capture both stdErr and stdOut from fAddNCVar, so that messages can be suppressed	
+  msgFromfAddNCFVar <- capture.output(capture.output(  
+		  Data.F <- fAddNCFVar(Data.F, setdiff(VarList.V.s, colnames(Data.F)), FileName.s, Dir.s, NcPackage.s, 'fLoadFluxNCIntoDataframe', ...)
+		  			,type=c("message")))
+  message(msgFromfAddNCFVar)
   message('Loaded BGI Fluxnet NC file: ', FileName.s, ' with the following headers:')
   message('*** ', paste(colnames(Data.F), '(', as.character(lapply(Data.F, attr, which='units')), ')', collapse=' ', sep=''))
-  
   Data.F 
   ##value<<
   ## Data frame with data from nc file.
