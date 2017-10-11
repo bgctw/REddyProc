@@ -12,8 +12,8 @@ see function \code{\link{partGLControlLasslopCompatible}}. }
     isSdPredComputed = TRUE, isFilterMeteoQualityFlag = FALSE, 
     isBoundLowerNEEUncertainty = TRUE, fixedTRefAtNightTime = NA, 
     isExtendTRefWindow = TRUE, smoothTempSensEstimateAcrossTime = TRUE, 
-    NRHRfunction = FALSE, isNeglectVPDEffect = FALSE, 
-    isRefitMissingVPDWithNeglectVPDEffect = TRUE, 
+    isNeglectPotRadForNight = FALSE, NRHRfunction = FALSE, 
+    isNeglectVPDEffect = FALSE, isRefitMissingVPDWithNeglectVPDEffect = TRUE, 
     fixedTempSens = data.frame(E0 = NA_real_, 
         sdE0 = NA_real_, RRef = NA_real_), 
     replaceMissingSdNEEParms = c(perc = 0.2, 
@@ -48,6 +48,7 @@ it is used instead of median data temperature as reference temperature in estima
 in order to estimate a temperature sensitivity where previous estimates failed}
   \item{smoothTempSensEstimateAcrossTime}{set to FALSE to use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
+  \item{isNeglectPotRadForNight}{set to TRUE to not use potential radiation in determining night-time data.}
   \item{NRHRfunction}{deprecated: Flag if TRUE use the NRHRF for partitioning; Now use \code{lrcFitter=NonrectangularLRCFitter()}}
   \item{isNeglectVPDEffect}{set to TRUE to avoid using VPD in the computations. This may help when VPD is rarely measured.}
   \item{isRefitMissingVPDWithNeglectVPDEffect}{set to FALSE to avoid repeating estimation
