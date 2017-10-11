@@ -1,5 +1,6 @@
 \name{RHLightResponseCostC}
 \alias{RHLightResponseCostC}
+\alias{_REddyProc_RHLightResponseCostC}
 \title{RHLightResponseCostC}
 
 \usage{RHLightResponseCostC(theta, flux, sdFlux, 

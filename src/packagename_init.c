@@ -8,12 +8,12 @@
 */
 
 /* .Call calls */
-extern SEXP REddyProc_RHLightResponseCostC(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP REddyProc_whichValueGreaterEqualC(SEXP, SEXP, SEXP);
+extern SEXP _REddyProc_RHLightResponseCostC(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _REddyProc_whichValueGreaterEqualC(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"REddyProc_RHLightResponseCostC",    (DL_FUNC) &REddyProc_RHLightResponseCostC,    10},
-    {"REddyProc_whichValueGreaterEqualC", (DL_FUNC) &REddyProc_whichValueGreaterEqualC,  3},
+    {"_REddyProc_RHLightResponseCostC",    (DL_FUNC) &_REddyProc_RHLightResponseCostC,    10},
+    {"_REddyProc_whichValueGreaterEqualC", (DL_FUNC) &_REddyProc_whichValueGreaterEqualC,  3},
     {NULL, NULL, 0}
 };
 

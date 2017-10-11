@@ -811,6 +811,7 @@ usGetYearOfSeason <- function(
 	# 
 	# cannot generate C function with dot
 	# Rcpp::compileAttributes() generates a function without leading dot, need to adjust by hand afterwards
+	# or otherwise export but make sure its documented
 	### searches a sorted integer vector for the next element that is >= a threshold in fast C-code 
 	whichValueGreaterEqualC( as.integer(x), as.integer(threshold), as.integer(iStart) )	
 	##value<< 

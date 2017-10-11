@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // RHLightResponseCostC
 NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector VPD0, LogicalVector fixVPD);
-RcppExport SEXP REddyProc_RHLightResponseCostC(SEXP thetaSEXP, SEXP fluxSEXP, SEXP sdFluxSEXP, SEXP parameterPriorSEXP, SEXP sdParameterPriorSEXP, SEXP RgSEXP, SEXP VPDSEXP, SEXP TempSEXP, SEXP VPD0SEXP, SEXP fixVPDSEXP) {
+RcppExport SEXP _REddyProc_RHLightResponseCostC(SEXP thetaSEXP, SEXP fluxSEXP, SEXP sdFluxSEXP, SEXP parameterPriorSEXP, SEXP sdParameterPriorSEXP, SEXP RgSEXP, SEXP VPDSEXP, SEXP TempSEXP, SEXP VPD0SEXP, SEXP fixVPDSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ END_RCPP
 }
 // whichValueGreaterEqualC
 IntegerVector whichValueGreaterEqualC(IntegerVector x, IntegerVector threshold, IntegerVector iStart);
-RcppExport SEXP REddyProc_whichValueGreaterEqualC(SEXP xSEXP, SEXP thresholdSEXP, SEXP iStartSEXP) {
+RcppExport SEXP _REddyProc_whichValueGreaterEqualC(SEXP xSEXP, SEXP thresholdSEXP, SEXP iStartSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

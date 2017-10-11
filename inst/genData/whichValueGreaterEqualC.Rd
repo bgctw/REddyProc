@@ -1,5 +1,6 @@
 \name{whichValueGreaterEqualC}
 \alias{whichValueGreaterEqualC}
+\alias{_REddyProc_whichValueGreaterEqualC}
 \title{whichValueGreaterEqualC}
 
 \description{Search first element in an integer vector that is larger} 
