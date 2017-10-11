@@ -2,6 +2,12 @@
 .Rhistory
 .Rapp.history
 
+# Object files generated from compiling cpp files
+/src/*.o
+/src/*.dll
+/src/*.so
+
+
 # Session Data files
 .RData
 

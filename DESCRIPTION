@@ -21,3 +21,4 @@ LinkingTo: Rcpp
 License: GPL (>= 2)
 LazyLoad: yes
 VignetteBuilder: knitr
+RoxygenNote: 6.0.1
