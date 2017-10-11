@@ -18,7 +18,7 @@ getExamplePath <- function(
 	if( isTRUE(isTryDownload) ){
 		if( !dir.exists(dir) ) dir.create(dir)
 		url <- file.path(remoteDir, filename)
-		retCode <- try( download.file(url, fullname) )
+		retCode <- suppressWarnings(try( download.file(url, fullname, quiet=TRUE), silent=TRUE ))
 		if( !inherits(retCode,"try-error") && retCode==0) return(fullname)
 	}
 	##value<< the full path name to the example data or if not available an zero-length character.
