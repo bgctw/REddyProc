@@ -197,6 +197,7 @@ sEddyProc_sCalcPotRadiation <- function(
 	useSolartime.b=TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
 		##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
 ){
+	# queriing $hour is timezone agnostic, Also works if sDateTime as GMT while actual time being in another time zone 
 	DoY.V.n <- as.POSIXlt(sDATA$sDateTime)$yday + 1L
 	Hour.V.n <- as.POSIXlt(sDATA$sDateTime)$hour + as.POSIXlt(sDATA$sDateTime)$min/60
 	# Check that location info has been set

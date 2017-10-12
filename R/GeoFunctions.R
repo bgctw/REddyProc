@@ -340,7 +340,7 @@ fCalcPotRadiation <- function(
   ##description<<
   ## Calculate the potential radiation 
   DoY.V.n             ##<< Data vector with day of year (DoY), same length as Hour or length 1
-  ,Hour.V.n           ##<< Data vector with time as decimal hour
+  ,Hour.V.n           ##<< Data vector with time as decimal hour of local time zone
   ,Lat_deg.n          ##<< Latitude in (decimal) degrees
   ,Long_deg.n         ##<< Longitude in (decimal) degrees
   ,TimeZone_h.n       ##<< Time zone (in hours)

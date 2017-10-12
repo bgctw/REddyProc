@@ -124,7 +124,7 @@ sEddyProc_sSetLocationInfo <-function(
 	### set Location and time Zone information to sLOCATION
 	Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to +90)
 	,Long_deg.n		##<< Longitude in (decimal) degrees (-180 to +180)
-	,TimeZone_h.n	##<< Time zone (in hours) shift to UTC, e.g. 1 for Berlin
+	,TimeZone_h.n	##<< Time zone (in hours) shift to UTC, e.g. +1 for Berlin
 ){
 	##author<< TW
 	# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
