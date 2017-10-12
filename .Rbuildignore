@@ -20,3 +20,4 @@
 ^develop$
 ^cache$
 ^inst/examples/
+^inst/REddyProcExamples/

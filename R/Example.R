@@ -2,10 +2,8 @@ getExamplePath <- function(
 		### checks if given example filename is existing and if not tries to download it.
 		filename = "Example_DETha98.txt"	##<< the name of the example file
 		,exampleDir = .getExampleDir()	##<< directory where examples are lookd up and downloaded to
-		,isTryDownload = TRUE				##<< set to FALSE to avoid trying to download examples
-		,remoteDir = "https://raw.githubusercontent.com/bgctw/REddyProc/nonrectangular/examples" ##<<
-			## the URL where example data are to be downloaded
-		#,remoteDir = "https://raw.githubusercontent.com/bgctw/REddyProc/master/examples"
+		,isTryDownload = TRUE			##<< set to FALSE to avoid trying to download examples
+		,remoteDir = "" 				##<< the URL where example data are to be downloaded
 ){
 	##details<<
 	## Example input text data files are not distributed with the package, because
@@ -13,6 +11,9 @@ getExamplePath <- function(
 	## Rather, the example files will be downloaded when required from github by this function.
 	## 
 	## The remoteDir (github) must be reachable, and the writing directory must be writeable.
+	# set default remoteDir inside function instead of argument default, because it screws function signature
+	if( !nzchar(remoteDir) ) remoteDir <- "https://raw.githubusercontent.com/bgctw/REddyProc/nonrectangular/examples"
+	#if( !nzchar(remoteDir) ) remoteDir <- "https://raw.githubusercontent.com/bgctw/REddyProc/master/examples"
 	fullname <- file.path(exampleDir, filename)
 	if( file.exists(fullname) ) return(fullname)
 	if( isTRUE(isTryDownload) ){
@@ -30,7 +31,8 @@ attr(getExamplePath,"ex") <- function(){
 		examplePath <- getExamplePath("Example_DETha98.txt")
 		if( length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
 		#test for having no write access to the package directory
-		#getExamplePath("Example_DETha98.txt", exampleDir = .getExampleDir(package="someNonExistentPackage"))		
+		#getExamplePath("Example_DETha98.txt"
+		#	, exampleDir = .getExampleDir(package="someNonExistentPackage"))		
 	}
 }
 
@@ -100,7 +102,8 @@ if( length(examplePath)){
 	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 } else {
 	warning(
-			"Could not find example text data file. In order to execute this example code,"
+			"Could not find example text data file."
+			," In order to execute this example code,"
 			," please, allow downloading it from github. " 
 			," Type '?getExamplePath' for more information."
 			," For now the RData version provided with the package is used.")
