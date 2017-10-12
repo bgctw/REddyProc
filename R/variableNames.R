@@ -86,7 +86,7 @@ POSIXctToBerkeleyJulianDate <- function(
 	##details<< 
 	## In the Berkeley-Release of the fluxnet data, the time is stored as an number
 	## with base10-digits representing YYYYMMddhhmm
-	tz <- if(length(attr(sDateTime, "tzone"))) attr(sDateTime, "tzone") else "GMT"
+	tz <- getTZone(sDateTime)
 	charRep <- strftime(sDateTime, format= "%Y%m%d%H%M", tz=tz)
 	ans <- as.numeric(charRep)
 	ans
@@ -96,7 +96,7 @@ BerkeleyJulianDateToPOSIXct <- function(
 		### convert JulianDate format used in Berkeley release to POSIXct
 		julianDate	##<< numeric vector representing times (see details for format)
 		,tz="GMT"	##<< time zone used to represent the dates 
-		,...	##<< further arguments to \code{\link{strptime}}, such as tz
+		,...		##<< further arguments to \code{\link{strptime}}, such as tz
 ){
 	##seealso<< \code{\link{POSIXctToBerkeleyJulianDate}}
 	##details<< 

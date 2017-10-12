@@ -57,6 +57,30 @@ attr(.getExampleDir,"ex") <- function(){
 	.getExampleDir(package="someNonExistentPackage")
 }
 
+getFilledExampleDETha98Data <- function(
+	### get the gapfilled version of the 'Example_DETha98_Filled.RData' and create if if not existing yet
+){
+	exampleBaseName <- "Example_DETha98_Filled.RData"
+	examplePath <- getExamplePath(exampleBaseName)
+	if( !length(examplePath) ){
+		Example_DETha98_Date <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+		Example_DETha98_sDate <- cbind(sDateTime=Example_DETha98_Date$DateTime - 15*60,  Example_DETha98_Date)
+		EddyProc.C <- sEddyProc$new('DE-Tha', Example_DETha98_sDate, c('NEE','Rg','Tair','VPD', 'Ustar'))
+		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
+		EddyProc.C$sCalcPotRadiation()
+		EddyProc.C$sMDSGapFill('NEE', FillAll.b=FALSE)
+		EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
+		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	 
+		EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
+		Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EddyProc.C$sExportResults() )
+		save( Example_DETha98_Filled, file=file.path(system.file(package='REddyProc'), 'examples', exampleBaseName))
+		examplePath <- getExamplePath(exampleBaseName)	
+	}
+# 10 days from June from Example_DETha98.txt shipped with REddyProc
+	load(examplePath)
+	
+}
+
 sEddyProc.example <- function( ) {
 	##title<<
 	## sEddyProc - Example code
@@ -77,10 +101,10 @@ if( length(examplePath)){
 	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 } else {
 	warning(
-			"Could not find example data file. In order to execute this example code,"
+			"Could not find example text data file. In order to execute this example code,"
 			," please, allow downloading it from github. " 
 			," Type '?getExamplePath' for more information."
-			," Using the RData version provided with the package")
+			," For now the RData version provided with the package is used.")
 	EddyData.F <- Example_DETha98
 }
 

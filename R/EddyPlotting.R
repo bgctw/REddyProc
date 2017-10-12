@@ -454,7 +454,7 @@ sEddyProc_sPlotHHFluxesY <- function(
     YMin.n <- min(Plot.V.n, na.rm=T)
     YMax.n <- max(Plot.V.n, na.rm=T)
     # Axis settings
-    Julian.i <- julian(Time.V.n, origin=as.POSIXct(paste(Year.i, '01-01', sep='-'), tz='GMT'))
+    Julian.i <- julian(Time.V.n, origin=as.POSIXct(paste(Year.i, '01-01', sep='-'), tz=getTZone(Time.V.n)))
     XAxis.V.n <- seq(15, 345, by=30)
     
     # Plot half-hourly fluxes

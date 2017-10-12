@@ -25,17 +25,18 @@ if( !length(examplePath) ){
 	EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	 
 	EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
 	Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EddyProc.C$sExportResults() )
-	save( Example_DETha98_Filled, file=file.path(system.file(package='REddyProc'), 'examples', exampleBaseName))
+	save( Example_DETha98_Filled, file=file.path(.getExampleDir(), exampleBaseName))
 	examplePath <- getExamplePath(exampleBaseName)	
 }
 # 10 days from June from Example_DETha98.txt shipped with REddyProc
 load(examplePath)
 
+tzEx <- getTZone(Example_DETha98_Filled$sDateTime)
 test_that("example dataset starts at midngiht",{
-			expect_true( Example_DETha98_Filled$sDateTime[1] == as.POSIXct("1998-01-01 00:15:00",tz="GMT") )
+			expect_true( Example_DETha98_Filled$sDateTime[1] == as.POSIXct("1998-01-01 00:15:00",tz=tzEx) )
 		})
 
-dsNEE <- subset(Example_DETha98_Filled, sDateTime >= as.POSIXct("1998-06-01 00:15:00",tz="GMT") & sDateTime <= as.POSIXct("1998-06-09 21:45:00",tz="GMT"))
+dsNEE <- subset(Example_DETha98_Filled, sDateTime >= as.POSIXct("1998-06-01 00:15:00",tz=tzEx) & sDateTime <= as.POSIXct("1998-06-09 21:45:00",tz=tzEx))
 		
 dsNEE$Temp <- dsNEE$Tair_f
 dsNEE$isNight <- (dsNEE$Rg_f <= 4 & dsNEE$PotRad_NEW == 0)
@@ -559,13 +560,13 @@ test_that("partitionNEEGL with Lasslop options",{
 		})		
 
 isTimeInTestPeriod <- function(sDateTime){
-	(sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz="GMT")) & (sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT") | sDateTime >= as.POSIXct("1998-06-05 22:00:00",tz="GMT"))	
+	(sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz=tzEx)) & (sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx) | sDateTime >= as.POSIXct("1998-06-05 22:00:00",tz=tzEx))	
 }
 
 .tmp.f <- function(){
 	isTimeInTestPeriodNoTemp <- function(sDateTime){
 		# strange: 4 more valid NEE yiels in temperature estimate failing TODO inspect
-		(sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz="GMT")) & (sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT") | sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz="GMT"))	
+		(sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz=tzEx)) & (sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx) | sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz=tzEx))	
 	}
 	dsNEE2 <- dsNEE
 	dsNEE2$NEE_fqc[ isTimeInTestPeriodNoTemp(dsNEE$sDateTime)  ] <- 2L
@@ -618,7 +619,7 @@ test_that("partitionNEEGL sparse data",{
 test_that("partitionNEEGL isNeglectVPDEffect",{
 			dsNEE1 <- dsNEE
 			#flag all VPD data except one day as bad to associate the same data with several windows
-			dsNEE1$VPD_fqc[ (dsNEE$sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz="GMT")) & (dsNEE$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT") | dsNEE$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz="GMT")) ] <- 2L
+			dsNEE1$VPD_fqc[ (dsNEE$sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz=tzEx)) & (dsNEE$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx) | dsNEE$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz=tzEx)) ] <- 2L
 			#plot(VPD_fqc ~ sDateTime, dsNEE1)
 			ctrl <- partGLControl(isFilterMeteoQualityFlag=TRUE, isNeglectVPDEffect=TRUE)
 			ds <- partGLExtractStandardData(dsNEE1, controlGLPart=ctrl)
@@ -662,7 +663,7 @@ test_that("partGLPartitionFluxes missing night time data",{
 			dsNEE1 <- dsNEE
 			#set all data except one day to NA to associate the same data with several windows
 			dsNEE1$hourOfDay <- as.POSIXlt(dsNEE1$sDateTime)$hour
-			dsNEE1$NEE_f[ (dsNEE1$sDateTime >= as.POSIXct("1998-06-01 00:00:00",tz="GMT")) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT")) & 
+			dsNEE1$NEE_f[ (dsNEE1$sDateTime >= as.POSIXct("1998-06-01 00:00:00",tz=tzEx)) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx)) & 
 							((dsNEE1$hourOfDay >= 18) | (dsNEE1$hourOfDay <= 6))] <- NA
 			ds <- dsNEE1
 			ds$NEE <- ds$NEE_f
@@ -686,7 +687,7 @@ test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
 		dsNEE1 <- dsNEE
 		# test setting VPD_fqc to other than zero, for omitting those rows
 		dsNEE1$VPD_fqc[ isTimeInTestPeriod(dsNEE1$sDateTime) ] <- 1L
-		#dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz="GMT")) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT") | dsNEE1$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz="GMT")) ] <- 1L
+		#dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz=tzEx)) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx) | dsNEE1$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz=tzEx)) ] <- 1L
 		#plot( VPD_fqc ~ sDateTime, dsNEE1 )
 		#plot( NEE_f ~ sDateTime, dsNEE1 )
 		ds <- dsNEE1
@@ -708,7 +709,7 @@ test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
 		#
 		# now set temperature to bad quality flag, 
 		dsNEE1$Tair_fqc[ isTimeInTestPeriod(dsNEE1$sDateTime) ] <- 1L
-		#dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz="GMT")) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT") | dsNEE1$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz="GMT")) ] <- 1L
+		#dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz=tzEx)) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx) | dsNEE1$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz=tzEx)) ] <- 1L
 		ds <- dsNEE1
 		ds$Rg <- ds$Rg_f
 		tmp <- partitionNEEGL( ds, controlGLPart=partGLControl(isFilterMeteoQualityFlag=TRUE) )
@@ -720,7 +721,7 @@ test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
 test_that("partGLPartitionFluxes missing prediction VPD",{
 			dsNEE1 <- dsNEE
 			# test setting VPD_fqc to other than zero, for omitting those rows
-			dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz="GMT")) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz="GMT") | dsNEE1$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz="GMT")) ] <- 1L
+			dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz=tzEx)) & (dsNEE1$sDateTime < as.POSIXct("1998-06-05 00:00:00",tz=tzEx) | dsNEE1$sDateTime >= as.POSIXct("1998-06-06 00:00:00",tz=tzEx)) ] <- 1L
 			#plot( VPD_fqc ~ sDateTime, dsNEE1 )
 			#plot( NEE_f ~ sDateTime, dsNEE1 )
 			iMissingVPD <- c(10,400)

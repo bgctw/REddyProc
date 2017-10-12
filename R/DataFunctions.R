@@ -20,6 +20,7 @@ fConvertTimeToPosix <- function(
   ,Hour.s='none'        ##<< Column name of hour
   ,Min.s='none'         ##<< Column name of min
   ,TName.s='DateTime'   ##<< Column name of new column
+  ,tz='GMT'				##<< timezone used to store the data. Advisded to keep GMT to avoid daytime shifting issues
   )
   ##author<<
   ## AMM
@@ -52,19 +53,19 @@ fConvertTimeToPosix <- function(
     lMin.V.n <- 60 * Data.F[,Hour.s] %% 1
     #Check time format
     #Important to set time zone to GMT to avoid problems with daylight savings timeshifts
-    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz='GMT')
+    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz=tz)
     #24h-correction: strptime will be NA for hour 24.0 (needs to be before 366d-correction since DoY changes!)
     Hour24.b <- is.na(lTime.V.p) & (lHour.V.n == 24.0)
     lDoY.V.n[Hour24.b] <- 1 + lDoY.V.n[Hour24.b] #succeding day
     lHour.V.n[Hour24.b] <- 0.0
     #Recheck time format
-    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz='GMT')
+    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz=tz)
     #366d-correction: strptime will be NA for day 366 (or 367 in leap years)
     DoY366.b <- is.na(lTime.V.p) & (lDoY.V.n==366 | lDoY.V.n==367) & (lHour.V.n == 0.0)
     lYear.V.n[DoY366.b] <- 1 + lYear.V.n[DoY366.b] #succeding year
     lDoY.V.n[DoY366.b] <- 1 #first day
     #Set time format
-    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz='GMT')
+    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%j-%H-%M', tz=tz)
     if(sum(is.na(lTime.V.p)) > 0)
       stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
     
@@ -86,7 +87,7 @@ fConvertTimeToPosix <- function(
     lHour.V.n <- Data.F[,Hour.s] %/% 1
     lMin.V.n <- 60 * Data.F[,Hour.s] %% 1
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
-    lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+    lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz=tz)
     if(sum(is.na(lTime.V.p)) > 0)
       stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
     
@@ -110,7 +111,7 @@ fConvertTimeToPosix <- function(
     lHour.V.n <- Data.F[,Hour.s]
     lMin.V.n <- Data.F[,Min.s]
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
-    lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')  
+    lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep='-'), format='%Y-%m-%d-%H-%M', tz=tz)  
     if(sum(is.na(lTime.V.p)) > 0)
        stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
     
@@ -133,6 +134,21 @@ attr(fConvertTimeToPosix, 'ex') <- function() {
   # See unit test in test_fConvertTimeToPosix for example
 }
 
+
+getTZone <- function(
+	### extracts the timezone attribute from POSIXct but returns argument default if this attribute is missing
+	x					##<< POSIXct vector
+	, default="GMT"		##<< time zone returned, if x has not timezone associated or attribute is the zero string
+){
+	tzone <- attr(x,"tzone")
+	if( length(tzone) && nzchar(tzone)) tzone else default
+}
+attr(getTZone,"ex") <- function(){
+	getTZone( as.POSIXct("2010-07-01 16:00:00", tz="etc/GMT-1") )
+	getTZone( as.POSIXct("2010-07-01 16:00:00") )
+	getTZone( Sys.time() )		# printed with local time zone, but actually has no tz attribute
+}
+	
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fCheckHHTimeSeries <- function(
@@ -197,16 +213,17 @@ fFullYearTimeSteps <- function(
   ,DTS.n                ##<< Daily time steps
   ,CallFunction.s=''    ##<< Name of function called from
   #TEST: Year.i <- 2008; DTS.n <- 48
+  ,tz='GMT'				##<< timezone used to store the data. Advisded to keep GMT to avoid daytime shifting issues
 )
   ##author<<
   ## AMM
 {
   if( DTS.n==48) {  
-    TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 15, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
-    TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 45, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+    TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 15, sep='-'), format='%Y-%m-%d-%H-%M', tz=tz)
+    TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 45, sep='-'), format='%Y-%m-%d-%H-%M', tz=tz)
   } else if( DTS.n==24) { 
-    TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
-    TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz='GMT')
+    TimeStart.n <- strptime(paste(Year.i, 1, 1, 0, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz=tz)
+    TimeEnd.n <- strptime(paste(Year.i, 12, 31, 23, 30, sep='-'), format='%Y-%m-%d-%H-%M', tz=tz)
   } else { 
     stop(CallFunction.s, ':::fFullYearTimeSteps::: Only implemented for 24 or 48 daily time steps, not ', DTS.n , '!') 
   }
@@ -228,8 +245,9 @@ fExpandToFullYear <- function(
   ,Data.V.n                   ##<< Data vector to be expanded
   ,Year.i                     ##<< Year (e.g. to plot)
   ,DTS.n                      ##<< Daily time steps
-  ,CallFunction.s=''         ##<< Name of function called from
+  ,CallFunction.s=''          ##<< Name of function called from
   #TEST: Time.V.p <- sDATA$sDateTime; DTS.n <- 48
+  ,tz=getTZone(Time.V.p)	  ##<< timezone used, advised to keep default
 )
   ##author<<
   ## AMM
@@ -241,7 +259,7 @@ fExpandToFullYear <- function(
   ##details<<
   ## Function to expand vectors to full year, e.g. to plot in correct time format
   SubCallFunc.s <- paste(CallFunction.s,'fExpandToFullYear', sep=':::')
-  FullYear.V.p <- fFullYearTimeSteps(Year.i, DTS.n, SubCallFunc.s)
+  FullYear.V.p <- fFullYearTimeSteps(Year.i, DTS.n, SubCallFunc.s, tz=tz)
   TimeYear.V.p <- Time.V.p[(Year.i == as.numeric(format(Time.V.p, '%Y')))]
   DataYear.V.n <- Data.V.n[(Year.i == as.numeric(format(Time.V.p, '%Y')))]
   
@@ -254,7 +272,7 @@ fExpandToFullYear <- function(
   } else {
     ExpData.F.n <- data.frame(cbind(DataTime=TimeYear.V.p, Data=Data.V.n))
   }
-  ExpData.F.n$DateTime <- .POSIXct(ExpData.F.n$DateTime, tz='GMT')
+  ExpData.F.n$DateTime <- .POSIXct(ExpData.F.n$DateTime, tz=tz)
   attr(ExpData.F.n$Data, 'varnames') <- attr(Data.V.n, 'varnames')
   attr(ExpData.F.n$Data, 'units') <- attr(Data.V.n, 'units')
   
