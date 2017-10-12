@@ -23,10 +23,11 @@ if( length(examplePath)){
 	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 } else {
 	warning(
-			"Could not find example data file. In order to execute this example code,"
+			"Could not find example text data file."
+			," In order to execute this example code,"
 			," please, allow downloading it from github. " 
 			," Type '?getExamplePath' for more information."
-			," Using the RData version provided with the package")
+			," For now the RData version provided with the package is used.")
 	EddyData.F <- Example_DETha98
 }
 

@@ -7,7 +7,7 @@
 \arguments{
   \item{Lat_deg.n}{Latitude in (decimal) degrees (-90 to +90)}
   \item{Long_deg.n}{Longitude in (decimal) degrees (-180 to +180)}
-  \item{TimeZone_h.n}{Time zone (in hours) shift to UTC, e.g. 1 for Berlin}
+  \item{TimeZone_h.n}{Time zone (in hours) shift to UTC, e.g. +1 for Berlin}
 }
 
 

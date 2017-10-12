@@ -6,7 +6,7 @@
     Long_deg.n, TimeZone_h.n, useSolartime.b = TRUE)}
 \arguments{
   \item{DoY.V.n}{Data vector with day of year (DoY), same length as Hour or length 1}
-  \item{Hour.V.n}{Data vector with time as decimal hour}
+  \item{Hour.V.n}{Data vector with time as decimal hour of local time zone}
   \item{Lat_deg.n}{Latitude in (decimal) degrees}
   \item{Long_deg.n}{Longitude in (decimal) degrees}
   \item{TimeZone_h.n}{Time zone (in hours)}

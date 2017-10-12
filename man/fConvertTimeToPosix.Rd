@@ -4,7 +4,8 @@
 \description{The different time formats are converted to POSIX (GMT) and a 'TimeDate' column is prefixed to the data frame}
 \usage{fConvertTimeToPosix(Data.F, TFormat.s, Year.s = "none", 
     Month.s = "none", Day.s = "none", Hour.s = "none", 
-    Min.s = "none", TName.s = "DateTime")}
+    Min.s = "none", TName.s = "DateTime", 
+    tz = "GMT")}
 \arguments{
   \item{Data.F}{Data frame with time columns to be converted}
   \item{TFormat.s}{Abbreviation for implemented time formats}
@@ -14,6 +15,7 @@
   \item{Hour.s}{Column name of hour}
   \item{Min.s}{Column name of min}
   \item{TName.s}{Column name of new column}
+  \item{tz}{timezone used to store the data. Advisded to keep GMT to avoid daytime shifting issues}
 }
 \details{Implemented time formats:}
 \value{Data frame with prefixed POSIX time column.}
