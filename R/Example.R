@@ -58,7 +58,7 @@ attr(.getExampleDir,"ex") <- function(){
 }
 
 getFilledExampleDETha98Data <- function(
-	### get the gapfilled version of the 'Example_DETha98_Filled.RData' and create if if not existing yet
+	### get the gapfilled version of the Example_DETha98 example data and create if if not existing yet
 ){
 	exampleBaseName <- "Example_DETha98_Filled.RData"
 	examplePath <- getExamplePath(exampleBaseName)
@@ -68,17 +68,16 @@ getFilledExampleDETha98Data <- function(
 		EddyProc.C <- sEddyProc$new('DE-Tha', Example_DETha98_sDate, c('NEE','Rg','Tair','VPD', 'Ustar'))
 		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
 		EddyProc.C$sCalcPotRadiation()
-		EddyProc.C$sMDSGapFill('NEE', FillAll.b=FALSE)
+		EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE)
 		EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
 		EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	 
 		EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
 		Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EddyProc.C$sExportResults() )
-		save( Example_DETha98_Filled, file=file.path(system.file(package='REddyProc'), 'examples', exampleBaseName))
+		save( Example_DETha98_Filled, file=file.path(.getExampleDir(), exampleBaseName))
 		examplePath <- getExamplePath(exampleBaseName)	
 	}
-# 10 days from June from Example_DETha98.txt shipped with REddyProc
-	load(examplePath)
-	
+	##value<< example data.frame Example_DETha98 processed by gapfilling. 
+	ans <- local({load(examplePath); get(ls()[1])})
 }
 
 sEddyProc.example <- function( ) {

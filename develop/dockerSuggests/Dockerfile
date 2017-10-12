@@ -21,7 +21,8 @@ ENV R_LIBS_SITE /usr/local/lib/R/site-library:/usr/lib/R/site-library
 # RUN echo 'test <- "set in /etc/R/Rprofile.site"'  >> /etc/R/Rprofile.site
 # RUN echo '.libPaths(c( "/usr/local/lib/R/site-library","/usr/local/lib/R/library","/usr/lib/R/site-library","/usr/lib/R/library"))' >> /etc/R/Rprofile.site
 
-RUN echo 'test <- "set in /home/rstudio/.Rprofile"'  > /home/rstudio/.Rprofile
+# Finally this is used also by RStudio
+#RUN echo 'test <- "set in /home/rstudio/.Rprofile"'  > /home/rstudio/.Rprofile
 RUN echo '.libPaths(c( "/usr/local/lib/R/site-library","/usr/local/lib/R/library","/usr/lib/R/site-library","/usr/lib/R/library"))' >> /home/rstudio/.Rprofile
 
 RUN R -e "install.packages(c(\
