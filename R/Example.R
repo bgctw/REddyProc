@@ -1,9 +1,11 @@
 getExamplePath <- function(
 		### checks if given example filename is existing and if not tries to download it.
-		filename = "Example_DETha98.txt"
-		,dir = paste(system.file(package='REddyProc'), 'examples', sep='/')
-		,isTryDownload = TRUE
-		,remoteDir = "https://github.com/bgctw/REddyProc/raw/master/examples"
+		filename = "Example_DETha98.txt"	##<< the name of the example file
+		,exampleDir = .getExampleDir()	##<< directory where examples are lookd up and downloaded to
+		,isTryDownload = TRUE				##<< set to FALSE to avoid trying to download examples
+		,remoteDir = "https://raw.githubusercontent.com/bgctw/REddyProc/nonrectangular/examples" ##<<
+			## the URL where example data are to be downloaded
+		#,remoteDir = "https://raw.githubusercontent.com/bgctw/REddyProc/master/examples"
 ){
 	##details<<
 	## Example input text data files are not distributed with the package, because
@@ -11,22 +13,49 @@ getExamplePath <- function(
 	## Rather, the example files will be downloaded when required from github by this function.
 	## 
 	## The remoteDir (github) must be reachable, and the writing directory must be writeable.
-	## If the default dir (below the installed REddyProc package) is not writeable for the user, 
-	## the user can provide an alternative directory with argument \code{dir}.
-	fullname <- file.path(dir, filename)
+	fullname <- file.path(exampleDir, filename)
 	if( file.exists(fullname) ) return(fullname)
 	if( isTRUE(isTryDownload) ){
-		if( !dir.exists(dir) ) dir.create(dir)
+		if( file.access(exampleDir, mode=2)!=0 ) stop("target example directory ",exampleDir," is not writeable.")
 		url <- file.path(remoteDir, filename)
 		retCode <- suppressWarnings(try( download.file(url, fullname, quiet=TRUE), silent=TRUE ))
 		if( !inherits(retCode,"try-error") && retCode==0) return(fullname)
 	}
 	##value<< the full path name to the example data or if not available an zero-length character.
-	## Allows to check for if( length(existsExampleFile()) ) ...
+	## Allows to check for if( length(getExamplePath()) ) ...
 	return( character(0) )	
 }
+attr(getExamplePath,"ex") <- function(){
+	if( FALSE ){ # only for interactive use
+		examplePath <- getExamplePath("Example_DETha98.txt")
+		if( length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
+		#test for having no write access to the package directory
+		#getExamplePath("Example_DETha98.txt", exampleDir = .getExampleDir(package="someNonExistentPackage"))		
+	}
+}
 
-
+.getExampleDir <- function(
+	### get the example directory inside the package, unless if not writeable inside the temp directory
+	subDir = 'REddyProcExamples'	##<< the name of the subdirectory where examples are stored
+	,package = 'REddyProc'			##<< the package name of REddyProc
+){
+	packageDir <- system.file(package=package)
+	##details<<
+	## If the package directory is not writeable, return the parent of the session specific tempdir
+	parentDir <- if( file.access(packageDir, mode=2)==0 ) packageDir else {
+				# tempDir returns a session specific dir within temporary directory, extract parent
+				tmpDir <- gsub("/[^/]+$", "", normalizePath(tempdir(),winslash = "/"))
+			} 
+	# If the directory inside packageDir is not yet existing, create it
+	exampleDir <- file.path(parentDir,subDir)
+	if( !dir.exists(exampleDir) ) dir.create(exampleDir)
+	exampleDir
+}
+attr(.getExampleDir,"ex") <- function(){
+	.getExampleDir()
+	#test for having no write access to the package directory
+	.getExampleDir(package="someNonExistentPackage")
+}
 
 sEddyProc.example <- function( ) {
 	##title<<
