@@ -1,22 +1,22 @@
 renameVariablesInDataframe <- function(
 		### Rename the column names of a data.frame according to a given mapping
 		data.F 		##<< data.frame whose columns should be renamped
-		,mapping = getBGC05ToAmerifluxVariableNameMapping()	##<< named character vector: 
-			##<< specifying a renaming (name -> value)  
+		,mapping = getBGC05ToAmerifluxVariableNameMapping()	##<< named character vector:
+			##<< specifying a renaming (name -> value)
 			##<< of the variables, see e.g. \code{\link{getAmerifluxToBGC05VariableNameMapping}}
 )
 {
 	if( length(names(mapping)) ){
 		iTarget <- match( colnames(data.F), names(mapping)  )
 		iMatch <- which(!is.na(iTarget))
-		colnames(data.F)[iMatch] <- mapping[ iTarget[iMatch] ]  
+		colnames(data.F)[iMatch] <- mapping[ iTarget[iMatch] ]
 	}
 	data.F
 }
 
 getBGC05ToAmerifluxVariableNameMapping <- function(
-		### Get a mapping of variable names of REddyProc defaults to names of the Berkeley 2016 release of the Fluxnet data		
-		map = character()	##<< named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault} 
+		### Get a mapping of variable names of REddyProc defaults to names of the Berkeley 2016 release of the Fluxnet data
+		map = character()	##<< named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault}
 		,mapDefault = c(	##<< named character vector: default mapping
 				Year="YEAR"
 				,DoY='DOY'
@@ -48,8 +48,8 @@ attr(getBGC05ToAmerifluxVariableNameMapping,"ex") <- function(){
 
 #getAmerifluxToBGC05VariableNameMapping
 getAmerifluxToBGC05VariableNameMapping <- function(
-		### Get a mapping of variable names of the Berkeley 2016 release of the Fluxnet to of REddyProc defaults to names 		
-		map = character()	##<< named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault} 
+		### Get a mapping of variable names of the Berkeley 2016 release of the Fluxnet to of REddyProc defaults to names
+		map = character()	##<< named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault}
 		,mapDefault = c(	##<< named character vector: default mapping
 			YEAR='Year'
 			,DOY='DoY'
@@ -78,12 +78,13 @@ getAmerifluxToBGC05VariableNameMapping <- function(
 	mapDefault
 }
 
+#' @export
 POSIXctToBerkeleyJulianDate <- function(
 		### convert POSIXct to JulianDate format used in Berkeley release
 		sDateTime	##<< POSIXct vector
 ){
 	##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}
-	##details<< 
+	##details<<
 	## In the Berkeley-Release of the fluxnet data, the time is stored as an number
 	## with base10-digits representing YYYYMMddhhmm
 	tz <- getTZone(sDateTime)
@@ -92,14 +93,15 @@ POSIXctToBerkeleyJulianDate <- function(
 	ans
 }
 
+#' @export
 BerkeleyJulianDateToPOSIXct <- function(
 		### convert JulianDate format used in Berkeley release to POSIXct
 		julianDate	##<< numeric vector representing times (see details for format)
-		,tz="GMT"	##<< time zone used to represent the dates 
+		,tz="GMT"	##<< time zone used to represent the dates
 		,...		##<< further arguments to \code{\link{strptime}}, such as tz
 ){
 	##seealso<< \code{\link{POSIXctToBerkeleyJulianDate}}
-	##details<< 
+	##details<<
 	## In the Berkeley-Release of the fluxnet data, the time is stored as an number
 	## with base10-digits representing YYYYMMddhhmm
 	ans <- as.POSIXct(strptime(as.character(julianDate),"%Y%m%d%H%M", tz=tz, ...))

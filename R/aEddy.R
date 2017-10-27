@@ -7,6 +7,11 @@
 #+++ sEddyProc class: Initialization
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' R5 reference class for processing of site-level half-hourly eddy data
+#'
+#' @import methods
+#' @export sEddyProc
+#' @exportClass sEddyProc
 sEddyProc <- setRefClass('sEddyProc', fields=list(
   ## R5 reference class for processing of site-level half-hourly eddy data
   ##author<<
@@ -49,23 +54,23 @@ sEddyProc_initialize <- function(
     if( !fCheckValString(ID.s) || is.na(ID.s) )
       stop('For ID, a character string must be provided!')
     fCheckColNames(Data.F, c(ColPOSIXTime.s, ColNames.V.s), 'fNewSData')
-    
+
     ##details<<
     ## The time stamp must be provided in POSIX format, see also \code{\link{fConvertTimeToPosix}}.
     ## For required properties of the time series, see \code{\link{fCheckHHTimeSeries}}.
     fCheckHHTimeSeries(Data.F[,ColPOSIXTime.s], DTS.n=DTS.n, 'sEddyProc.initialize')
-    
+
     ##details<<
     ## Internally the half-hour time stamp is shifted to the middle of the measurement period (minus 15 minutes or 30 minutes).
     Time.V.p <- Data.F[,ColPOSIXTime.s] - (0.5 * 24/DTS.n * 60 * 60)  #half-period time offset in seconds
-    
+
     ##details<<
     ## All other columns may only contain numeric data.
     ## Please use NA as a gap flag for missing data or low quality data not to be used in the processing.
     ## The columns are also checked for plausibility with warnings if outside range.
     fCheckColNum(Data.F, setdiff(ColNames.V.s,ColNamesNonNumeric.V.s), 'sEddyProc.initialize')
     fCheckColPlausibility(Data.F, ColNames.V.s, 'sEddyProc.initialize')
-    
+
     ##details<<
     ## sID is a string for the site ID.
     sID <<- ID.s
@@ -84,7 +89,7 @@ sEddyProc_initialize <- function(
     } else {
       YName.s <- as.character(YStart.n)
     }
-    
+
     ##details<<
     ## sINFO is a list containing the time series information.
 	##describe<<
@@ -97,30 +102,30 @@ sEddyProc_initialize <- function(
       ,Y.NAME=YName.s              ##<< Name for years
     )
 	##end<<
-	
+
 	##details<<
 	## sLOCATION is a list of information on site location and timezone (see \code{\link{sEddyProc_sSetLocationInfo}}).
-	.self$sSetLocationInfo(  Lat_deg.n ,Long_deg.n ,TimeZone_h.n ) 
-    
+	.self$sSetLocationInfo(  Lat_deg.n ,Long_deg.n ,TimeZone_h.n )
+
     ##details<<
     ## sTEMP is a data frame used only temporally.
-    
+
     #Initialize class fields
     message('New sEddyProc class for site \'', ID.s,'\'')
-    
+
     callSuper(...) # Required for initialization of class fields as last call of function
-    ##value<< 
+    ##value<<
     ## Initialized fields of sEddyProc.
 }
 sEddyProc$methods(  initialize = sEddyProc_initialize )
-  
-  
+
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ sEddyProc class: Data handling functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-sEddyProc_sSetLocationInfo <-function( 
+sEddyProc_sSetLocationInfo <-function(
 	### set Location and time Zone information to sLOCATION
 	Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to +90)
 	,Long_deg.n		##<< Longitude in (decimal) degrees (-180 to +180)
@@ -138,10 +143,10 @@ sEddyProc_sSetLocationInfo <-function(
 			,TimeZone_h.n = TimeZone_h.n
 	)
 }
-sEddyProc$methods( sSetLocationInfo = sEddyProc_sSetLocationInfo) 
+sEddyProc$methods( sSetLocationInfo = sEddyProc_sSetLocationInfo)
 
 
-sEddyProc_sGetData <- function() 
+sEddyProc_sGetData <- function()
   ##title<<
   ## sEddyProc$sGetData - Get internal sDATA data frame
   ##description<<
@@ -151,7 +156,7 @@ sEddyProc_sGetData <- function()
 {
     'Get class internal sDATA data frame'
     sDATA
-    ##value<< 
+    ##value<<
     ## Return data frame sDATA.
 }
 sEddyProc$methods(  sGetData = sEddyProc_sGetData )
@@ -172,15 +177,15 @@ sEddyProc_sExportData <- function( )
 	lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
 	colnames(lDATA) <- c('DateTime', colnames(lDATA)[-1])
 	lDATA
-	##value<< 
+	##value<<
 	## Return data frame sDATA with time stamp shifted back to original.
 }
 sEddyProc$methods(  sExportData = sEddyProc_sExportData)
-  
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 sEddyProc_sExportResults <- function(
-	  isListColumnsExported=FALSE	##<< if TRUE export list columns in addition to numeric columns, 
+	  isListColumnsExported=FALSE	##<< if TRUE export list columns in addition to numeric columns,
 		## such as the covariance matrices of the the day-time-partitioning LRC fits
 )
     ##title<<
@@ -194,7 +199,7 @@ sEddyProc_sExportResults <- function(
 	iListColumns <- which( sapply( sTEMP, is.list ) )
 	iOmit <- if( isListColumnsExported ) c(1L) else c(1L, iListColumns)
     sTEMP[,-iOmit]
-    ##value<< 
+    ##value<<
     ## Return data frame sTEMP with results.
 }
 sEddyProc$methods( sExportResults = sEddyProc_sExportResults)
@@ -216,7 +221,7 @@ sEddyProc_sPrintFrames <- function(
     NumRows.i <- min(nrow(sDATA),nrow(sTEMP),NumRows.i)
 
     print(cbind(sDATA,sTEMP[,-1])[1:NumRows.i,])
-    ##value<< 
+    ##value<<
     ## Print the first rows of class internal sDATA and sTEMP data frame.
 }
 sEddyProc$methods( sPrintFrames = sEddyProc_sPrintFrames )

@@ -1,16 +1,20 @@
 
-
+#' R5 reference class for the nonrectangular Light response curve
+#'
+#' @import methods
+#' @export NonrectangularLRCFitter
+#' @exportClass NonrectangularLRCFitter
 NonrectangularLRCFitter <- setRefClass('NonrectangularLRCFitter', contains='LightResponseCurveFitter'
 ## R5 reference class for the nonrectangular Light response curve
 ##author<<
 ## TW, MM
-)	
+)
 
 NonrectangularLRCFitter_getParameterNames <- function(
 ### return the parameter names used by this Light Response Curve Function
 ){
 	##value<< string vector of parameter names. Positions are important.
-	## Adds sixth parameter, \code{logitconv} to the parameters of \code{\link{LightResponseCurveFitter_getParameterNames}} 
+	## Adds sixth parameter, \code{logitconv} to the parameters of \code{\link{LightResponseCurveFitter_getParameterNames}}
 	ans <- callSuper()
 	c(ans
 	, logitconf="logitconv")	##<< logit-transformed convexity parameter. The value at original scale is obtained by \code{conv = 1/(1+exp(-logitconv))}
@@ -38,18 +42,18 @@ getPriorScale = function(
 		thetaPrior 	##<< numeric vector of location of priors
 		,medianRelFluxUncertainty	##<< numeric scalar: median across the relative uncertainty of the flux values, i.e. sdNEE/NEE
 		,nRec		##<< integer scalar: number of finite observations
-		, ctrl		##<< list of further controls, with entry \code{isLasslopPriorsApplied}	
+		, ctrl		##<< list of further controls, with entry \code{isLasslopPriorsApplied}
 ){
 	ans <- callSuper(thetaPrio=thetaPrior, medianRelFluxUncertainty=medianRelFluxUncertainty, nRec=nRec, ctrl=ctrl)
 	##value<< adds NA prior for logitconv
 	c(ans
-		, logitconv=NA)	
+		, logitconv=NA)
 })
 
 # getParameterInitials inherited
 
 NonrectangularLRCFitter_getOptimizedParameterPositions <- function(
-		### get the positions of the parameters to optimize for given conditions on fixing alpha or VPD effect 
+		### get the positions of the parameters to optimize for given conditions on fixing alpha or VPD effect
 		isUsingFixedVPD			##<< boolean scalar: if TRUE, VPD effect set to zero and is not optimized
 		, isUsingFixedAlpha		##<< boolean scalar: if TRUE, initial slope is fixed and is not optimized
 ){
@@ -64,7 +68,7 @@ NonrectangularLRCFitter_predictLRC <- function(
 		theta   ##<< theta [numeric] see \code{\link{NonrectangularLRCFitter_getParameterNames}}
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
-		,Temp 	##<< Temp [degC] -> Temperature [degC] 
+		,Temp 	##<< Temp [degC] -> Temperature [degC]
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow theta:fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
@@ -86,20 +90,20 @@ NonrectangularLRCFitter_predictLRC <- function(
 		logitconv<-theta[6]
 	}
 	conv <- invlogit(logitconv)
-	if( length(fixVPD) != length(VPD) ) 
+	if( length(fixVPD) != length(VPD) )
 		if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) ) else
 			stop("Length of vector argument fixVPD must correspond to rows in theta.")
-	Amax <- ifelse( fixVPD, beta, 
+	Amax <- ifelse( fixVPD, beta,
 			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 	)
 	Reco<-RRef*exp(E0*(1/((273.15+TRef)-227.13)-1/(Temp+273.15-227.13)))
 	GPP <- .self$predictGPP(Rg, Amax=Amax, alpha=alpha, conv=conv)
 	NEP <- GPP - Reco
-	## a data.frame of length of Rg of computed  
+	## a data.frame of length of Rg of computed
 	ans <- list(
 			NEP=NEP		##<< Net ecosystem production (-NEE), vector of length(Rg)
-			,Reco=Reco	##<< Ecosystem respiration 
+			,Reco=Reco	##<< Ecosystem respiration
 			,GPP=GPP	##<< Gross primary production
 	)
 }
@@ -114,13 +118,13 @@ NonrectangularLRCFitter_predictGPP  <- function(
 ){
 	##seealso<< \code{\link{LightResponseCurveFitter_predictGPP}}
 	##details<<
-	## This function generalizes the \code{\link{RectangularLRCFitter_predictGPP}} by adding the convexity parameter \code{conv}. 
+	## This function generalizes the \code{\link{RectangularLRCFitter_predictGPP}} by adding the convexity parameter \code{conv}.
 	## For conv -> 0 (logitconv -> -Inf): approaches the rectangluar hyperbolic.
 	## For conv -> 1 (logitconv -> +Inf): approaches a step function.
 	## Expected values of conv are about 0.7-0.9 (Moffat 2012).
 	zRoot<-((alpha*Rg+Amax)^2)-(4*alpha*Rg*conv*Amax)
 	zRoot[which(zRoot<0)]<-0
-	##value<< numeric vector of length(Rg) of GPP 
+	##value<< numeric vector of length(Rg) of GPP
 	GPP<-(1/(2*conv))*(alpha*Rg+Amax-sqrt(zRoot))
 }
 NonrectangularLRCFitter$methods( predictGPP = NonrectangularLRCFitter_predictGPP)
@@ -131,12 +135,12 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		theta   ##<< theta [numeric] -> parameter vector (theta[1]=kVPD (k), theta[2]=beta0 (beta), theta[3]=alpha, theta[4]=RRef (rb), theta[4]=E0, theta[5]=logitconv)
 		,Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
-		,Temp 	##<< Temp [degC] -> Temperature [degC] 
+		,Temp 	##<< Temp [degC] -> Temperature [degC]
 		,VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa according to Lasslop et al 2010
 		,fixVPD = (k==0)   	##<< boolean scalar or vector of nrow(theta): fixVPD if TRUE the VPD effect is not considered and VPD is not part of the computation
 		,TRef=15			##<< numeric scalar of Temperature (degree Celsius) for reference respiration RRef
 ) {
-	##details<< differs from base by extracting conv parameter from theta 
+	##details<< differs from base by extracting conv parameter from theta
 	## and adding gradient to logitconv (3rd parameter from computeGPPGradient)
 	if( is.matrix(theta) ){
 		k<-theta[,1]
@@ -154,10 +158,10 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		logitconv<-theta[6]
 	}
 	if( !is.finite(logitconv[1]) ) stop("need to provide finite logitconv in theta")
-	if( length(fixVPD) != length(VPD) ) 
+	if( length(fixVPD) != length(VPD) )
 		if( length(fixVPD) == 1L ) fixVPD <- rep(fixVPD, length(VPD) ) else
 			stop("Length of vector argument fixVPD must correspond to rows in theta.")
-	Amax <- ifelse( fixVPD, beta, 
+	Amax <- ifelse( fixVPD, beta,
 			#ifelse(is.finite(VPD) & (VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 			ifelse((VPD > VPD0), beta*exp(-k*(VPD-VPD0)), beta)
 	)
@@ -180,8 +184,8 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 	#
 	gradGPP <- array(0, c(nrow(gradReco), 4L), list(NULL, c("k","beta","alpha","logitconv")))
 	dGPP_dAMax <- .self$computeGPPGradient(Rg, Amax, alpha, logitconv)
-	gradGPP[, "beta"] <- dGPP_dAMax[,1L] * dAmax_dbeta0 
-	gradGPP[, "k"] <- dGPP_dAMax[,1L] * dAmax_dkVPD 
+	gradGPP[, "beta"] <- dGPP_dAMax[,1L] * dAmax_dbeta0
+	gradGPP[, "k"] <- dGPP_dAMax[,1L] * dAmax_dkVPD
 	gradGPP[, "alpha"] <- dGPP_dAMax[,2L]
 	gradGPP[, "logitconv"] <- dGPP_dAMax[,3L]
 	#NEP <- GPP - Reco
@@ -210,7 +214,7 @@ NonrectangularLRCFitter_computeGPPGradient  <- function(
 	zRoot<-((alpha*Rg+Amax)^2)-(4*alpha*Rg*invlogit(logitconv)*Amax)
 	iNegRoot <- which(zRoot < 0)
 	#GPP<-(1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(zRoot))
-	#GPP<-               (1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(((alpha*Rg+Amax)^2)-(4*alpha*Rg*(1/(1+exp(-logitconv)))*Amax))) 
+	#GPP<-               (1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(((alpha*Rg+Amax)^2)-(4*alpha*Rg*(1/(1+exp(-logitconv)))*Amax)))
 	#ex <- expression(   (1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-sqrt(((alpha*Rg+Amax)^2)-(4*alpha*Rg*(1/(1+exp(-logitconv)))*Amax))) ); deriv(ex,c("Amax","alpha","logitconv"))
 	.expr2 <- exp(-logitconv)
 	.expr3 <- 1 + .expr2
@@ -228,9 +232,9 @@ NonrectangularLRCFitter_computeGPPGradient  <- function(
 	#plot( .value ~ GPP )
 	.grad <- array(0, c(length(.value), 3L), list(NULL, c("Amax","alpha", "logitconv")))
 	.grad[, "Amax"] <- .expr6 * (1 - 0.5 * ((2 * .expr8 - .expr12) *.expr20))
-	.grad[, "alpha"] <- .expr6 * (Rg - 0.5 * ((2 * (Rg * .expr8) - 
+	.grad[, "alpha"] <- .expr6 * (Rg - 0.5 * ((2 * (Rg * .expr8) -
 						4 * Rg * .expr4 * Amax) * .expr20))
-	.grad[, "logitconv"] <- .expr6 * (0.5 * (.expr11 * .expr36 * 
+	.grad[, "logitconv"] <- .expr6 * (0.5 * (.expr11 * .expr36 *
 					Amax * .expr20)) - 2 * .expr36/.expr5^2 * .expr16
 	if( length(iNegRoot) ){
 		#GPP<-(1/(2*(1/(1+exp(-logitconv))) ))*(alpha*Rg+Amax-0)
@@ -241,16 +245,16 @@ NonrectangularLRCFitter_computeGPPGradient  <- function(
 		.expr6 <- 1/.expr5
 		.expr9 <- alpha * Rg + Amax - 0
 		.value <- .expr6 * .expr9
-		.gradNegRoot <- array(0, c(length(.value), 3L), list(NULL, c("Amax", 
+		.gradNegRoot <- array(0, c(length(.value), 3L), list(NULL, c("Amax",
 								"alpha", "logitconv")))
 		.gradNegRoot[, "Amax"] <- .expr6
 		.gradNegRoot[, "alpha"] <- .expr6 * Rg
-		.gradNegRoot[, "logitconv"] <- -(2 * (.expr2/.expr3^2)/.expr5^2 * 
+		.gradNegRoot[, "logitconv"] <- -(2 * (.expr2/.expr3^2)/.expr5^2 *
 					.expr9)
 		.grad[iNegRoot,] <- .gradNegRoot[iNegRoot,]
 	}
 	.grad
-	
+
 }
 NonrectangularLRCFitter$methods( computeGPPGradient = NonrectangularLRCFitter_computeGPPGradient)
 

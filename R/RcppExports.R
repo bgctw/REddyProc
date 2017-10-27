@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 RHLightResponseCostC <- function(theta, flux, sdFlux, parameterPrior, sdParameterPrior, Rg, VPD, Temp, VPD0, fixVPD) {
-    .Call(`_REddyProc_RHLightResponseCostC`, theta, flux, sdFlux, parameterPrior, sdParameterPrior, Rg, VPD, Temp, VPD0, fixVPD)
+    .Call('_REddyProc_RHLightResponseCostC', PACKAGE = 'REddyProc', theta, flux, sdFlux, parameterPrior, sdParameterPrior, Rg, VPD, Temp, VPD0, fixVPD)
 }
 
 whichValueGreaterEqualC <- function(x, threshold, iStart) {
-    .Call(`_REddyProc_whichValueGreaterEqualC`, x, threshold, iStart)
+    .Call('_REddyProc_whichValueGreaterEqualC', PACKAGE = 'REddyProc', x, threshold, iStart)
 }
 

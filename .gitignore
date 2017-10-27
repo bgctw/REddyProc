@@ -41,24 +41,5 @@ vignettes/*.pdf
 # /vignettes/figure/  # include in repo to view vignettes there
 /vignettes/cache
 
-
-# Temporary files created by R markdown
-*.utf8.md
-*.knit.md
-
-# other revison control systems
-/.hg
-/.svn
-
-# eclipse
-/.project
-/.RData
-/src-i386/
-/src-x64/
-/tmp/
-/out/
-/plots/
-.Rproj.user
-
-# example data downloaded from github during work on package
-/inst/REddyProcExamples/
+plots
+tmp

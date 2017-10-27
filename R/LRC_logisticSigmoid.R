@@ -1,10 +1,13 @@
-
-
+#' R5 reference class for the Logistic sigmoid Light response curve
+#'
+#' @import methods
+#' @export LogisticSigmoidLRCFitter
+#' @exportClass LogisticSigmoidLRCFitter
 LogisticSigmoidLRCFitter <- setRefClass('LogisticSigmoidLRCFitter', contains='LightResponseCurveFitter'
 ## R5 reference class for the Logistic sigmoid Light response curve
 ##author<<
 ## TW
-)	
+)
 
 LogisticSigmoidLRCFitter_predictGPP  <- function(
 		### Logistic Sigmoid Light Response function for GPP
@@ -13,8 +16,8 @@ LogisticSigmoidLRCFitter_predictGPP  <- function(
 		,alpha	##<< numeric scalar or vector of length(Rg): alpha parameter: initial slope
 ) {
 	##seealso<< \code{\link{LightResponseCurveFitter_predictGPP}}
-	##value<< numeric vector of length(Rg) of GPP 
-	GPP <- Amax * tanh(alpha*Rg/Amax) 
+	##value<< numeric vector of length(Rg) of GPP
+	GPP <- Amax * tanh(alpha*Rg/Amax)
 	##details<< \code{GPP <- Amax * tanh(alpha*Rg/Amax)}
 }
 LogisticSigmoidLRCFitter$methods( predictGPP = LogisticSigmoidLRCFitter_predictGPP)
@@ -26,7 +29,7 @@ LogisticSigmoidLRCFitter_computeGPPGradient  <- function(
 		,alpha	##<< numeric scalar or vector of length(Rg): alpha parameter: initial slope
 
 ) {
-	##value<< numeric matrix (length(Rg),2) of gradients of predicted GPP to Amax and alpha 
+	##value<< numeric matrix (length(Rg),2) of gradients of predicted GPP to Amax and alpha
 	#ex <- expression(   Amax * tanh(alpha*Rg/Amax) ); deriv(ex,c("Amax","alpha"))
 	.expr1 <- alpha * Rg
 	.expr2 <- .expr1/Amax

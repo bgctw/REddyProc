@@ -1,10 +1,13 @@
-
-
+#' R5 reference class for the Rectangular Light response curve
+#'
+#' @import methods
+#' @export RectangularLRCFitter
+#' @exportClass RectangularLRCFitter
 RectangularLRCFitter <- setRefClass('RectangularLRCFitter', contains='LightResponseCurveFitter'
 ## R5 reference class for the Rectangular Light response curve
 ##author<<
 ## TW, MM
-)	
+)
 
 RectangularLRCFitter_predictGPP  <- function(
 		### Retangular hyperbolic Light Response function for GPP
@@ -15,7 +18,7 @@ RectangularLRCFitter_predictGPP  <- function(
 ) {
 	#details<< \code{GPP <- (Amax*alpha*Rg)/(alpha*Rg+Amax)}
 	##seealso<< \code{\link{LightResponseCurveFitter_predictGPP}}
-	##value<< numeric vector of length(Rg) of GPP 
+	##value<< numeric vector of length(Rg) of GPP
 	GPP <- (Amax*alpha*Rg)/(alpha*Rg+Amax)
 }
 RectangularLRCFitter$methods( predictGPP = RectangularLRCFitter_predictGPP)
@@ -28,7 +31,7 @@ RectangularLRCFitter_computeGPPGradient  <- function(
 		,alpha	##<< numeric scalar or vector of length(Rg): alpha parameter: initial slope
 
 ) {
-	##value<< numeric matrix (length(Rg),2) of gradients of predicted GPP to Amax and alpha 
+	##value<< numeric matrix (length(Rg),2) of gradients of predicted GPP to Amax and alpha
 	#ex <- expression(  (Amax*alpha*Rg)/(alpha*Rg+Amax) ); deriv(ex,c("Amax","alpha"))
 	.expr2 <- Amax * alpha * Rg
 	.expr3 <- alpha * Rg
@@ -43,15 +46,20 @@ RectangularLRCFitter_computeGPPGradient  <- function(
 RectangularLRCFitter$methods( computeGPPGradient = RectangularLRCFitter_computeGPPGradient)
 
 #-------------------- CVersion
+#' R5 reference class C-version for the Rectangular Light response curve
+#'
+#' @import methods
+#' @export RectangularLRCFitterCVersion
+#' @exportClass RectangularLRCFitterCVersion
 RectangularLRCFitterCVersion <- setRefClass('RectangularLRCFitterCVersion', contains='RectangularLRCFitter'
 	### overiding computeCost of \code{\link{RectangularLRCFitter}} to a C-version (\code{\link{RectangularLRCFitter_C_computeCost}}).
 )
 
 RectangularLRCFitterCVersion_computeCost <- function(
 		### Computing residual sum of sqares for predictions vs. data of NEE
-		thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized 
-		,theta		##<< parameter vector with positions as in argument of \code{\link{LightResponseCurveFitter_getParameterNames}} 
-		,iOpt		##<< position in theta that are optimized 
+		thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized
+		,theta		##<< parameter vector with positions as in argument of \code{\link{LightResponseCurveFitter_getParameterNames}}
+		,iOpt		##<< position in theta that are optimized
 		,flux=NA 	##<< numeric: NEP (-NEE) or GPP time series [mumolCO2/m2/s], should not contain NA
 		,sdFlux=NA 	##<< numeric: standard deviation of Flux [mumolCO2/m2/s], should not contain NA
 		,parameterPrior		##<< numeric vector along theta: prior estimate of parameter (range of values)

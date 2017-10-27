@@ -36,9 +36,9 @@
     } else {
       Title.s <- paste(Name.s, ' at ', sID, ':\n', Var.s, unit.s, sep='')
     }
-    
+
     return(Title.s)
-    ##value<< 
+    ##value<<
     ## String with plot title
 }
 sEddyProc$methods( .sxSetTitle = .sEddyProc_sxSetTitle)
@@ -69,9 +69,9 @@ sEddyProc$methods( .sxSetTitle = .sEddyProc_sxSetTitle)
     SubCallFunc.s <- paste(CallFunction.s, '.self$.sxOpenPlot', sep=':::')
     fCheckColNames(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
     fCheckColNum(cbind(sDATA,sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
-  
+
     #Set file name
-    FileName.s <- 
+    FileName.s <-
       if (QFVar.s != 'none') {
         paste(sID, '_', sINFO$Y.NAME, '_', PlotType.s, '_', Var.s, '(', QFVar.s, '=', round(QFValue.n, digits=3), ')', sep='')
       } else {
@@ -79,11 +79,11 @@ sEddyProc$methods( .sxSetTitle = .sEddyProc_sxSetTitle)
       }
     FileExtension.s <- if( Format.s=='cairo-png' ||  Format.s=='cairo' ) 'png' else Format.s
     PlotFile.s <- fSetFile(paste(FileName.s, '.', FileExtension.s, sep=''), Dir.s, F, SubCallFunc.s)
-        
-    ##details<< 
-    ## Not all formats are supported on all platforms. The \code{png} will not work on unix without X-system. However 
+
+    ##details<<
+    ## Not all formats are supported on all platforms. The \code{png} will not work on unix without X-system. However
     ## there might be cairo support be built into R, allowing to use the 'cairo-png' format.
-    
+
     # Prepare the name and open the plot output file
     if (Format.s == 'png') {
       png(filename=PlotFile.s, width=round(WInch.n*DotsPerInc.n), height=round(HInch.n*DotsPerInc.n) )
@@ -96,7 +96,7 @@ sEddyProc$methods( .sxSetTitle = .sEddyProc_sxSetTitle)
     } else {
       stop(SubCallFunc.s, '::: Format.s not valid: ', Format.s, '!')
     }
-    
+
     PlotFile.s
     ##value<<
     ## Name of opened graphics device
@@ -153,15 +153,15 @@ sEddyProc$methods( .sxClosePlot = .sEddyProc_sxClosePlot )
 #	FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotFingerprintY')
 #	Time.V.n <- FullYearData.F$DateTime
 #	Plot.V.n <- FullYearData.F$Data
-#	
+#
 #	# Calculate plot parameters
 #	XAxis.V.n <- seq(0, 24, by=2)
 #	YAxis.V.n <- seq(15, 345, by=30)
 #	#fJetColors <- colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))
-#	#Jet.n <- 50 
-#	
+#	#Jet.n <- 50
+#
 #	# Daily sequence of DoY
-#	DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))    
+#	DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))
 #
 #	# Plot
 #	if( !sum(!is.na(Plot.V.n))==0 && Legend.b==F ) {
@@ -170,7 +170,7 @@ sEddyProc$methods( .sxClosePlot = .sEddyProc_sxClosePlot )
 #		image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=col,
 #				axes=F, xlab='', ylab='', main=Year.i)
 #		axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
-#		axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet') 
+#		axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
 #		box()
 #	} else if ( Legend.b==F ) {
 #		#Plot empy box
@@ -195,6 +195,7 @@ sEddyProc$methods( .sxClosePlot = .sEddyProc_sxClosePlot )
 #}
 
 
+#' @export
 sEddyProc_sPlotFingerprintY <- function(
     ##title<<
     ## sEddyProc$sPlotFingerprintY - Plot fingerprint of specified year
@@ -205,15 +206,15 @@ sEddyProc_sPlotFingerprintY <- function(
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
     ,Year.i             ##<< Year to plot
     ,Legend.b=F         ##<< Plot only legend
-	,Col.V=				##<< Color palette for fingerprint plot (can be also defined by user), i.e. color scale argument to \code{\link{image}} 
+	,Col.V=				##<< Color palette for fingerprint plot (can be also defined by user), i.e. color scale argument to \code{\link{image}}
 		colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))(50)
 	,valueLimits=range(Plot.V.n, na.rm=TRUE)	##<< values outside this range will be set to the range borders to avoid distorting colour scale
-		##<< e.g. valueLimits=quantile(EddyProc.C$sDATA$NEE, prob=c(0.05,0.95),na.rm=TRUE)	
+		##<< e.g. valueLimits=quantile(EddyProc.C$sDATA$NEE, prob=c(0.05,0.95),na.rm=TRUE)
 ){
     ##author<<
     ## AMM, KS, TW
     # TEST: sPlotFingerprintY('NEE', 'none', NA, 1998); sPlotFingerprintY('NEE_f', 'NEE_fqc', 1, 1998)
-	# 
+	#
     'Plot fingerprint of specified year'
     # Set plot contents
     Data.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
@@ -226,16 +227,16 @@ sEddyProc_sPlotFingerprintY <- function(
     Plot.V.n <- FullYearData.F$Data
 	# set outliers to range limits in order to not distort colour scale
 	Plot.V.n <- pmax(pmin(Plot.V.n, valueLimits[2]), valueLimits[1])
-        
+
     # Calculate plot parameters
     XAxis.V.n <- seq(0, 24, by=2)
     YAxis.V.n <- seq(15, 345, by=30)
     #fJetColors <- colorRampPalette(c('#00007F', 'blue', '#007FFF', 'cyan', '#7FFF7F', 'yellow', '#FF7F00', 'red', '#7F0000'))
-    #Jet.n <- 50 
-    
+    #Jet.n <- 50
+
     # Daily sequence of DoY
-    DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))    
-    
+    DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm=T))
+
     # Plot
     if( !sum(!is.na(Plot.V.n))==0 && Legend.b==F ) {
       # Plot fingerprint
@@ -243,7 +244,7 @@ sEddyProc_sPlotFingerprintY <- function(
       image(seq(0, 24, by=(24/sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow=sINFO$DTS), zlim=c(YMin.n,YMax.n), col=Col.V,
             axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, tck=0.03, col.axis='blue')
-      axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet') 
+      axis(2, at=YAxis.V.n, cex.axis=1.0, tck=0.03, labels=month.abb, padj=1, col.axis ='dark violet')
       box()
     } else if ( Legend.b==F ) {
       #Plot empy box
@@ -268,16 +269,17 @@ sEddyProc$methods( sPlotFingerprintY = sEddyProc_sPlotFingerprintY )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sPlotFingerprint <- function(
     ##title<<
     ## sEddyProc$sPlotFingerprint - Image with fingerprints of each year
     ##description<<
-    ## Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
+    ## Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png')
 	  ## with fingerprint, see also \code{\link{sEddyProc_sPlotFingerprintY}}.
     Var.s               ##<< Variable to plot
     ,QFVar.s='none'     ##<< Quality flag of variable to be filled
     ,QFValue.n=NA_real_ ##<< Value of quality flag for data to plot
-    ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png') 
+    ,Format.s='pdf'     ##<< Graphics file format (e.g. 'pdf', 'png')
     ,Dir.s='plots'      ##<< Directory for plotting
 	,...				##<< further arguments to \code{\link{sEddyProc_sPlotFingerprintY}}
 ){
@@ -289,22 +291,22 @@ sEddyProc_sPlotFingerprint <- function(
     Screens.n <- (sINFO$Y.NUMS +3) %/% 3
     WInch.n <- 15 #Needs to be this big to have enough space for margins
     HInch.n <- WInch.n/2 * Screens.n
-    
+
     # Open plot
     PlotType.s <- 'FP'
     PlotFile.s <- .self$.sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotFingerprint')
-    
+
     tryCatch({
       #Split into Screens.n screens with 3 columns
       split.screen(c(Screens.n,3))
-      
+
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1)
         sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, Year.i, ...)
       }
       screen(sINFO$Y.END-sINFO$Y.START+2)
       sPlotFingerprintY(Var.s, QFVar.s, QFValue.n, sINFO$Y.END, Legend=T, ...)
-      
+
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
 }
@@ -315,6 +317,7 @@ sEddyProc$methods( sPlotFingerprint = sEddyProc_sPlotFingerprint )
 #+++ Diurnal cycles
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 .sEddyProc_sPlotDiurnalCycleM <- function(
     ##title<<
     ## sEddyProc$.sPlotDiurnalCycleM - Plot diurnal cycles of specified month
@@ -331,20 +334,20 @@ sEddyProc$methods( sPlotFingerprint = sEddyProc_sPlotFingerprint )
     # TEST: .sPlotDiurnalCycleM('NEE', 'none', NA, 10)
     'Plot diurnal cycles of specified month'
     # Set plot contents
-    # Diurnal cycles 
+    # Diurnal cycles
     Plot.V.n <- fSetQF(cbind(sDATA,sTEMP), Var.s, QFVar.s, QFValue.n, '.sPlotDiurnalCycleM')
     Month.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%m')), nrow=sINFO$DTS)[1,]
     DYear.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%Y')), nrow=sINFO$DTS)[1,]
     Plot.M.n <- matrix(Plot.V.n, ncol=sINFO$DTS, byrow=T)
     # Average all years: Mean.M.m <- as.matrix(aggregate(Plot.M.n, by=list(Month.V.d), FUN=mean, simplify=T, na.rm=T)[,-1])
     Mean.F.m <- aggregate(Plot.M.n, by=list(Year=DYear.V.d,Month=Month.V.d), FUN=mean, simplify=T, na.rm=T)
-    
+
     # Scale to all data
     YMin.n <- min(Mean.F.m[,c(-1,-2)], na.rm=T)
-    YMax.n <- max(Mean.F.m[,c(-1,-2)], na.rm=T)   
+    YMax.n <- max(Mean.F.m[,c(-1,-2)], na.rm=T)
     # Axis settings
     XAxis.V.n <- seq(0, 24, by=2)
-    
+
     # Plot diurnal cycles
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
     if( sum(!is.na(Mean.F.m[Mean.F.m$Month==Month.i,c(-1,-2)])) > 0 ) {
@@ -372,8 +375,9 @@ sEddyProc$methods(.sPlotDiurnalCycleM = .sEddyProc_sPlotDiurnalCycleM )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sPlotDiurnalCycle <- function(
-    ##title<<  
+    ##title<<
     ## sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month
     ##description<<
     ## Generates image in specified format ('pdf' or 'png') with diurnal cycles.
@@ -392,8 +396,8 @@ sEddyProc_sPlotDiurnalCycle <- function(
     WInch.n <- 15
     HInch.n <- WInch.n/3 * 5
     PlotFile.s <- .self$.sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDiurnalCycle')
-    
-    tryCatch({  
+
+    tryCatch({
       # Slpit the printing area in 5 lines and 3 rows
       split.screen(c(5,1))
       split.screen(c(3,1), screen=1)
@@ -401,13 +405,13 @@ sEddyProc_sPlotDiurnalCycle <- function(
       split.screen(c(1,3), screen=3)
       split.screen(c(1,3), screen=4)
       split.screen(c(1,3), screen=5)
-      
+
       # Set title of plot
-      screen(6) 
+      screen(6)
       mtext(.self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Diurnal cycles'), line=-3, side=3, cex=2.0)
       screen(8)
       mtext(sINFO$Y.NAME, line=1, side=3, cex=2.0)
-      
+
       # Loop over all months
       for (Month.i in 1:12){
         screen(Month.i+8)
@@ -417,8 +421,8 @@ sEddyProc_sPlotDiurnalCycle <- function(
 			.self$.sPlotDiurnalCycleM(Var.s, QFVar.s, QFValue.n, Month.i, Legend.b=F)
         }
       }
-      
-      # Close plot  
+
+      # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
 }
 sEddyProc$methods( sPlotDiurnalCycle = sEddyProc_sPlotDiurnalCycle )
@@ -428,8 +432,9 @@ sEddyProc$methods( sPlotDiurnalCycle = sEddyProc_sPlotDiurnalCycle )
 #+++ Yearly half-hourly fluxes with daily means
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sPlotHHFluxesY <- function(
-    ##title<<  
+    ##title<<
     ## sEddyProc$sPlotHHFluxesY -  Plot half-hourly fluxes of specified year
     ##description<<
     ## The half-hourly fluxes for a single year are plotted to the current device, scaled to all data.
@@ -449,25 +454,25 @@ sEddyProc_sPlotHHFluxesY <- function(
     Plot.V.n <- FullYearData.F$Data
     # Additional line with daily mean
     DMean.V.n <- rep(apply(matrix(Plot.V.n, nrow=sINFO$DTS), 2, mean, na.rm=T), each=sINFO$DTS)
-    
+
     #Scale to all data
     YMin.n <- min(Plot.V.n, na.rm=T)
     YMax.n <- max(Plot.V.n, na.rm=T)
     # Axis settings
     Julian.i <- julian(Time.V.n, origin=as.POSIXct(paste(Year.i, '01-01', sep='-'), tz=getTZone(Time.V.n)))
     XAxis.V.n <- seq(15, 345, by=30)
-    
+
     # Plot half-hourly fluxes
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
     if( !sum(!is.na(Plot.V.n))==0 ) {
       # Plot
-      plot(Plot.V.n ~ Julian.i, ylim=c(YMin.n,YMax.n), col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3, 
-           axes=F, xlab='', ylab='', main=Year.i)    
+      plot(Plot.V.n ~ Julian.i, ylim=c(YMin.n,YMax.n), col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3,
+           axes=F, xlab='', ylab='', main=Year.i)
       abline(h=0, col='grey')
       lines(DMean.V.n ~ Julian.i, lty='solid', lwd=1, col='red', pch=0, cex=1)
       axis(1, at=XAxis.V.n, cex.axis=1.0, col.axis='dark violet', labels=month.abb)
-      axis(2, cex.axis=1.0) 
-      box() 
+      axis(2, cex.axis=1.0)
+      box()
     } else {
       # Plot empty box
       plot(rep(0,length(Time.V.n)) ~ Julian.i, type='n', axes=F, xlab='', ylab='', main=Year.i)
@@ -481,10 +486,11 @@ sEddyProc$methods( sPlotHHFluxesY = sEddyProc_sPlotHHFluxesY )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sPlotHHFluxes <- function(
-    ##title<<  
+    ##title<<
     ## sEddyProc$sPlotHHFluxes - Image with half-hourly fluxes for each year
-    ##description<< 
+    ##description<<
     ## Generates image in specified format ('pdf' or 'png') with half-hourly fluxes and their daily means,
     ## see also \code{\link{sEddyProc_sPlotHHFluxesY}}.
     Var.s               ##<< (Filled) variable to plot
@@ -495,29 +501,29 @@ sEddyProc_sPlotHHFluxes <- function(
 ){
     ##author<<
     ## KS, AMM
-    # TEST: sPlotHHFluxes('NEE')   
+    # TEST: sPlotHHFluxes('NEE')
     'Image with half-hourly fluxes for each year'
     # Open plot
     PlotType.s <- 'Flux'
     WInch.n <- 15
     HInch.n <- WInch.n/3 * (sINFO$Y.NUMS+1)
     PlotFile.s <- .self$.sxOpenPlot(Var.s, QFVar.s, QFValue.n, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotHHFluxes')
-    
+
     tryCatch({
       # Split the screen
       split.screen(c(sINFO$Y.NUMS + 1, 1))
       split.screen(c(3,1), screen=1)
-      
+
       # Set title of plot
       screen(sINFO$Y.NUMS + 3)
       mtext(.self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Half-hourly fluxes and daily means'), line=-3, side=3, cex=2.0)
-      
+
       # Loop over all years
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1 + 1)
         sPlotHHFluxesY(Var.s, QFVar.s, QFValue.n, Year.i)
       }
-      
+
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
 }
@@ -528,6 +534,7 @@ sEddyProc$methods( sPlotHHFluxes = sEddyProc_sPlotHHFluxes)
 #+++ Daily sums with and without uncertainties
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sPlotDailySumsY <- function(
     ##title<<
     ## sEddyProc$sPlotDailySumsY - Plot daily sum of specified year
@@ -547,7 +554,7 @@ sEddyProc_sPlotDailySumsY <- function(
     'Plot daily sum of specified year'
 	##description<<
 	## This function first computes the everage flux for each day.
-	## If the original unit is not "per day", then it need to be converted to "per day" by argument \code{timeFactor.n}. 
+	## If the original unit is not "per day", then it need to be converted to "per day" by argument \code{timeFactor.n}.
 	## Furthermore, a change of the mass unit is provided by argument \code{massFactor.n}.
 	## The default parameters assume original units of mumol CO2/m2/second and convert to gC/m2/day.
 	## The conversion factors allow plotting variables with different units
@@ -556,7 +563,7 @@ sEddyProc_sPlotDailySumsY <- function(
     FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')
     Time.V.n <- FullYearData.F$DateTime
     Plot.V.n <- FullYearData.F$Data
-    
+
     if (VarUnc.s != 'none') {
       DataSD.V.n <- fSetQF(cbind(sDATA,sTEMP), VarUnc.s, 'none', NA, 'sPlotDailySumsY')
       PlotSD.V.n <- fExpandToFullYear(sDATA$sDateTime, DataSD.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')$Data
@@ -567,24 +574,24 @@ sEddyProc_sPlotDailySumsY <- function(
     PlotSD.V.n <- ifelse(is.na(Plot.V.n), NA, PlotSD.V.n)
     # If there is data but no uncertainty estimates, an empty box will be plotted
     CountMissingUnc.n <- sum(!is.na(Plot.V.n) & is.na(PlotSD.V.n))
-    
+
     # Compute daily sums
 	nRecInDay <- sINFO$DTS
     DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow=sINFO$DTS)[1,]
     DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow=sINFO$DTS)[1,]
 	DAvg.V.d <- (1/sINFO$DTS) * apply(matrix(Plot.V.n, nrow=nRecInDay), 2, mean)
     DSum.V.d <- DAvg.V.d * timeFactor.n * massFactor.n
-    fSumOfSquares <- function(x, ...) {sum(x^2, ...)}	 
+    fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
     #DUnc.V.d <- (1/sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow=sINFO$DTS), 2, fSumOfSquares))
 	# twutz: 160729:  *timeFactor.n * massFactor.n
-	DUnc.V.d <- (1/nRecInDay) * sqrt(apply(matrix(PlotSD.V.n, nrow=nRecInDay), 2, fSumOfSquares)) * timeFactor.n * massFactor.n   
-	
+	DUnc.V.d <- (1/nRecInDay) * sqrt(apply(matrix(PlotSD.V.n, nrow=nRecInDay), 2, fSumOfSquares)) * timeFactor.n * massFactor.n
+
     # Scale to all data
     YMin.n <- min(DSum.V.d-DUnc.V.d, na.rm=T)
     YMax.n <- max(DSum.V.d+DUnc.V.d, na.rm=T)
     # Axis settings
     XAxis.V.n <- seq(15, 345, by=30)
-    
+
     # Plot daily sums
     par(mai=c(0.7, 0.7, 0.7, 0.4)) #Set margin
     if( !sum(!is.na(DSum.V.d)) == 0 && CountMissingUnc.n == 0 ) {
@@ -592,25 +599,25 @@ sEddyProc_sPlotDailySumsY <- function(
       plot(DSum.V.d ~ DoY.V.d, type='n', ylim=c(YMin.n,YMax.n),
            axes=F, xlab='', ylab='', main=Year.i)
    	  mtext(unit.s,2,2.2)
-      
+
       if (VarUnc.s != 'none'){
-        t.b <- !is.na(DUnc.V.d) #Polygons sensitive to NAs 
-        polygon(c(DoY.V.d[t.b], rev(DoY.V.d[t.b])), c(DSum.V.d[t.b]+DUnc.V.d[t.b], rev(DSum.V.d[t.b]-DUnc.V.d[t.b])), 
+        t.b <- !is.na(DUnc.V.d) #Polygons sensitive to NAs
+        polygon(c(DoY.V.d[t.b], rev(DoY.V.d[t.b])), c(DSum.V.d[t.b]+DUnc.V.d[t.b], rev(DSum.V.d[t.b]-DUnc.V.d[t.b])),
                 col='dark grey', border=NA)
       }
       abline(h=0, col='grey')
       lines(DSum.V.d, lty='solid', lwd=1, col='dark green')
       points(DSum.V.d, pch=20, cex=0.7, col='dark green')
       axis(1, at=XAxis.V.n, cex.axis=1.0, labels=month.abb, col.axis='dark violet')
-      axis(2, cex.axis=1.0) 
-      box() 
-    } else { 
+      axis(2, cex.axis=1.0)
+      box()
+    } else {
       # Plot empty box
       plot(rep(0, length(DSum.V.d)) ~ DoY.V.d, type='n', axes=F, xlab='', ylab='', main=Year.i)
       axis(1, at=XAxis.V.n, cex.axis=1.0, labels=month.abb, col.axis='dark violet')
       box()
       if (CountMissingUnc.n != 0) {
-        warning('sPlotDailySumsY::: Uncertainty estimates missing for ', CountMissingUnc.n, ' data points of ', Var.s, 
+        warning('sPlotDailySumsY::: Uncertainty estimates missing for ', CountMissingUnc.n, ' data points of ', Var.s,
                 ' in year: ', Year.i, 'This will cause an empty plot!')
       } else {
         warning('sPlotDailySumsY::: Missing data in year: ', Year.i, '!')
@@ -622,8 +629,9 @@ sEddyProc$methods( sPlotDailySumsY = sEddyProc_sPlotDailySumsY )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sPlotDailySums <- function(
-    ##title<<  
+    ##title<<
     ## sEddyProc$sPlotDailySums - Image with daily sums of each year
     ##description<<
     ## Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sEddyProc_sPlotDailySumsY}}.
@@ -635,7 +643,7 @@ sEddyProc_sPlotDailySums <- function(
 	,...				##<< further arguments to \code{\link{sEddyProc_sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.
 ){
     ##author<<
-    ## KS, AMM  
+    ## KS, AMM
     # TEST: sPlotDailySums('NEE'); sPlotDailySums('NEE_f','NEE_fsd')
     'Image with daily sums of each year'
     # Open plot
@@ -643,12 +651,12 @@ sEddyProc_sPlotDailySums <- function(
     WInch.n <- 15
     HInch.n <- WInch.n/3 * (sINFO$Y.NUMS+1)
     PlotFile.s <- .self$.sxOpenPlot(Var.s, 'none', NA, PlotType.s, WInch.n, HInch.n, Format.s, Dir.s, 'sPlotDailySums')
-    
+
     tryCatch({
-      # Split screen 
+      # Split screen
       split.screen(c(sINFO$Y.NUMS + 1, 1))
       split.screen(c(3,1), screen=1)
-      
+
       # Set title of plot
       screen(sINFO$Y.NUMS + 3)
       if (VarUnc.s == 'none') {
@@ -656,30 +664,31 @@ sEddyProc_sPlotDailySums <- function(
       } else {
         mtext(.self$.sxSetTitle(Var.s, 'none', NA, 'Daily sums with uncertainties', unit.s=unit.s), line=1, side=3, cex=2.0)
 	}
-      
+
       # Loop over all years
       for( Year.i in sINFO$Y.START:sINFO$Y.END ) {
         screen(Year.i-sINFO$Y.START+1 + 1)
         sPlotDailySumsY(Var.s, VarUnc.s, Year.i, unit.s=unit.s, ...)
       }
-      
+
       # Close plot
     }, finally=.self$.sxClosePlot(PlotFile.s))
 }
 sEddyProc$methods(sPlotDailySums = sEddyProc_sPlotDailySums)
 
-  
-  
+
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ NEE vs UStar for diagnosing uStar Threshold estimation
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
+#' @export
 sEddyProc_sPlotNEEVersusUStarForSeason <- function(
-	##title<<  
+	##title<<
   	## sEddyProc$sPlotNEEVersusUStarForSeason - Image with NEE versus UStar for each Temperature class of given season
   	##description<<
   	## Generates image in specified format ('pdf' or 'png')
-  season=levels(sDATA$season)[1]	 ##<< string of season, i.e. time period, to plot 
+  season=levels(sDATA$season)[1]	 ##<< string of season, i.e. time period, to plot
   ,format='pdf'     ##<< string of Graphics file format ('pdf' or 'png')
   ,dir='plots'      ##<< string of Directory for plotting
   ,UstarColName = "Ustar"		##<< column name for UStar
@@ -689,50 +698,50 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
   ,HInchSingle = 6*0.394	##<< height of a subplot in inches, defaults to 6cm
   ,...						##<< other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings
 ){
-  ##author<< TW  
+  ##author<< TW
   'Image with daily sums of each year'
   # generate subset of data
   dsSeason <- subset(.self$sDATA, season==season)
-  tempBinLevels <- sort(unique(dsSeason$tempBin)) 
+  tempBinLevels <- sort(unique(dsSeason$tempBin))
   # Open plot
   PlotType.s <- paste('NEEvsUStar',season,sep="_")
   HInch <- HInchSingle * (length(tempBinLevels)+1)
   PlotFile.s <- .self$.sxOpenPlot('none', 'none', NA, PlotType.s, WInch, HInch, format, dir, 'sPlotNEEVersusUStarForSeason')
-  
+
   tryCatch({
-			  # Split screen 
+			  # Split screen
   	  split.screen(c(length(tempBinLevels) + 1, 1))
 		  split.screen(c(3,1), screen=1)
 		  # Set title of plot
 		  screen(length(tempBinLevels) + 3)
 		  mtext(.self$.sxSetTitle('NEE', 'none', NA, paste('NEE versus uStar for season',season)), line=-3, side=3, cex=1.1)
-		  
+
 		  # Loop over all temperature classes
 		  # tempBinI <- 1L
 		  for( tempBinI in seq_along(tempBinLevels) ) {
 			  screen(1L + tempBinI)
 			  tempBinLevel <- tempBinLevels[tempBinI]
-			  uStarTh <- sUSTAR$tempInSeason[ tempBinLevel, season] 
+			  uStarTh <- sUSTAR$tempInSeason[ tempBinLevel, season]
 			  dss <- filter_(dsSeason,  ~tempBin==tempBinLevel )
-			  par( las=1 )                   #also y axis labels horizontal			  
+			  par( las=1 )                   #also y axis labels horizontal
 			  par(mar=c(2.0,3.3,0,0)+0.3 )  #margins
-			  par(tck=0.02 )                          #axe-tick length inside plots             
+			  par(tck=0.02 )                          #axe-tick length inside plots
 			  par(mgp=c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
 			  par(cex=10/12)			# default font size 10pt
 			  .plotNEEVersusUStarTempClass(dss, uStarTh, UstarColName=UstarColName, NEEColName=NEEColName, TempColName=TempColName, ... )
 		  }
-		  
+
 		  # Close plot
 			  }, finally=.self$.sxClosePlot(PlotFile.s))
 }
 sEddyProc$methods( sPlotNEEVersusUStarForSeason = sEddyProc_sPlotNEEVersusUStarForSeason )
 
-  
+
   .tmp.f <- function(){
 #+++ Load data with 1 header and 1 unit row from (tab-delimited) text file
 # Example is accessible if package is installed, otherwise need to load it from data directory below package root
 	if( !exists("Example_DETha98")) load("data/Example_DETha98.RData")
-	EddyData.F <- Example_DETha98 
+	EddyData.F <- Example_DETha98
 	#+++ If not provided, calculate VPD from Tair and rH
 	  EddyData.F <- cbind(EddyData.F,VPD=
 					  fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
@@ -741,10 +750,10 @@ sEddyProc$methods( sPlotNEEVersusUStarForSeason = sEddyProc_sPlotNEEVersusUStarF
 			  ,Day.s='DoY',Hour.s='Hour')
 #+++ Initalize R5 reference class sEddyProc for processing of eddy data
 #+++ with the variables needed for processing later
-	  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+	  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
 			  c('NEE','Rg','Tair','VPD', 'Ustar'))
 	  uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
-# plot saturation of NEE with UStar for one season -> in directory plots 
-	  EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[3] )	  
+# plot saturation of NEE with UStar for one season -> in directory plots
+	  EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[3] )
   }
-  
+
