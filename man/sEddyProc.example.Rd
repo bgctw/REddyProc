@@ -16,7 +16,7 @@
 #+++ Simple example code for using the sEddyProc reference class +++
 if( FALSE ) { #Do not always execute example code (e.g. on package installation)
 # library(REddyProc) # user should load the package before executing any example
-	
+
 #+++ Load data with one header and one unit row from (tab-delimited) text file
 examplePath <- getExamplePath('Example_DETha98.txt')
 if( length(examplePath)){
@@ -25,9 +25,10 @@ if( length(examplePath)){
 	warning(
 			"Could not find example text data file."
 			," In order to execute this example code,"
-			," please, allow downloading it from github. " 
+			," please, allow downloading it from github. "
 			," Type '?getExamplePath' for more information."
 			," For now the RData version provided with the package is used.")
+  #data(Example_DETha98)
 	EddyData.F <- Example_DETha98
 }
 
@@ -43,7 +44,7 @@ EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year'
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE','Rg','Tair','VPD', 'Ustar'))
 #set Location of DE-Tharandt
-EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
+EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
 
 #+++ Generate plots of all data in directory \plots (of current R working dir)
 EddyProc.C$sPlotHHFluxes('NEE')
@@ -55,20 +56,20 @@ EddyProc.C$sPlotFingerprintY('NEE', Year.i=1998)
 
 #+++ Fill gaps with MDS gap filling algorithm (without prior ustar filtering)
 #Fill all values to estimate flux uncertainties
-EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) 
+EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE)
 #Fill only the gaps for the meteo condition, e.g. 'Rg'
-EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) 
+EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
 
 #+++ Example plots of filled data to screen or to directory \plots
 EddyProc.C$sPlotFingerprintY('NEE_f', Year.i=1998)
 #Plot of sums with uncertainties
-EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998) 
+EddyProc.C$sPlotDailySumsY('NEE_f','NEE_fsd', Year.i=1998)
 EddyProc.C$sPlotDailySums('NEE_f','NEE_fsd')
 
 #+++ Partition NEE into GPP and respiration
 # Gap-filled Tair (and NEE) needed for partitioning
-EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	 
-EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)  	 
+EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
+EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
 EddyProc.C$sMRFluxPartition()	# night time partitioning -> Reco, GPP
 EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
 #plot( EddyProc.C$sTEMP$GPP_DT ~ EddyProc.C$sTEMP$GPP_f); abline(0,1)
@@ -78,27 +79,27 @@ EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
 # there are some constraints, that might be too strict for some datasets
 # e.g. in the tropics the required temperature range might be too large.
 # Its possible to change these constraints
-#EddyProc.C$sMRFluxPartition(parsE0Regression=list(TempRange.n=2.0, optimAlgorithm="LM"))  
+#EddyProc.C$sMRFluxPartition(parsE0Regression=list(TempRange.n=2.0, optimAlgorithm="LM"))
 
-#+++ Example plots of calculated GPP and respiration 
+#+++ Example plots of calculated GPP and respiration
 EddyProc.C$sPlotFingerprintY('GPP_f', Year.i=1998)
 EddyProc.C$sPlotFingerprint('GPP_f')
 EddyProc.C$sPlotHHFluxesY('Reco', Year.i=1998)
 EddyProc.C$sPlotHHFluxes('Reco')
 
-#+++ Processing with ustar filtering before  
+#+++ Processing with ustar filtering before
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
-		
+EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
+
 # estimating the thresholds based on the data
 (uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh)
 # plot saturation of NEE with UStar for one season
 EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[3] )
-# Gapfilling by default it takes the annually aggregated estimate is used to 
+# Gapfilling by default it takes the annually aggregated estimate is used to
 # mark periods with low uStar. For other options see vignette DEGebExample
 EddyProc.C$sMDSGapFillAfterUstar('NEE')
-colnames(EddyProc.C$sExportResults()) # Note the collumns with suffix _WithUstar	
+colnames(EddyProc.C$sExportResults()) # Note the collumns with suffix _WithUstar
 EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
 EddyProc.C$sMRFluxPartition( Suffix.s='WithUstar')  # Note suffix
 
@@ -107,10 +108,10 @@ FilledEddyData.F <- EddyProc.C$sExportResults()
 #tmp <- EddyProc.C$sExportResults(isListColumnsExported=TRUE); str(head(tmp))
 #+++ Save results into (tab-delimited) text file in directory \out
 CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
-#+++ May rename variables to correspond to Ameriflux 
+#+++ May rename variables to correspond to Ameriflux
 colnames(CombinedDataAmeriflux.F <- renameVariablesInDataframe(
 				CombinedData.F, getBGC05ToAmerifluxVariableNameMapping() ))
-CombinedDataAmeriflux.F$TIMESTAMP_END <- POSIXctToBerkeleyJulianDate( 
+CombinedDataAmeriflux.F$TIMESTAMP_END <- POSIXctToBerkeleyJulianDate(
 		EddyProc.C$sExportData()[[1]] )
 head(tmp <- BerkeleyJulianDateToPOSIXct( CombinedDataAmeriflux.F$TIMESTAMP_END ))
 fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
@@ -120,12 +121,12 @@ fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #+++ Initialize new sEddyProc processing class
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
 		c('NEE','Rg','Tair','VPD','Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
+EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
 
 #+++ Estimate the distribution of uStar values
-uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L) 
+uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L)
 subset(uStarTh, aggregationMode=="year")
 #+++ When running several processing setup, a string suffix declaration is needed
 #+++ Here: Gap filling with and without ustar threshold
@@ -135,9 +136,9 @@ EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE
 EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b=FALSE
 	, UstarThres.df=0.4, UstarSuffix.s='Thres2')
 # Gap-filled Tair, VPD, and Rg needed for partitioning
-EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)    
-EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)    
-EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)    
+EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
+EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
+EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
 colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
 
 #+++ Flux partitioning of the different gap filling setups
@@ -155,14 +156,14 @@ grep("GPP.*$|Reco",names(EddyProc.C$sExportResults()), value=TRUE)
 #+++ Initialize new sEddyProc processing class
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE','Rg','Tair','VPD','Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)  
-EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)     
-EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)    
-EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)    
+EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
+EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)
+EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)
+EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE)
 
 #+++ Estimate the distribution of uStar by bootstrapping the data
 uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L
-	, probs = c(0.05, 0.5, 0.95)) 
+	, probs = c(0.05, 0.5, 0.95))
 print(uStarTh)
 # for using seasonal threshold, see vignette DEGebExample
 uStarThAnnual <- usGetAnnualSeasonUStarMap(uStarTh)[-2]
@@ -188,16 +189,16 @@ grep("GPP.*_f$|Reco",names(EddyProc.C$sExportResults()), value=TRUE)
 #+++ Aggregate to annual values with neglecting covariances and missing values
 dsRes <- EddyProc.C$sExportResults()
 GPPAgg <- sapply( uStarSuffixes, function(suffix) {
-	GPPHalfHour <- dsRes[,paste0("GPP_",suffix,"_f")] 
+	GPPHalfHour <- dsRes[,paste0("GPP_",suffix,"_f")]
 	mean(GPPHalfHour, na.rm=TRUE)
 })
 print(GPPAgg)
-# The difference is a first estimate of uncertainty in GPP due 
+# The difference is a first estimate of uncertainty in GPP due
 # to uncertaint uStar threshold
-(max(GPPAgg) - min(GPPAgg))/ median(GPPAgg) 
-# here a relative error of about 2 to 4 percent (differs by runs with different 
+(max(GPPAgg) - min(GPPAgg))/ median(GPPAgg)
+# here a relative error of about 2 to 4 percent (differs by runs with different
 # uStar sample)
-# for a better but time consuming uncertainty estimate, specify a larger sample 
+# for a better but time consuming uncertainty estimate, specify a larger sample
 # in uStar estimation above:
 # sEstUstarThresholdDistribution( nSample=200, probs=seq(0.025,0.975,length.out=39) )
 # and run statistics across the larger sample of computed GPP-scenarios
@@ -216,12 +217,12 @@ Step.V.n <- ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1)
 EddyTest.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F, Step=Step.V.n
 	, QF=QF.V.n), c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
 
-#+++ Gap fill variable with (non-default) variables and limits 
-# including preselection of data with quality flag QF==0 
+#+++ Gap fill variable with (non-default) variables and limits
+# including preselection of data with quality flag QF==0
 EddyTest.C$sMDSGapFill('LE', QFVar.s='QF', QFValue.n=0, V1.s='Rg'
 	, T1.n=30, V2.s='Tsoil', T2.n=2, 'Step', 0.1)
 
-#+++ Use individual gap filling subroutines with different window sizes 
+#+++ Use individual gap filling subroutines with different window sizes
 # and up to five variables and limits
 EddyTest.C$sFillInit('NEE') #Initialize 'NEE' as variable to fill
 Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'rH',30, 'Tair',2.5
@@ -229,10 +230,10 @@ Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg',50, 'rH',30, 'Tair',2.5
 Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair',2.5, 'VPD',3, 'Step',0.5)
 Result_Step3.F <- EddyTest.C$sFillMDC(3)
 #Individual fill result columns are called 'VAR_...'
-EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i=1998)  
+EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i=1998)
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Example 3 advanced use: Explicit demonstration of MDS algorithm for NEE gap filling 
+# Example 3 advanced use: Explicit demonstration of MDS algorithm for NEE gap filling
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #+++ Initialize new sEddyProc processing class
@@ -251,18 +252,18 @@ Result_Step1.F <- EddyTestMDS.C$sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
 Result_Step2.F <- EddyTestMDS.C$sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
 # Step 3: Look-up table with window size \u00B17 days, Rg only
 Result_Step3.F <- EddyTestMDS.C$sFillLUT(7, V1.s, T1.n)
-# Step 4: Mean diurnal course with window size 0 (same day) 
+# Step 4: Mean diurnal course with window size 0 (same day)
 Result_Step4.F <- EddyTestMDS.C$sFillMDC(0)
-# Step 5: Mean diurnal course with window size \u00B11, \u00B12 days 
+# Step 5: Mean diurnal course with window size \u00B11, \u00B12 days
 Result_Step5a.F <- EddyTestMDS.C$sFillMDC(1)
-Result_Step5b.F <- EddyTestMDS.C$sFillMDC(2) 
-# Step 6: Look-up table with window size \u00B121, \u00B128, ..., \u00B170 
-for( WinDays.i in seq(21,70,7) ) Result_Step6.F <- 
+Result_Step5b.F <- EddyTestMDS.C$sFillMDC(2)
+# Step 6: Look-up table with window size \u00B121, \u00B128, ..., \u00B170
+for( WinDays.i in seq(21,70,7) ) Result_Step6.F <-
 			EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
 # Step 7: Look-up table with window size \u00B114, \u00B121, ..., \u00B170, Rg only
-for( WinDays.i in seq(14,70,7) ) Result_Step7.F <- 
+for( WinDays.i in seq(14,70,7) ) Result_Step7.F <-
 			EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n)
-# Step 8: Mean diurnal course with window size \u00B17, \u00B114, ..., \u00B1210 days  
+# Step 8: Mean diurnal course with window size \u00B17, \u00B114, ..., \u00B1210 days
 for( WinDays.i in seq(7,210,7) ) Result_Step8.F <- EddyTestMDS.C$sFillMDC(WinDays.i)
 # Export results, columns are named 'VAR_'
 FilledEddyData.F <- EddyTestMDS.C$sExportResults()
@@ -274,7 +275,7 @@ FilledEddyData.F <- EddyTestMDS.C$sExportResults()
 #+++ Provide a single user-defined uStarThreshold
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE','Rg','Tair','VPD','Ustar'))
-Ustar.V.n <- 0.46  
+Ustar.V.n <- 0.46
 EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df=Ustar.V.n)
 grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value=TRUE)
 

@@ -10,7 +10,7 @@
   \item{alpha}{numeric scalar or vector of length(Rg): alpha parameter: slope at Rg=0}
 }
 
-\value{numeric vector of length(Rg) of GPP }
+\value{numeric vector of length(Rg) of GPP}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

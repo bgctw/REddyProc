@@ -13,10 +13,10 @@
   \item{useSolartime.b}{by default corrects hour (given in local winter time) for latitude to solar time
 << where noon is exactly at 12:00. Set this to FALSE to compare to code that uses local winter time}
 }
-\details{This code assumes that Hour is given in local winter time zone, and corrects it by longitude to 
+\details{This code assumes that Hour is given in local winter time zone, and corrects it by longitude to
 solar time (where noon is exactly at 12:00).
-Note: This is different form reference PVWave-code, 
-that does not account for solar time and uses winter time zone. 
+Note: This is different form reference PVWave-code,
+that does not account for solar time and uses winter time zone.
 Set argument \code{useSolartime.b} to FALSE to use the local winter time instead.}
 \value{Data list with the following items:
 \item{SolTime}{Solar time (SolTime, hours)}

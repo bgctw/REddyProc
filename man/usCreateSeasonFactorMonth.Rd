@@ -12,7 +12,7 @@
   \item{startMonth}{integer vector specifying the starting month for each season, counting from one.
 Default is (Dez,Jan,Feb)(Mar,April,May)(June,July,August),(Sept,Okt,Nov)}
 }
-\details{If Jan is not a starting month, then the first months of each year will be 
+\details{If Jan is not a starting month, then the first months of each year will be
 part of the last period in the year.
 E.g. with the default the fourth period of the first year consists of Jan,Feb,Dec.
 
@@ -25,7 +25,7 @@ When providing the \code{dates} argument, user may shift the start time by \code
 
 
 
-\seealso{\code{\link{usCreateSeasonFactorMonthWithinYear}}, 
-\code{\link{usCreateSeasonFactorYday}}, 
+\seealso{\code{\link{usCreateSeasonFactorMonthWithinYear}},
+\code{\link{usCreateSeasonFactorYday}},
 \code{\link{usCreateSeasonFactorYdayYear}}}
 

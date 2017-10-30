@@ -29,10 +29,10 @@ introduces large uncertainties in calculations based on gap-filled Eddy data.
 Hence, it is good practice to compare derived quantities based on gap-filled data using a range of u* threshold estimates.
 
 \describe{\item{Quality Assurance}{
-If more than \code{ctrlUstarEst.l$minValidBootProp} (default 40\%) did not report a treshold, 
+If more than \code{ctrlUstarEst.l$minValidBootProp} (default 40\%) did not report a treshold,
 no quantiles (i.e. NA) are reported.
-}}		}
-\value{A data.frame with columns aggregationMode, year, and UStar estimate based on the unresampled data. 
+}}}
+\value{A data.frame with columns aggregationMode, year, and UStar estimate based on the unresampled data.
 The other columns correpond to the quantiles of Ustar estimate
 for given probabilities (argument \code{probs}) based on the distribution of estimates using resampled the data.}
 

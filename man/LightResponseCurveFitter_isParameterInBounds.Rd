@@ -11,7 +11,7 @@
   \item{ctrl}{list of further controls}
 }
 \details{check the Beta bounds that depend on uncertainty: outside if (beta > 100 and sdBeta >= beta)}
-\value{FALSE if parameters are outisde reasonable bounds, TRUE otherwise }
+\value{FALSE if parameters are outisde reasonable bounds, TRUE otherwise}
 
 \author{TW, MM
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

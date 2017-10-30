@@ -30,6 +30,6 @@ if( FALSE ){ # only for interactive use
 	if( length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
 	#test for having no write access to the package directory
 	#getExamplePath("Example_DETha98.txt"
-	#	, exampleDir = .getExampleDir(package="someNonExistentPackage"))		
+	#	, exampleDir = .getExampleDir(package="someNonExistentPackage"))
 }
 }

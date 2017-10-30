@@ -36,7 +36,7 @@ Gap filling results are in sTEMP data frame (with renamed columns) that can be r
 
 
 \seealso{\itemize{
-\item \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.  
+\item \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u* threshold estimates.
 \item \code{\link{sEddyProc_sEstUstarThreshold}} for estimating the u* threshold from the data.
 }}
 

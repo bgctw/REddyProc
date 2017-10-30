@@ -1,7 +1,7 @@
 \name{fReadTimeSeveralCols}
 \alias{fReadTimeSeveralCols}
 \title{fReadTimeSeveralCols}
-\description{Reading }
+\description{Reading}
 \usage{fReadTimeSeveralCols(Data.F, FileName.s, 
     Dir.s, NcPackage.s, CallFunction.s = "", 
     colYear = "year", colMonth = "month", 

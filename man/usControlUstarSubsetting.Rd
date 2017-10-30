@@ -1,7 +1,7 @@
 \name{usControlUstarSubsetting}
 \alias{usControlUstarSubsetting}
 \title{usControlUstarSubsetting}
-\description{Default list of parameters for subsetting the data for uStarThreshold estimation into classes with similar environmental conditions 	}
+\description{Default list of parameters for subsetting the data for uStarThreshold estimation into classes with similar environmental conditions}
 \usage{usControlUstarSubsetting(taClasses = 7, UstarClasses = 20, 
     swThr = 10, minRecordsWithinTemp = 100, 
     minRecordsWithinSeason = 160, minRecordsWithinYear = 3000, 
@@ -23,7 +23,7 @@
 
 
 
-\seealso{\code{\link{usEstUstarThresholdSingleFw2Binned}}, \code{\link{usControlUstarSubsetting}} }
+\seealso{\code{\link{usEstUstarThresholdSingleFw2Binned}}, \code{\link{usControlUstarSubsetting}}}
 \examples{
 usControlUstarSubsetting()
 }

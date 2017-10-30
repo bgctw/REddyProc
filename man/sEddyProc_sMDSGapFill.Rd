@@ -23,18 +23,18 @@
 }
 \details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
 
-MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sEddyProc_sFillLUT}} 
+MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sEddyProc_sFillLUT}}
 and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different window sizes as described in the reference.
 
 To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}}, set condition variable V1.s to 'none'.
 
 \describe{\item{Different processing setups on the same dataset}{
-Attention: When processing the same site data set with different setups for the gap filling or flux partitioning 
+Attention: When processing the same site data set with different setups for the gap filling or flux partitioning
 (e.g. due to different ustar filters),
 a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
 }}}
 \value{Gap filling results in sTEMP data frame (with renamed columns).}
-\references{Reichstein, M. et al. (2005) On the separation of net ecosystem exchange 
+\references{Reichstein, M. et al. (2005) On the separation of net ecosystem exchange
 into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.}
 \author{AMM, TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

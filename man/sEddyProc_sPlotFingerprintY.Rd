@@ -16,7 +16,7 @@
   \item{Legend.b}{Plot only legend}
   \item{Col.V}{Color palette for fingerprint plot (can be also defined by user), i.e. color scale argument to \code{\link{image}}}
   \item{valueLimits}{values outside this range will be set to the range borders to avoid distorting colour scale
-<< e.g. valueLimits=quantile(EddyProc.C$sDATA$NEE, prob=c(0.05,0.95),na.rm=TRUE)	}
+<< e.g. valueLimits=quantile(EddyProc.C$sDATA$NEE, prob=c(0.05,0.95),na.rm=TRUE)}
 }
 
 

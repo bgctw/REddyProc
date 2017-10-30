@@ -1,7 +1,7 @@
 \name{getBGC05ToAmerifluxVariableNameMapping}
 \alias{getBGC05ToAmerifluxVariableNameMapping}
 \title{getBGC05ToAmerifluxVariableNameMapping}
-\description{Get a mapping of variable names of REddyProc defaults to names of the Berkeley 2016 release of the Fluxnet data		}
+\description{Get a mapping of variable names of REddyProc defaults to names of the Berkeley 2016 release of the Fluxnet data}
 \usage{getBGC05ToAmerifluxVariableNameMapping(map = character(), 
     mapDefault = c(Year = "YEAR", DoY = "DOY", 
         Rg = "SW_IN", Tair = "TA", Tsoil = "TS", 

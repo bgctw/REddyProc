@@ -8,7 +8,7 @@
 << (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time}
 }
 
-\value{column PotRad_NEW in sTEMP }
+\value{column PotRad_NEW in sTEMP}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

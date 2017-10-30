@@ -1,7 +1,7 @@
 \name{partGLExtractStandardData}
 \alias{partGLExtractStandardData}
 \title{partGLExtractStandardData}
-\description{extract the relevant columns from original input to generate dataset with defined names }
+\description{extract the relevant columns from original input to generate dataset with defined names}
 \usage{partGLExtractStandardData(ds, NEEVar.s = paste0("NEE", 
     SuffixDash.s, "_f"), QFNEEVar.s = paste0("NEE", 
     SuffixDash.s, "_fqc"), QFNEEValue.n = 0, 
@@ -33,7 +33,7 @@
   \item{controlGLPart}{further default parameters, see \code{\link{partGLControl}}}
 }
 \details{The LRC fit usually weights NEE records by its uncertainty. In order to also use
-records with missing \code{NEESdVar.s}, uncertainty of the missing values is by default set 
+records with missing \code{NEESdVar.s}, uncertainty of the missing values is by default set
 to a conservatively high value, parameterized by \code{controlGLPart$replaceMissingSdNEEParms)}.
 Controlled by argument \code{replaceMissingSdNEEParms} in \code{\link{partGLControl}}, but overruled
 by argument \code{neglectNEEUncertaintyOnMissing}.}

@@ -6,7 +6,7 @@
 \arguments{
   \item{data.F}{data.frame whose columns should be renamped}
   \item{mapping}{named character vector:
-<< specifying a renaming (name -> value)  
+<< specifying a renaming (name -> value)
 << of the variables, see e.g. \code{\link{getAmerifluxToBGC05VariableNameMapping}}}
 }
 

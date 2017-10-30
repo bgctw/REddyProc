@@ -10,7 +10,7 @@
 
 \value{MDC filling results in sTEMP data frame.}
 
-\author{AMM 
+\author{AMM
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
 

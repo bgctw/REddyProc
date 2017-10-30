@@ -1,7 +1,7 @@
 \name{partGLControlLasslopCompatible}
 \alias{partGLControlLasslopCompatible}
 \title{partGLControlLasslopCompatible}
-\description{List of parameters for daytime flux partitioning that ensure highest compatibility with the pvWave implementation of Lasslop }
+\description{List of parameters for daytime flux partitioning that ensure highest compatibility with the pvWave implementation of Lasslop}
 \usage{partGLControlLasslopCompatible(nBootUncertainty = 0L, 
     minNRecInDayWindow = 10L, isAssociateParmsToMeanOfValids = FALSE, 
     isLasslopPriorsApplied = TRUE, isUsingLasslopQualityConstraints = TRUE, 
@@ -27,9 +27,9 @@ instead of median data temperature as reference temperature in estimation of tem
 in order to estimate a temperature sensitivity where previous estimates failed}
   \item{smoothTempSensEstimateAcrossTime}{FALSE: use independent estimates of temperature
 sensitivity on each windows instead of a vector of E0 that is smoothed over time}
-  \item{isRefitMissingVPDWithNeglectVPDEffect}{FALSE: avoid repeating estimation with \code{isNeglectVPDEffect=TRUE}}
+  \item{isRefitMissingVPDWithNeglectVPDEffect}{FALSE: avoid repeating estimation with \code{isNeglectVPDEffect = TRUE}}
   \item{minPropSaturation}{NA: avoid quality constraint of sufficient saturation in data
-This option is overruled, i.e. not considered, if option isUsingLasslopQualityConstraints=TRUE.}
+This option is overruled, i.e. not considered, if option isUsingLasslopQualityConstraints = TRUE.}
   \item{isNeglectVPDEffect}{FALSE: do not neglect VPD effect}
   \item{replaceMissingSdNEEParms}{do not replace missing NEE, but see option}
   \item{neglectNEEUncertaintyOnMissing}{if there are records with missing uncertainty of NEE inside one window, set all sdNEE to 1.

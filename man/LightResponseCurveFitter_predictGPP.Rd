@@ -8,13 +8,13 @@
   \item{\dots}{further parameters to the LRC}
 }
 \details{This method must be be implemented by a specific subclass.
-Currently there are several alternatives: \cr 
+Currently there are several alternatives: \cr
 \itemize{
 \item Rectangular: \code{\link{RectangularLRCFitter_predictGPP}}
 \item Nonrectangular: \code{\link{NonrectangularLRCFitter_predictGPP}}
 \item Rectangular: \code{\link{LogisticSigmoidLRCFitter_predictGPP}}
-}  }
-\value{numeric vector of length(Rg) of GPP }
+}}
+\value{numeric vector of length(Rg) of GPP}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 

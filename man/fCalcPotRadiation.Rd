@@ -1,7 +1,7 @@
 \name{fCalcPotRadiation}
 \alias{fCalcPotRadiation}
 \title{fCalcPotRadiation}
-\description{Calculate the potential radiation }
+\description{Calculate the potential radiation}
 \usage{fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, 
     Long_deg.n, TimeZone_h.n, useSolartime.b = TRUE)}
 \arguments{

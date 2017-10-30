@@ -16,7 +16,7 @@
 
 
 
-\author{KS, AMM  
+\author{KS, AMM
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
 

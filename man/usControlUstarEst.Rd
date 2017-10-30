@@ -1,7 +1,7 @@
 \name{usControlUstarEst}
 \alias{usControlUstarEst}
 \title{usControlUstarEst}
-\description{Default list of parameters for determining UStar of a single binned series	}
+\description{Default list of parameters for determining UStar of a single binned series}
 \usage{usControlUstarEst(ustPlateauFwd = 10, ustPlateauBack = 6, 
     plateauCrit = 0.95, corrCheck = 0.5, 
     firstUStarMeanCheck = 0.2, isOmitNoThresholdBins = TRUE, 
@@ -29,7 +29,7 @@
 
 
 
-\seealso{\code{\link{usEstUstarThresholdSingleFw2Binned}}, \code{\link{usControlUstarSubsetting}} }
+\seealso{\code{\link{usEstUstarThresholdSingleFw2Binned}}, \code{\link{usControlUstarSubsetting}}}
 \examples{
 usControlUstarEst()
 }

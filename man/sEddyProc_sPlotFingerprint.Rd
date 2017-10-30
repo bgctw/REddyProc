@@ -1,7 +1,7 @@
 \name{sEddyProc_sPlotFingerprint}
 \alias{sEddyProc_sPlotFingerprint}
 \title{sEddyProc$sPlotFingerprint - Image with fingerprints of each year}
-\description{Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png') 
+\description{Generates image in specified format \code{Format.s} (e.g. 'pdf' or 'png')
 with fingerprint, see also \code{\link{sEddyProc_sPlotFingerprintY}}.}
 \usage{sEddyProc_sPlotFingerprint(Var.s, QFVar.s = "none", 
     QFValue.n = NA_real_, Format.s = "pdf", 

@@ -15,7 +15,7 @@
   \item{\dots}{further arguments to var.get.nc or ncvar_get, such as start and count}
 }
 \details{In the Berkeley-Release of the fluxnet data, the time is stored as an integer
-with base10-digits representing YYYYMMddhhmm }
+with base10-digits representing YYYYMMddhhmm}
 
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
