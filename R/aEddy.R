@@ -28,6 +28,7 @@ sEddyProc <- setRefClass('sEddyProc', fields=list(
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_initialize <- function(
     ##title<<
     ## sEddyProc_initialize - Initialization of sEddyProc
@@ -125,6 +126,7 @@ sEddyProc$methods(  initialize = sEddyProc_initialize )
 #+++ sEddyProc class: Data handling functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sSetLocationInfo <-function(
 	### set Location and time Zone information to sLOCATION
 	Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to +90)
@@ -146,6 +148,7 @@ sEddyProc_sSetLocationInfo <-function(
 sEddyProc$methods( sSetLocationInfo = sEddyProc_sSetLocationInfo)
 
 
+#' @export
 sEddyProc_sGetData <- function()
   ##title<<
   ## sEddyProc$sGetData - Get internal sDATA data frame
@@ -164,6 +167,7 @@ sEddyProc$methods(  sGetData = sEddyProc_sGetData )
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 sEddyProc_sExportData <- function( )
     ##title<<
     ## sEddyProc$sExportData - Export internal sDATA data frame
@@ -184,6 +188,7 @@ sEddyProc$methods(  sExportData = sEddyProc_sExportData)
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#' @export
 sEddyProc_sExportResults <- function(
 	  isListColumnsExported=FALSE	##<< if TRUE export list columns in addition to numeric columns,
 		## such as the covariance matrices of the the day-time-partitioning LRC fits

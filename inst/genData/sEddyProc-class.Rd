@@ -34,7 +34,6 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
   \describe{
     \item{\code{\link{sEddyProc_initialize}(ID.s, Data.F, ColNames.V.s, ColPOSIXTime.s, DTS.n, ColNamesNonNumeric.V.s, Lat_deg.n, Long_deg.n, TimeZone_h.n, ...)}}{}
     \item{\code{\link{sEddyProc_sSetLocationInfo}(Lat_deg.n, Long_deg.n, TimeZone_h.n)}}{}
-    \item{\code{\link{sEddyProc_sPrintFrames}(NumRows.i)}}{}
     \item{\code{\link{sEddyProc_sExportResults}(isListColumnsExported)}}{}
     \item{\code{\link{sEddyProc_sExportData}()}}{}
     \item{\code{\link{sEddyProc_sGetData}()}}{}
@@ -49,8 +48,6 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
   
   Gapfilling
   \describe{
-    \item{\code{\link{sEddyProc_sRegrRref}(NightFlux.s, TempVar.s, E_0.s, T_ref.n, WinDays.i, DayStep.i, CallFunction.s)}}{}
-    \item{\code{\link{sEddyProc_sRegrE0fromShortTerm}(NightFlux.s, TempVar.s, ..., CallFunction.s, debug.l)}}{}
     \item{\code{\link{sEddyProc_sCalcPotRadiation}(useSolartime.b)}}{}
     \item{\code{\link{sEddyProc_sMDSGapFill}(Var.s, QFVar.s, QFValue.n, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, FillAll.b, Verbose.b, Suffix.s)}}{}
     \item{\code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}(..., UstarThres.df, UstarSuffix.V.s)}}{}

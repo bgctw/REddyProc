@@ -152,6 +152,7 @@ attr(getTZone,"ex") <- function(){
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
 fCheckHHTimeSeries <- function(
   ##description<<
   ## Check half-hourly time series data

@@ -9,6 +9,7 @@ RectangularLRCFitter <- setRefClass('RectangularLRCFitter', contains='LightRespo
 ## TW, MM
 )
 
+#' @export
 RectangularLRCFitter_predictGPP  <- function(
 		### Retangular hyperbolic Light Response function for GPP
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [mumol/m2/s] or Global Radiation

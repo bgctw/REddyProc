@@ -1,3 +1,4 @@
+#' @export
 renameVariablesInDataframe <- function(
 		### Rename the column names of a data.frame according to a given mapping
 		data.F 		##<< data.frame whose columns should be renamped
@@ -14,6 +15,7 @@ renameVariablesInDataframe <- function(
 	data.F
 }
 
+#' @export
 getBGC05ToAmerifluxVariableNameMapping <- function(
 		### Get a mapping of variable names of REddyProc defaults to names of the Berkeley 2016 release of the Fluxnet data
 		map = character()	##<< named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault}
@@ -47,6 +49,7 @@ attr(getBGC05ToAmerifluxVariableNameMapping,"ex") <- function(){
 }
 
 #getAmerifluxToBGC05VariableNameMapping
+#' @export
 getAmerifluxToBGC05VariableNameMapping <- function(
 		### Get a mapping of variable names of the Berkeley 2016 release of the Fluxnet to of REddyProc defaults to names
 		map = character()	##<< named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault}

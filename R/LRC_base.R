@@ -9,6 +9,7 @@ LightResponseCurveFitter <- setRefClass('LightResponseCurveFitter'
 ## TW, MM
 )
 
+#' @export
 LightResponseCurveFitter_getParameterNames <- function(
 	### return the parameter names used by this Light Response Curve Funciton
 ){
@@ -22,6 +23,7 @@ LightResponseCurveFitter_getParameterNames <- function(
 }
 LightResponseCurveFitter$methods(getParameterNames = LightResponseCurveFitter_getParameterNames)
 
+#' @export
 LightResponseCurveFitter_fitLRC <- function(
 		### Optimize rectangular hyperbolic light response curve against data in one window and estimate uncertainty
 		dsDay				##<< data.frame with columns NEE, Rg, Temp_C, VPD, and no NAs in NEE
@@ -32,7 +34,7 @@ LightResponseCurveFitter_fitLRC <- function(
 		, lastGoodParameters=rep(NA_real_,7L)	##<< numeric vector returned by last reasonable fit
 ){
 	##author<< TW, MM
-	##seealso<< \code{\link{partGLFitLRCWindows}}
+	##seealso<< \code{partGLFitLRCWindows}
 	#
 	#Definition of initial guess theta, theta2 and theta3. Three initial guess vectors are defined according to Lasslop et al., 2010
 	parNames <- .self$getParameterNames()  	# hook method from derived classes
@@ -138,6 +140,7 @@ LightResponseCurveFitter_fitLRC <- function(
 LightResponseCurveFitter$methods(fitLRC = LightResponseCurveFitter_fitLRC)
 
 
+#' @export
 LightResponseCurveFitter_getPriorLocation <- function(
 		### return the prior distribution of parameters
 		NEEDay 		##<< numeric vector of daytime NEE
@@ -158,6 +161,7 @@ LightResponseCurveFitter_getPriorLocation <- function(
 LightResponseCurveFitter$methods( getPriorLocation = LightResponseCurveFitter_getPriorLocation)
 
 
+#' @export
 LightResponseCurveFitter_getPriorScale <- function(
 		### return the prior distribution of parameters
 		thetaPrior 	##<< numeric vector of location of priors
@@ -183,6 +187,7 @@ LightResponseCurveFitter_getPriorScale <- function(
 }
 LightResponseCurveFitter$methods(getPriorScale = LightResponseCurveFitter_getPriorScale)
 
+#' @export
 LightResponseCurveFitter_getParameterInitials <- function(
 		### return the prior distribution of parameters
 		thetaPrior 	##<< numeric vector prior estimate of parameters
@@ -196,6 +201,7 @@ LightResponseCurveFitter_getParameterInitials <- function(
 }
 LightResponseCurveFitter$methods( getParameterInitials = LightResponseCurveFitter_getParameterInitials)
 
+#' @export
 LightResponseCurveFitter_optimLRCBounds <- function(
 		### Optimize parameters of light response curve and refit with some fixed parameters if fitted parameters are outside bounds
 		theta0			##<< initial parameter estimate
@@ -319,6 +325,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 }
 LightResponseCurveFitter$methods(optimLRCBounds = LightResponseCurveFitter_optimLRCBounds)
 
+#' @export
 LightResponseCurveFitter_getOptimizedParameterPositions <- function(
 		### get the positions of the parameters to optimize for given conditions on fixing alpha or VPD effect
 		isUsingFixedVPD			##<< boolean scalar: if TRUE, VPD effect set to zero and is not optimized
@@ -335,6 +342,7 @@ LightResponseCurveFitter_getOptimizedParameterPositions <- function(
 }
 LightResponseCurveFitter$methods(getOptimizedParameterPositions = LightResponseCurveFitter_getOptimizedParameterPositions)
 
+#' @export
 LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
 		###<< Lower bound flux uncertainty and adjust prior uncertainty before calling optimLRC
 		theta  					##<< numeric vector of starting values
@@ -394,6 +402,7 @@ LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
 LightResponseCurveFitter$methods(optimLRCOnAdjustedPrior = LightResponseCurveFitter_optimLRCOnAdjustedPrior)
 
 
+#' @export
 LightResponseCurveFitter_isParameterInBounds <- function(
 		### Check if estimated parameter vector is within reasonable bounds
 		theta					##<< estimate of parameter
@@ -422,6 +431,7 @@ LightResponseCurveFitter_isParameterInBounds <- function(
 LightResponseCurveFitter$methods(isParameterInBounds = LightResponseCurveFitter_isParameterInBounds)
 
 
+#' @export
 LightResponseCurveFitter_optimLRC <- function(
 		### call the optimization function
 		theta				##<< numeric vector: starting parameters
@@ -453,6 +463,7 @@ LightResponseCurveFitter_optimLRC <- function(
 LightResponseCurveFitter$methods(optimLRC = LightResponseCurveFitter_optimLRC)
 
 
+#' @export
 LightResponseCurveFitter_computeCost <- function(
 		### Computing residual sum of sqares for predictions vs. data of NEE
 		thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized
@@ -480,6 +491,7 @@ LightResponseCurveFitter_computeCost <- function(
 }
 LightResponseCurveFitter$methods( computeCost = LightResponseCurveFitter_computeCost )
 
+#' @export
 LightResponseCurveFitter_predictLRC <- function(
 		### Light Response Function
 		theta   ##<< numeric vector of parameters
@@ -530,6 +542,7 @@ LightResponseCurveFitter_predictLRC <- function(
 }
 LightResponseCurveFitter$methods(	predictLRC = LightResponseCurveFitter_predictLRC)
 
+#' @export
 LightResponseCurveFitter_predictGPP  <- function(
 		### Light Response function for GPP
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [mumol/m2/s] or Global Radiation
@@ -553,6 +566,7 @@ LightResponseCurveFitter_predictGPP  <- function(
 LightResponseCurveFitter$methods( predictGPP = LightResponseCurveFitter_predictGPP)
 
 
+#' @export
 LightResponseCurveFitter_computeLRCGradient <- function(
 		### Gradient of \code{\link{LightResponseCurveFitter_predictLRC}}
 		theta 	##<< theta [numeric] -> parameter vector (theta[1]=k (k), theta[2]=beta (beta), theta[3]=alpha, theta[4]=RRef (rb), theta[4]=E0)

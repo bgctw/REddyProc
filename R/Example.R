@@ -67,7 +67,9 @@ getFilledExampleDETha98Data <- function(
 	exampleBaseName <- "Example_DETha98_Filled.RData"
 	examplePath <- getExamplePath(exampleBaseName)
 	if( !length(examplePath) ){
-		Example_DETha98_Date <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
+	  # Example_DETha98 is a lazyData object of REddyProc
+	  # nee to prefix package name here, to satisfy R CMD CHECK
+		Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
 		Example_DETha98_sDate <- cbind(sDateTime=Example_DETha98_Date$DateTime - 15*60,  Example_DETha98_Date)
 		EddyProc.C <- sEddyProc$new('DE-Tha', Example_DETha98_sDate, c('NEE','Rg','Tair','VPD', 'Ustar'))
 		EddyProc.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
@@ -84,6 +86,7 @@ getFilledExampleDETha98Data <- function(
 	ans <- local({load(examplePath); get(ls()[1])})
 }
 
+#' @export
 sEddyProc.example <- function( ) {
 	##title<<
 	## sEddyProc - Example code

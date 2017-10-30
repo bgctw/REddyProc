@@ -9,6 +9,7 @@ LogisticSigmoidLRCFitter <- setRefClass('LogisticSigmoidLRCFitter', contains='Li
 ## TW
 )
 
+#' @export
 LogisticSigmoidLRCFitter_predictGPP  <- function(
 		### Logistic Sigmoid Light Response function for GPP
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation

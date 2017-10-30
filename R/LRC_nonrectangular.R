@@ -10,6 +10,7 @@ NonrectangularLRCFitter <- setRefClass('NonrectangularLRCFitter', contains='Ligh
 ## TW, MM
 )
 
+#' @export
 NonrectangularLRCFitter_getParameterNames <- function(
 ### return the parameter names used by this Light Response Curve Function
 ){
@@ -109,6 +110,7 @@ NonrectangularLRCFitter_predictLRC <- function(
 }
 NonrectangularLRCFitter$methods( predictLRC = NonrectangularLRCFitter_predictLRC)
 
+#' @export
 NonrectangularLRCFitter_predictGPP  <- function(
 		### Nonrectangluar hyperbolic Light Response function for GPP
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density [mumol/m2/s] or Global Radiation

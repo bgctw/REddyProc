@@ -34,7 +34,7 @@ sEddyProc_sEstUstarThreshold <- function(
 }
 sEddyProc$methods(sEstUstarThreshold = sEddyProc_sEstUstarThreshold)
 
-
+#' @export
 usEstUstarThreshold = function(
 		##title<<
 		## usEstUstarThreshold - Estimating ustar threshold
@@ -46,7 +46,7 @@ usEstUstarThreshold = function(
 		,ctrlUstarEst.l = usControlUstarEst()			##<< control parameters for estimating uStar on a single binned series, see \code{\link{usControlUstarEst}}
 		,ctrlUstarSub.l = usControlUstarSubsetting()	##<< control parameters for subsetting time series (number of temperature and Ustar classes \ldots), see \code{\link{usControlUstarSubsetting}}
 		,fEstimateUStarBinned = usEstUstarThresholdSingleFw2Binned	##<< function to estimate UStar on a single binned series, see \code{\link{usEstUstarThresholdSingleFw2Binned}}
-		,isCleaned=FALSE			##<< set to TRUE, if the data was cleaned already, to avoid expensive call to \code{\link{usGetValidUstarIndices}}.
+		,isCleaned=FALSE			##<< set to TRUE, if the data was cleaned already, to avoid expensive call to \code{usGetValidUstarIndices}.
 ){
 	##author<<
 	## TW, OM
@@ -813,6 +813,7 @@ usGetYearOfSeason <- function(
 	, threshold	##<< integer scalar: searched element will need to be greater or equal as this argument
 	, iStart=1L	##<< index in vector to start search
 ){
+  a = testThrowAnError
 	##author<<
 	## TW
 	# see tests/test_binWithEqualValues.R

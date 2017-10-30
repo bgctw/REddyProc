@@ -65,12 +65,12 @@ sEddyProc_sMRFluxPartition <- function(
 				,TimeZone_h.n          ##<< Time zone (in hours)
 				,T_ref.n=273.15+15     ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature
 				,Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
-				,debug.l=list(		     ##<< List with debugging control (passed also to \code{\link{sEddyProc_sRegrE0fromShortTerm}}).
+				,debug.l=list(		     ##<< List with debugging control (passed also to \code{sEddyProc_sRegrE0fromShortTerm}).
 						##describe<<
 						useLocaltime.b=FALSE	##<< see details on solar vs local time
 				##end<<
 				)
-				,parsE0Regression=list() ##<< list with further parameters passed down to \code{\link{sEddyProc_sRegrE0fromShortTerm}} and \code{\link{fRegrE0fromShortTerm}}, such as \code{TempRange.n}
+				,parsE0Regression=list() ##<< list with further parameters passed down to \code{sEddyProc_sRegrE0fromShortTerm} and \code{fRegrE0fromShortTerm}, such as \code{TempRange.n}
 ){
 		##author<<
 		## AMM,TW
@@ -93,8 +93,8 @@ sEddyProc_sMRFluxPartition <- function(
 			##details<< \describe{\item{Background}{
 			## This partitioning is based on the regression of nighttime respiration with temperature
 			## using the Lloyd-Taylor-Function \code{\link{fLloydTaylor}}.
-			## First the temperature sensitivity E_0 is estimated from short term data, see \code{\link{sEddyProc_sRegrE0fromShortTerm}}.
-			## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{\link{sEddyProc_sRegrRref}}).
+			## First the temperature sensitivity E_0 is estimated from short term data, see \code{sEddyProc_sRegrE0fromShortTerm}.
+			## Next the reference temperature R_ref is estimated for successive periods throughout the whole dataset (see \code{sEddyProc_sRegrRref}).
 			## These estimates are then used to calculate the respiration during daytime and nighttime and with this GPP.
 			## Attention: Gap filling of the net ecosystem fluxes (NEE) and temperature measurements (Tair or Tsoil) is required
 			## prior to the partitioning!
@@ -407,17 +407,17 @@ sEddyProc_sRegrE0fromShortTerm <- function(
     ## sEddyProc$sRegrE0fromShortTerm - Estimation of the temperature sensitivity E_0
     ##description<<
     ## Estimation of the temperature sensitivity E_0 from regression of \code{\link{fLloydTaylor}}
-    ## for short periods by calling \code{\link{fRegrE0fromShortTerm}}
+    ## for short periods by calling \code{fRegrE0fromShortTerm}
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-    ,...				  ##<< Parameters passed to \code{\link{fRegrE0fromShortTerm}}
+    ,...				  ##<< Parameters passed to \code{fRegrE0fromShortTerm}
     ,CallFunction.s=''    ##<< Name of function called from
     ,debug.l = list(fixedE0=NA) ##<< List with controls for debugging, see details
   ){
     ##author<<
     ## AMM, TW
     'Estimation of the temperature sensitivity E_0 from regression of fLloydTaylor() for short periods by calling fRegrE0fromShortTerm()'
-    ##details<< For further details see \code{\link{fRegrE0fromShortTerm}}.
+    ##details<< For further details see \code{fRegrE0fromShortTerm}.
     #
     # Check if specified columns are numeric
     SubCallFunc.s <- paste(CallFunction.s,'sRegrE0fromShortTerm', sep=':::')
@@ -475,7 +475,7 @@ sEddyProc_sRegrRref <- function(
     ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     ,TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
-	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{\link{sEddyProc_sRegrE0fromShortTerm}}
+	,E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{sEddyProc_sRegrE0fromShortTerm}
 	,T_ref.n #=273.15+15   ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature
 	,WinDays.i=3          ##<< Window size for \code{\link{fLloydTaylor}} regression in days
     ,DayStep.i=4          ##<< Window step for \code{\link{fLloydTaylor}} regression in days

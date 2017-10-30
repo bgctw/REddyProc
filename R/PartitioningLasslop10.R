@@ -67,7 +67,7 @@ partitionNEEGL <- function(
 	#Estimate Parameters of light response curve: R_ref, alpha, beta and k according to Table A1 (Lasslop et al., 2010)
 	# save(ds, file = "tmp/dsTestPartitioningLasslop10.RData")
 	#
-	##seealso<< \code{\link{partGLFitNightTimeTRespSens}}
+	##seealso<< \code{partGLFitNightTimeTRespSens}
 	isUsingFixedTempSens <- length(controlGLPart$fixedTempSens) &&
 			all(is.finite(controlGLPart$fixedTempSens$E0)) &&
 			all(is.finite(controlGLPart$fixedTempSens$sdE0))
@@ -98,7 +98,7 @@ partitionNEEGL <- function(
 								dsTempSens$RRef[ which(is.finite(dsTempSens$RRef))[1] ] )
 				dsTempSens
 			}
-	##seealso<< \code{\link{partGLFitLRCWindows}}
+	##seealso<< \code{partGLFitLRCWindows}
 	resParms <- resParmsWithVPD <- partGLFitLRCWindows( dsR
 			, nRecInDay = nRecInDay
 			, dsTempSens = dsTempSens
@@ -119,7 +119,7 @@ partitionNEEGL <- function(
 	dsAns[resParms$iCentralRec,c("FP_RRef_Night","FP_qc","FP_errorcode",FP_lrcParNames,"FP_GPP2000","FP_OPT_VPD")] <-
 					resParms[,c("RRef_night","parms_out_range","convergence",lrcParNames,"GPP2000","resOpt")]
 	#
-	##seealso<< \code{\link{partGLInterpolateFluxes}}
+	##seealso<< \code{partGLInterpolateFluxes}
 	dsAnsFluxes <- partGLInterpolateFluxes(
 					#dsR$Rg
 					ds[[RadVar.s]]
@@ -236,11 +236,11 @@ partGLControl <- function(
 		,isRefitMissingVPDWithNeglectVPDEffect = TRUE	##<< set to FALSE to avoid repeating estimation
 			## with \code{isNeglectVPDEffect = TRUE} trying to predict when VPD is missing
 		,fixedTempSens = data.frame(E0 = NA_real_, sdE0 = NA_real_, RRef = NA_real_)	##<< data.frame of one row or nRow = nWindow
-			## corresponding to return value of \code{\link{partGLFitNightTimeTRespSens}}
+			## corresponding to return value of \code{partGLFitNightTimeTRespSens}
 			## While column \code{RRef} is used only as a  prior and initial value for the daytime-fitting and can be NA,
 			## \code{E0} is used as given temperature sensitivity and varied according to \code{sdE0} in the bootstrap.
 		,replaceMissingSdNEEParms = c(perc = 0.2, minSd = 0.7)	##<< parameters for replacing missing standard deviation of NEE.
-			## see \code{\link{replaceMissingSdByPercentage}}.
+			## see \code{replaceMissingSdByPercentage}.
 			## Default sets missing uncertainty to 20% of NEE but at least 0.7 flux-units (usually mumo CO2/m2/s).
 			## Specify c(NA,NA) to avoid replacing missings in standard deviation of NEE and to omit those records from LRC fit.
 		,neglectNEEUncertaintyOnMissing = FALSE	##<< If set to TRUE: if there are records with missing uncertainty of NEE inside one window, set all uncertainties to 1.
@@ -612,7 +612,7 @@ partGLInterpolateFluxes <- function(
 		Rg   	##<< numeric vector of photosynthetic flux density [umol/m2/s] or Global Radiation
 		,VPD 	##<< numeric vector of Vapor Pressure Deficit [hPa]
 		,Temp 	##<< numeric vector of Temperature [degC]
-		,resParms	##<< data frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+		,resParms	##<< data frame with results of \code{partGLFitLRCWindows} of fitting the light-response-curve for several windows
 		,controlGLPart = partGLControl()	##<< further default parameters, see \code{\link{partGLControl}}
 		,lrcFitter	##<< R5 class instance responsible for fitting the light response curve
 ){
@@ -706,7 +706,7 @@ computeAggregatedCovariance <- function(
 	dsPred	##<< data.frame with predictors (Rg, VPD, Temp)
 	#dsBefore	##<< data.frame with predictors (Rg, VPD, Temp) and
 	#,dsAfter	##<< data.frame with predictors () and parameters of subsequent estimate
-	,resParms	##<< data.frame with results of \code{\link{partGLFitLRCWindows}} of fitting the light-response-curve for several windows
+	,resParms	##<< data.frame with results of \code{partGLFitLRCWindows} of fitting the light-response-curve for several windows
 	,resParmsNoVPD	##<< data.frame like resParms, but was fitted with option isNeglectVPDEffect = TRUE, for predicting if VPD is missing
 	,controlGLPart = partGLControl()	##<< further default parameters, see \code{\link{partGLControl}} with entry "isAssociateParmsToMeanOfValids"
 	,lrcFitter	##<< R5 class instance responsible for fitting the light response curve, with method getParameterNames()

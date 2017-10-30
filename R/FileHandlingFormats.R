@@ -1,6 +1,7 @@
 # Convenence functions to read standard datasets
 # Will reduce support work with people redoing this.
 
+#' @export
 fLoadEuroFlux16 <- function(
 	### reads a sequence of annual files in the format of europe-fluxdata 2016
 	siteName		##<< scalar string: the name of the site, i.e. start of the filename before _<year>_
@@ -13,12 +14,12 @@ fLoadEuroFlux16 <- function(
 	## By default only those colums are read and reported only c("DateTime","NEE","Ustar","Tair","Rg","qf_NEE_st" (Note the renaming).
 	## NEE is set to NA for all values with "qf_NEE_st != 0.
 	## Values  of -9999.0 are replaced by NA
-	#	
+	#
 	filenamePattern <- paste(siteName,".+\\.txt$",sep="")
 	fileNames <- dir(dirName,filenamePattern)
 	fileName <- fileNames[1]
 	colNames <- union(c("Month","Day","Hour","NEE_st","qf_NEE_st","ustar","Ta",'Rh','Rg'),additionalColumnNames)
-	# by settting colClasses at a given position to NULL the column is skipped 
+	# by settting colClasses at a given position to NULL the column is skipped
 	header <- as.character(read.csv(file.path(dirName,fileName), header=FALSE, nrows=1, stringsAsFactors=F))
 	iCols <- match( colNames, header )
 	if( length(iNACols <- which(is.na(iCols))) ) stop("unknown columns ",colNames[iNACols]," in file ",fileName)
