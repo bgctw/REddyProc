@@ -813,7 +813,6 @@ usGetYearOfSeason <- function(
 	, threshold	##<< integer scalar: searched element will need to be greater or equal as this argument
 	, iStart=1L	##<< index in vector to start search
 ){
-  a = testThrowAnError
 	##author<<
 	## TW
 	# see tests/test_binWithEqualValues.R

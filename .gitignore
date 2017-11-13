@@ -6,6 +6,7 @@
 /src/*.o
 /src/*.dll
 /src/*.so
+/src/symbols.rds
 
 
 # Session Data files
