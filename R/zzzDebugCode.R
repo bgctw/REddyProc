@@ -10,14 +10,14 @@
 # Prevent R CMD check on complaining of unused bindings
 if (getRversion() >= "2.15.1") {
 	# used in magitr and classes
-	utils::globalVariables(c(".",".self"))
+	utils::globalVariables(c(".", ".self"))
 	# used in sEddyProc with <<-
-	utils::globalVariables(c("sID","sDATA","sINFO","sLOCATION","sTEMP","sUSTAR"))
+	utils::globalVariables(c("sID", "sDATA", "sINFO", "sLOCATION", "sTEMP", "sUSTAR"))
 }
 
 # if (getRversion() >= "3.1.0") {
-# 	utils::suppressForeignCheck(c("sID","sDATA","sINFO","sLOCATION","sTEMP","sUSTAR")
-# 	                              ,package = "REddyProc")
+# 	utils::suppressForeignCheck(c("sID", "sDATA", "sINFO", "sLOCATION", "sTEMP", "sUSTAR")
+# 	                              , package = "REddyProc")
 # }
 
 # used in sEddyProc methods with <<-
