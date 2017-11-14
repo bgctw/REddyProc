@@ -454,8 +454,7 @@ fSetFile <- function(
   }
 
   # Set file name accordingly
-  File.s <- if (Dir.b) {  paste(Dir.s, ' / ', FileName.s, sep = '')
-  } else { FileName.s }
+  File.s <- if (Dir.b) file.path( Dir.s, FileName.s ) else FileName.s
 
   # If input file, check if file exists
   if (IO.b && (file.access(File.s, mode = 4) != 0) )

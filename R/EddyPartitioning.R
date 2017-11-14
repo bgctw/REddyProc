@@ -60,9 +60,6 @@ sEddyProc_sMRFluxPartition <- function(
 				, QFTempVar.s = 'Tair_fqc'##<< Quality flag of filled temperature variable
 				, QFTempValue.n = 0       ##<< Value of temperature quality flag for _good_ (original) data
 				, RadVar.s = 'Rg'         ##<< Unfilled (original) radiation variable
-				, Lat_deg.n             ##<< Latitude in (decimal) degrees
-				, Long_deg.n            ##<< Longitude in (decimal) degrees
-				, TimeZone_h.n          ##<< Time zone (in hours)
 				, T_ref.n = 273.15 + 15     ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature
 				, Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
 				, debug.l = list(		     ##<< List with debugging control (passed also to \code{sEddyProc_sRegrE0fromShortTerm}).

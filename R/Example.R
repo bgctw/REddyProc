@@ -1,29 +1,37 @@
 #' @export
 getExamplePath <- function(
-		### checks if given example filename is existing and if not tries to download it.
+		### checks if example filename is existing and if not tries to download it.
 		filename = "Example_DETha98.txt"	##<< the name of the example file
-		, exampleDir = .getExampleDir()	##<< directory where examples are lookd up and downloaded to
-		, isTryDownload = TRUE			##<< set to FALSE to avoid trying to download examples
+		, exampleDir = .getExampleDir()	  ##<< directory where examples are lookd
+		  ## up and downloaded to
+		, isTryDownload = TRUE			      ##<< set to FALSE to avoid trying
+		  ## to download examples
 		, remoteDir = "" 				##<< the URL where example data are to be downloaded
 ) {
 	##details<<
 	## Example input text data files are not distributed with the package, because
 	## it exceeds allowed package size.
-	## Rather, the example files will be downloaded when required from github by this function.
+	## Rather, the example files will be downloaded when required from github
+	## by this function.
 	##
-	## The remoteDir (github) must be reachable, and the writing directory must be writeable.
-	# set default remoteDir inside function instead of argument default, because it screws function signature
-	if (!nzchar(remoteDir) ) remoteDir <- "https: // raw.githubusercontent.com / bgctw / REddyProc / nonrectangular / examples"
-	#if (!nzchar(remoteDir) ) remoteDir <- "https: // raw.githubusercontent.com / bgctw / REddyProc / master / examples"
+	## The remoteDir (github) must be reachable, and the writing directory
+	## must be writeable.
+	# set default remoteDir inside function instead of argument default,
+	# because it screws function signature
+	if (!nzchar(remoteDir) ) remoteDir <-
+	    "https://raw.githubusercontent.com/bgctw/REddyProc/master/examples"
 	fullname <- file.path(exampleDir, filename)
 	if (file.exists(fullname) ) return(fullname)
 	if (isTRUE(isTryDownload) ) {
-		if (file.access(exampleDir, mode = 2) != 0) stop("target example directory ", exampleDir, " is not writeable.")
+		if (file.access(exampleDir, mode = 2) != 0) stop(
+		  "target example directory ", exampleDir, " is not writeable.")
 		url <- file.path(remoteDir, filename)
-		retCode <- suppressWarnings(try(download.file(url, fullname, quiet = TRUE), silent = TRUE))
+		retCode <- suppressWarnings(try(download.file(url, fullname, quiet = TRUE)
+		                                , silent = TRUE))
 		if (!inherits(retCode, "try-error") && retCode == 0) return(fullname)
 	}
-	##value<< the full path name to the example data or if not available an zero-length character.
+	##value<< the full path name to the example data or if not available
+	##an zero-length character.
 	## Allows to check for if (length(getExamplePath()) ) ...
 	return(character(0) )
 }
@@ -38,16 +46,20 @@ attr(getExamplePath, "ex") <- function() {
 }
 
 .getExampleDir <- function(
-	### get the example directory inside the package, unless if not writeable inside the temp directory
-	subDir = 'REddyProcExamples'	##<< the name of the subdirectory where examples are stored
-	, package = 'REddyProc'			##<< the package name of REddyProc
+	### get the example directory inside the package, or temp directory
+	subDir = 'REddyProcExamples'	##<< the name of the subdirectory
+	  ## where examples are stored
+	, package = 'REddyProc'			  ##<< the package name of REddyProc
 ) {
 	packageDir <- system.file(package = package)
 	##details<<
-	## If the package directory is not writeable, return the parent of the session specific tempdir
+	## If the package directory is not writeable, return the parent of the
+	## session specific tempdir.
 	parentDir <- if (file.access(packageDir, mode = 2) == 0) packageDir else {
-				# tempDir returns a session specific dir within temporary directory, extract parent
-				tmpDir <- gsub(" / [^ /] + $", "", normalizePath(tempdir(), winslash = " / "))
+				# tempDir returns a session specific dir within temporary directory
+				#  extract parent
+				tmpDir <- gsub(" / [^ /] + $", ""
+				               , normalizePath(tempdir(), winslash = " / "))
 			}
 	# If the directory inside packageDir is not yet existing, create it
 	exampleDir <- file.path(parentDir, subDir)
@@ -62,23 +74,26 @@ attr(.getExampleDir, "ex") <- function() {
 
 #' @export
 getFilledExampleDETha98Data <- function(
-	### get the gapfilled version of the Example_DETha98 example data and create if if not existing yet
+	### Get or create the gapfilled version of the Example_DETha98 example data
 ) {
 	exampleBaseName <- "Example_DETha98_Filled.RData"
 	examplePath <- getExamplePath(exampleBaseName)
 	if (!length(examplePath) ) {
 	  # Example_DETha98 is a lazyData object of REddyProc
 	  # nee to prefix package name here, to satisfy R CMD CHECK
-		Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
-		Example_DETha98_sDate <- cbind(sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
-		EddyProc.C <- sEddyProc$new('DE-Tha', Example_DETha98_sDate, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-		EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
-		EddyProc.C$sCalcPotRadiation()
-		EddyProc.C$sMDSGapFill('NEE', FillAll.b = TRUE)
-		EddyProc.C$sMDSGapFill('Rg', FillAll.b = FALSE)
-		EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
-		EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
-		Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EddyProc.C$sExportResults() )
+		Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98
+		                , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+		Example_DETha98_sDate <- cbind(
+		  sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
+		EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate
+		                            , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+		EProc$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+		EProc$sCalcPotRadiation()
+		EProc$sMDSGapFill('NEE', FillAll.b = TRUE)
+		EProc$sMDSGapFill('Rg', FillAll.b = FALSE)
+		EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
+		EProc$sMDSGapFill('VPD', FillAll.b = FALSE)
+		Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EProc$sExportResults() )
 		save(Example_DETha98_Filled, file = file.path(.getExampleDir(), exampleBaseName))
 		examplePath <- getExamplePath(exampleBaseName)
 	}
@@ -88,12 +103,10 @@ getFilledExampleDETha98Data <- function(
 
 #' @export
 sEddyProc.example <- function() {
-	##title<<
-	## sEddyProc - Example code
+	##title<< sEddyProc - Example code
 	##description<<
 	## Dummy function to show code example for sEddyProc provided below
-	##author<<
-	## AMM
+	##author<< AMM
 	# Empty function just to write attribute with example code for documenation
 }()
 attr(sEddyProc.example, 'ex') <- function() {
@@ -209,9 +222,6 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
 		c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 
-#+++ Estimate the distribution of uStar values
-uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L)
-subset(uStarTh, aggregationMode == "year")
 #+++ When running several processing setup, a string suffix declaration is needed
 #+++ Here: Gap filling with and without ustar threshold
 EddyProc.C$sMDSGapFill('NEE', FillAll.b = FALSE, Suffix.s = 'NoUstar')
@@ -229,7 +239,7 @@ colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
 EddyProc.C$sMRFluxPartition(Suffix.s = 'NoUstar')
 EddyProc.C$sMRFluxPartition(Suffix.s = 'Thres1')
 EddyProc.C$sMRFluxPartition(Suffix.s = 'Thres2')
-EddyProc.C$sGLFluxPartition(Suffix.s = 'NoUstar')
+#EddyProc.C$sGLFluxPartition(Suffix.s = 'NoUstar')
 grep("GPP. * $|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
 # Note the suffix in output columns also of GPP, Reco, GPP_DT, and Reco_DT
 
@@ -261,14 +271,14 @@ EddyProc.C$sMDSGapFillAfterUStarDistr('NEE',
 		FillAll = TRUE
 )
 # a look at the diffrent output column names:
-grep("NEE_. * _f$", names(EddyProc.C$sExportResults()), value = TRUE)
+grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 
 #+++ Run the partitioning on each of the gap-filled NEE columns
 for (suffix in uStarSuffixes) {
 	EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
 }
 # a look at the diffrent output column names:
-grep("GPP. * _f$|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
+grep("GPP.*_f$|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
 
 #+++ Aggregate to annual values with neglecting covariances and missing values
 dsRes <- EddyProc.C$sExportResults()
@@ -361,7 +371,7 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 Ustar.V.n <- 0.46
 EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df = Ustar.V.n)
-grep("NEE_. * _f$", names(EddyProc.C$sExportResults()), value = TRUE)
+grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 
 # See vignette DEGebExample for
 #  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)
