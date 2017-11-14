@@ -1,3 +1,8 @@
+# REddyProc 1.0.0.9000 (2017-11-14)
+
+There have been major code restructurings for implementing alternative light response curves in the day-time flux partitioning. 
+A few non-backward compatible changes have been introduced, e.g. by shortening function names. Hence this version is meant to be tested before changing version number to 1.1.0. 
+
 # REddyProc 0.8.6.9000
 
 This is a development version put to github so that all contributers can test and contribute for preparing version 1.0.
