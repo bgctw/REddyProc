@@ -1,7 +1,8 @@
 \name{sEddyProc_sPlotHHFluxesY}
 \alias{sEddyProc_sPlotHHFluxesY}
 \title{sEddyProc$sPlotHHFluxesY -  Plot half-hourly fluxes of specified year}
-\description{The half-hourly fluxes for a single year are plotted to the current device, scaled to all data.}
+\description{The half-hourly fluxes for a single year are plotted to the current device,
+scaled to all data.}
 \usage{sEddyProc_sPlotHHFluxesY(Var.s, QFVar.s = "none", 
     QFValue.n = NA_real_, Year.i)}
 \arguments{

@@ -54,7 +54,7 @@ The respiration-temperature regression is very
 sensitive to the selection of night- and daytime data.
 Nighttime is selected by a combined threshold of current solar radiation and potential radiation.
 The current implementation calculates potential radiation based on exact solar time, based on latitude and longitude.
-(see \code{\link{fCalcPotRadiation}} )
+(see \code{\link{fCalcPotRadiation}})
 Therefore it might differ from implementations that use local winter clock time instead.
 }}
 
@@ -63,15 +63,15 @@ Attention: When processing the same site data set with different setups for the 
 (e.g. due to different ustar filters),
 a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
 If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names
-(e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s='WithUstar').
-Currently, this works only with defaults of FluxVar.s='NEE_f' and QFFluxVar.s='NEE_fqc'.
+(e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s = 'WithUstar').
+Currently, this works only with defaults of FluxVar.s = 'NEE_f' and QFFluxVar.s = 'NEE_fqc'.
 }}}
 \value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).
 On success, return value is NULL. On failure an integer scalar error code is returned:
 -111 if regression of E_0 failed due to insufficient relationship in the data.}
 \references{Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of net ecosystem exchange
 into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.}
-\author{AMM,TW
+\author{AMM, TW
 (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
 

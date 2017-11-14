@@ -5,11 +5,14 @@
 \usage{LogisticSigmoidLRCFitter_predictGPP(Rg, Amax, 
     alpha)}
 \arguments{
-  \item{Rg}{ppfd [numeric] -> photosynthetic flux density [umol/m2/s] or Global Radiation}
-  \item{Amax}{numeric scalar or vector of length(Rg): beta parameter adjusted for VPD effect}
-  \item{alpha}{numeric scalar or vector of length(Rg): alpha parameter: initial slope}
+  \item{Rg}{ppfd [numeric] -> photosynthetic flux density
+[mumol / m2 / s] or Global Radiation}
+  \item{Amax}{vector of length(Rg): saturation (beta parameter) adjusted
+for effect of VPD for each line of Rg}
+  \item{alpha}{numeric scalar or vector of length(Rg): alpha parameter:
+slope at Rg = 0}
 }
-\details{\code{GPP <- Amax * tanh(alpha*Rg/Amax)}}
+\details{\code{GPP <- Amax * tanh(alpha * Rg / Amax)}}
 \value{numeric vector of length(Rg) of GPP}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

@@ -17,7 +17,7 @@
   \item{colMonth}{Name (string) of variable holding the month}
   \item{colDay}{Name (string) of variable holding the day}
   \item{colHour}{Name (string) of variable holding the hour}
-  \item{defaultHour}{(numeric) default that is used when colHour=NA, when only days are specified}
+  \item{defaultHour}{(numeric) default that is used when colHour = NA, when only days are specified}
   \item{\dots}{further arguments to var.get.nc or ncvar_get, such as start and count}
 }
 

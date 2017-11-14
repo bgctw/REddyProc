@@ -14,9 +14,9 @@ to distinguish result columns for different ustar values.
 Its length must correspond to column numbers in \code{UstarThres.m.n}.}
 }
 \details{The eddy covariance method does not work with low turbulence conditions. Hence the periods with low turbulence
-indicated by a low friction velocity u* needs to be filtered out and gapfilled (see \code{\link{sEddyProc_sMDSGapFill}}).
-The threshold value of a sufficient u* causes one of the largest uncertainty components within the gap-filled data.
-Hence, it is good practice to compare derived quantities based on gap-filled data using different u* threshold values.
+indicated by a low friction velocity u * needs to be filtered out and gapfilled (see \code{\link{sEddyProc_sMDSGapFill}}).
+The threshold value of a sufficient u * causes one of the largest uncertainty components within the gap-filled data.
+Hence, it is good practice to compare derived quantities based on gap-filled data using different u * threshold values.
 
 For example a user could provide the the following collumns in argument \code{UstarThres.df}
 and corresponding suffixes in argument \code{UstarSuffix.V.s}
@@ -28,11 +28,11 @@ and corresponding suffixes in argument \code{UstarSuffix.V.s}
 \item U95: 95\% of bootstrap)
 }
 Then the difference between output columns NEE_U05_f and NEE_U95_f corresponds to the uncertainty
-introduced by the uncertain estimate of the u* threshold.}
-\value{Matrix (columns correspond to u*Scenarios) with quality flag from filtering ustar (0 - good data, 1 - filtered data)
+introduced by the uncertain estimate of the u * threshold.}
+\value{Matrix (columns correspond to u * Scenarios) with quality flag from filtering ustar (0 - good data, 1 - filtered data)
 
 Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sEddyProc_sExportResults}}.
-Each of the columns is calculated for several u*r-estimates and distinguished by a suffix after the variable.
+Each of the columns is calculated for several u * r-estimates and distinguished by a suffix after the variable.
 E.g. with an first entry "U05" in \code{UstarSuffix.V.s} corresponding to the first column in  \code{UstarThres.m.n},
 the corresponding filled NEE can be found in output collumn "NEE_U05_f".}
 

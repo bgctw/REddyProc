@@ -7,10 +7,12 @@
 \arguments{
   \item{theta}{estimate of parameter}
   \item{sdTheta}{estimate of uncertainty of the parameter}
-  \item{RRefNight}{numeric scalar: night-time based estimate of basal respiration}
+  \item{RRefNight}{numeric scalar: night-time based estimate of
+basal respiration}
   \item{ctrl}{list of further controls}
 }
-\details{check the Beta bounds that depend on uncertainty: outside if (beta > 100 and sdBeta >= beta)}
+\details{check the Beta bounds that depend on uncertainty:
+outside if (beta > 100 and sdBeta >= beta)}
 \value{FALSE if parameters are outisde reasonable bounds, TRUE otherwise}
 
 \author{TW, MM

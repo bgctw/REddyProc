@@ -10,12 +10,15 @@
   \item{sdParameterPrior}{numeric vector: prior uncertainty}
   \item{\dots}{further arguments to the cost function}
   \item{ctrl}{list of further controls}
-  \item{isUsingHessian}{scalar boolean: set to TRUE to compute Hessian at optimum}
+  \item{isUsingHessian}{scalar boolean: set to TRUE to compute
+Hessian at optimum}
 }
 
 \value{list of restult of \code{\link{optim}} amended with list
-\item{theta}{numeric vector: optimized parameter vector including the fixed components}
-\item{iOpt}{integer vector: position of parameters that have been optimized
+\item{theta}{numeric vector: optimized parameter
+vector including the fixed components}
+\item{iOpt}{integer vector: position of
+parameters that have been optimized
 }}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}

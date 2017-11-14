@@ -24,6 +24,6 @@ Lloyd J, Taylor JA (1994) On the temperature dependence of soil respiration. Fun
 
 \examples{
   T <- c(-10:30)
-resp <- fLloydTaylor( 10, 330, T+273.15)
-plot( resp ~ T)
+resp <- fLloydTaylor(10, 330, T + 273.15)
+plot(resp ~ T)
 }

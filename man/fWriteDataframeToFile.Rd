@@ -20,8 +20,8 @@
 
 
 \examples{
-if( FALSE ) { #Do not always execute example code (e.g. on package installation)
-  Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
+if (FALSE) { #Do not always execute example code (e.g. on package installation)
+  Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
   EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
   fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', 'out')
 }

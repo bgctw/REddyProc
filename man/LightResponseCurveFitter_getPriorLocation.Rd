@@ -6,7 +6,8 @@
     RRefNight, E0)}
 \arguments{
   \item{NEEDay}{numeric vector of daytime NEE}
-  \item{RRefNight}{numeric scalar of basal respiration estimated from night-time data}
+  \item{RRefNight}{numeric scalar of basal respiration estimated
+from night-time data}
   \item{E0}{numeric scalar of night-time estimate of temperature sensitivity}
 }
 

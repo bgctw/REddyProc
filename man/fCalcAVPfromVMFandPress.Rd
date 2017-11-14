@@ -4,7 +4,7 @@
 \description{Calculate AVP from VMF and Press}
 \usage{fCalcAVPfromVMFandPress(VMF.V.n, Press.V.n)}
 \arguments{
-  \item{VMF.V.n}{Vapor mole fraction (VMF, mol/mol)}
+  \item{VMF.V.n}{Vapor mole fraction (VMF, mol / mol)}
   \item{Press.V.n}{Atmospheric pressure (Press, hPa)}
 }
 

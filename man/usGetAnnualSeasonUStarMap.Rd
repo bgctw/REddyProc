@@ -4,7 +4,8 @@
 \description{extract mapping season -> uStar columns from Distribution result}
 \usage{usGetAnnualSeasonUStarMap(uStarTh)}
 \arguments{
-  \item{uStarTh}{result of \code{\link{sEddyProc_sEstUstarThresholdDistribution}} or \code{\link{sEddyProc_sEstUstarThreshold}}$uStarTh}
+  \item{uStarTh}{result of \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
+or \code{\link{sEddyProc_sEstUstarThreshold}}$uStarTh}
 }
 
 

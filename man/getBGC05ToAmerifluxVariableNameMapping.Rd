@@ -24,5 +24,5 @@
 \seealso{\code{\link{renameVariablesInDataframe}}}
 \examples{
 # adding mapping of foo, and overwriting mapping of DoY
-getBGC05ToAmerifluxVariableNameMapping(c(foo="FOO",DoY="doy"))
+getBGC05ToAmerifluxVariableNameMapping(c(foo = "FOO", DoY = "doy"))
 }

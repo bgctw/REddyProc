@@ -4,7 +4,8 @@
 \description{Light Response function for GPP}
 \usage{LightResponseCurveFitter_predictGPP(Rg, ...)}
 \arguments{
-  \item{Rg}{ppfd [numeric] -> photosynthetic flux density [mumol/m2/s] or Global Radiation}
+  \item{Rg}{ppfd [numeric] -> photosynthetic flux density [mumol / m2 / s]
+or Global Radiation}
   \item{\dots}{further parameters to the LRC}
 }
 \details{This method must be be implemented by a specific subclass.

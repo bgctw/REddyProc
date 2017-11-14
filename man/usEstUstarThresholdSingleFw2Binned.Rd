@@ -6,10 +6,11 @@
     ctrlUstarEst.l = usControlUstarEst())}
 \arguments{
   \item{Ust_bins.f}{data.frame with column s NEE_avg and Ust_avg, of Ustar bins}
-  \item{ctrlUstarEst.l}{parameter list, see \code{\link{usControlUstarEst}} for defaults and description}
+  \item{ctrlUstarEst.l}{parameter list,
+see \code{\link{usControlUstarEst}} for defaults and description}
 }
-\details{Demand that threshold is higher than \code{ctrlUstarEst.l$minNuStarPlateau} records.
-If fewer records}
+\details{Demand that threshold is higher than \code{ctrlUstarEst.l$minNuStarPlateau}
+records. If fewer records}
 
 
 \author{TW, OM

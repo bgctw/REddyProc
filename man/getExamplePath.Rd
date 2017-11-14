@@ -17,7 +17,7 @@ Rather, the example files will be downloaded when required from github by this f
 
 The remoteDir (github) must be reachable, and the writing directory must be writeable.}
 \value{the full path name to the example data or if not available an zero-length character.
-Allows to check for if( length(getExamplePath()) ) ...}
+Allows to check for if (length(getExamplePath()) ) ...}
 
 \author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
 
@@ -25,11 +25,11 @@ Allows to check for if( length(getExamplePath()) ) ...}
 
 
 \examples{
-if( FALSE ){ # only for interactive use
+if (FALSE) { # only for interactive use
 	examplePath <- getExamplePath("Example_DETha98.txt")
-	if( length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
+	if (length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
 	#test for having no write access to the package directory
 	#getExamplePath("Example_DETha98.txt"
-	#	, exampleDir = .getExampleDir(package="someNonExistentPackage"))
+	#	, exampleDir = .getExampleDir(package = "someNonExistentPackage"))
 }
 }

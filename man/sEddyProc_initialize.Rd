@@ -15,8 +15,8 @@ It creates the fields of the sEddyProc R5 reference class for processing of half
   \item{ColPOSIXTime.s}{Column name with POSIX time stamp}
   \item{DTS.n}{Daily time steps}
   \item{ColNamesNonNumeric.V.s}{Names of columns that should not be checked for numeric type, e.g. season column}
-  \item{Lat_deg.n}{Latitude in (decimal) degrees (-90 to +90)}
-  \item{Long_deg.n}{Longitude in (decimal) degrees (-180 to +180)}
+  \item{Lat_deg.n}{Latitude in (decimal) degrees (-90 to + 90)}
+  \item{Long_deg.n}{Longitude in (decimal) degrees (-180 to + 180)}
   \item{TimeZone_h.n}{Time zone (in hours) shift to UTC, e.g. 1 for Berlin}
   \item{\dots}{('...' required for initialization of class fields)}
 }

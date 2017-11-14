@@ -20,7 +20,7 @@ For using only part of the records, use \code{fFilterAttr} to keep units attribu
 
 
 \examples{
-if( FALSE ) { #Do not always execute example code (e.g. on package installation)
+if (FALSE) { #Do not always execute example code (e.g. on package installation)
 	examplePath <- getExamplePath('Example_DETha98.txt')
 	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 }
