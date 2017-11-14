@@ -1,7 +1,7 @@
 \name{getFilledExampleDETha98Data}
 \alias{getFilledExampleDETha98Data}
 \title{getFilledExampleDETha98Data}
-\description{get the gapfilled version of the Example_DETha98 example data and create if if not existing yet}
+\description{Get or create the gapfilled version of the Example_DETha98 example data}
 \usage{getFilledExampleDETha98Data()}
 
 \value{example data.frame Example_DETha98 processed by gapfilling.}

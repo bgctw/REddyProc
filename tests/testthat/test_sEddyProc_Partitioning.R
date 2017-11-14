@@ -22,7 +22,6 @@ suppressMessages(EddyHour.C$sMDSGapFill('NEE', Verbose.b=F))
 
 
 test_that("fOptimSingleE0",{
-			#EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )
 			Temp_degK.V.n <- structure(c(279.45, 279.25, 278.95, 278.35, 278.35, 278.55, 279.15,
 							279.55, 279.95, 279.25, 278.85, 278.65, 277.75, 277.75, 277.35,
 							277.55, 276.35, 275.15, 274.65, 276.45, 276.25, 276.25, 276.35,
@@ -90,7 +89,6 @@ test_that("fRegrE0fromShortTerm",{
 			E0 <- REddyProc:::fRegrE0fromShortTerm( NightFlux.V.n, rep(TempVar.V.n,3), DayCounter.V.i, T_ref.n=273.15+15 )
 			expect_equal( E0, 300, tolerance=15, scale=1 )
 			#
-			#EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1 )
 		})
 
 
@@ -106,9 +104,9 @@ test_that("Using fixed E0",{
             E0 <- 120
             #EddyHour.C$trace("sMRFluxPartition", recover )            # EddyHour.C$untrace("sMRFluxPartition")
 			EddyHour.C$sTEMP$E_0 <- NULL
-			EddyHour.C$sSetLocationInfo(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1)
+			EddyHour.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 			# warning on duplicted columns with former test
-			suppressWarnings( EddyHour.C$sMRFluxPartition( Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1, debug.l=list(fixedE0=E0) ))   # calling sRegrE0fromShortTerm
+			suppressWarnings( EddyHour.C$sMRFluxPartition( debug.l=list(fixedE0=E0) ))   # calling sRegrE0fromShortTerm
             expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance=1e-6)
             #colnames(EddyHour.C$sTEMP)
         })

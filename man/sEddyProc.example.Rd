@@ -125,9 +125,6 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
 		c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 
-#+++ Estimate the distribution of uStar values
-uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L)
-subset(uStarTh, aggregationMode == "year")
 #+++ When running several processing setup, a string suffix declaration is needed
 #+++ Here: Gap filling with and without ustar threshold
 EddyProc.C$sMDSGapFill('NEE', FillAll.b = FALSE, Suffix.s = 'NoUstar')
@@ -145,7 +142,7 @@ colnames(EddyProc.C$sExportResults()) # Note the suffix in output columns
 EddyProc.C$sMRFluxPartition(Suffix.s = 'NoUstar')
 EddyProc.C$sMRFluxPartition(Suffix.s = 'Thres1')
 EddyProc.C$sMRFluxPartition(Suffix.s = 'Thres2')
-EddyProc.C$sGLFluxPartition(Suffix.s = 'NoUstar')
+#EddyProc.C$sGLFluxPartition(Suffix.s = 'NoUstar')
 grep("GPP. * $|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
 # Note the suffix in output columns also of GPP, Reco, GPP_DT, and Reco_DT
 
@@ -177,14 +174,14 @@ EddyProc.C$sMDSGapFillAfterUStarDistr('NEE',
 		FillAll = TRUE
 )
 # a look at the diffrent output column names:
-grep("NEE_. * _f$", names(EddyProc.C$sExportResults()), value = TRUE)
+grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 
 #+++ Run the partitioning on each of the gap-filled NEE columns
 for (suffix in uStarSuffixes) {
 	EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
 }
 # a look at the diffrent output column names:
-grep("GPP. * _f$|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
+grep("GPP.*_f$|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
 
 #+++ Aggregate to annual values with neglecting covariances and missing values
 dsRes <- EddyProc.C$sExportResults()
@@ -277,7 +274,7 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 				, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 Ustar.V.n <- 0.46
 EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df = Ustar.V.n)
-grep("NEE_. * _f$", names(EddyProc.C$sExportResults()), value = TRUE)
+grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 
 # See vignette DEGebExample for
 #  - using tailored seasons of differing uStar dynamics with vegetation changes (crop)

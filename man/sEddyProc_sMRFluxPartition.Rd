@@ -5,8 +5,7 @@
 \usage{sEddyProc_sMRFluxPartition(FluxVar.s = "NEE_f", 
     QFFluxVar.s = "NEE_fqc", QFFluxValue.n = 0, 
     TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
-    QFTempValue.n = 0, RadVar.s = "Rg", Lat_deg.n, 
-    Long_deg.n, TimeZone_h.n, T_ref.n = 273.15 + 
+    QFTempValue.n = 0, RadVar.s = "Rg", T_ref.n = 273.15 + 
         15, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE), 
     parsE0Regression = list())}
 \arguments{
@@ -17,9 +16,6 @@
   \item{QFTempVar.s}{Quality flag of filled temperature variable}
   \item{QFTempValue.n}{Value of temperature quality flag for _good_ (original) data}
   \item{RadVar.s}{Unfilled (original) radiation variable}
-  \item{Lat_deg.n}{Latitude in (decimal) degrees}
-  \item{Long_deg.n}{Longitude in (decimal) degrees}
-  \item{TimeZone_h.n}{Time zone (in hours)}
   \item{T_ref.n}{Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature}
   \item{Suffix.s}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
   \item{debug.l}{List with debugging control (passed also to \code{sEddyProc_sRegrE0fromShortTerm}).\describe{
