@@ -15,7 +15,7 @@ LongTest.b <- F #True if in intensive test mode including NC files, all plots an
 if (Develop.b) {
   # Source settings for R environment and standard functions
   source('inst/develop/setREnvir.R')
-  
+
   # Source file and data handling scripts
   source('R/DataFunctions.R')
   source('R/FileHandling.R')
@@ -70,7 +70,8 @@ if( ShortTest.b ) {
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
   EPTha.C$sMDSGapFill('NEE')
   EPTha.C$sMDSGapFill('Tair',FillAll.b=F)
-  EPTha.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1.0)
+  EPTha.C$setLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1.0)
+  EPTha.C$sMRFluxPartition()
   View(EPTha.C$sTEMP)
   stop('No error but short test only.')
 }
@@ -94,7 +95,8 @@ if( FALSE ) { #Short example from above with ustar filtering
   EPTha.C$sUstarMM() # Apply filter
   EPTha.C$sMDSGapFill('NEE','UstarMM_fqc',0) #Use ustar flag
   EPTha.C$sMDSGapFill('Tair',FillAll.b=F)
-  EPTha.C$sMRFluxPartition(Lat_deg.n=51.0, Long_deg.n=13.6, TimeZone_h.n=1.0)
+  EPTha.C$setLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1.0)
+  EPTha.C$sMRFluxPartition()
   View(EPTha.C$sTEMP)
   stop('No error but short test only.')
 }
@@ -119,12 +121,12 @@ if (LongTest.b) {
 }
 
 # Run loop over all (site) files in BGI Fluxnet data directory
-if (T==F) { 
+if (T==F) {
   SiteFile.V.s <- fInitFilesDir(DirFluxnet.s, 'hourly.nc')
   SiteName.V.s <- fStripFileExtension(SiteFile.V.s)
   for (Site.i in 1:length(SiteName.V.s)) {
-    message(paste('Handling site file ', Site.i, ': \'', SiteName.V.s[Site.i],'\'', sep='')) 
-    #...  
+    message(paste('Handling site file ', Site.i, ': \'', SiteName.V.s[Site.i],'\'', sep=''))
+    #...
   }
   EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s)
   # EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s,'RNetCDF')
@@ -147,7 +149,7 @@ if( FALSE ) {
   Example.F$Hour  <- as.numeric(format(Example.F$DateTime, '%H')) + as.numeric(format(Example.F$DateTime, '%M'))/60
   colnames(Example.F)[colnames(Example.F)=='Tsoil_f']  <- 'Tsoil'
   fWriteDataframeToFile(Example.F, 'DE-Tha.1996.1998.txt','out')
-  
+
   # Try to reload data file
   Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
   Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
@@ -182,7 +184,7 @@ if (LongTest.b) {
 # Fill gaps with MDS algorithm
 
 #system.time(...)
-EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T) 
+EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
 EPTha.C$sMDSGapFill('NEE', V1.s='none', FillAll.b=T, Verbose.b=T)
 EPThaH.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
 EPThaS.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
@@ -239,15 +241,15 @@ fPlots <- function(ClassName.s, Var.s, QFVar.s='none', QFValue.n=NA, VarUnc.s='n
     eval(parse(text=paste(ClassName.s, '$sPlotFingerprint(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
     eval(parse(text=paste(ClassName.s, '$sPlotHHFluxes(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
     eval(parse(text=paste(ClassName.s, '$sPlotDailySums(\'', Var.s, '\', VarUnc.s=\'', VarUnc.s, '\')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotDiurnalCycle(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))  
+    eval(parse(text=paste(ClassName.s, '$sPlotDiurnalCycle(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
   } else {  #Individual years/months
-    eval(parse(text=paste(ClassName.s, '$sPlotFingerprintY(\'', Var.s, '\', QFVar.s=\'', 
+    eval(parse(text=paste(ClassName.s, '$sPlotFingerprintY(\'', Var.s, '\', QFVar.s=\'',
                           QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotHHFluxesY(\'', Var.s, '\', QFVar.s=\'', 
+    eval(parse(text=paste(ClassName.s, '$sPlotHHFluxesY(\'', Var.s, '\', QFVar.s=\'',
                           QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotDailySumsY(\'', Var.s, '\', VarUnc.s=\'', 
+    eval(parse(text=paste(ClassName.s, '$sPlotDailySumsY(\'', Var.s, '\', VarUnc.s=\'',
                           VarUnc.s, '\', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$.sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s=\'', 
+    eval(parse(text=paste(ClassName.s, '$.sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s=\'',
                           QFVar.s, '\', QFValue.n=', QFValue.n, ', Month.i=', Month.i, ')', sep='')))
   }
 }
@@ -285,7 +287,7 @@ if (LongTest.b) {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Re-set class on previously filled data for plotting, e.g. to avoid rerunning MDS each time...
-if (LongTest.b) { 
+if (LongTest.b) {
   EPTha.C <- sEddyProc$new('DE-Tha', ThaFilled.F, c('NEE','Rg', 'Tair', 'VPD', 'QF', 'NEE_f', 'NEE_fqc', 'NEE_fmeth', 'NEE_fwin', 'NEE_fsd', 'NEE_fnum'))
   EPThaC.C$sPlotDailySums('NEE_f_f','NEE_f_fsd')
 }
@@ -294,11 +296,11 @@ if (LongTest.b) {
 # Compare data of old MDS filling with new filling
 
 if (LongTest.b) {
-  
+
   # Standard filling - without ustar filtering
   EPTha98.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
   EPTha98.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
-  
+
   # Load MDS output data from old PV-Wave online tool - without ustar filtering
   MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_PVWave_DataSetafterGapfill.txt','inst/examples')
   MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
@@ -306,18 +308,18 @@ if (LongTest.b) {
   # Plot difference between old and new MDS
   plot(EPTha98.C$sTEMP$NEE_f ~ MDSData.F$NEE_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
 
-  
+
   # Load MDS output data from LaThuile BGI fluxnet files with ustar filtering
-  # Rename 'NEE' to have different column names for old and new processing 
+  # Rename 'NEE' to have different column names for old and new processing
   # (though in different data frames: original data in sDATA and results in sTEMP)
   EddyNCData.F <- cbind(EddyNCData.F, NEEnew = EddyNCData.F$NEE)
   EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, c('NEEnew', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
   # Fill gaps - with ustar through NEE_fqc=0
   EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
-  
+
   # Plot difference between old and new MDS
   plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
-  
+
   # Plot combination of the two BUT this is mixing with and without ustar filtering...
   plot(EPTha98.C$sTEMP$NEE_f ~ EPThaNC.C$sTEMP$NEEnew_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
   plot(MDSData.F$NEE_f ~ EPThaNC.C$sDATA$NEE_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
