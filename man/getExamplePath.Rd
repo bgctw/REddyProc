@@ -3,15 +3,16 @@
 \title{getExamplePath}
 \description{checks if example filename is existing and if not tries to download it.}
 \usage{getExamplePath(filename = "Example_DETha98.txt", 
-    exampleDir = .getExampleDir(), isTryDownload = TRUE, 
+    isTryDownload = FALSE, exampleDir = .getExampleDir(), 
     remoteDir = "")}
 \arguments{
   \item{filename}{the name of the example file}
-  \item{exampleDir}{directory where examples are lookd
+  \item{isTryDownload}{scalar locigal whether to try
+downloading the file to package or tmp directory.
+Because of CRAN checks, need to explicitely set to TRUE}
+  \item{exampleDir}{directory where examples are looked
 up and downloaded to}
-  \item{isTryDownload}{set to FALSE to avoid trying
-to download examples}
-  \item{remoteDir}{the URL where example data are to be downloaded}
+  \item{remoteDir}{the URL do download from}
 }
 \details{Example input text data files are not distributed with the package, because
 it exceeds allowed package size.
@@ -31,7 +32,7 @@ Allows to check for if (length(getExamplePath()) ) ...}
 
 \examples{
 if (FALSE) { # only for interactive use
-	examplePath <- getExamplePath("Example_DETha98.txt")
+	examplePath <- getExamplePath("Example_DETha98.txt", TRUE)
 	if (length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
 	#test for having no write access to the package directory
 	#getExamplePath("Example_DETha98.txt"

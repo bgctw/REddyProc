@@ -2,11 +2,12 @@
 getExamplePath <- function(
 		### checks if example filename is existing and if not tries to download it.
 		filename = "Example_DETha98.txt"	##<< the name of the example file
-		, exampleDir = .getExampleDir()	  ##<< directory where examples are lookd
-		  ## up and downloaded to
-		, isTryDownload = TRUE			      ##<< set to FALSE to avoid trying
-		  ## to download examples
-		, remoteDir = "" 				##<< the URL where example data are to be downloaded
+		, isTryDownload = FALSE	          ##<< scalar locigal whether to try
+     		## downloading the file to package or tmp directory.
+    		## Because of CRAN checks, need to explicitely set to TRUE
+		, exampleDir = .getExampleDir()	  ##<< directory where examples are looked
+		    ## up and downloaded to
+		, remoteDir = "" 				          ##<< the URL do download from
 ) {
 	##details<<
 	## Example input text data files are not distributed with the package, because
@@ -37,7 +38,7 @@ getExamplePath <- function(
 }
 attr(getExamplePath, "ex") <- function() {
 	if (FALSE) { # only for interactive use
-		examplePath <- getExamplePath("Example_DETha98.txt")
+		examplePath <- getExamplePath("Example_DETha98.txt", TRUE)
 		if (length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
 		#test for having no write access to the package directory
 		#getExamplePath("Example_DETha98.txt"
@@ -50,12 +51,18 @@ attr(getExamplePath, "ex") <- function() {
 	subDir = 'REddyProcExamples'	##<< the name of the subdirectory
 	  ## where examples are stored
 	, package = 'REddyProc'			  ##<< the package name of REddyProc
+	, isPreferPackageDir =        ##<< logical scalar, wheter to prefer
+	    identical(Sys.getenv("NOT_CRAN"), "true")
+	  ## the package dir instead of the temp as parent directory.
+	  ## Defaults to TRUE if environement variable "NOT_CRAN" is defined,
+	  ## which is the case when running from testthat::check
 ) {
 	packageDir <- system.file(package = package)
 	##details<<
 	## If the package directory is not writeable, return the parent of the
 	## session specific tempdir.
-	parentDir <- if (file.access(packageDir, mode = 2) == 0) packageDir else {
+	parentDir <- if (isPreferPackageDir &&
+	                 file.access(packageDir, mode = 2) == 0) packageDir else {
 				# tempDir returns a session specific dir within temporary directory
 				#  extract parent
 				tmpDir <- gsub(" / [^ /] + $", ""

@@ -117,7 +117,7 @@ EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', D
 if (LongTest.b) {
   # Load NC file with multiple years (upload includes time conversion)
   lVar.V.s <- c('NEE', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fmet', 'NEE_fwin', 'NEE_fn', 'NEE_fs', 'NEE_fqc', 'NEE_fqcOK') #!!! Attention NEE_fqcOK or NEE_fqcok, both exists
-  EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc'))
+  EddyNCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc',TRUE))
 }
 
 # Run loop over all (site) files in BGI Fluxnet data directory
@@ -139,9 +139,9 @@ if (LongTest.b) {
 }
 
 #Produce new ascii test files from BGI netcdf fluxnet files
-if( FALSE ) {
+if (FALSE) {
   lVar2.V.s <- c('NEE', 'LE', 'H', 'Rg', 'VPD', 'rH', 'Tair', 'Tsoil_f', 'julday')
-  Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc'))
+  Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc',TRUE))
   #Example.F <- fLoadFluxNCIntoDataframe(lVar2.V.s, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc'), 'RNetCDF')
   Example.F$Year  <- as.numeric(format(Example.F$DateTime, '%Y'))
   Example.F$Month <- as.numeric(format(Example.F$DateTime, '%m'))

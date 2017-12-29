@@ -1,6 +1,6 @@
 #Dir.s <- paste(system.file(package='REddyProc'), 'examples', sep='/')
 #EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-EddyData.F <- fLoadTXTIntoDataframe( getExamplePath('Example_DETha98.txt'))
+EddyData.F <- fLoadTXTIntoDataframe( getExamplePath('Example_DETha98.txt', TRUE))
 # note: use \code{fFilterAttr} to subset rows while keeping the units attributes
 
 DTS.n=48L
@@ -29,8 +29,8 @@ EddyProc.C$sMDSGapFill('NEE', FillAll.b=TRUE) #Fill all values to estimate flux 
 EddyProc.C$sMDSGapFill('Rg', FillAll.b=FALSE) #Fill only the gaps for the meteo condition, e.g. 'Rg'
 
 #+++ Partition NEE into GPP and respiration
-EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning 
-EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning 
+EddyProc.C$sMDSGapFill('Tair', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning
+EddyProc.C$sMDSGapFill('VPD', FillAll.b=FALSE)  	# Gap-filled Tair (and NEE) needed for partitioning
 EddyProc.C$sMRFluxPartition()	# night time partitioning -> Reco, GPP
 
 .tmp.f <- function(){

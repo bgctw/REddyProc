@@ -27,6 +27,6 @@ The time stamp information needs to be provided as variables 'year', 'month', 'd
 if (FALSE) { #Do not always execute example code (e.g. on package installation)
   Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
   EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
-		, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc'))
+		, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc', TRUE))
 }
 }

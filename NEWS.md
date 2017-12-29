@@ -3,6 +3,18 @@
 There have been major code restructurings for implementing alternative light response curves in the day-time flux partitioning. 
 A few non-backward compatible changes have been introduced, e.g. by shortening function names. Hence this version is meant to be tested before changing version number to 1.1.0. 
 
+Interface changes
+- renamed usGetAnnualSeasonUStarMappingFromDistributionResult to usGetAnnualSeasonUStarMap
+- renamed usGetSeasonalSeasonUStarMappingFromDistributionResult to usGetSeasonalSeasonUStarMap
+- removed position arguments from sMRFluxPartition
+  consistently use sSetLocationInfo before
+  
+Changes in Day-Time partitioning
+- adpted Lasslop prior information on LRC-fit parameters as default
+- more options to control daytim-fitting with partGLControl
+- quickly maximise compatibility with Lasslop-pvWave processing by function
+  partGLControlLasslopCompatible
+
 # REddyProc 0.8.6.9000
 
 This is a development version put to github so that all contributers can test and contribute for preparing version 1.0.

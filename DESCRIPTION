@@ -1,6 +1,6 @@
 Package: REddyProc
 Type: Package
-Version: 1.0.0.9002
+Version: 1.0.0.9003
 Title: Data Processing and Plotting Utilities of (Half-)Hourly Eddy-Covariance Measurements
 Author: (Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)
 Maintainer: Department for Biogeochemical Integration <REddyProc-help@bgc.mpg.de>

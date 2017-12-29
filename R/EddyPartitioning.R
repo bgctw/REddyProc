@@ -31,7 +31,7 @@ sEddyProc_sGLFluxPartition <- function(
 	##references<<
 	## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using
 	## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208
-	.self$sCalcPotRadiation(useSolartime.b =!isTRUE(debug.l$useLocaltime.b) )
+	.self$sCalcPotRadiation(useSolartime.b = !isTRUE(debug.l$useLocaltime.b) )
 	dsAns <- partitionNEEGL(cbind(.self$sDATA, .self$sTEMP), ...
 			, nRecInDay = sINFO$DTS
 					)
@@ -339,14 +339,16 @@ fRegrE0fromShortTerm = function(
 ## AMM
 {
   ##details<<
-  ## The coefficient E0 is estimated for windows with a length of \code{WinDays.i} days,
-  ## for successive periods in steps of \code{DayStep.i} days.
-  ## Only those windows with a sufficient number or records and with a sufficient temperature range \code{TempRange.n}
-  ## are used for the \code{\link{fLloydTaylor}} regression of E0 using the optimization \code{\link{fOptimSingleE0}}.
-  ## Unreasonable estimates are discarded (95% confidence interval inside \code{MinE_0.n} and \code{MaxE_0.n}) and
-  ## the others are ordered by their standard deviations.
-  ## The mean across the best (= lowest standard deviation) E0 estimates is reported
-  ## with \code{NumE_0.n} defining the number of best estimates to use.
+  ##The coefficient E0 is estimated for windows with a length of
+  ##\code{WinDays.i} days, for successive periods in steps of \code{DayStep.i}
+  ##days. Only those windows with a sufficient number or records and with a
+  ##sufficient temperature range \code{TempRange.n} are used for the
+  ##\code{\link{fLloydTaylor}} regression of E0 using the optimization
+  ##\code{\link{fOptimSingleE0}}. Unreasonable estimates are discarded (95%
+  ##confidence interval inside \code{MinE_0.n} and \code{MaxE_0.n}) and the
+  ##others are ordered by their standard deviations. The mean across the best (=
+  ##lowest standard deviation) E0 estimates is reported with \code{NumE_0.n}
+  ##defining the number of best estimates to use.
 
   # Regression settings
   #NLSRes.F <- data.frame(NULL) #Results of non-linear regression
@@ -358,7 +360,7 @@ fRegrE0fromShortTerm = function(
   #tw: better use rbind with a list instead of costly repeated extending a data.frame
   NLSRes.F <- as.data.frame(do.call(rbind, NLSRes.l <- lapply(seq(WinDays.i + 1, max(DayCounter.V.i), DayStep.i) , function(DayMiddle.i) {
     #TEST: DayMiddle.i <- 8
-    DayStart.i <- DayMiddle.i-WinDays.i
+    DayStart.i <- DayMiddle.i - WinDays.i
     DayEnd.i <- DayMiddle.i + WinDays.i
     #! Window size of 7 days corresponds to full window length of 15 days as in paper, non-congruent with PV-Wave code of 14 days
     #! New code: Last window has minimum width of WinDays.i
@@ -469,7 +471,8 @@ sEddyProc_sRegrRref <- function(
     ##title<<
     ## sEddyProc$sRegrRref - Estimation of the time series of reference respiration Rref
     ##description<<
-    ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}} for successive periods
+    ## Estimation of the reference respiration Rref of \code{\link{fLloydTaylor}}
+    ## for successive periods
     NightFlux.s           ##<< Variable with (original) nighttime ecosystem carbon flux, i.e. respiration
     , TempVar.s            ##<< Variable with (original) air or soil temperature (degC)
 	, E_0.s                ##<< Temperature sensitivity E_0 estimated with \code{sEddyProc_sRegrE0fromShortTerm}
@@ -508,7 +511,7 @@ sEddyProc_sRegrRref <- function(
     CountRegr.i <- 0
     for (DayMiddle.i in seq(WinDays.i + 1, max(DayCounter.V.i), DayStep.i)) {
       #TEST: DayMiddle.i <- 8
-      DayStart.i <- DayMiddle.i-WinDays.i
+      DayStart.i <- DayMiddle.i - WinDays.i
       DayEnd.i <- DayMiddle.i + WinDays.i
       #! Window size of 4 days corresponds to a full window length of 9 days, non-congruent with PV-Wave code of 8 days, in paper not mentioned
       #! New code: Last window has minimum of window size
@@ -526,7 +529,8 @@ sEddyProc_sRegrRref <- function(
           LM.L <- lm(R_eco ~ 0 + fLloydTaylor(R_ref, E_0, Temp_degK, T_ref.n = T_ref.n), data = as.data.frame(cbind(R_eco = NEEnight.V.n, R_ref = 1, E_0 = E_0.V.n, Temp_degK = Temp_degK.V.n)))
           LMRes.F <- rbind(LMRes.F, cbind(Start = DayStart.i, End = DayEnd.i, Num = length(NEEnight.V.n), MeanH = MeanHour.i,
                                           R_ref = coef(summary(LM.L))[1], R_ref_SD = coef(summary(LM.L))[2]))
-          #! Note on PV-Wave code: trimmed linear regression not used in the end, i.e. in online webtool
+          #! Note on PV-Wave code: trimmed linear regression not used in the end
+          #, i.e. in online webtool
 
           tmp.f <- function(x) { # Plot for testing, twutz: transformed debug code into function because check was complaining of undefined x
             plot(NEEnight.V.n ~ fLloydTaylor(1, E_0.V.n, Temp_degK.V.n, T_ref.n = T_ref.n))
