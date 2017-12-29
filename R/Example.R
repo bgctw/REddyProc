@@ -65,8 +65,11 @@ attr(getExamplePath, "ex") <- function() {
 	                 file.access(packageDir, mode = 2) == 0) packageDir else {
 				# tempDir returns a session specific dir within temporary directory
 				#  extract parent
-				tmpDir <- gsub(" / [^ /] + $", ""
-				               , normalizePath(tempdir(), winslash = " / "))
+				#  for normalizePath, directory must exist
+				tmpDirParent <- tempdir()
+				if (!dir.exists(tmpDirParent) ) dir.create(tmpDirParent)
+				tmpDir <- gsub("/[^/]+$", ""
+				               , normalizePath(tempdir(), winslash = "/"))
 			}
 	# If the directory inside packageDir is not yet existing, create it
 	exampleDir <- file.path(parentDir, subDir)
