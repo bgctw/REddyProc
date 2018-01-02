@@ -28,8 +28,8 @@ when running from testthat::\code{\link{check}}.}
 
 \seealso{\code{\link{getExamplePath}}}
 \examples{
-  # R session specific
+# R session specific
 getREddyProcExampleDir()
-  # outisde R-session specific
+# outisde R-session specific
 getREddyProcExampleDir(TRUE)
 }

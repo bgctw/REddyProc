@@ -1,13 +1,14 @@
 ^REddyProc.Rproj$
 ^.*\.Rproj$
-^\.Rproj\.user$      
+^\.Rproj\.user$
 ^README\.Rmd$
 ^README\.md$
+^README_cache$
 ^README-.*\.png$
-^NEWS\.md$          
-^NEWS\.Rmd$          
+^NEWS\.md$
+^NEWS\.Rmd$
 ^vignettes/figure/.*$
-^vignettes/cache/.*$	
+^vignettes/cache/.*$
 ^vignettes/cache$
 ^scratch$
 ^out$
@@ -15,7 +16,7 @@
 ^tmp$
 ^.git$
 ^.gitignore$
-^.project$	     
+^.project$
 ^cranComments.md$
 ^examples$
 ^develop$

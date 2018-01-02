@@ -21,7 +21,8 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	if( fixVPD.size() != VPD.size() ){
 		if( 1 == fixVPD.size() ){
 			const bool _fixVPD = fixVPD[0];
-			const std::size_t _VPDsize = VPD.size();
+			//causes ambiguities: const std::size_t _VPDsize = VPD.size();
+			const int _VPDsize = VPD.size();
 			fixVPD = LogicalVector( _VPDsize, _fixVPD );
 		}else throw std::range_error("fixVPD must be of length 1 or length of VPD.");
 	}
