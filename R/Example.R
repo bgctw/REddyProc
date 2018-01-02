@@ -1,126 +1,10 @@
 #' @export
-getExamplePath <- function(
-		### checks if example filename is existing and if not tries to download it.
-		filename = "Example_DETha98.txt"	##<< the name of the example file
-		, isTryDownload = FALSE	          ##<< scalar locigal whether to try
-     		## downloading the file to package or tmp directory.
-    		## Because of CRAN checks, need to explicitely set to TRUE
-		, exampleDir = getREddyProcExampleDir()	  ##<< directory where examples are
-		    ## looked up and downloaded to
-		, remoteDir = "" 				          ##<< the URL do download from
-) {
-	##details<<
-	## Example input text data files are not distributed with the package, because
-	## it exceeds allowed package size.
-	## Rather, the example files will be downloaded when required from github
-	## by this function.
-	##
-	## The remoteDir (github) must be reachable, and the writing directory
-	## must be writeable.
-	# set default remoteDir inside function instead of argument default,
-	# because it screws function signature
-	if (!nzchar(remoteDir) ) remoteDir <-
-	    "https://raw.githubusercontent.com/bgctw/REddyProc/master/examples"
-	fullname <- file.path(exampleDir, filename)
-	if (file.exists(fullname) ) return(fullname)
-	if (isTRUE(isTryDownload) ) {
-		if (file.access(exampleDir, mode = 2) != 0) stop(
-		  "target example directory ", exampleDir, " is not writeable.")
-		url <- file.path(remoteDir, filename)
-		retCode <- suppressWarnings(try(download.file(url, fullname, quiet = TRUE)
-		                                , silent = TRUE))
-		if (!inherits(retCode, "try-error") && retCode == 0) return(fullname)
-	}
-	##value<< the full path name to the example data or if not available
-	##an zero-length character.
-	## Allows to check for \code{if (length(getExamplePath()) ) ... }
-	return(character(0) )
-}
-attr(getExamplePath, "ex") <- function() {
-	if (FALSE) { # only for interactive use
-		examplePath <- getExamplePath("Example_DETha98.txt", TRUE)
-		if (length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
-		#test for having no write access to the package directory
-		#getExamplePath("Example_DETha98.txt"
-		#	, exampleDir = .getExampleDir(package = "someNonExistentPackage"))
-	}
-}
-
-#' @export
-getREddyProcExampleDir <- function(
-	### get the example directory inside temporary directory
-	isPreferParentDir =        ##<< logical scalar, wheter to prefer
-	  ## temp parent directory instead of the R-session temp-Directory.
-	  ## See details.
-	    identical(Sys.getenv("NOT_CRAN"), "true")
-	, subDir = 'REddyProcExamples'	##<< the name of the subdirectory inside the
-  	## tmp directory, where examples are stored
-) {
-  ##seealso<< \code{\link{getExamplePath}}
-	##details<<
-  ## If \code{isPreferParentDir = FALSE} (the default),
-  ## the examples will be downloaded again for
-  ## each new R-session in a session specific directory as given by
-  ## \code{\link{tempdir}}. This corresponds to CRAN policy.
-  ## IF TRUE, the parent of \code{\link{tempdir}} will be used, so that
-  ## downloads of examples are preserved across R-sessions.
-  ## This is the default if
-  ##  environement variable "NOT_CRAN" is defined,
-  ##   when running from testthat::\code{\link{check}}.
-	tmpDir <- tempdir()
-	if (!dir.exists(tmpDir) ) dir.create(tmpDir)
-	# dirname on a directory returns the parent directory
-	if (isPreferParentDir) tmpDir <- dirname(tmpDir)
-	# If the directory inside packageDir is not yet existing, create it
-	exampleDir <- file.path(tmpDir, subDir)
-	if (!dir.exists(exampleDir) ) dir.create(exampleDir)
-	exampleDir
-}
-attr(getREddyProcExampleDir, "ex") <- function() {
-  # R session specific
-	getREddyProcExampleDir()
-  # outisde R-session specific
-	getREddyProcExampleDir(TRUE)
-}
-
-#' @export
-getFilledExampleDETha98Data <- function(
-	### Get or create the gapfilled version of the Example_DETha98 example data
-	exampleDir = getREddyProcExampleDir()  ##<< the directory where the
-	  ## cached filled example data is stored
-) {
-	exampleBaseName <- "Example_DETha98_Filled.RData"
-	examplePath <- getExamplePath(exampleBaseName, exampleDir = exampleDir)
-	if (!length(examplePath) ) {
-	  # Example_DETha98 is a lazyData object of REddyProc
-	  # nee to prefix package name here, to satisfy R CMD CHECK
-		Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98
-		                , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
-		Example_DETha98_sDate <- cbind(
-		  sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
-		EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate
-		                            , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-		EProc$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
-		EProc$sCalcPotRadiation()
-		EProc$sMDSGapFill('NEE', FillAll.b = TRUE)
-		EProc$sMDSGapFill('Rg', FillAll.b = FALSE)
-		EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
-		EProc$sMDSGapFill('VPD', FillAll.b = FALSE)
-		Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EProc$sExportResults() )
-		save(Example_DETha98_Filled, file = file.path(exampleDir, exampleBaseName))
-		examplePath <- getExamplePath(exampleBaseName)
-	}
-	##value<< example data.frame Example_DETha98 processed by gapfilling.
-	ans <- local({load(examplePath); get(ls()[1])})
-}
-
-#' @export
 sEddyProc.example <- function() {
-	##title<< sEddyProc - Example code
-	##description<<
-	## Dummy function to show code example for sEddyProc provided below
-	##author<< AMM
-	# Empty function just to write attribute with example code for documenation
+  ##title<< sEddyProc - Example code
+  ##description<<
+  ## Dummy function to show code example for sEddyProc provided below
+  ##author<< AMM
+  # Empty function just to write attribute with example code for documenation
 }()
 attr(sEddyProc.example, 'ex') <- function() {
 #+++ Simple example code for using the sEddyProc reference class +++
@@ -130,16 +14,16 @@ if (FALSE) { #Do not always execute example code (e.g. on package installation)
 #+++ Load data with one header and one unit row from (tab-delimited) text file
 examplePath <- getExamplePath('Example_DETha98.txt')
 if (length(examplePath)) {
-	EddyData.F <- fLoadTXTIntoDataframe(examplePath)
+  EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 } else {
-	warning(
-			"Could not find example text data file."
-			, " In order to execute this example code, "
-			, " please, allow downloading it from github. "
-			, " Type '?getExamplePath' for more information."
-			, " For now the RData version provided with the package is used.")
+  warning(
+      "Could not find example text data file."
+      , " In order to execute this example code, "
+      , " please, allow downloading it from github. "
+      , " Type '?getExamplePath' for more information."
+      , " For now the RData version provided with the package is used.")
   #data(Example_DETha98)
-	EddyData.F <- Example_DETha98
+  EddyData.F <- Example_DETha98
 }
 
 #+++ If not provided, calculate VPD from Tair and rH
@@ -147,12 +31,12 @@ EddyData.F$VPD  <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
 
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year'
-	, Day.s = 'DoY', Hour.s = 'Hour')
+  , Day.s = 'DoY', Hour.s = 'Hour')
 
 #+++ Initalize R5 reference class sEddyProc for processing of eddy data
 #+++ with all variables needed for processing later
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-				, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+        , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 #set Location of DE-Tharandt
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 
@@ -180,8 +64,8 @@ EddyProc.C$sPlotDailySums('NEE_f', 'NEE_fsd')
 # Gap-filled Tair (and NEE) needed for partitioning
 EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
-EddyProc.C$sMRFluxPartition()	# night time partitioning -> Reco, GPP
-EddyProc.C$sGLFluxPartition()	# day time partitioning -> Reco_DT, GPP_DT
+EddyProc.C$sMRFluxPartition()  # night time partitioning -> Reco, GPP
+EddyProc.C$sGLFluxPartition()  # day time partitioning -> Reco_DT, GPP_DT
 #plot(EddyProc.C$sTEMP$GPP_DT ~ EddyProc.C$sTEMP$GPP_f); abline(0, 1)
 #plot(-EddyProc.C$sTEMP$GPP_DT + EddyProc.C$sTEMP$Reco_DT ~ EddyProc.C$sTEMP$NEE_f)
 # abline(0, 1)
@@ -199,7 +83,7 @@ EddyProc.C$sPlotHHFluxes('Reco')
 
 #+++ Processing with ustar filtering before
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-				, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+        , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 
 # estimating the thresholds based on the data
@@ -220,9 +104,9 @@ FilledEddyData.F <- EddyProc.C$sExportResults()
 CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
 #+++ May rename variables to correspond to Ameriflux
 colnames(CombinedDataAmeriflux.F <- renameVariablesInDataframe(
-				CombinedData.F, getBGC05ToAmerifluxVariableNameMapping() ))
+        CombinedData.F, getBGC05ToAmerifluxVariableNameMapping() ))
 CombinedDataAmeriflux.F$TIMESTAMP_END <- POSIXctToBerkeleyJulianDate(
-		EddyProc.C$sExportData()[[1]] )
+    EddyProc.C$sExportData()[[1]] )
 head(tmp <- BerkeleyJulianDateToPOSIXct(CombinedDataAmeriflux.F$TIMESTAMP_END))
 fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
 
@@ -232,16 +116,16 @@ fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', 'out')
 
 #+++ Initialize new sEddyProc processing class
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
-		c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+    c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 
 #+++ When running several processing setup, a string suffix declaration is needed
 #+++ Here: Gap filling with and without ustar threshold
 EddyProc.C$sMDSGapFill('NEE', FillAll.b = FALSE, Suffix.s = 'NoUstar')
 EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b = FALSE
-	, UstarThres.df = 0.3, UstarSuffix.s = 'Thres1')
+  , UstarThres.df = 0.3, UstarSuffix.s = 'Thres1')
 EddyProc.C$sMDSGapFillAfterUstar('NEE', FillAll.b = FALSE
-	, UstarThres.df = 0.4, UstarSuffix.s = 'Thres2')
+  , UstarThres.df = 0.4, UstarSuffix.s = 'Thres2')
 # Gap-filled Tair, VPD, and Rg needed for partitioning
 EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
@@ -262,7 +146,7 @@ grep("GPP. * $|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
 
 #+++ Initialize new sEddyProc processing class
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-				, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+        , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
@@ -270,7 +154,7 @@ EddyProc.C$sMDSGapFill('Rg', FillAll.b = FALSE)
 
 #+++ Estimate the distribution of uStar by bootstrapping the data
 uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 100L
-	, probs = c(0.05, 0.5, 0.95))
+  , probs = c(0.05, 0.5, 0.95))
 print(uStarTh)
 # for using seasonal threshold, see vignette DEGebExample
 uStarThAnnual <- usGetAnnualSeasonUStarMap(uStarTh)[-2]
@@ -279,16 +163,16 @@ uStarSuffixes <- colnames(uStarThAnnual)[-1]
 
 #+++ Run the gapfilling for each of the quantiles (specified by arguments probs above)
 EddyProc.C$sMDSGapFillAfterUStarDistr('NEE',
-		UstarThres.df = uStarThAnnual,
-		UstarSuffix.V.s = uStarSuffixes,
-		FillAll = TRUE
+    UstarThres.df = uStarThAnnual,
+    UstarSuffix.V.s = uStarSuffixes,
+    FillAll = TRUE
 )
 # a look at the diffrent output column names:
 grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 
 #+++ Run the partitioning on each of the gap-filled NEE columns
 for (suffix in uStarSuffixes) {
-	EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
+  EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
 }
 # a look at the diffrent output column names:
 grep("GPP.*_f$|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
@@ -296,8 +180,8 @@ grep("GPP.*_f$|Reco", names(EddyProc.C$sExportResults()), value = TRUE)
 #+++ Aggregate to annual values with neglecting covariances and missing values
 dsRes <- EddyProc.C$sExportResults()
 GPPAgg <- sapply(uStarSuffixes, function(suffix) {
-	GPPHalfHour <- dsRes[, paste0("GPP_", suffix, "_f")]
-	mean(GPPHalfHour, na.rm = TRUE)
+  GPPHalfHour <- dsRes[, paste0("GPP_", suffix, "_f")]
+  mean(GPPHalfHour, na.rm = TRUE)
 })
 print(GPPAgg)
 # The difference is a first estimate of uncertainty in GPP due
@@ -322,18 +206,18 @@ Step.V.n <- ifelse(EddyData.F$DoY < 200 | EddyData.F$DoY > 250, 0, 1)
 
 #+++ Initialize new sEddyProc processing class with more columns
 EddyTest.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F, Step = Step.V.n
-	, QF = QF.V.n), c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
+  , QF = QF.V.n), c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
 
 #+++ Gap fill variable with (non-default) variables and limits
 # including preselection of data with quality flag QF == 0
 EddyTest.C$sMDSGapFill('LE', QFVar.s = 'QF', QFValue.n = 0, V1.s = 'Rg'
-	, T1.n = 30, V2.s = 'Tsoil', T2.n = 2, 'Step', 0.1)
+  , T1.n = 30, V2.s = 'Tsoil', T2.n = 2, 'Step', 0.1)
 
 #+++ Use individual gap filling subroutines with different window sizes
 # and up to five variables and limits
 EddyTest.C$sFillInit('NEE') #Initialize 'NEE' as variable to fill
 Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg', 50, 'rH', 30, 'Tair', 2.5
-	, 'Tsoil', 2, 'Step', 0.5)
+  , 'Tsoil', 2, 'Step', 0.5)
 Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair', 2.5, 'VPD', 3, 'Step', 0.5)
 Result_Step3.F <- EddyTest.C$sFillMDC(3)
 #Individual fill result columns are called 'VAR_...'
@@ -345,7 +229,7 @@ EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i = 1998)
 
 #+++ Initialize new sEddyProc processing class
 EddyTestMDS.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-				, c('NEE', 'Rg', 'Tair', 'VPD'))
+        , c('NEE', 'Rg', 'Tair', 'VPD'))
 #Initialize 'NEE' as variable to fill
 EddyTestMDS.C$sFillInit('NEE')
 # Set variables and tolerance intervals
@@ -366,10 +250,10 @@ Result_Step5a.F <- EddyTestMDS.C$sFillMDC(1)
 Result_Step5b.F <- EddyTestMDS.C$sFillMDC(2)
 # Step 6: Look-up table with window size \u00B121, \u00B128, ..., \u00B170
 for (WinDays.i in seq(21, 70, 7) ) Result_Step6.F <-
-			EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+      EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
 # Step 7: Look-up table with window size \u00B114, \u00B121, ..., \u00B170, Rg only
 for (WinDays.i in seq(14, 70, 7) ) Result_Step7.F <-
-			EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n)
+      EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n)
 # Step 8: Mean diurnal course with window size \u00B17, \u00B114, ..., \u00B1210 days
 for (WinDays.i in seq(7, 210, 7) ) Result_Step8.F <- EddyTestMDS.C$sFillMDC(WinDays.i)
 # Export results, columns are named 'VAR_'
@@ -381,7 +265,7 @@ FilledEddyData.F <- EddyTestMDS.C$sExportResults()
 
 #+++ Provide a single user-defined uStarThreshold
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-				, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+        , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
 Ustar.V.n <- 0.46
 EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df = Ustar.V.n)
 grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
@@ -393,3 +277,122 @@ grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 #  - Using change point detection instead of moving point method
 } # if FALSE
 }
+
+
+##+++++++++++++++++  Downloading and caching example files ++++++++++++++++++
+#' @export
+getExamplePath <- function(
+    ### checks if example filename is existing and if not tries to download it.
+    filename = "Example_DETha98.txt"  ##<< the name of the example file
+    , isTryDownload = FALSE            ##<< scalar locigal whether to try
+         ## downloading the file to package or tmp directory.
+        ## Because of CRAN checks, need to explicitely set to TRUE
+    , exampleDir = getREddyProcExampleDir()    ##<< directory where examples are
+        ## looked up and downloaded to
+    , remoteDir = ""                   ##<< the URL do download from
+) {
+  ##details<<
+  ## Example input text data files are not distributed with the package, because
+  ## it exceeds allowed package size.
+  ## Rather, the example files will be downloaded when required from github
+  ## by this function.
+  ##
+  ## The remoteDir (github) must be reachable, and the writing directory
+  ## must be writeable.
+  # set default remoteDir inside function instead of argument default,
+  # because it screws function signature
+  if (!nzchar(remoteDir) ) remoteDir <-
+      "https://raw.githubusercontent.com/bgctw/REddyProc/master/examples"
+  fullname <- file.path(exampleDir, filename)
+  if (file.exists(fullname) ) return(fullname)
+  if (isTRUE(isTryDownload) ) {
+    if (file.access(exampleDir, mode = 2) != 0) stop(
+      "target example directory ", exampleDir, " is not writeable.")
+    url <- file.path(remoteDir, filename)
+    retCode <- suppressWarnings(try(download.file(url, fullname, quiet = TRUE)
+                                    , silent = TRUE))
+    if (!inherits(retCode, "try-error") && retCode == 0) return(fullname)
+  }
+  ##value<< the full path name to the example data or if not available
+  ##an zero-length character.
+  ## Allows to check for \code{if (length(getExamplePath()) ) ... }
+  return(character(0) )
+}
+attr(getExamplePath, "ex") <- function() {
+  if (FALSE) { # only for interactive use
+    examplePath <- getExamplePath("Example_DETha98.txt", TRUE)
+    if (length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
+    #test for having no write access to the package directory
+    #getExamplePath("Example_DETha98.txt"
+    #  , exampleDir = .getExampleDir(package = "someNonExistentPackage"))
+  }
+}
+
+#' @export
+getREddyProcExampleDir <- function(
+  ### get the example directory inside temporary directory
+  isPreferParentDir =        ##<< logical scalar, wheter to prefer
+    ## temp parent directory instead of the R-session temp-Directory.
+    ## See details.
+      identical(Sys.getenv("NOT_CRAN"), "true")
+  , subDir = 'REddyProcExamples'  ##<< the name of the subdirectory inside the
+    ## tmp directory, where examples are stored
+) {
+  ##seealso<< \code{\link{getExamplePath}}
+  ##details<<
+  ## If \code{isPreferParentDir = FALSE} (the default),
+  ## the examples will be downloaded again for
+  ## each new R-session in a session specific directory as given by
+  ## \code{\link{tempdir}}. This corresponds to CRAN policy.
+  ## IF TRUE, the parent of \code{\link{tempdir}} will be used, so that
+  ## downloads of examples are preserved across R-sessions.
+  ## This is the default if
+  ##  environement variable "NOT_CRAN" is defined,
+  ##   when running from testthat::\code{\link{check}}.
+  tmpDir <- tempdir()
+  if (!dir.exists(tmpDir) ) dir.create(tmpDir)
+  # dirname on a directory returns the parent directory
+  if (isPreferParentDir) tmpDir <- dirname(tmpDir)
+  # If the directory inside packageDir is not yet existing, create it
+  exampleDir <- file.path(tmpDir, subDir)
+  if (!dir.exists(exampleDir) ) dir.create(exampleDir)
+  exampleDir
+}
+attr(getREddyProcExampleDir, "ex") <- function() {
+  # R session specific
+  getREddyProcExampleDir()
+  # outisde R-session specific
+  getREddyProcExampleDir(TRUE)
+}
+
+#' @export
+getFilledExampleDETha98Data <- function(
+  ### Get or create the gapfilled version of the Example_DETha98 example data
+  exampleDir = getREddyProcExampleDir()  ##<< the directory where the
+    ## cached filled example data is stored
+) {
+  exampleBaseName <- "Example_DETha98_Filled.RData"
+  examplePath <- getExamplePath(exampleBaseName, exampleDir = exampleDir)
+  if (!length(examplePath) ) {
+    # Example_DETha98 is a lazyData object of REddyProc
+    # nee to prefix package name here, to satisfy R CMD CHECK
+    Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98
+                    , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+    Example_DETha98_sDate <- cbind(
+      sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
+    EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate
+                                , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+    EProc$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+    EProc$sCalcPotRadiation()
+    EProc$sMDSGapFill('NEE', FillAll.b = TRUE)
+    EProc$sMDSGapFill('Rg', FillAll.b = FALSE)
+    EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
+    EProc$sMDSGapFill('VPD', FillAll.b = FALSE)
+    Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EProc$sExportResults() )
+    save(Example_DETha98_Filled, file = file.path(exampleDir, exampleBaseName))
+    examplePath <- getExamplePath(exampleBaseName)
+  }
+  ##value<< example data.frame Example_DETha98 processed by gapfilling.
+  ans <- local({load(examplePath); get(ls()[1])})
+}
+
