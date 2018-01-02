@@ -1,7 +1,8 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
-#sudo: false # comment to allow r_binary_packages
+#sudo: false
+sudo: required  # to allow r_binary_packages
 cache: packages
 env: _R_CHECK_FORCE_SUGGESTS_=false
 
