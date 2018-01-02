@@ -13,5 +13,14 @@ addons:
       - libnetcdf-dev
       - libudunits2-dev
 
-r_binary_packages: dplyr, purrr, tibble, mlegp, ncdf4, RNetCDF, testthat, minpack.lm, segmented, knitr
-
+r_binary_packages:
+  - dplyr
+  - purrr
+  - tibble
+  - ncdf4
+  - RNetCDF
+  - minpack.lm
+  - segmented
+  - mlegp
+  - testthat
+  - knitr
