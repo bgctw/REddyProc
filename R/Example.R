@@ -5,8 +5,8 @@ getExamplePath <- function(
 		, isTryDownload = FALSE	          ##<< scalar locigal whether to try
      		## downloading the file to package or tmp directory.
     		## Because of CRAN checks, need to explicitely set to TRUE
-		, exampleDir = .getExampleDir()	  ##<< directory where examples are looked
-		    ## up and downloaded to
+		, exampleDir = getREddyProcExampleDir()	  ##<< directory where examples are
+		    ## looked up and downloaded to
 		, remoteDir = "" 				          ##<< the URL do download from
 ) {
 	##details<<
@@ -33,7 +33,7 @@ getExamplePath <- function(
 	}
 	##value<< the full path name to the example data or if not available
 	##an zero-length character.
-	## Allows to check for if (length(getExamplePath()) ) ...
+	## Allows to check for \code{if (length(getExamplePath()) ) ... }
 	return(character(0) )
 }
 attr(getExamplePath, "ex") <- function() {
@@ -46,48 +46,51 @@ attr(getExamplePath, "ex") <- function() {
 	}
 }
 
-.getExampleDir <- function(
-	### get the example directory inside the package, or temp directory
-	subDir = 'REddyProcExamples'	##<< the name of the subdirectory
-	  ## where examples are stored
-	, package = 'REddyProc'			  ##<< the package name of REddyProc
-	, isPreferPackageDir =        ##<< logical scalar, wheter to prefer
+#' @export
+getREddyProcExampleDir <- function(
+	### get the example directory inside temporary directory
+	isPreferParentDir =        ##<< logical scalar, wheter to prefer
+	  ## temp parent directory instead of the R-session temp-Directory.
+	  ## See details.
 	    identical(Sys.getenv("NOT_CRAN"), "true")
-	  ## the package dir instead of the temp as parent directory.
-	  ## Defaults to TRUE if environement variable "NOT_CRAN" is defined,
-	  ## which is the case when running from testthat::check
+	, subDir = 'REddyProcExamples'	##<< the name of the subdirectory inside the
+  	## tmp directory, where examples are stored
 ) {
-	packageDir <- system.file(package = package)
+  ##seealso<< \code{\link{getExamplePath}}
 	##details<<
-	## If the package directory is not writeable, return the parent of the
-	## session specific tempdir.
-	parentDir <- if (isPreferPackageDir &&
-	                 file.access(packageDir, mode = 2) == 0) packageDir else {
-				# tempDir returns a session specific dir within temporary directory
-				#  extract parent
-				#  for normalizePath, directory must exist
-				tmpDirParent <- tempdir()
-				if (!dir.exists(tmpDirParent) ) dir.create(tmpDirParent)
-				tmpDir <- gsub("/[^/]+$", ""
-				               , normalizePath(tempdir(), winslash = "/"))
-			}
+  ## If \code{isPreferParentDir = FALSE} (the default),
+  ## the examples will be downloaded again for
+  ## each new R-session in a session specific directory as given by
+  ## \code{\link{tempdir}}. This corresponds to CRAN policy.
+  ## IF TRUE, the parent of \code{\link{tempdir}} will be used, so that
+  ## downloads of examples are preserved across R-sessions.
+  ## This is the default if
+  ##  environement variable "NOT_CRAN" is defined,
+  ##   when running from testthat::\code{\link{check}}.
+	tmpDir <- tempdir()
+	if (!dir.exists(tmpDir) ) dir.create(tmpDir)
+	# dirname on a directory returns the parent directory
+	if (isPreferParentDir) tmpDir <- dirname(tmpDir)
 	# If the directory inside packageDir is not yet existing, create it
-	exampleDir <- file.path(parentDir, subDir)
+	exampleDir <- file.path(tmpDir, subDir)
 	if (!dir.exists(exampleDir) ) dir.create(exampleDir)
 	exampleDir
 }
-attr(.getExampleDir, "ex") <- function() {
-	.getExampleDir()
-	#test for having no write access to the package directory
-	.getExampleDir(package = "someNonExistentPackage")
+attr(getREddyProcExampleDir, "ex") <- function() {
+  # R session specific
+	getREddyProcExampleDir()
+  # outisde R-session specific
+	getREddyProcExampleDir(TRUE)
 }
 
 #' @export
 getFilledExampleDETha98Data <- function(
 	### Get or create the gapfilled version of the Example_DETha98 example data
+	exampleDir = getREddyProcExampleDir()  ##<< the directory where the
+	  ## cached filled example data is stored
 ) {
 	exampleBaseName <- "Example_DETha98_Filled.RData"
-	examplePath <- getExamplePath(exampleBaseName)
+	examplePath <- getExamplePath(exampleBaseName, exampleDir = exampleDir)
 	if (!length(examplePath) ) {
 	  # Example_DETha98 is a lazyData object of REddyProc
 	  # nee to prefix package name here, to satisfy R CMD CHECK
@@ -104,7 +107,7 @@ getFilledExampleDETha98Data <- function(
 		EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
 		EProc$sMDSGapFill('VPD', FillAll.b = FALSE)
 		Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EProc$sExportResults() )
-		save(Example_DETha98_Filled, file = file.path(.getExampleDir(), exampleBaseName))
+		save(Example_DETha98_Filled, file = file.path(exampleDir, exampleBaseName))
 		examplePath <- getExamplePath(exampleBaseName)
 	}
 	##value<< example data.frame Example_DETha98 processed by gapfilling.

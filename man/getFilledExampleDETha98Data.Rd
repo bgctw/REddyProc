@@ -2,7 +2,11 @@
 \alias{getFilledExampleDETha98Data}
 \title{getFilledExampleDETha98Data}
 \description{Get or create the gapfilled version of the Example_DETha98 example data}
-\usage{getFilledExampleDETha98Data()}
+\usage{getFilledExampleDETha98Data(exampleDir = getREddyProcExampleDir())}
+\arguments{
+  \item{exampleDir}{the directory where the
+cached filled example data is stored}
+}
 
 \value{example data.frame Example_DETha98 processed by gapfilling.}
 

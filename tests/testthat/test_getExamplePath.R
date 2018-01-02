@@ -5,14 +5,15 @@ context("getExamplePath")
 # TRUE during testthat::check()
 isNotOnCRAN <- identical(Sys.getenv("NOT_CRAN"), "true")
 
-test_that("NOT_CRAN",{
+test_that("NOT_CRAN true",{
   skip_on_cran()
   formerEnv <- Sys.getenv("NOT_CRAN")
   tryCatch({
     Sys.setenv(NOT_CRAN = "true")
-    exDir <- REddyProc:::.getExampleDir()
-    expect_equal( grep("REddyProc/REddyProcExamples", exDir), 1L)
-    fName <- "Example_DE-Tha.1996.1998.hourly_selVars.nc"
+    exDir <- getREddyProcExampleDir()
+    # dirname on a directory returns the parent directory
+    expect_equal( file.path(dirname(tempdir()),"REddyProcExamples"), exDir)
+    fName <- "readme.txt"
     fPath <- file.path(exDir,fName)
     # first make sure example is not there
     unlink(fPath)
@@ -31,10 +32,9 @@ test_that("NOT_CRAN undefined",{
   formerEnv <- Sys.getenv("NOT_CRAN")
   tryCatch({
     Sys.setenv(NOT_CRAN = "")
-    exDir <- REddyProc:::.getExampleDir()
-    # temp directory does not contain REddyProc
-    expect_equal( grep("REddyProc/REddyProcExamples", exDir), integer(0))
-    fName <- "Example_DE-Tha.1996.1998.hourly_selVars.nc"
+    exDir <- getREddyProcExampleDir()
+    expect_equal( file.path(tempdir(),"REddyProcExamples"), exDir)
+    fName <- "readme.txt"
     fPath <- file.path(exDir,fName)
     # first make sure example is not there
     unlink(fPath)

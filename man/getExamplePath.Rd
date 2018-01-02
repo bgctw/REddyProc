@@ -3,15 +3,15 @@
 \title{getExamplePath}
 \description{checks if example filename is existing and if not tries to download it.}
 \usage{getExamplePath(filename = "Example_DETha98.txt", 
-    isTryDownload = FALSE, exampleDir = .getExampleDir(), 
+    isTryDownload = FALSE, exampleDir = getREddyProcExampleDir(), 
     remoteDir = "")}
 \arguments{
   \item{filename}{the name of the example file}
   \item{isTryDownload}{scalar locigal whether to try
 downloading the file to package or tmp directory.
 Because of CRAN checks, need to explicitely set to TRUE}
-  \item{exampleDir}{directory where examples are looked
-up and downloaded to}
+  \item{exampleDir}{directory where examples are
+looked up and downloaded to}
   \item{remoteDir}{the URL do download from}
 }
 \details{Example input text data files are not distributed with the package, because
