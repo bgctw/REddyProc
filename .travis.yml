@@ -4,3 +4,13 @@ language: R
 sudo: false
 cache: packages
 env: _R_CHECK_FORCE_SUGGESTS_=false
+
+# libraries necessary for RNetCDF and ncdf4
+addons:
+  apt:
+    packages:
+      - libnetcdf-dev
+      - libudunits2-dev
+
+r_binary_packages: dplyr, purrr, tibble, mlegp, ncdf4, RNetCDF, testthat, minpack.lm, segmented, knitr
+
