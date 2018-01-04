@@ -37,7 +37,7 @@ E.g. with an first entry "U05" in \code{UstarSuffix.V.s} corresponding to the fi
 the corresponding filled NEE can be found in output collumn "NEE_U05_f".}
 
 \author{TW
-(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
+Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Thomas Wutzler Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Kerstin Sickel Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Olaf Menzer Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Ladislav Šigut Šigut <sigut.l@czechglobe.cz> [ctb]}
 
 
 

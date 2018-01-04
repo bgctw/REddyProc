@@ -1,7 +1,7 @@
 \name{getBGC05ToAmerifluxVariableNameMapping}
 \alias{getBGC05ToAmerifluxVariableNameMapping}
 \title{getBGC05ToAmerifluxVariableNameMapping}
-\description{Get a mapping of variable names of REddyProc defaults to names of the Berkeley 2016 release of the Fluxnet data}
+\description{map REddyProc names the Berkeley 2016 release of the Fluxnet data}
 \usage{getBGC05ToAmerifluxVariableNameMapping(map = character(), 
     mapDefault = c(Year = "YEAR", DoY = "DOY", 
         Rg = "SW_IN", Tair = "TA", Tsoil = "TS", 
@@ -11,13 +11,16 @@
         H_f = "H_F", LE_f = "LE_F", NEE_fqc = "NEE_QC", 
         H_fqc = "H_QC", LE_fqc = "LE_QC"))}
 \arguments{
-  \item{map}{named character vector: additional mapping, that extends or overwrites defaults in \code{mapDefault}}
+  \item{map}{named character vector: additional mapping,
+that extends or overwrites defaults in \code{mapDefault}}
   \item{mapDefault}{named character vector: default mapping}
 }
+\details{Get a mapping of variable names of REddyProc defaults to names
+of the Berkeley 2016 release of the Fluxnet data}
 
 
-
-\author{(Department for Biogeochemical Integration at MPI-BGC, Jena, Germany)}
+\author{TW,
+Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Thomas Wutzler Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Kerstin Sickel Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Olaf Menzer Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Ladislav Šigut Šigut <sigut.l@czechglobe.cz> [ctb]}
 
 
 
