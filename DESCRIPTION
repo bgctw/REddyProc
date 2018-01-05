@@ -1,16 +1,16 @@
 Package: REddyProc
 Type: Package
-Version: 1.0.0.9006
+Version: 1.0.0.9007
 Title: Data Processing and Plotting Utilities of (Half-)Hourly Eddy-Covariance Measurements
 Authors@R: c( person("Markus", "Reichstein", role=c("aut"), email="mreichstein@bgc-jena.mpg.de")
-              ,person( c("Thomas","Wutzler"), "Wutzler", role=c("aut","cre"), email="twutz@bgc-jena.mpg.de" )
+              ,person( "Thomas", "Wutzler", role=c("aut","cre"), email="twutz@bgc-jena.mpg.de" )
               ,person( c("Antje","Maria"), "Moffat", role=c("aut","trl"), email="antje.moffat@bgc.mpg.de" )
-              ,person( c("Kerstin","Sickel"), "Sickel", role=c("ctb","trl"), email="ksickel@bgc-jena.mpg.de" )
-              ,person( c("Olaf","Menzer"), "Menzer", role=c("ctb"), email="omenzer@bgc-jena.mpg.de" )
-              ,person( c("Mirco","Migliavacca"), "Migliavacca", role=c("aut"), email="mmiglia@bgc-jena.mpg.de" )
-              ,person( c("Ladislav","Šigut"), "Šigut", role=c("ctb"), email="sigut.l@czechglobe.cz" )
+              ,person( "Kerstin", "Sickel", role=c("ctb","trl"), email="ksickel@bgc-jena.mpg.de" )
+              ,person( "Olaf", "Menzer", role=c("ctb"), email="omenzer@bgc-jena.mpg.de" )
+              ,person( "Mirco", "Migliavacca", role=c("aut"), email="mmiglia@bgc-jena.mpg.de" )
+              ,person( "Ladislav", "Šigut", role=c("ctb"), email="sigut.l@czechglobe.cz" )
               )
-Description: R eddy processing package with MDS gap filling algorithm, adopted after PV-Wave source code from Markus Reichstein.
+Description: Eddy-covariance data post-processing providing standard and extensible uStar-filtering, gap-filling, and flux-partitioning.
 URL: https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb, http://r-forge.r-project.org/projects/reddyproc/
 License: GPL (>= 2)
 Encoding: UTF-8
@@ -40,6 +40,7 @@ Collate:
     'PartitioningLasslop10.R'
     'PartitioningLasslop10Nighttime.R'
     'RcppExports.R'
+    'donttest.R'
     'imports.R'
     'variableNames.R'
     'zzzDebugCode.R'
