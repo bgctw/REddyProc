@@ -7,14 +7,14 @@
 
 
 \author{AMM
-Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Thomas Wutzler Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Kerstin Sickel Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Olaf Menzer Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Ladislav Šigut Šigut <sigut.l@czechglobe.cz> [ctb]}
+Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Thomas Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Kerstin Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Olaf Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Ladislav Šigut <sigut.l@czechglobe.cz> [ctb]}
 
 
 
 
 \examples{
 #+++ Simple example code for using the sEddyProc reference class +++
-if (FALSE) { #Do not always execute example code (e.g. on package installation)
+donttest({#Do not always execute example code (e.g. on package installation)
 # library(REddyProc) # user should load the package before executing any example
 
 #+++ Load data with one header and one unit row from (tab-delimited) text file
@@ -281,5 +281,5 @@ grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 #  - using seasonal instead of annual uStar threshold estimates in gapfilling
 #  - Bootstrapping uncertainty associated with uStar Threshold estimation
 #  - Using change point detection instead of moving point method
-} # if FALSE
+}) # donttest()
 }

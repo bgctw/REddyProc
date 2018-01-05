@@ -18,15 +18,15 @@ The time stamp information needs to be provided as variables 'year', 'month', 'd
 \value{Data frame with data from nc file.}
 
 \author{AMM, KS
-Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Thomas Wutzler Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Kerstin Sickel Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Olaf Menzer Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Ladislav Šigut Šigut <sigut.l@czechglobe.cz> [ctb]}
+Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Thomas Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Kerstin Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Olaf Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Ladislav Šigut <sigut.l@czechglobe.cz> [ctb]}
 
 
 
 
 \examples{
-if (FALSE) { #Do not always execute example code (e.g. on package installation)
+donttest({#Do not always execute example code (e.g. on package installation)
   Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
   EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
 		, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc', TRUE))
-}
+})
 }
