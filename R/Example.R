@@ -8,7 +8,7 @@ sEddyProc.example <- function() {
 }()
 attr(sEddyProc.example, 'ex') <- function() {
 #+++ Simple example code for using the sEddyProc reference class +++
-if (FALSE) { #Do not always execute example code (e.g. on package installation)
+donttest({#Do not always execute example code (e.g. on package installation)
 # library(REddyProc) # user should load the package before executing any example
 
 #+++ Load data with one header and one unit row from (tab-delimited) text file
@@ -275,7 +275,7 @@ grep("NEE_.*_f$", names(EddyProc.C$sExportResults()), value = TRUE)
 #  - using seasonal instead of annual uStar threshold estimates in gapfilling
 #  - Bootstrapping uncertainty associated with uStar Threshold estimation
 #  - Using change point detection instead of moving point method
-} # if FALSE
+}) # donttest()
 }
 
 
@@ -319,13 +319,10 @@ getExamplePath <- function(
   return(character(0) )
 }
 attr(getExamplePath, "ex") <- function() {
-  if (FALSE) { # only for interactive use
+  donttest({# only for interactive use
     examplePath <- getExamplePath("Example_DETha98.txt", TRUE)
     if (length(examplePath) ) tmp <- fLoadTXTIntoDataframe(examplePath)
-    #test for having no write access to the package directory
-    #getExamplePath("Example_DETha98.txt"
-    #  , exampleDir = .getExampleDir(package = "someNonExistentPackage"))
-  }
+  })
 }
 
 #' @export

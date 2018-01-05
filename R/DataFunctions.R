@@ -9,19 +9,17 @@
 
 #' @export
 fConvertTimeToPosix <- function(
-  ##title<<
-  ## Convert different time formats to POSIX
-  ##description<<
-  ## The different time formats are converted to POSIX (GMT) and a 'TimeDate' column is prefixed to the data frame
-  Data.F                ##<< Data frame with time columns to be converted
-  , TFormat.s            ##<< Abbreviation for implemented time formats
+  ### Convert different time formats to POSIX
+  Data.F                   ##<< Data frame with time columns to be converted
+  , TFormat.s              ##<< Abbreviation for implemented time formats
   , Year.s = 'none'        ##<< Column name of year
   , Month.s = 'none'       ##<< Column name of month
   , Day.s = 'none'         ##<< Column name of day
   , Hour.s = 'none'        ##<< Column name of hour
   , Min.s = 'none'         ##<< Column name of min
   , TName.s = 'DateTime'   ##<< Column name of new column
-  , tz = 'GMT'				##<< timezone used to store the data. Advisded to keep GMT to avoid daytime shifting issues
+  , tz = 'GMT'				     ##<< timezone used to store the data. Advisded to keep
+    ## GMT to avoid daytime shifting issues
   )
   ##author<<
   ## AMM
@@ -30,11 +28,15 @@ fConvertTimeToPosix <- function(
   # TEST: Data.F <- Date.F.x; TFormat.s <- 'YDH'; Year.s = 'FluxnetYear.n'; Day.s = 'FluxnetDoY.n'; Hour.s = 'FluxnetHourDec.n'
   #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year) is 366 but year is already the next year, use YMDHM instead!
 {
+  ##details<<
+  ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
+  ## column is prefixed to the data frame
   #Check if specified columns exist and are in data frame, with 'none' as dummy
   NoneCols.b <- c(Year.s, Month.s, Day.s, Hour.s, Min.s) %in% 'none'
-  fCheckColNames(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b], 'fConvertTimeToPosix')
-  fCheckColNum(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b], 'fConvertTimeToPosix')
-
+  fCheckColNames(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
+                 , 'fConvertTimeToPosix')
+  fCheckColNum(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
+               , 'fConvertTimeToPosix')
   ##details<<
   ## Implemented time formats:
   if (TFormat.s == 'YDH') {
@@ -68,8 +70,9 @@ fConvertTimeToPosix <- function(
     #Set time format
     lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%j-%H-%M', tz = tz)
     if (sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
-
+      stop(
+        sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: '
+        , which(is.na(lTime.V.p)))
   } else if (TFormat.s == 'YMDH') {
     if (any(c(Year.s, Month.s, Day.s, Hour.s) == 'none') )
       stop('With time format \'YMDH\' year, month, day, and hour need to be specified!')
@@ -130,24 +133,25 @@ fConvertTimeToPosix <- function(
   ##value<<
   ## Data frame with prefixed POSIX time column.
 }
-
 attr(fConvertTimeToPosix, 'ex') <- function() {
   # See unit test in test_fConvertTimeToPosix for example
 }
 
-
+#' @export
 getTZone <- function(
-	### extracts the timezone attribute from POSIXct but returns argument default if this attribute is missing
-	x					##<< POSIXct vector
-	, default = "GMT"		##<< time zone returned, if x has not timezone associated or attribute is the zero string
+	### extracts the timezone attribute from POSIXct with default on missing
+	x					          ##<< POSIXct vector
+	, default = "GMT"		##<< time zone returned,
+	  ## if x has not timezone associated or attribute is the zero string
 ) {
 	tzone <- attr(x, "tzone")
 	if (length(tzone) && nzchar(tzone)) tzone else default
 }
 attr(getTZone, "ex") <- function() {
-	getTZone(as.POSIXct("2010-07-01 16:00:00", tz = "etc / GMT-1") )
+	getTZone(as.POSIXct("2010-07-01 16:00:00", tz = "etc/GMT-1") )
 	getTZone(as.POSIXct("2010-07-01 16:00:00") )
-	getTZone(Sys.time() )		# printed with local time zone, but actually has no tz attribute
+	# printed with local time zone, but actually has no tz attribute
+	getTZone(Sys.time())
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -422,16 +426,14 @@ fInterpolateGaps <- function(
   Data.V.n[length(Data.V.n)] <- Data.V.n[rev(which(!is.na(Data.V.n)))[1]]
   # Linear interpolation between all points
   Filled.V.n <- approx(seq_along(Data.V.n)[!is.na(Data.V.n)], Data.V.n[!is.na(Data.V.n)], xout = seq_along(Data.V.n))$y
-
-  if (FALSE) {
-    # Nice plot to see interpolation
-    plot(seq_along(Data.V.n), Data.V.n)
-    points(Filled.V.n, col = 2, pch = " * ")
-  }
-
   Filled.V.n
   ##value<<
   ## Numeric with NAs linearly interpolated.
+}
+.tmp.f <- function(){
+  # Nice plot to see interpolation
+  plot(seq_along(Data.V.n), Data.V.n)
+  points(Filled.V.n, col = 2, pch = " * ")
 }
 
 

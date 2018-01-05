@@ -54,12 +54,11 @@ fLoadTXTIntoDataframe <- function(
   ##value<<
   ## Data frame with data from text file.
 }
-
 attr(fLoadTXTIntoDataframe, 'ex') <- function() {
-  if (FALSE) { #Do not always execute example code (e.g. on package installation)
+  donttest({#Do not always execute example code (e.g. on package installation)
 	  examplePath <- getExamplePath('Example_DETha98.txt', TRUE)
 	  EddyData.F <- fLoadTXTIntoDataframe(examplePath)
-  }
+  })
 }
 
 
@@ -111,11 +110,11 @@ fLoadFluxNCIntoDataframe <- function(
   ## Data frame with data from nc file.
 }
 attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
-  if (FALSE) { #Do not always execute example code (e.g. on package installation)
+  donttest({#Do not always execute example code (e.g. on package installation)
     Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
     EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
 		, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc', TRUE))
-  }
+  })
 }
 
 #' @export
@@ -365,13 +364,12 @@ fWriteDataframeToFile <- function(
   ##value<<
   ## Output of data frame written to file of specified type.
 }
-
 attr(fWriteDataframeToFile, 'ex') <- function() {
-  if (FALSE) { #Do not always execute example code (e.g. on package installation)
-    Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
-    EddyData.F <- fLoadTXTIntoDataframe('Example_DETha98.txt', Dir.s)
-    fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', 'out')
-  }
+  donttest({#Do not always execute example code (e.g. on package installation)
+    (Dir.s <- tempdir())
+    EddyData.F <- fLoadTXTIntoDataframe(getExamplePath('Example_DETha98.txt',TRUE))
+    fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', Dir.s = Dir.s)
+  })
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -394,13 +392,6 @@ fInitFilesDir <- function(
   ## Character vector with names of all available site files.
 }
 
-attr(fInitFilesDir, 'ex') <- function()   {
-  if (FALSE) { #Do not always execute example code (e.g. on package installation)
-    Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
-    fInitFilesDir(Dir.s, 'txt')
-  }
-}
-
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fStripFileExtension <- function(
@@ -417,12 +408,6 @@ fStripFileExtension <- function(
   ## Character vector containing the first part of file names (before first dot in file name).
 }
 
-attr(fStripFileExtension, 'ex') <- function()  {
-  if (FALSE) { #Do not always execute example code (e.g. on package installation)
-    Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
-    fStripFileExtension(fInitFilesDir(Dir.s, 'txt'))
-  }
-}
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
