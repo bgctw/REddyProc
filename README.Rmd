@@ -4,7 +4,8 @@ output: github_document
 
 <!-- 
 README.md is generated from README.Rmd. Please edit that file
-knitr::knit("README.Rmd") 
+#knitr::knit("README.Rmd") 
+rmarkdown::render("README.Rmd")
 maybe clear cache before
 -->
 
@@ -87,6 +88,6 @@ EddyProc.C$sPlotFingerprintY('NEE_f', Year.i = 1998)
 
 
 Further examples are in
-[vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
+[vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md)
 and
-[?sEddyProc.example](https://github.com/bgctw/REddyProc/blob/master/R/Example.R).
+[vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
