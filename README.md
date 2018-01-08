@@ -2,6 +2,7 @@
 <!-- 
 README.md is generated from README.Rmd. Please edit that file
 knitr::knit("README.Rmd") 
+#rmarkdown::render("README.Rmd") # does not generate .md
 maybe clear cache before
 -->
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc) [![Travis-CI Build Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
@@ -73,4 +74,4 @@ EddyProc.C$sPlotFingerprintY('NEE_f', Year.i = 1998)
 
 ![](README-example-1.png)
 
-Further examples are in [vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md) and [?sEddyProc.example](https://github.com/bgctw/REddyProc/blob/master/R/Example.R).
+Further examples are in [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md) and [vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)

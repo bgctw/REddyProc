@@ -10,6 +10,10 @@
 ^vignettes/figure/.*$
 ^vignettes/cache/.*$
 ^vignettes/cache$
+^vignettes/.*_cache$
+^vignettes/.*_files$
+^vignettes/.*\.md$
+^vignettes/.*\.html$
 ^scratch$
 ^out$
 ^plots$
