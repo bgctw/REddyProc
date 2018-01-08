@@ -11,7 +11,7 @@
   \item{Flux measurements}{NEE, LE, H}
   \item{Meteo measurements}{Rg, Tair, Tsoil, rH, VPD, Ustar}
   }
-For processing of the example data see \code{\link{sEddyProc.example}}.
+For processing of the example data see \href{../doc/useCase.html}{useCase vignette}.
 }
 
 \source{The data originates from the CARBODATA CD.}

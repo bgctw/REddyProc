@@ -110,7 +110,7 @@ sEddyProc$methods(.sxSetTitle = .sEddyProc_sxSetTitle)
     } else {
       stop(SubCallFunc.s, '::: Format.s not valid: ', Format.s, '!')
     }
-
+    devAskNewPage(ask = FALSE)  # to prevent asking Return
     PlotFile.s
     ##value<<
     ## Name of opened graphics device
@@ -303,6 +303,7 @@ sEddyProc_sPlotFingerprint <- function(
 ) {
     ##author<<
     ## KS, AMM
+    ##alias<< sPlotFingerprint
     # TEST: sPlotFingerprint('NEE'); sPlotFingerprint('NEE_f', 'NEE_fqc', 1)
     'Image with fingerprints of each year'
     # Calculate number of screens and width and heigth
@@ -510,18 +511,18 @@ sEddyProc$methods(sPlotHHFluxesY = sEddyProc_sPlotHHFluxesY)
 
 #' @export
 sEddyProc_sPlotHHFluxes <- function(
-    ##title<<
-    ## sEddyProc$sPlotHHFluxes - Image with half-hourly fluxes for each year
-    ##description<<
-    ## Generates image in specified format ('pdf' or 'png') with half-hourly fluxes and their daily means,
-    ## see also \code{\link{sEddyProc_sPlotHHFluxesY}}.
-    Var.s               ##<< (Filled) variable to plot
+    ### Produce image-plot with half-hourly fluxes for each year
+    Var.s                  ##<< (Filled) variable to plot
     , QFVar.s = 'none'     ##<< Quality flag of variable to be filled
     , QFValue.n = NA_real_ ##<< Value of quality flag for data to plot
     , Format.s = 'pdf'     ##<< Graphics file format ('pdf' or 'png')
     , Dir.s = 'plots'      ##<< Directory for plotting
 ) {
-    ##author<<
+  ##details<<
+  ## Generates image in specified format ('pdf' or 'png') with half-hourly fluxes
+  ## and their daily means,
+  ## see also \code{\link{sEddyProc_sPlotHHFluxesY}}.
+  ##author<<
     ## KS, AMM
     # TEST: sPlotHHFluxes('NEE')
     'Image with half-hourly fluxes for each year'

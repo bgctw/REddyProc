@@ -614,7 +614,7 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
 	## introduced by the uncertain estimate of the u * threshold.
 
     ##seealso<<
-	## Advanced Example 1b in \code{\link{sEddyProc.example}}
+	  ## \href{useCase vignette}{../doc/useCase.html}
     # # \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
 
 	#if (!("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")

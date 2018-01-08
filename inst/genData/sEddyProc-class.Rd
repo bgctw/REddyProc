@@ -15,7 +15,7 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
 \author{ AM, TW }
 
 \note{
-  for examples see \code{\link{sEddyProc.example}}
+  for examples see \href{../doc/useCase.html}{useCase vignette}
 }
 \keyword{classes}
 \section{Fields}{
@@ -30,7 +30,7 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
   }
 }
 \section{Methods}{
-  Setup, import and export 
+  Setup, import and export
   \describe{
     \item{\code{\link{sEddyProc_initialize}(ID.s, Data.F, ColNames.V.s, ColPOSIXTime.s, DTS.n, ColNamesNonNumeric.V.s, Lat_deg.n, Long_deg.n, TimeZone_h.n, ...)}}{}
     \item{\code{\link{sEddyProc_sSetLocationInfo}(Lat_deg.n, Long_deg.n, TimeZone_h.n)}}{}
@@ -38,14 +38,14 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
     \item{\code{\link{sEddyProc_sExportData}()}}{}
     \item{\code{\link{sEddyProc_sGetData}()}}{}
   }
-  
+
   uStar threshold estimation
   \describe{
     \item{\code{\link{sEddyProc_sEstUstarThresholdDistribution}(ctrlUstarEst.l, ctrlUstarSub.l, UstarColName, NEEColName, TempColName, RgColName, ..., seasonFactor.v, seasonFactorsYear, nSample, probs, verbose.b)}}{}
     \item{\code{\link{sEddyProc_sEstUstarThreshold}(UstarColName, NEEColName, TempColName, RgColName, ...)}}{}
     \item{\code{\link{sEddyProc_sPlotNEEVersusUStarForSeason}(season.s, Format.s, Dir.s, UstarColName, NEEColName, TempColName, WInch, HInchSingle, ...)}}{}
   }
-  
+
   Gapfilling
   \describe{
     \item{\code{\link{sEddyProc_sCalcPotRadiation}(useSolartime.b)}}{}
@@ -56,13 +56,13 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
     \item{\code{\link{sEddyProc_sFillLUT}(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, V4.s, T4.n, V5.s, T5.n, Verbose.b)}}{}
     \item{\code{\link{sEddyProc_sFillInit}(Var.s, QFVar.s, QFValue.n, FillAll.b)}}{}
   }
-  
+
   Flux partitioning
   \describe{
     \item{\code{\link{sEddyProc_sMRFluxPartition}(FluxVar.s, QFFluxVar.s, QFFluxValue.n, TempVar.s, QFTempVar.s, QFTempValue.n, RadVar.s, Lat_deg.n, Long_deg.n, TimeZone_h.n, T_ref.n, Suffix.s, debug.l, parsE0Regression)}}{}
     \item{\code{\link{sEddyProc_sGLFluxPartition}(..., debug.l, isWarnReplaceColumns)}}{}
-  }  
-  
+  }
+
   Plotting
   \describe{
     \item{\code{\link{sEddyProc_sPlotDailySums}(Var.s, VarUnc.s, Format.s, Dir.s, unit.s, ...)}}{}
@@ -72,5 +72,5 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
     \item{\code{\link{sEddyProc_sPlotDiurnalCycle}(Var.s, QFVar.s, QFValue.n, Format.s, Dir.s)}}{}
     \item{\code{\link{sEddyProc_sPlotFingerprint}(Var.s, QFVar.s, QFValue.n, Format.s, Dir.s, ...)}}{}
     \item{\code{\link{sEddyProc_sPlotFingerprintY}(Var.s, QFVar.s, QFValue.n, Year.i, Legend.b, Col.V, valueLimits)}}{}
-  }  
+  }
 }

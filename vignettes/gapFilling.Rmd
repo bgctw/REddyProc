@@ -1,0 +1,113 @@
+---
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{extended use of gap-filling}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+#rmarkdown::render("vignettes/gapFilling.Rmd")
+opts_knit$set(root.dir = '..')
+opts_chunk$set(
+    #, fig.align = "center"
+    #, fig.width = 3.27, fig.height = 2.5, dev.args = list(pointsize = 10)
+    #,cache = TRUE
+    #, fig.width = 4.3, fig.height = 3.2, dev.args = list(pointsize = 10)
+    #, fig.width = 6.3, fig.height = 6.2, dev.args = list(pointsize = 10)
+    # works with html but causes problems with latex
+    #,out.extra = 'style = "display:block; margin: auto"' 
+    )
+knit_hooks$set(spar = function(before, options, envir) {
+    if (before) {
+        par(las = 1 )                   #also y axis labels horizontal
+        par(mar = c(2.0,3.3,0,0) + 0.3 )  #margins
+        par(tck = 0.02 )                          #axe-tick length inside plots             
+        par(mgp = c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
+     }
+})
+```
+
+
+```{r, include = FALSE, warning = FALSE}
+themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
+bgiDir <- "~/bgi"
+```
+
+# Extended usage of the gap filling algorithm
+
+
+```{r inputData, spar = TRUE, message = FALSE}
+#+++ load libraries used in this vignette
+library(REddyProc)
+library(dplyr)
+#+++ Add time stamp in POSIX time format
+EddyDataWithPosix.F <- fConvertTimeToPosix(Example_DETha98, 'YDH',Year.s = 'Year'
+    ,Day.s = 'DoY',Hour.s = 'Hour')
+```
+
+
+```{r ex2b , warn = FALSE, message = FALSE}
+#+++ Add some (non-sense) example vectors:
+#+++ Quality flag vector (e.g. from applying ustar filter)
+QF.V.n <- rep(c(1, 0, 1, 0, 1, 0, 0, 0, 0, 0), nrow(EddyDataWithPosix.F) / 10)
+#+++ Dummy step function vector to simulate e.g. high / low water table
+Step.V.n <- ifelse(EddyDataWithPosix.F$DoY < 200 | EddyDataWithPosix.F$DoY > 250, 0, 1)
+
+#+++ Initialize new sEddyProc processing class with more columns
+EddyTest.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F, Step = Step.V.n
+  , QF = QF.V.n), c('NEE', 'LE', 'H', 'Rg', 'Tair', 'Tsoil', 'rH', 'VPD', 'QF', 'Step'))
+
+#+++ Gap fill variable with (non-default) variables and limits
+# including preselection of data with quality flag QF == 0
+EddyTest.C$sMDSGapFill('LE', QFVar.s = 'QF', QFValue.n = 0, V1.s = 'Rg'
+  , T1.n = 30, V2.s = 'Tsoil', T2.n = 2, 'Step', 0.1)
+
+#+++ Use individual gap filling subroutines with different window sizes
+# and up to five variables and limits
+EddyTest.C$sFillInit('NEE') #Initialize 'NEE' as variable to fill
+Result_Step1.F <- EddyTest.C$sFillLUT(3, 'Rg', 50, 'rH', 30, 'Tair', 2.5
+  , 'Tsoil', 2, 'Step', 0.5)
+Result_Step2.F <- EddyTest.C$sFillLUT(6, 'Tair', 2.5, 'VPD', 3, 'Step', 0.5)
+Result_Step3.F <- EddyTest.C$sFillMDC(3)
+#Individual fill result columns are called 'VAR_...'
+EddyTest.C$sPlotHHFluxesY('VAR_fall', Year.i = 1998)
+```
+
+# Explicit demonstration of MDS algorithm for NEE gap filling
+
+```{r ex3 , warn = FALSE, message = FALSE}
+EddyTestMDS.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
+        , c('NEE', 'Rg', 'Tair', 'VPD'))
+#Initialize 'NEE' as variable to fill
+EddyTestMDS.C$sFillInit('NEE')
+# Set variables and tolerance intervals
+V1.s = 'Rg'; T1.n = 50 # Global radiation 'Rg' within +/-50 W m-2
+V2.s = 'VPD'; T2.n = 5 # Vapour pressure deficit 'VPD' within 5 hPa
+V3.s = 'Tair'; T3.n = 2.5 # Air temperature 'Tair' within +/-2.5 degC
+# Step 1: Look-up table with window size +/-7 days
+Result_Step1.F <- EddyTestMDS.C$sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+# Step 2: Look-up table with window size +/-14 days
+Result_Step2.F <- EddyTestMDS.C$sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+# Step 3: Look-up table with window size +/-7 days, Rg only
+Result_Step3.F <- EddyTestMDS.C$sFillLUT(7, V1.s, T1.n)
+# Step 4: Mean diurnal course with window size 0 (same day)
+Result_Step4.F <- EddyTestMDS.C$sFillMDC(0)
+# Step 5: Mean diurnal course with window size +/-1, +/-2 days
+Result_Step5a.F <- EddyTestMDS.C$sFillMDC(1)
+Result_Step5b.F <- EddyTestMDS.C$sFillMDC(2)
+# Step 6: Look-up table with window size +/-21, +/-28, ..., +/-70
+for (WinDays.i in seq(21, 70, 7) ) Result_Step6.F <-
+      EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n)
+# Step 7: Look-up table with window size +/-14, +/-21, ..., +/-70, Rg only
+for (WinDays.i in seq(14, 70, 7) ) Result_Step7.F <-
+      EddyTestMDS.C$sFillLUT(WinDays.i, V1.s, T1.n)
+# Step 8: Mean diurnal course with window size +/-7, +/-14, ..., +/-210 days
+for (WinDays.i in seq(7, 210, 7) ) Result_Step8.F <- EddyTestMDS.C$sFillMDC(WinDays.i)
+# Export results, columns are named 'VAR_'
+FilledEddyData.F <- EddyTestMDS.C$sExportResults()
+head(FilledEddyData.F)
+```
+
+

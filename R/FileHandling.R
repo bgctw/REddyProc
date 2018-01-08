@@ -23,12 +23,9 @@ fLoadTXTIntoDataframe <- function(
 	##details<<
 	## Alternatively \code{\link{fLoadFluxNCIntoDataframe}} loads data from NetCDF-Files.
 	## In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.
-
 	##details<<
 	## For using only part of the records, use \code{fFilterAttr} to keep units attributes.
-
   InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')
-
   # Read in header
   Header.V.s <- as.character(read.csv(InputFile.s, header = F, sep = '', dec = '.', nrows = 1, stringsAsFactors = F))
   Units.V.s <- as.character(read.csv(InputFile.s, header = F, sep = '', dec = '.', skip = 1, nrows = 1, stringsAsFactors = F))
@@ -49,16 +46,14 @@ fLoadTXTIntoDataframe <- function(
   message(' *** ', paste(colnames(Data.F), '(', as.character(lapply(Data.F, attr, which = 'units')), ')', collapse = ' ', sep = ''))
   # Convert gap flags to NA
   Data.F <- fConvertGapsToNA(Data.F)
-
   Data.F
   ##value<<
   ## Data frame with data from text file.
-}
-attr(fLoadTXTIntoDataframe, 'ex') <- function() {
-  donttest({#Do not always execute example code (e.g. on package installation)
-	  examplePath <- getExamplePath('Example_DETha98.txt', TRUE)
-	  EddyData.F <- fLoadTXTIntoDataframe(examplePath)
-  })
+  ##examples<<
+  ## \donttest{
+  ## examplePath <- getExamplePath('Example_DETha98.txt', TRUE)
+  ## EddyData.F <- fLoadTXTIntoDataframe(examplePath)
+  ## }
 }
 
 
@@ -108,13 +103,11 @@ fLoadFluxNCIntoDataframe <- function(
   Data.F
   ##value<<
   ## Data frame with data from nc file.
-}
-attr(fLoadFluxNCIntoDataframe, 'ex') <- function() {
-  donttest({#Do not always execute example code (e.g. on package installation)
-    Dir.s <- paste(system.file(package = 'REddyProc'), 'examples', sep = ' / ')
-    EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
-		, getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc', TRUE))
-  })
+  ##examples<<
+  ## \donttest{
+  ## EddyNCData.F <- fLoadFluxNCIntoDataframe(c('NEE', 'Rg', 'NEE_f')
+  ##     , getExamplePath('Example_DE-Tha.1996.1998.hourly_selVars.nc', TRUE))
+  ## }
 }
 
 #' @export
@@ -360,16 +353,12 @@ fWriteDataframeToFile <- function(
   write(Lines.V.s, file = OutputFile.s, append = F)
   write.table(format(Data.F, digits = Digits.n, drop0trailing = T, trim = T), file = OutputFile.s, col.names = F, row.names = F, sep = '\t', quote = F, append = T)
   message('Wrote tab separated textfile: ', OutputFile.s)
-
   ##value<<
   ## Output of data frame written to file of specified type.
 }
 attr(fWriteDataframeToFile, 'ex') <- function() {
-  donttest({#Do not always execute example code (e.g. on package installation)
-    (Dir.s <- tempdir())
-    EddyData.F <- fLoadTXTIntoDataframe(getExamplePath('Example_DETha98.txt',TRUE))
-    fWriteDataframeToFile(EddyData.F, 'OutputTest.txt', Dir.s = Dir.s)
-  })
+  (Dir.s <- tempdir())   # directory where output is written to
+  fWriteDataframeToFile(Example_DETha98, 'OutputTest.txt', Dir.s = Dir.s)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
