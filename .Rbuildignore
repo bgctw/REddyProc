@@ -3,6 +3,7 @@
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^README\.md$
+^README\.html$
 ^README_cache$
 ^README-.*\.png$
 ^NEWS\.md$

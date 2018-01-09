@@ -1,8 +1,8 @@
 
 <!-- 
 README.md is generated from README.Rmd. Please edit that file
-knitr::knit("README.Rmd") 
-#rmarkdown::render("README.Rmd") # does not generate .md
+#knitr::knit("README.Rmd") 
+rmarkdown::render("README.Rmd") 
 maybe clear cache before
 -->
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc) [![Travis-CI Build Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
@@ -10,7 +10,7 @@ maybe clear cache before
 Overview
 --------
 
-`REddyProc` package supports processing data from Eddy-Covariance sensors.
+`REddyProc` package supports processing (half)hourly data from Eddy-Covariance sensors.
 
 There is an online-formular to use the functionality of the package including description at <https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
 
@@ -18,8 +18,8 @@ Installation
 ------------
 
 ``` r
-# Release stable version from r-forge
-install.packages("REddyProc", repos = c("http://R-Forge.R-project.org","@CRAN@"), type = "source")
+# Release stable version from CRAN
+install.packages("REddyProc")
 
 # The development version from GitHub using devtools:
 # install.packages("devtools")
@@ -34,21 +34,18 @@ A simple example performs Lookuptable-based gapFilling of Net-Ecosystem-Exchange
 ``` r
 library(REddyProc)
 #+++ Input data from csv (example needs to be downloaded)
-examplePath <- getExamplePath('Example_DETha98.txt')
+examplePath <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
 if (length(examplePath)) {
   EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 } else {
   warning(
-      "Could not find example data file."
+      "Could not find example text data file."
       ," In order to execute this example code,"
       ," please, allow downloading it from github. " 
       ," Type '?getExamplePath' for more information.")
   # using RData version distributed with the package instead
   EddyData.F <- Example_DETha98
 }
-#> Warning: Could not find example data file. In order to execute this example
-#> code, please, allow downloading it from github. Type '?getExamplePath' for
-#> more information.
 #+++ If not provided, calculate VPD from Tair and rH
 EddyData.F$VPD <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
 #+++ Add time stamp in POSIX time format

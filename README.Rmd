@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-`REddyProc` package supports processing data from Eddy-Covariance sensors.
+`REddyProc` package supports processing (half)hourly data from Eddy-Covariance sensors.
 
 There is an online-formular to use the functionality of the package including
 description at
@@ -33,8 +33,8 @@ description at
 
 ## Installation
 ```{r, eval = FALSE}
-# Release stable version from r-forge
-install.packages("REddyProc", repos = c("http://R-Forge.R-project.org","@CRAN@"), type = "source")
+# Release stable version from CRAN
+install.packages("REddyProc")
 
 # The development version from GitHub using devtools:
 # install.packages("devtools")
@@ -50,12 +50,12 @@ values.
 ```{r example, results='hide', message=FALSE, cache=TRUE}
 library(REddyProc)
 #+++ Input data from csv (example needs to be downloaded)
-examplePath <- getExamplePath('Example_DETha98.txt')
+examplePath <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
 if (length(examplePath)) {
   EddyData.F <- fLoadTXTIntoDataframe(examplePath)
 } else {
   warning(
-      "Could not find example data file."
+      "Could not find example text data file."
       ," In order to execute this example code,"
       ," please, allow downloading it from github. " 
       ," Type '?getExamplePath' for more information.")
