@@ -34,7 +34,7 @@ knit_hooks$set(spar = function(before, options, envir) {
 
 ```{r, include = FALSE, warning = FALSE}
 #themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
-bgiDir <- "~/bgi"
+#bgiDir <- "~/bgi"
 ```
 
 # REddyProc typical workflow
@@ -115,7 +115,7 @@ Discarding periods with low uStar is one of the largest sources of uncertainty
 in aggregated fluxes. Hence, several quantiles of the distribution of 
 the uncertain uStar threshold are estimated by a bootstrap.
 
-The friction velocity, uStar, needs to be in column named "uStar" of the input 
+The friction velocity, uStar, needs to be in column named "Ustar" of the input 
 dataset.
 
 ```{r, warn = FALSE, message = FALSE}

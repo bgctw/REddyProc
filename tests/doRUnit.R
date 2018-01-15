@@ -2,7 +2,7 @@
 #+++ call testthat unit tests in directory inst\tests +++
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-if(require("testthat", quietly=TRUE)) {
+if (require("testthat", quietly = TRUE)) {
 	pkg <- "REddyProc"
 	#library(pkg, character.only = TRUE)
 	#test_package(pkg)
