@@ -22,8 +22,8 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	if( fixVPD.size() != VPD.size() ){
 		if( 1 == fixVPD.size() ){
 			const bool _fixVPD = fixVPD[0];
-      //const std::size_t _VPDsize = VPD.size();
-       https://github.com/RcppCore/Rcpp/issues/756
+      // const std::size_t _VPDsize = VPD.size();
+      // https://github.com/RcppCore/Rcpp/issues/756
       #ifdef __linux__
         const std::size_t _VPDsize = VPD.size();
       #elif _WIN32

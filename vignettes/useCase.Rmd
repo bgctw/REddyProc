@@ -3,16 +3,23 @@ output:
   rmarkdown::html_vignette:
     keep_md: true
 vignette: >
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown_notangle}
   %\VignetteIndexEntry{typical use case}
   %\usepackage[UTF-8]{inputenc}
 ---
 
+```{r, include = FALSE}
+# do not execute on CRAN: 
+# https://stackoverflow.com/questions/28961431/computationally-heavy-r-vignettes
+is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
+             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
+knitr::opts_chunk$set(eval = !is_check)
+```
+
 ```{r setup, include = FALSE}
-library(knitr)
 #rmarkdown::render("vignettes/useCase.Rmd")
-opts_knit$set(root.dir = '..')
-opts_chunk$set(
+knitr::opts_knit$set(root.dir = '..')
+knitr::opts_chunk$set(
     #, fig.align = "center"
     #, fig.width = 3.27, fig.height = 2.5, dev.args = list(pointsize = 10)
     #,cache = TRUE
@@ -21,7 +28,7 @@ opts_chunk$set(
     # works with html but causes problems with latex
     #,out.extra = 'style = "display:block; margin: auto"' 
     )
-knit_hooks$set(spar = function(before, options, envir) {
+knitr::knit_hooks$set(spar = function(before, options, envir) {
     if (before) {
         par(las = 1 )                   #also y axis labels horizontal
         par(mar = c(2.0,3.3,0,0) + 0.3 )  #margins

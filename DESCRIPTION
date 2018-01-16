@@ -1,6 +1,6 @@
 Package: REddyProc
 Type: Package
-Version: 1.1.1
+Version: 1.1.2
 Title: Post Processing of (Half-)Hourly Eddy-Covariance Measurements
 Authors@R: c( person( "Department for Biogeochemical Integration at MPI-BGC, Jena, Germany", role=c("cph"), email="REddyProc-help@bgc-jena.mpg.de" )
               ,person( "Thomas", "Wutzler", role=c("aut","cre"), email="twutz@bgc-jena.mpg.de" )
@@ -38,7 +38,7 @@ VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
 Imports: dplyr, purrr, mlegp, logitnorm, tibble
-Suggests: ncdf4, RNetCDF, testthat, minpack.lm, segmented, knitr
+Suggests: ncdf4, RNetCDF, testthat, minpack.lm, segmented, knitr, rmarkdown
 Collate: 
     'DataFunctions.R'
     'aEddy.R'
