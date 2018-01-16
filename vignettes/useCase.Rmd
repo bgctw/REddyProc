@@ -144,7 +144,7 @@ EddyProc.C$sDATA$NEE_median <- EddyProc.C$sDATA$NEE_orig <-
 
 The output reports uStarEstimates of `r signif(unlist(uStarTh[1,c(4)]),2)` for 
 the orignal data and `r signif(unlist(uStarTh[1,c(5:7)]),2)` for lower, median, 
-and upper quantile of the estimated distribution. The threshold can very between
+and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
 Therefore, there are estimates for different time periods, called seasons, reported
 as different rows. These season-estimates can be aggregated to entire years or to
