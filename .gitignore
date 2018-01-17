@@ -37,3 +37,5 @@ tmp
 .Rproj.user
 out
 README.html
+src-i386
+src-x64

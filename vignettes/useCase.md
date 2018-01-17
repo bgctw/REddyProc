@@ -3,10 +3,12 @@ output:
   rmarkdown::html_vignette:
     keep_md: true
 vignette: >
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown_notangle}
   %\VignetteIndexEntry{typical use case}
   %\usepackage[UTF-8]{inputenc}
 ---
+
+
 
 
 
@@ -49,7 +51,7 @@ on the x and and day of the year on the y axis.
 EddyProc.C$sPlotFingerprintY('NEE', Year.i = 1998)
 ```
 
-![](useCase_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![](useCase_files/figure-html/fpNEEOrig-1.png)<!-- -->
 
 For writing plots of data of several years to pdf see also
 
@@ -64,7 +66,7 @@ Discarding periods with low uStar is one of the largest sources of uncertainty
 in aggregated fluxes. Hence, several quantiles of the distribution of 
 the uncertain uStar threshold are estimated by a bootstrap.
 
-The friction velocity, uStar, needs to be in column named "uStar" of the input 
+The friction velocity, uStar, needs to be in column named "Ustar" of the input 
 dataset.
 
 
@@ -77,19 +79,19 @@ select(uStarTh, -seasonYear)
 
 ```
 ##   aggregationMode  season     uStar        5%       50%       95%
-## 1          single    <NA> 0.4162500 0.3787882 0.4508561 0.6112386
-## 2            year    <NA> 0.4162500 0.3787882 0.4508561 0.6112386
-## 3          season 1998001 0.4162500 0.3787882 0.4508561 0.6112386
-## 4          season 1998003 0.4162500 0.3173750 0.3900000 0.5294878
-## 5          season 1998006 0.3520000 0.3242714 0.3861111 0.4830476
-## 6          season 1998009 0.3369231 0.2759242 0.3840000 0.5246475
-## 7          season 1998012 0.1740000 0.2546167 0.4293333 0.5994899
+## 1          single    <NA> 0.4162500 0.3720889 0.4639444 0.6842286
+## 2            year    <NA> 0.4162500 0.3720889 0.4639444 0.6842286
+## 3          season 1998001 0.4162500 0.3720889 0.4639444 0.6842286
+## 4          season 1998003 0.4162500 0.3164477 0.4034048 0.5927582
+## 5          season 1998006 0.3520000 0.3139111 0.3833889 0.4561000
+## 6          season 1998009 0.3369231 0.2092933 0.3854911 0.5267769
+## 7          season 1998012 0.1740000 0.2371250 0.4387708 0.6735375
 ```
 
 
-The output reports uStarEstimates of 0.42 for 
-the orignal data and 0.38, 0.45, 0.61 for lower, median, 
-and upper quantile of the estimated distribution. The threshold can very between
+The output reports uStar estimates of 0.42 for 
+the orignal data and 0.37, 0.46, 0.68 for lower, median, 
+and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
 Therefore, there are estimates for different time periods, called seasons, reported
 as different rows. These season-estimates can be aggregated to entire years or to
@@ -112,11 +114,11 @@ print(uStarThAnnual)
 
 ```
 ##    season       U05       U50       U95
-## 1 1998001 0.3787882 0.4508561 0.6112386
-## 2 1998003 0.3787882 0.4508561 0.6112386
-## 3 1998006 0.3787882 0.4508561 0.6112386
-## 4 1998009 0.3787882 0.4508561 0.6112386
-## 5 1998012 0.3787882 0.4508561 0.6112386
+## 1 1998001 0.3720889 0.4639444 0.6842286
+## 2 1998003 0.3720889 0.4639444 0.6842286
+## 3 1998006 0.3720889 0.4639444 0.6842286
+## 4 1998009 0.3720889 0.4639444 0.6842286
+## 5 1998012 0.3720889 0.4639444 0.6842286
 ```
 
 ## Gap-filling
@@ -166,7 +168,7 @@ A fingerprint-plot of one of the new variables shows that gaps have been filled.
 EddyProc.C$sPlotFingerprintY('NEE_U50_f', Year.i = 1998)
 ```
 
-![](useCase_files/figure-html/fpNEEOrig-1.png)<!-- -->
+![](useCase_files/figure-html/fpNEEFilled-1.png)<!-- -->
 
 
 
@@ -235,7 +237,7 @@ print(GPPAgg)
 
 ```
 ##      U05      U50      U95 
-## 5.008512 5.154538 5.077625
+## 5.008512 5.155009 5.261060
 ```
 
 The difference between those aggregated values is a first estimate of 
@@ -244,11 +246,11 @@ uncertainty range in GPP due to uncertainty of the uStar threshold.
 ```r
 (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 ```
-In this run of the example a relative error of about 2.9% is inferred.
+In this run of the example a relative error of about 4.9% is inferred.
 
 For a better but time consuming uncertainty estimate, specify a larger sample 
 in estimation of uStar threshold distribution above and compute statistics 
-from the larger sample of uStar estimates and corresponding GPP columns.
+from the larger sample across the corresponding GPP columns.
 
 ```r
 sEstUstarThresholdDistribution( 

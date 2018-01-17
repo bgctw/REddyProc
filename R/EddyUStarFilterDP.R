@@ -512,7 +512,7 @@ usControlUstarEst <- function(
     ## to in fwd mode
   , ustPlateauBack = 6	##<< number of subsequent uStar bin values to compare
     ## to in back mode
-  , plateauCrit = 0.95	##<< significant differences between a u * value and
+  , plateauCrit = 0.95	##<< significant differences between a uStar value and
     ## the mean of a "plateau"
   , corrCheck = 0.5 		##<< threshold value for correlation between Tair
     ## and u * data
@@ -1005,7 +1005,7 @@ usGetYearOfSeason <- function(
 	##author<< TW
 	# see tests / test_binWithEqualValues.R
 	#which(x >= threshold)[1]
-	#iStart-1 + which(x[iStart:length(x)] >= threshold)[1]
+  #
 	# for performance reasons call a c ++ function that loops across the vector
 	#
 	# cannot generate C function with dot
@@ -1015,9 +1015,12 @@ usGetYearOfSeason <- function(
 	##details<<
 	## searches a sorted integer vector for the next element
 	## that is >= a threshold in fast C-code
-	whichValueGreaterEqualC(
+  ans <- whichValueGreaterEqualC(
 	  as.integer(x), as.integer(threshold), as.integer(iStart) )
-	##value<<
+  return(ans)
+  #if (iStart > length(x)) return(NA_integer_)
+  #  return(iStart - 1 + which(x[iStart:length(x)] >= threshold)[1])
+  ##value<<
 	## Scalar integer: first index in x, that is >= iStart,
 	## and whose value x[i] is >= threshold.
 	## If no index was found, returns NA

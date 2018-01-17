@@ -18,10 +18,12 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 	if( !VPD0.size() || !fixVPD.size() )
 		throw std::range_error("VPD0 and fixVPD must have one entry.");
 	double _VPD0 = VPD0[0];
+	LogicalVector fixVPDSized = fixVPD;
 	if( fixVPD.size() != VPD.size() ){
 		if( 1 == fixVPD.size() ){
 			const bool _fixVPD = fixVPD[0];
-      //  https://github.com/RcppCore/Rcpp/issues/756
+      // const std::size_t _VPDsize = VPD.size();
+      // https://github.com/RcppCore/Rcpp/issues/756
       #ifdef __linux__
         const std::size_t _VPDsize = VPD.size();
       #elif _WIN32
@@ -29,7 +31,7 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
       #else
         const std::size_t _VPDsize = VPD.size();
       #endif
-			fixVPD = LogicalVector( _VPDsize, _fixVPD );
+			fixVPDSized = LogicalVector( _VPDsize, _fixVPD );
 		}else throw std::range_error("fixVPD must be of length 1 or length of VPD.");
 	}
 	int _nRec=flux.size();
@@ -50,7 +52,7 @@ NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, Nume
 		throw std::range_error("flux, sdFlux, Rg, Temp, VPD must be of the same length.");
 	for( int i=0; i < _nRec; i++){
 		_Amax = _beta0;
-		if( !fixVPD[i] && (VPD[i] > _VPD0)){
+		if( !fixVPDSized[i] && (VPD[i] > _VPD0)){
 			_Amax = _beta0 * exp( -_kVPD*(VPD[i]-_VPD0));
 		}
 		//_Reco = _Rref*exp(_E0*(1/((273.15+10)-227.13)-1/(Temp[i]+273.15-227.13)));
