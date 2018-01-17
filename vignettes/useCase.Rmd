@@ -105,7 +105,7 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
 A fingerprint-plot of the source half-hourly shows already several gaps.
 A fingerprint-plot is a color-coded image of the half-hourly fluxes by daytime 
 on the x and and day of the year on the y axis. 
-```{r}
+```{r fpNEEOrig}
 EddyProc.C$sPlotFingerprintY('NEE', Year.i = 1998)
 ```
 
@@ -149,8 +149,8 @@ EddyProc.C$sDATA$NEE_median <- EddyProc.C$sDATA$NEE_orig <-
   EddyProc.C$sDATA$NEE_low <- EddyProc.C$sDATA$NEE_upper <- NULL
 ```
 
-The output reports uStarEstimates of `r signif(unlist(uStarTh[1,c(4)]),2)` for 
-the orignal data and `r signif(unlist(uStarTh[1,c(5:7)]),2)` for lower, median, 
+The output reports uStar estimates of `r if (!is_check) signif(unlist(uStarTh[1,c(4)]),2)` for 
+the orignal data and `r if (!is_check) signif(unlist(uStarTh[1,c(5:7)]),2)` for lower, median, 
 and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
 Therefore, there are estimates for different time periods, called seasons, reported
@@ -206,11 +206,11 @@ grep("NEE_.*_fsd$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
 
 A fingerprint-plot of one of the new variables shows that gaps have been filled.
-```{r fpNEEOrig}
+```{r fpNEEFilled}
 EddyProc.C$sPlotFingerprintY('NEE_U50_f', Year.i = 1998)
 ```
 
-```{r fpNEEFilled, include = FALSE, eval = FALSE}
+```{r fpNEEFilled2, include = FALSE, eval = FALSE}
 #```{r fpNEEFilled, results = 'hide', echo = FALSE, warn = FALSE, message = FALSE, fig.show = 'hide'}
 # plot fingerprint of filled NEE for the median
 EddyProc.C$sPlotFingerprint('NEE_U50_f', Dir.s = "plots_fingerprint", Format.s = "png")
@@ -288,11 +288,11 @@ uncertainty range in GPP due to uncertainty of the uStar threshold.
 ```{r, results = 'hide'}
 (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 ```
-In this run of the example a relative error of about `r signif( (max(GPPAgg) - min(GPPAgg))/ median(GPPAgg)*100,2)`% is inferred.
+In this run of the example a relative error of about `r  if (!is_check) signif( (max(GPPAgg) - min(GPPAgg))/ median(GPPAgg)*100,2)`% is inferred.
 
 For a better but time consuming uncertainty estimate, specify a larger sample 
 in estimation of uStar threshold distribution above and compute statistics 
-from the larger sample of uStar estimates and corresponding GPP columns.
+from the larger sample across the corresponding GPP columns.
 ```{r, eval = FALSE}
 sEstUstarThresholdDistribution( 
   nSample = 200, probs = seq(0.025,0.975,length.out = 39) )
