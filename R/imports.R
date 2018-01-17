@@ -7,6 +7,7 @@ NULL
 #' @importFrom tibble tibble as_tibble
 #' @importFrom mlegp mlegp predict.gp
 #' @importFrom logitnorm logit invlogit
+#' @importFrom rlang UQ sym syms
 NULL
 
 #' @importFrom grDevices adjustcolor colorRampPalette dev.off pdf png rgb devAskNewPage

@@ -142,8 +142,9 @@ usEstUstarThreshold = function(
 	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(
 	  season = names(seasonFactorsYear), seasonYear = seasonFactorsYear)
 	                            , all.x = TRUE)
-	nYear <- group_by_(nRecValidInSeasonYear, ~seasonYear) %>%
-	  summarize_(nRec =~sum(nRec, na.rm = TRUE))
+	nYear <- nRecValidInSeasonYear %>%
+	  group_by(!!sym("seasonYear")) %>%
+	  summarize(nRec = sum(!!sym("nRec"), na.rm = TRUE))
 	seasonYearsWithFewData <- nYear$seasonYear[
 	    nYear$nRec < ctrlUstarSub.l$minRecordsWithinYear]
 	#nRecValidInSeasonYear$seasonAgg <- nRecValidInSeasonYear$season
@@ -201,11 +202,11 @@ usEstUstarThreshold = function(
 	resultsSeason$uStarSeasonEst <- uStarSeasons
 	#
 	resultsSeasonYear <- resultsSeason %>%
-	  group_by_(~seasonYear) %>%
-	  summarize_(
-			uStarMaxSeason =~if (all(!is.finite(uStarSeasonEst))  ) NA_real_ else
-			    max(uStarSeasonEst, na.rm = TRUE)
-			, nRec =~sum(nRec)
+	  group_by(!!sym("seasonYear")) %>%
+	  summarize(
+			uStarMaxSeason = {if (all(!is.finite(!!sym("uStarSeasonEst")))  ) NA_real_ else
+			    max(!!sym("uStarSeasonEst"), na.rm = TRUE)}
+			, nRec = sum(!!sym("nRec"))
 			)
 	resultsSeasonYear$uStarAggr <- resultsSeasonYear$uStarMaxSeason
 	#---- for seasonYears with too few records and for seasonYears with no
@@ -227,7 +228,7 @@ usEstUstarThreshold = function(
 				resultsSeasonYearPooled <- data.frame(seasonYear = NA_character_
 				        , nRec = NA_integer_ , uStarPooled = NA_real_)[FALSE, ]
 			} else {
-				dscPooled <- dsc %>% filter_(~seasonYear %in% seasonYearsPooled)
+				dscPooled <- dsc %>% filter(UQ(sym("seasonYear")) %in% !!seasonYearsPooled)
 				UstarYearsTempL <- tmp <- dscPooled %>%
 				  split(.$seasonYear) %>%
 				  map(fEstimateUStarSeason
@@ -336,7 +337,8 @@ usEstUstarThreshold = function(
   dsSeason <- subset(EddyProc.C$sDATA, season == seasonI)
   # tempBinI <- 4
   for (tempBinI in sort(unique(dsSeason$tempBin))) {
-    #plot(tempBin ~ Tair, dsc, col = rainbow(8)[as.factor(dsc$season)] )# check ordering
+    # check ordering
+    #plot(tempBin ~ Tair, dsc, col = rainbow(8)[as.factor(dsc$season)] )
     uStarTh <- Result.L$UstarSeasonTemp[tempBinI, seasonI]
     dss <- subset(dsSeason,  tempBin == tempBinI)
     .plotNEEVersusUStarTempClass(dss, uStarTh)
@@ -361,8 +363,8 @@ usEstUstarThreshold = function(
 	colnames(dss) <- c("NEE", "Ustar", "Temp", "uStarBin", "sDateTime")
 	##details<< for each uStarBin, mean of NEE and uStar is calculated.
 	dssm <- dss %>%
-	  group_by_(~uStarBin) %>%
-	  summarise_(mUStar =~mean(Ustar), mNEE =~mean(NEE))
+	  group_by(!!sym("uStarBin")) %>%
+	  summarise(mUStar = mean(!!sym("Ustar")), mNEE = mean(!!sym("NEE")))
 	plot(NEE ~ Ustar, dss, col = adjustcolor("brown", alpha.f = 0.3)
 	   , ylim = quantile(dss$NEE, c(0.02, 0.98))
 		, xlab = xlab, ylab = ylab
@@ -483,7 +485,7 @@ attr(.plotNEEVersusUStarTempClass, "ex") <- function() {
 					fEstimateUStarBinned( dsiBinnedUstar, ctrlUstarEst.l = ctrlUstarEst.l)
 				}
 			}
-		} else { #correlation between T and u * too high
+		} else {#correlation between T and u * too high
 			#fill respective cell with NA
 			UstarTh.v[k] = NA
 			#TODO: should a message be printed here to the user??
@@ -587,7 +589,8 @@ usControlUstarSubsetting <- function(
 	  ## avoid aggregating all seasons on too few records
 	# 1.) , selection parameter for which fwd and back modes? fwd2 as default...
 	# 2.) , MIN_VALUE_PERIOD <<- 3000 # per whole data set... double check C code
-	# 3.) , MIN_VALUE_SEASON <<- 160 #if #number of data points in one any season are smaller than that, merge to one big season
+	# 3.) , MIN_VALUE_SEASON <<- 160 #if #number of data points in one any season
+	# are smaller than that, merge to one big season
 	#define MIN_VALUE_PERIOD    		3000		/* min values for compute u * threshold */
 	#define MIN_VALUE_SEASON				160			/* min for seasons */
 	#define TA_CLASS_MIN_SAMPLE				100
@@ -668,7 +671,7 @@ usCreateSeasonFactorMonth <- function(
 	starts$startYearMonths <- startYearMonths <- starts$year * 1000L + starts$month
 	yearMonths <- year * 1000L + month
 	# i <- 1
-	for (i in 1:(length(startYearMonths)-1) ) {
+	for (i in 1:(length(startYearMonths) - 1) ) {
 		bo <- (yearMonths >= startYearMonths[i]) & (yearMonths < startYearMonths[i + 1])
 		seasonFac[bo] <- starts$year[i] * 1000L + starts$month[i]
 	}
@@ -738,7 +741,7 @@ usCreateSeasonFactorMonthWithinYear <- function(
 .tmp.f <- function() {
 	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98
 	           , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
-	table(res <- usCreateSeasonFactorMonthWithinYear(ds$DateTime-1))
+	table(res <- usCreateSeasonFactorMonthWithinYear(ds$DateTime - 1))
 	  #-1 to move last record of newYear to 1998
 }
 
@@ -812,7 +815,7 @@ usCreateSeasonFactorYdayYear <- function(
 	starts$startYearDays <- startYearDays <- starts$year * 1000L + starts$yday
 	yearDays <- year * 1000L + yday
 	# i <- 1
-	for (i in 1:(length(startYearDays)-1) ) {
+	for (i in 1:(length(startYearDays) - 1) ) {
 		bo <- (yearDays >= startYearDays[i]) & (yearDays < startYearDays[i + 1])
 		seasonFac[bo] <- starts$year[i] * 1000L + starts$yday[i]
 	}
@@ -883,13 +886,14 @@ usGetYearOfSeason <- function(
 	#
 	# twutz 1505: changed binning to take care of equal values in uStar column
 	# when assigning uStar classes, only start a new class when uStar value changes
-	ds.F$uClass <- .binWithEqualValuesMinRec(ds.F$Ustar, nBin = UstarClasses, tol = 1e-14)
+	ds.F$uClass <- .binWithEqualValuesMinRec(
+	  ds.F$Ustar, nBin = UstarClasses, tol = 1e-14)
 	binAverages <- ds.F %>%
-	  group_by_(~uClass) %>%
-	  summarize_(
-			  Ust_avg =~mean(Ustar, na.rm = TRUE)
-			, NEE_avg =~mean(NEE, na.rm = TRUE)
-			, nRec =~length(NEE)
+	  group_by(!!sym("uClass")) %>%
+	  summarise(
+			  Ust_avg = mean(!!sym("Ustar"), na.rm = TRUE)
+			, NEE_avg = mean(!!sym("NEE"), na.rm = TRUE)
+			, nRec = length(!!sym("NEE"))
 			) %>%
 		select(-1)	# omit first column
 	uStarBinsUnsorted <- integer(nrow(ds.F))
@@ -927,7 +931,7 @@ usGetYearOfSeason <- function(
 	iBreak <- 1L	# index from which to seek next break
 	#iClass <- 2L
 	for (iClass in 2L:as.integer(nBin)) {
-		start0 <- round((iClass-1) * binSize) + 1
+		start0 <- round((iClass - 1) * binSize) + 1
 		iBreak <- .whichValueGreaterEqual(breaksX, start0, iStart = iBreak)
 		start1 <- breaksX[iBreak]
 		# find next uStar change at or after position start0
@@ -954,7 +958,7 @@ usGetYearOfSeason <- function(
 	iBreak <- 0L		# start index in iBreaks, to avoid searching the samller el.
 	iEnd <- 0L			# index in x, end of the (previous) period
 	iBin <- 0L			# bin Id
-	while(iEnd < lengthX) {
+	while (iEnd < lengthX) {
 		iBin <- iBin + 1L
 		iStart <- iEnd + 1L
 		iEnd <- iEnd + binSize	# same as iStart + binsSize-1,
@@ -965,8 +969,8 @@ usGetYearOfSeason <- function(
 			# no break was found, set period end to vector end and finish
 			# if length of last bin is smaller than 90% of intended binsize,
 			# sort records to former bin
-			if ( (lengthX + 1L-iStart) < binSize * 0.9 && iBin != 1L)
-				iBin <- iBin -1L
+			if ( (lengthX + 1L - iStart) < binSize * 0.9 && iBin != 1L)
+				iBin <- iBin - 1L
 			binId[iStart:lengthX] <- iBin
 			break
 		} else {
@@ -1040,8 +1044,9 @@ usEstUstarThresholdSingleFw1Binned <- function(
 
   while (!flag) { #only stop if threshold is found
 		if (!flag & (Ust_bins.f$NEE_avg[u] >=
-		          (ctrlUstarEst.l$plateauCrit * mean(Ust_bins.f$NEE_avg[(u + 1) :
-		          (u + ctrlUstarEst.l$ustPlateauFwd)], na.rm = T)))
+		          (ctrlUstarEst.l$plateauCrit * mean(Ust_bins.f$NEE_avg[
+		            (u + 1):(u + ctrlUstarEst.l$ustPlateauFwd)]
+		            , na.rm = T)))
 		    ) {
 		  #na.rm = T to exclude NAs out of bounds..
 			#   NEE_i >= .95 * avg(i, i + 1, ..., i + 10)  [FW]
@@ -1050,7 +1055,7 @@ usEstUstarThresholdSingleFw1Binned <- function(
 		}
 		# case with no threshold could be found by plateau method,
 		# use maximum u * in that T_class...
-		if (u == (nrow(Ust_bins.f)-1)) { #FW1: -1 ; FW2:
+		if (u == (nrow(Ust_bins.f) - 1)) { #FW1: -1 ; FW2:
 			UstarThSingle <- Ust_bins.f$Ust_avg[u + 1]
 			break;
 		}
@@ -1076,7 +1081,7 @@ usEstUstarThresholdSingleFw2Binned <- function(
   ## Demand that threshold is higher than \code{ctrlUstarEst.l$minNuStarPlateau}
   ## records. If fewer records
   # FF2 neads at least two bins after threshold
-  umax <- nrow(Ust_bins.f)-max(2L, ctrlUstarEst.l$minNuStarPlateau)
+  umax <- nrow(Ust_bins.f) - max(2L, ctrlUstarEst.l$minNuStarPlateau)
   while (u <= umax) {
     if (
 		(Ust_bins.f$NEE_avg[u] >= (ctrlUstarEst.l$plateauCrit *
@@ -1263,7 +1268,7 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 		}
 		Ustar.l0 <- res0$uStarTh$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
 		Ustar.l <- suppressMessages(
-				Ustar.l <- lapply(1:(nSample-1), fWrapper, ...)
+				Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
 		)
 		if (isTRUE(verbose.b) ) message("")	# line break
 		stat <- do.call(rbind, c(list(Ustar.l0), Ustar.l))
