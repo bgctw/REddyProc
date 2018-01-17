@@ -27,9 +27,4 @@ when running from testthat::\code{\link{check}}.}
 
 
 \seealso{\code{\link{getExamplePath}}}
-\examples{
-# R session specific
-getREddyProcExampleDir()
-# outisde R-session specific
-getREddyProcExampleDir(TRUE)
-}
+

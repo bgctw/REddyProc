@@ -510,7 +510,7 @@ usControlUstarEst <- function(
     ## to in fwd mode
   , ustPlateauBack = 6	##<< number of subsequent uStar bin values to compare
     ## to in back mode
-  , plateauCrit = 0.95	##<< significant differences between a u * value and
+  , plateauCrit = 0.95	##<< significant differences between a uStar value and
     ## the mean of a "plateau"
   , corrCheck = 0.5 		##<< threshold value for correlation between Tair
     ## and u * data
@@ -812,7 +812,7 @@ usCreateSeasonFactorYdayYear <- function(
 	starts$startYearDays <- startYearDays <- starts$year * 1000L + starts$yday
 	yearDays <- year * 1000L + yday
 	# i <- 1
-	for (i in 1:(length(startYearDays)-1) ) {
+	for (i in 1:(length(startYearDays) - 1) ) {
 		bo <- (yearDays >= startYearDays[i]) & (yearDays < startYearDays[i + 1])
 		seasonFac[bo] <- starts$year[i] * 1000L + starts$yday[i]
 	}
@@ -887,9 +887,9 @@ usGetYearOfSeason <- function(
 	binAverages <- ds.F %>%
 	  group_by_(~uClass) %>%
 	  summarize_(
-			  Ust_avg =~mean(Ustar, na.rm = TRUE)
-			, NEE_avg =~mean(NEE, na.rm = TRUE)
-			, nRec =~length(NEE)
+			  Ust_avg = ~mean(Ustar, na.rm = TRUE)
+			, NEE_avg = ~mean(NEE, na.rm = TRUE)
+			, nRec = ~length(NEE)
 			) %>%
 		select(-1)	# omit first column
 	uStarBinsUnsorted <- integer(nrow(ds.F))
@@ -927,7 +927,7 @@ usGetYearOfSeason <- function(
 	iBreak <- 1L	# index from which to seek next break
 	#iClass <- 2L
 	for (iClass in 2L:as.integer(nBin)) {
-		start0 <- round((iClass-1) * binSize) + 1
+		start0 <- round((iClass - 1) * binSize) + 1
 		iBreak <- .whichValueGreaterEqual(breaksX, start0, iStart = iBreak)
 		start1 <- breaksX[iBreak]
 		# find next uStar change at or after position start0
@@ -954,7 +954,7 @@ usGetYearOfSeason <- function(
 	iBreak <- 0L		# start index in iBreaks, to avoid searching the samller el.
 	iEnd <- 0L			# index in x, end of the (previous) period
 	iBin <- 0L			# bin Id
-	while(iEnd < lengthX) {
+	while (iEnd < lengthX) {
 		iBin <- iBin + 1L
 		iStart <- iEnd + 1L
 		iEnd <- iEnd + binSize	# same as iStart + binsSize-1,
@@ -965,8 +965,8 @@ usGetYearOfSeason <- function(
 			# no break was found, set period end to vector end and finish
 			# if length of last bin is smaller than 90% of intended binsize,
 			# sort records to former bin
-			if ( (lengthX + 1L-iStart) < binSize * 0.9 && iBin != 1L)
-				iBin <- iBin -1L
+			if ( (lengthX + 1L- iStart) < binSize * 0.9 && iBin != 1L)
+				iBin <- iBin - 1L
 			binId[iStart:lengthX] <- iBin
 			break
 		} else {
@@ -1001,7 +1001,7 @@ usGetYearOfSeason <- function(
 	##author<< TW
 	# see tests / test_binWithEqualValues.R
 	#which(x >= threshold)[1]
-	#iStart-1 + which(x[iStart:length(x)] >= threshold)[1]
+  #
 	# for performance reasons call a c ++ function that loops across the vector
 	#
 	# cannot generate C function with dot
@@ -1011,9 +1011,12 @@ usGetYearOfSeason <- function(
 	##details<<
 	## searches a sorted integer vector for the next element
 	## that is >= a threshold in fast C-code
-	whichValueGreaterEqualC(
+  ans <- whichValueGreaterEqualC(
 	  as.integer(x), as.integer(threshold), as.integer(iStart) )
-	##value<<
+  return(ans)
+  #if (iStart > length(x)) return(NA_integer_)
+  #  return(iStart - 1 + which(x[iStart:length(x)] >= threshold)[1])
+  ##value<<
 	## Scalar integer: first index in x, that is >= iStart,
 	## and whose value x[i] is >= threshold.
 	## If no index was found, returns NA
@@ -1050,7 +1053,7 @@ usEstUstarThresholdSingleFw1Binned <- function(
 		}
 		# case with no threshold could be found by plateau method,
 		# use maximum u * in that T_class...
-		if (u == (nrow(Ust_bins.f)-1)) { #FW1: -1 ; FW2:
+		if (u == (nrow(Ust_bins.f) - 1)) { #FW1: -1 ; FW2:
 			UstarThSingle <- Ust_bins.f$Ust_avg[u + 1]
 			break;
 		}
@@ -1076,7 +1079,7 @@ usEstUstarThresholdSingleFw2Binned <- function(
   ## Demand that threshold is higher than \code{ctrlUstarEst.l$minNuStarPlateau}
   ## records. If fewer records
   # FF2 neads at least two bins after threshold
-  umax <- nrow(Ust_bins.f)-max(2L, ctrlUstarEst.l$minNuStarPlateau)
+  umax <- nrow(Ust_bins.f) - max(2L, ctrlUstarEst.l$minNuStarPlateau)
   while (u <= umax) {
     if (
 		(Ust_bins.f$NEE_avg[u] >= (ctrlUstarEst.l$plateauCrit *

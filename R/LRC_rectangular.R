@@ -91,8 +91,9 @@ RectangularLRCFitterCVersion_computeCost <- function(
 ) {
 	theta[iOpt] <- thetaOpt
 	k <- theta[1]	# here k and fixVPD is only a scalar
-	RHLightResponseCostC(theta, flux, sdFlux, parameterPrior, sdParameterPrior
-	                     , ..., VPD0 = VPD0, fixVPD = fixVPD)
+	RHLightResponseCostC(
+	  theta, flux, sdFlux, parameterPrior, sdParameterPrior
+	  , ..., VPD0 = VPD0, fixVPD = fixVPD)
 }
 RectangularLRCFitterCVersion$methods(computeCost =
                                        RectangularLRCFitterCVersion_computeCost)

@@ -71,10 +71,12 @@ getREddyProcExampleDir <- function(
   if (!dir.exists(exampleDir) ) dir.create(exampleDir)
   exampleDir
 }
-attr(getREddyProcExampleDir, "ex") <- function() {
+
+.tmp.f <- function() {
+  # do not put to example, because it creates dir in /tmp
   # R session specific
   getREddyProcExampleDir()
-  # outisde R-session specific
+  # outside R-session specific
   getREddyProcExampleDir(TRUE)
 }
 

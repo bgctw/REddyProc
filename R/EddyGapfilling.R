@@ -492,49 +492,57 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
   ##author<<
   ## AMM, TW
 {
-    'Calling sMDSGapFill after filtering for (provided) friction velocity u * '
+ 'Calling sMDSGapFill after filtering for (provided) friction velocity u * '
+ ##details<<
+ ## The u * threshold(s) are provided with argument \code{UstarThres.df} for filtering the conditions of low turbulence.
+ ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sEddyProc_sMDSGapFill}}.
 
-    ##details<<
-    ## The u * threshold(s) are provided with argument \code{UstarThres.df} for filtering the conditions of low turbulence.
-    ## After filtering, the data is gap filled using the MDS algorithm \code{\link{sEddyProc_sMDSGapFill}}.
-
-    ##seealso<<
+  ##seealso<<
 	## \itemize{
     ## \item \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}} for automated gapfilling for several u * threshold estimates.
 	## \item \code{\link{sEddyProc_sEstUstarThreshold}} for estimating the u * threshold from the data.
 	## }
 
-	UstarThres.V.n <- if (is.numeric(UstarThres.df) ) {
-				if (length(UstarThres.df) != 1L) stop("Without seasons, only a single uStarThreshold can be provided, but got a vector.")
-				UstarThres.V.n <- rep(UstarThres.df, nrow(.self$sDATA) )
-		} else {
-			if (!("season" %in% colnames(sDATA)) ) stop("Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
-			colnames(UstarThres.df) <- c("season", "uStarThreshold")	# make sure merge will work
-			if (any(!is.finite(UstarThres.df$uStarThreshold))) stop("must provide finite uStarThresholds")
-			iMissingLevels <- which(!(levels(.self$sDATA$season) %in% UstarThres.df$season))
-			if (length(iMissingLevels) ) stop("missing uStarTrheshold for seasons ", paste(levels(.self$sDATA$season)[iMissingLevels], collapse = ", "))
-			tmpDs <- merge(subset(sDATA, select = "season"), UstarThres.df, all.x = TRUE)
-			UstarThres.V.n <- tmpDs[, 2L]
-		}
-    # Check column names (with 'none' as dummy)
-    # (Numeric type and plausibility have been checked on initialization of sEddyProc)
-    fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
+  UstarThres.V.n <- if (is.numeric(UstarThres.df) ) {
+    if (length(UstarThres.df) != 1L) stop(
+      "Without seasons, only a single uStarThreshold can be provided,"
+      , " but got a vector.")
+    UstarThres.V.n <- rep(UstarThres.df, nrow(.self$sDATA) )
+  } else {
+    if (!("season" %in% colnames(sDATA)) ) stop(
+      "Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+    # make sure merge will work
+    colnames(UstarThres.df) <- c("season", "uStarThreshold")
+    if (any(!is.finite(UstarThres.df$uStarThreshold))) stop(
+      "must provide finite uStarThresholds")
+    iMissingLevels <- which(!(levels(.self$sDATA$season) %in% UstarThres.df$season))
+    if (length(iMissingLevels) ) stop(
+      "missing uStarTrheshold for seasons "
+      , paste(levels(.self$sDATA$season)[iMissingLevels], collapse = ", "))
+    tmpDs <- merge(subset(sDATA, select = "season"), UstarThres.df, all.x = TRUE)
+    UstarThres.V.n <- tmpDs[, 2L]
+  }
+  # Check column names (with 'none' as dummy)
+  # (Numeric type and plausibility have been checked on initialization of sEddyProc)
+  fCheckColNames(sDATA, c(FluxVar.s, UstarVar.s), 'sMDSGapFillAfterUstar')
 
-    # Filter data
-    Ustar.V.n <- sDATA[, UstarVar.s]
-    QFustar.V.n <- integer(nrow(sDATA) )	# 0L
-	# if not filtering dayTimeValues, create a vector that is TRUE only for nightTime
-	isRowFiltered <- if (isFilterDayTime) TRUE else (!is.finite(sDATA[, RgColName]) | sDATA[, RgColName] < swThr)
-	# mark low uStar or bad uStar as 1L
-    QFustar.V.n[
+  # Filter data
+  Ustar.V.n <- sDATA[, UstarVar.s]
+  QFustar.V.n <- integer(nrow(sDATA) )	# 0L
+  # if not filtering dayTimeValues, create a vector that is TRUE only for nightTime
+  isRowFiltered <- if (isFilterDayTime) TRUE else
+    (!is.finite(sDATA[, RgColName]) | sDATA[, RgColName] < swThr)
+  # mark low uStar or bad uStar as 1L
+  QFustar.V.n[
 					 isRowFiltered &
                      !is.na(UstarThres.V.n) &
                      (sDATA[[UstarVar.s]] < UstarThres.V.n)
                    ] <- 1L
     if (isTRUE(FlagEntryAfterLowTurbulence.b) ) {
       ##details<<
-      ## With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
-      ## to the data acquired when u * is below the threshold,
+      ## With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more
+      ## conservative, in addition
+      ## to the data acquired when uStar is below the threshold,
       ## the first half hour measured with good turbulence conditions
       ## after a period with low turbulence is also removed (Papaple et al. 2006).
       QFustar.V.n[which(diff(QFustar.V.n) == 1) + 1] <- 2L
