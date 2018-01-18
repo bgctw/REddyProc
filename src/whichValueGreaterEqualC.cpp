@@ -4,7 +4,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 IntegerVector whichValueGreaterEqualC(IntegerVector x, IntegerVector threshold, IntegerVector iStart) {
 	int _threshold  = as<int>(threshold);
-	int i = as<int>(iStart)-1L;		// note indexing in C starts from 0
+	int i = (as<int>(iStart)) - 1L;		// note indexing in C starts from 0
 	// using && (logical and), rather than & (bitwise and)
 	while( (i < x.size()) && (x[i] < _threshold) ) i++;
 	//wrong: while( (i < x.size()) & (x[i] < _threshold) ) i++;

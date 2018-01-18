@@ -3,6 +3,7 @@
 Code cleanup
 
 - replacing deprecated dplyr underscore functions by rlang syntax
+- extended tests
 
 # REddyProc 1.1.2
 

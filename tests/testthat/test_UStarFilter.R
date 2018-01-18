@@ -23,20 +23,21 @@ dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
 
 test_that(".binUstar classes are correct",{
 	res <- .binUstar(dss$NEE, dss$Ustar)$binAverages
-	UstarClasses <- usControlUstarSubsetting()$UstarClasses
-	Ust_bin_size <- round(nrow(dss)/UstarClasses)
-	expect_true( all(abs(res$nRec[-nrow(res)] - Ust_bin_size) < 60) )
-	# create df of NEE and UStar ordered by Ustar
-	ds.f <- data.frame(NEE = dss$NEE,Ustar = dss$Ustar)
-	ds.f <- dplyr::arrange(ds.f,ds.f[,2])
-	# create bin id column
-	#ds.f$bin <- UstarClasses # due to rounding, the last classes may be left and neet to get the last class
-	#ds.f$bin[1:(UstarClasses*Ust_bin_size)]	 <-	 rep(1:UstarClasses, each = Ust_bin_size)
-	ds.f$bin <- rep(1:nrow(res), times = res$nRec)
-	# do the averaging
-	tmp1 <- do.call( rbind ,ds.f %>% split(.$bin) %>% purrr::map( function(dsBin){
-	  c(Ust_avg = mean(dsBin[,2], na.rm = TRUE),NEE_avg = mean(dsBin[,1], na.rm = TRUE))}))
-	expect_that( res[,1:2], equals(tmp1))
+  UstarClasses <- usControlUstarSubsetting()$UstarClasses
+  Ust_bin_size <- round(nrow(dss)/UstarClasses)
+  # the following is based on regression
+  expect_true( all(abs(res$nRec[-nrow(res)] - Ust_bin_size) < 60) )
+  # create df of NEE and UStar ordered by Ustar
+  ds.f <- data.frame(NEE = dss$NEE,Ustar = dss$Ustar)
+  ds.f <- dplyr::arrange(ds.f,ds.f[,2])
+  # create bin id column, use the one from result
+  ds.f$bin <- rep(1:nrow(res), times = res$nRec)
+  # do the averaging
+  tmp1 <- do.call( rbind ,ds.f %>% split(.$bin) %>% purrr::map( function(dsBin){
+    c(Ust_avg = mean(dsBin[,2], na.rm = TRUE),NEE_avg = mean(dsBin[,1], na.rm = TRUE))}))
+  resm <- as.matrix(res[,1:2])
+  rownames(tmp1) <- rownames(resm)
+  expect_equal( tmp1, resm, tolerance = 0.01)
 })
 
 test_that("usEstUstarThresholdSingleFw2Binned",{
