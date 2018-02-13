@@ -355,7 +355,7 @@ usEstUstarThreshold = function(
 	, UstarColName = "Ustar"		##<< column name for UStar
 	, NEEColName = "NEE"			##<< column name for NEE
 	, TempColName = "Tair"		##<< column name for air temperature
-	, xlab = bquote("u * (" * m~s^-1 * ")")
+	, xlab = bquote("uStar (" * m~s^-1 * ")")
 	, ylab = bquote("NEE (" * gC~ m^-2~yr^-1 * ")")
 ) {
 	##author<< TW
@@ -371,7 +371,7 @@ usEstUstarThreshold = function(
 		#, col = rainbow(20)[dss$uStarBin] )
 	)
 	points(mNEE ~ mUStar, dssm, pch = " + ", cex = 1.5)
-	abline(v = uStarTh, lty = "dashed", col = "grey")
+	abline(v = uStarTh, lty = "dashed", col = "darkgrey", lwd = 2)
 	dateRange <- strftime(range(dss$sDateTime), "%d.%m.%y")
 	#\u2103 is degree Centigrade (degree symbol is not ascii) but does not
 	# work with some devices
@@ -380,7 +380,7 @@ usEstUstarThreshold = function(
 					paste(NEEUStar.F$season[1], " (", dateRange[1], "-", dateRange[2], ")"
 					  , sep = "")
 					, sprintf(" (%1.1f-%1.1f\u00B0C)", min(dss$Temp), max(dss$Temp))
-					, sprintf("u * Thr =%1.2f", uStarTh)
+					, sprintf("uStarThr =%1.2f", uStarTh)
 			))
 	##value<< side effect of plotting NEE ~ Ustar with indicating Means of the bins,
 	## uStarThreshold, Date-Range, and Temperature range

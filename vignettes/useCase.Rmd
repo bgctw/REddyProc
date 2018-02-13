@@ -47,9 +47,10 @@ knitr::knit_hooks$set(spar = function(before, options, envir) {
 # REddyProc typical workflow
 
 ## Importing the half-hourly data
-The workflow starts with importing the data. In the example, a text file is 
-loaded and a timestamp is computed from the time specified by several separate 
-columns before initializing the `sEddyProc` class.
+The workflow starts with importing the half-hourly data. The example, reads a 
+text file with data of the year 1998 from the Tharandt site and converts the 
+separate decimal columns year, day, and hour to a POSIX timestamp column. 
+Next, it initializes the `sEddyProc` class.
 
 ```{r inputData, spar = TRUE, message = FALSE}
 #+++ load libraries used in this vignette
@@ -161,8 +162,9 @@ The subsequent post processing steps will be repeated using the three quantiles 
 the uStar distribution. They require to specify a uStar-threshold for each 
 season and a suffix to distinguish the outputs related to different thresholds.
 
-Here, we decide to use the same annually aggregated uStar threshold estimate 
-in each season within a year. Further, we store the column names from the 
+For this example of an evergreen forest site, we choose to use the same 
+annually aggregated uStar threshold
+estimate in each season within a year. Further, we store the column names from the 
 estimation result to variable `uStarSuffixes`, in order to distinguish 
 generated columns.
 ```{r, message = FALSE}
@@ -272,14 +274,19 @@ computing columns `GPP_DT` and `Recco_DT`.
 
 ## Estimating the uncertainty of aggregated results
 
-First we compute the mean of the GPP across all the year for each scenario.
+First, the mean of the GPP across all the year is computed for each
+uStar-scenario and converted from ${\mu mol\, CO_2\, 
+m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
+
 ```{r aggregateGPP}
 FilledEddyData.F <- EddyProc.C$sExportResults()
 #suffix <- uStarSuffixes[2]
-GPPAgg <- sapply( uStarSuffixes, function(suffix) {
+GPPAggCO2 <- sapply( uStarSuffixes, function(suffix) {
 	GPPHalfHour <- FilledEddyData.F[[paste0("GPP_",suffix,"_f")]]
 	mean(GPPHalfHour, na.rm = TRUE)
 })
+molarMass <- 12.011
+GPPAgg <- GPPAggCO2 * 1e-6 * molarMass * 3600*24*365.25
 print(GPPAgg)
 ```
 
@@ -288,11 +295,15 @@ uncertainty range in GPP due to uncertainty of the uStar threshold.
 ```{r, results = 'hide'}
 (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 ```
-In this run of the example a relative error of about `r  if (!is_check) signif( (max(GPPAgg) - min(GPPAgg))/ median(GPPAgg)*100,2)`% is inferred.
+In this run of the example a relative error of about 
+`r  if (!is_check) signif( (max(GPPAgg) - min(GPPAgg))/ median(GPPAgg)*100,2)`% 
+is inferred.
 
-For a better but time consuming uncertainty estimate, specify a larger sample 
-in estimation of uStar threshold distribution above and compute statistics 
-from the larger sample across the corresponding GPP columns.
+For a better but more time consuming uncertainty estimate, specify a larger
+sample of uStar threshold values, for each repeat the post-processing, and 
+compute statistics from the larger sample of resulting GPP columns. This can be
+achieved by specifying a larger sequence of quantiles when calling 
+`sEstUstarThresholdDistribution`.
 ```{r, eval = FALSE}
 sEstUstarThresholdDistribution( 
   nSample = 200, probs = seq(0.025,0.975,length.out = 39) )
