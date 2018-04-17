@@ -40,6 +40,7 @@ Depends: R (>= 3.0.0), methods
 Imports: dplyr, purrr, rlang, mlegp, tibble
 Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown
 Collate: 
+    'CheckVal.R'
     'DataFunctions.R'
     'aEddy.R'
     'EddyGapfilling.R'
