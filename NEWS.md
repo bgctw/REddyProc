@@ -1,3 +1,10 @@
+# REddyProc 1.1.4
+
+Reworking dependencies
+
+- implementing logit and invlogit from logtinorm directly in REddyProc
+- moving NetCDF related functions and dependencies to separate package
+
 # REddyProc 1.1.3
 
 Code cleanup

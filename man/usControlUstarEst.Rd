@@ -13,7 +13,7 @@
 to in fwd mode}
   \item{ustPlateauBack}{number of subsequent uStar bin values to compare
 to in back mode}
-  \item{plateauCrit}{significant differences between a u * value and
+  \item{plateauCrit}{significant differences between a uStar value and
 the mean of a "plateau"}
   \item{corrCheck}{threshold value for correlation between Tair
 and u * data}

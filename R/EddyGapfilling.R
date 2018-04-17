@@ -477,7 +477,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
     ## Calling \code{\link{sEddyProc_sMDSGapFill}} after filtering for (provided) friction velocity u *
     FluxVar.s             ##<< Flux variable to gap fill after ustar filtering
     , UstarVar.s = 'Ustar'   ##<< Column name of friction velocity u * (ms-1), default 'Ustar'
-	, UstarThres.df = usGetAnnualSeasonUStarMap (sUSTAR$uStarTh)		  ##<< data.frame with
+	, UstarThres.df = usGetAnnualSeasonUStarMap(sUSTAR$uStarTh)		  ##<< data.frame with
 		##  first column, season names, and second column estimates of uStar Threshold.
 		##<< Alternatively, a single value to be used as threshold for all records
     #, UstarThres.V.n       ##<< numeric vector (length times in data): u * threshold (ms-1) for each time in the data.

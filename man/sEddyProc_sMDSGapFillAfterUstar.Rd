@@ -23,8 +23,9 @@ first column, season names, and second column estimates of uStar Threshold.
 \details{The u * threshold(s) are provided with argument \code{UstarThres.df} for filtering the conditions of low turbulence.
 After filtering, the data is gap filled using the MDS algorithm \code{\link{sEddyProc_sMDSGapFill}}.
 
-With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more conservative, in addition
-to the data acquired when u * is below the threshold,
+With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more
+conservative, in addition
+to the data acquired when uStar is below the threshold,
 the first half hour measured with good turbulence conditions
 after a period with low turbulence is also removed (Papaple et al. 2006).}
 \value{Vector with quality flag from filtering (here 0: good data, 1: low turbulence, 2: first half hour after low turbulence, 3: no threshold available, 4: missing uStar value)
