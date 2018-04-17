@@ -802,8 +802,8 @@ test_that("NonrectangularLRCFitter$computeGPPGradient matches numerical estimate
 				for( i in GPPParNames){
 					thetaMinus <- theta; thetaMinus[i] <- theta[i]-eps
 					thetaPlus <- theta; thetaPlus[i] <- theta[i]+eps
-					fMinus <- lrcFitter$predictGPP(Rg=Rg, Amax=thetaMinus["beta"], alpha=thetaMinus["alpha"], conv = logitnorm::invlogit(thetaMinus["logitconv"]))
-					fPlus <- lrcFitter$predictGPP(Rg=Rg, Amax=thetaPlus["beta"], alpha=thetaPlus["alpha"], conv = logitnorm::invlogit(thetaPlus["logitconv"]))
+					fMinus <- lrcFitter$predictGPP(Rg=Rg, Amax=thetaMinus["beta"], alpha=thetaMinus["alpha"], conv = invlogit(thetaMinus["logitconv"]))
+					fPlus <- lrcFitter$predictGPP(Rg=Rg, Amax=thetaPlus["beta"], alpha=thetaPlus["alpha"], conv = invlogit(thetaPlus["logitconv"]))
 					ans[,i] <- derivI <- (fPlus - fMinus)/(2*eps)
 				}
 				ans
