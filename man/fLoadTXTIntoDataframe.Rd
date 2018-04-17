@@ -7,7 +7,8 @@
   \item{FileName.s}{File name as a character string}
   \item{Dir.s}{Directory as a character string}
 }
-\details{Alternatively \code{\link{fLoadFluxNCIntoDataframe}} loads data from NetCDF-Files.
+\details{Function fLoadFluxNCIntoDataframe, which loads data from NetCDF-Files, has
+been moved to addon package REddyProcNCDF.
 In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.
 
 For using only part of the records, use \code{fFilterAttr} to keep units attributes.}

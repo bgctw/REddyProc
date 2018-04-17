@@ -3,7 +3,7 @@
 Reworking dependencies
 
 - implementing logit and invlogit from logtinorm directly in REddyProc
-- moving NetCDF related functions and dependencies to separate package
+- moving NetCDF related functions and dependencies to separate package REddyProcNCDF
 
 # REddyProc 1.1.3
 
