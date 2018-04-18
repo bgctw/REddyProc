@@ -1,6 +1,7 @@
-FROM rocker/tidyverse:latest
+#FROM rocker/tidyverse:latest
+FROM rocker/tidyverse:3.4
 
-RUN R -e "install.packages(c('mlegp','logitnorm'))"
+#RUN R -e "install.packages(c('mlegp'))"
 
 RUN apt-get update && apt-get install -y \
   qpdf \
@@ -25,7 +26,6 @@ RUN echo '.libPaths(c( "/usr/local/lib/R/site-library","/usr/local/lib/R/library
 
 RUN R -e "install.packages(c(\
 'mlegp'\
-,'logitnorm'\
 ,'ncdf4'\
 ,'RNetCDF'\
 ,'minpack.lm'\
