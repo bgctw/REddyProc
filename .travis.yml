@@ -1,26 +1,18 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-language: R
+language: r
 #sudo: false
 sudo: required  # to allow r_binary_packages
 cache: packages
 env: _R_CHECK_FORCE_SUGGESTS_=false
 
-# libraries necessary for RNetCDF and ncdf4
-addons:
-  apt:
-    packages:
-      - libnetcdf-dev
-      - libudunits2-dev
-
-r_binary_packages:
-  - dplyr
-  - purrr
-  - tibble
-  - ncdf4
-  - RNetCDF
-  - minpack.lm
-  - segmented
-  - mlegp
-  - testthat
-  - knitr
+# failures: Unable to locate package r-cran-dplyr
+#r_binary_packages:
+#  - dplyr
+#  - purrr
+#  - tibble
+#  - minpack.lm
+#  - segmented
+#  - mlegp
+#  - testthat
+#  - knitr

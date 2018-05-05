@@ -29,7 +29,7 @@ Description: Standard and extensible Eddy-Covariance data post-processing includ
   based and day-time based approaches
   (Lasslop et al. (2010) <doi:10.1111/j.1365-2486.2009.02041.x>).
 URL: https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb, 
-  http://r-forge.r-project.org/projects/reddyproc/
+  https://github.com/bgctw/REddyProc
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true

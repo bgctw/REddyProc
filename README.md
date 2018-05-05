@@ -26,6 +26,13 @@ install.packages("REddyProc")
 devtools::install_github("bgctw/REddyProc")
 ```
 
+The REddyProc~package requires a quite recent versions of the tidyverse packages. On encountering problems on installations with older versions should run the following code before installing REddyProc.
+
+``` r
+install.packages("tidyverse")
+update.packages(oldPkgs="dplyr")
+```
+
 Usage
 -----
 
