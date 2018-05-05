@@ -29,3 +29,4 @@
 ^inst/examples/
 ^inst/REddyProcExamples/
 ^\.travis\.yml$
+^Dockerfile$

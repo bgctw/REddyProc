@@ -1,6 +1,6 @@
 ---
 author: "Thomas Wutzler"
-date: "2018-01-08"
+date: "2018-05-03"
 output: 
   rmarkdown::html_vignette:
     keep_md: true
@@ -211,7 +211,7 @@ Additional output columns are produced for each uStar quantile.
 ```
 
 ```
-## [1] "NEE_WithUstar_f" "NEE_uStar_f"     "NEE_U10_f"       "NEE_U90_f"
+## character(0)
 ```
 		
 In order to provide results of different uStar Threshold estimates to the NEE 

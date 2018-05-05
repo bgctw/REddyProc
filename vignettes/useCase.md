@@ -18,9 +18,10 @@ vignette: >
 # REddyProc typical workflow
 
 ## Importing the half-hourly data
-The workflow starts with importing the data. In the example, a text file is 
-loaded and a timestamp is computed from the time specified by several separate 
-columns before initializing the `sEddyProc` class.
+The workflow starts with importing the half-hourly data. The example, reads a 
+text file with data of the year 1998 from the Tharandt site and converts the 
+separate decimal columns year, day, and hour to a POSIX timestamp column. 
+Next, it initializes the `sEddyProc` class.
 
 
 ```r
@@ -79,18 +80,18 @@ select(uStarTh, -seasonYear)
 
 ```
 ##   aggregationMode  season     uStar        5%       50%       95%
-## 1          single    <NA> 0.4162500 0.3720889 0.4639444 0.6842286
-## 2            year    <NA> 0.4162500 0.3720889 0.4639444 0.6842286
-## 3          season 1998001 0.4162500 0.3720889 0.4639444 0.6842286
-## 4          season 1998003 0.4162500 0.3164477 0.4034048 0.5927582
-## 5          season 1998006 0.3520000 0.3139111 0.3833889 0.4561000
-## 6          season 1998009 0.3369231 0.2092933 0.3854911 0.5267769
-## 7          season 1998012 0.1740000 0.2371250 0.4387708 0.6735375
+## 1          single    <NA> 0.4162500 0.3762929 0.4496429 0.6290729
+## 2            year    <NA> 0.4162500 0.3762929 0.4496429 0.6290729
+## 3          season 1998001 0.4162500 0.3762929 0.4496429 0.6290729
+## 4          season 1998003 0.4162500 0.3119556 0.4077083 0.5588958
+## 5          season 1998006 0.3520000 0.2614071 0.3892857 0.4685000
+## 6          season 1998009 0.3369231 0.2291751 0.3918973 0.5338566
+## 7          season 1998012 0.1740000 0.2635545 0.4300000 0.6180205
 ```
 
 
 The output reports uStar estimates of 0.42 for 
-the orignal data and 0.37, 0.46, 0.68 for lower, median, 
+the orignal data and 0.38, 0.45, 0.63 for lower, median, 
 and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
 Therefore, there are estimates for different time periods, called seasons, reported
@@ -101,8 +102,9 @@ The subsequent post processing steps will be repeated using the three quantiles 
 the uStar distribution. They require to specify a uStar-threshold for each 
 season and a suffix to distinguish the outputs related to different thresholds.
 
-Here, we decide to use the same annually aggregated uStar threshold estimate 
-in each season within a year. Further, we store the column names from the 
+For this example of an evergreen forest site, we choose to use the same 
+annually aggregated uStar threshold
+estimate in each season within a year. Further, we store the column names from the 
 estimation result to variable `uStarSuffixes`, in order to distinguish 
 generated columns.
 
@@ -114,11 +116,11 @@ print(uStarThAnnual)
 
 ```
 ##    season       U05       U50       U95
-## 1 1998001 0.3720889 0.4639444 0.6842286
-## 2 1998003 0.3720889 0.4639444 0.6842286
-## 3 1998006 0.3720889 0.4639444 0.6842286
-## 4 1998009 0.3720889 0.4639444 0.6842286
-## 5 1998012 0.3720889 0.4639444 0.6842286
+## 1 1998001 0.3762929 0.4496429 0.6290729
+## 2 1998003 0.3762929 0.4496429 0.6290729
+## 3 1998006 0.3762929 0.4496429 0.6290729
+## 4 1998009 0.3762929 0.4496429 0.6290729
+## 5 1998012 0.3762929 0.4496429 0.6290729
 ```
 
 ## Gap-filling
@@ -223,21 +225,26 @@ computing columns `GPP_DT` and `Recco_DT`.
 
 ## Estimating the uncertainty of aggregated results
 
-First we compute the mean of the GPP across all the year for each scenario.
+First, the mean of the GPP across all the year is computed for each
+uStar-scenario and converted from ${\mu mol\, CO_2\, 
+m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
+
 
 ```r
 FilledEddyData.F <- EddyProc.C$sExportResults()
 #suffix <- uStarSuffixes[2]
-GPPAgg <- sapply( uStarSuffixes, function(suffix) {
+GPPAggCO2 <- sapply( uStarSuffixes, function(suffix) {
 	GPPHalfHour <- FilledEddyData.F[[paste0("GPP_",suffix,"_f")]]
 	mean(GPPHalfHour, na.rm = TRUE)
 })
+molarMass <- 12.011
+GPPAgg <- GPPAggCO2 * 1e-6 * molarMass * 3600*24*365.25
 print(GPPAgg)
 ```
 
 ```
 ##      U05      U50      U95 
-## 5.008512 5.155009 5.261060
+## 1898.418 1956.090 1923.919
 ```
 
 The difference between those aggregated values is a first estimate of 
@@ -246,11 +253,15 @@ uncertainty range in GPP due to uncertainty of the uStar threshold.
 ```r
 (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 ```
-In this run of the example a relative error of about 4.9% is inferred.
+In this run of the example a relative error of about 
+3% 
+is inferred.
 
-For a better but time consuming uncertainty estimate, specify a larger sample 
-in estimation of uStar threshold distribution above and compute statistics 
-from the larger sample across the corresponding GPP columns.
+For a better but more time consuming uncertainty estimate, specify a larger
+sample of uStar threshold values, for each repeat the post-processing, and 
+compute statistics from the larger sample of resulting GPP columns. This can be
+achieved by specifying a larger sequence of quantiles when calling 
+`sEstUstarThresholdDistribution`.
 
 ```r
 sEstUstarThresholdDistribution( 
