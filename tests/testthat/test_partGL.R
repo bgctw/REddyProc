@@ -875,17 +875,7 @@ test_that("partitionNEEGL: missing sdNEE",{
 			)
 		})
 
-.profilePartGL <- function(){
-	require(profr)
-	p1 <- profr({
-				for (i in 1:1) {
-					tmp <- partitionNEEGL( dsNEE1 )
-				}
-			}, 0.01 )
-	plot(p1)
-
-	range(dsNEE$sDateTime)
-}
+# see .profilePartGL in develop/profile/profile.R
 
 test_that("partitionNEEGL long gap",{
   skip("cannot repoduce SmoothTempSens failing")
