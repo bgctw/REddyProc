@@ -12,7 +12,7 @@ RectangularLRCFitter <- setRefClass('RectangularLRCFitter'
 
 #' @export
 RectangularLRCFitter_predictGPP  <- function(
-		### Retangular hyperbolic Light Response function for GPP
+		### Rectangular hyperbolic Light Response function for GPP
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density
 		  ## [mumol / m2 / s] or Global Radiation
 		, Amax	##<< vector of length(Rg): saturation (beta parameter) adjusted
@@ -67,8 +67,8 @@ RectangularLRCFitterCVersion <- setRefClass('RectangularLRCFitterCVersion',
 )
 
 RectangularLRCFitterCVersion_computeCost <- function(
-  ### Computing residual sum of sqares for predictions vs. data of NEE
-  thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized
+  ### Computing residual sum of squares for predictions vs. data of NEE
+  thetaOpt   ##<< parameter vector with components of theta0 that are optimized
   , theta		##<< parameter vector with positions as in argument of
     ## \code{\link{LightResponseCurveFitter_getParameterNames}}
   , iOpt		##<< position in theta that are optimized

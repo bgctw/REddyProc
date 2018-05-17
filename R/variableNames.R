@@ -1,7 +1,7 @@
 #' @export
 renameVariablesInDataframe <- function(
   ### Rename the column names of a data.frame according to a given mapping
-  data.F                    ##<< data.frame whose columns should be renamped
+  data.F                    ##<< data.frame whose columns should be renamed
   , mapping =               ##<< named character vector:
     ## specifying a renaming (name -> value)
     ## of the variables, see e.g.

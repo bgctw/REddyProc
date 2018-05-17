@@ -50,7 +50,7 @@ standard errors
 of Reco and GPP for small performance increase}
   \item{isFilterMeteoQualityFlag}{set to TRUE to use only records
 where quality flag
-of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e.
+of meteo drivers (radiation, temperature, VPD) is zero, i.e.
 non-gapfilled for parameter estimation.
 For prediction, the gap-filled value is used always, to produce
 predictions also for gaps.}
@@ -60,7 +60,7 @@ day-Time fitting that avoids the high leverage those records with
 unreasonable low uncertainty.}
   \item{fixedTRefAtNightTime}{if a finite value (degree Centigrade)
 is given, it is used instead of median data temperature as reference
-temperature in estimation of temperatue sensitivity from night data}
+temperature in estimation of temperature sensitivity from night data}
   \item{isExtendTRefWindow}{set to FALSE to avoid successively
 extending the night-time window
 in order to estimate a temperature sensitivity where previous estimates
@@ -85,13 +85,13 @@ is missing}
 replacing missing standard deviation of NEE.
 see \code{replaceMissingSdByPercentage}.
 Default sets missing uncertainty to 20\% of NEE but at least 0.7
-flux-units (usually mumo CO2 / m2 / s).
+flux-units (usually mumol CO2 / m2 / s).
 Specify c(NA, NA) to avoid replacing missings in standard deviation of
 NEE and to omit those records from LRC fit.}
   \item{neglectNEEUncertaintyOnMissing}{If set to TRUE: if there are
 records with missing uncertainty of NEE inside one window,
 set all uncertainties to 1.
-This overules option replaceMissingSdNEEParms.}
+This overrules option replaceMissingSdNEEParms.}
   \item{minPropSaturation}{quality criterion for sufficient data
 in window. If GPP prediction of highest PAR of window is less than
 minPropSaturation * (GPP at light-saturation, i.e. beta)

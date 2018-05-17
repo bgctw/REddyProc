@@ -7,7 +7,13 @@
   \item{WinDays.i}{Window size for filling in days}
   \item{Verbose.b}{Print status information to screen}
 }
-
+\details{\describe{\item{Quality flag}{
+\itemize{
+\item 1: nDay <= 1
+\item 2: nDay [2,5)
+\item 3: nDay > 5
+}
+}}}
 \value{MDC filling results in sTEMP data frame.}
 
 \author{AMM

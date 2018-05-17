@@ -32,7 +32,7 @@ to return. Default is the 5\%, median and 95\% of the bootstrap}
   \item{verbose.b}{set to FALSE to omit printing progress}
 }
 \details{The choice of the criterion for sufficiently turbulent conditions
-(u * > choosen threshold)
+(u * > chosen threshold)
 introduces large uncertainties in calculations based on gap-filled Eddy data.
 Hence, it is good practice to compare derived quantities based on
 gap-filled data using a range of u * threshold estimates.
@@ -40,18 +40,18 @@ gap-filled data using a range of u * threshold estimates.
 This method explores the probability density of the threshold by
 repeating its estimation
 on a bootstrapped sample.
-By default it returns the 90\% confidence interval (arguement \code{probs}).
+By default it returns the 90\% confidence interval (argument \code{probs}).
 For larger intervals the sample number need to be
-increased (arguement \code{probs}).
+increased (argument \code{probs}).
 
 \describe{\item{Quality Assurance}{
 If more than \code{ctrlUstarEst.l$minValidBootProp}
-(default 40\%) did not report a treshold,
+(default 40\%) did not report a threshold,
 no quantiles (i.e. NA) are reported.
 }}}
-\value{A data.frame with columns aggregationMode, year, and UStar estimate
-based on the unresampled data.
-The other columns correpond to the quantiles of Ustar estimate
+\value{A data.frame with columns \code{aggregationMode}, \code{year},
+and \code{UStar} estimate based on the non-resampled data.
+The other columns correspond to the quantiles of Ustar estimate
 for given probabilities (argument \code{probs}) based on the distribution
 of estimates using resampled the data.}
 

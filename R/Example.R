@@ -6,9 +6,9 @@
 getExamplePath <- function(
     ### checks if example filename is existing and if not tries to download it.
     filename = "Example_DETha98.txt"  ##<< the name of the example file
-    , isTryDownload = FALSE            ##<< scalar locigal whether to try
+    , isTryDownload = FALSE            ##<< scalar logical whether to try
          ## downloading the file to package or tmp directory.
-        ## Because of CRAN checks, need to explicitely set to TRUE
+        ## Because of CRAN checks, need to explicitly set to TRUE
     , exampleDir = getREddyProcExampleDir()    ##<< directory where examples are
         ## looked up and downloaded to
     , remoteDir = ""                   ##<< the URL do download from
@@ -44,7 +44,7 @@ getExamplePath <- function(
 #' @export
 getREddyProcExampleDir <- function(
   ### get the example directory inside temporary directory
-  isPreferParentDir =        ##<< logical scalar, wheter to prefer
+  isPreferParentDir =        ##<< logical scalar, whether to prefer
     ## temp parent directory instead of the R-session temp-Directory.
     ## See details.
       identical(Sys.getenv("NOT_CRAN"), "true")
@@ -60,7 +60,7 @@ getREddyProcExampleDir <- function(
   ## IF TRUE, the parent of \code{\link{tempdir}} will be used, so that
   ## downloads of examples are preserved across R-sessions.
   ## This is the default if
-  ##  environement variable "NOT_CRAN" is defined,
+  ##  environment variable "NOT_CRAN" is defined,
   ##   when running from testthat::\code{\link{check}}.
   tmpDir <- tempdir()
   if (!dir.exists(tmpDir) ) dir.create(tmpDir)

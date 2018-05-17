@@ -48,13 +48,14 @@ LightResponseCurveFitter_fitLRC <- function(
 	nPar <- length(parNames)
 	##details<<
 	## Optimization is performed for three initial parameter sets that differ
-	## by beta0 (* 1.3, * 0.8).
+	## by \code{beta0 (* 1.3, * 0.8)}.
 	## From those three, the optimization result is selected that yielded
 	## the lowest misfit.
-	## Starting values are: k = 0, beta = interpercentileRange(0.03, 0.97) of
-	## respiration, alpha = 0.1, R_ref
+	## Starting values are: \code{k = 0},
+	## \code{beta = interpercentileRange(0.03, 0.97)} of
+	## respiration, \code{alpha = 0.1}, \code{R_ref}
 	## from nightTime estimate.
-	## E0 is fixed to the night-time estimate, but varied for estimating
+	## \code{E0} is fixed to the night-time estimate, but varies for estimating
 	## parameter uncertainty.
 	parameterPrior <-  .self$getPriorLocation(dsDay$NEE, RRefNight = RRefNight
 	                                                                  , E0 = E0)
@@ -88,7 +89,7 @@ LightResponseCurveFitter_fitLRC <- function(
 			##details<< If \code{controlGLPart.l$nBootUncertainty == 0L} then the
 			## covariance matrix of the
 			## parameters is estimated by the Hessian of the LRC curve at optimum.
-			## Then, the additional uncertainty and covariance with uncertaint E0
+			## Then, the additional uncertainty and covariance with uncertainty E0
 			## is neglected.
 			#seParmsHess <- seParmsHess0 <- sqrt(abs(diag(solve(resOpt$hessian))))
 			covParmsLRC <- if ( (resOpt$hessian[1L, 1L] < 1e-8) ) {
@@ -155,7 +156,7 @@ LightResponseCurveFitter_fitLRC <- function(
 				## , 1002: fitted parameters were outside reasonable bounds \\
 				## , 1003: too few valid records in window \\
 				## , 1004: near zero covariance in bootstrap indicating bad fit \\
-				## , 1005: covariance from curvature of fit yieled negative variances
+				## , 1005: covariance from curvature of fit yielded negative variances
 				##              indicating bad fit \\
 				## , 1006: prediction of highest PAR in window was far from saturation
 				##               indicating insufficient data to constrain LRC \\
@@ -368,7 +369,7 @@ LightResponseCurveFitter_getOptimizedParameterPositions <- function(
 		  ## initial slope is fixed and is not optimized
 ) {
 	##details<< If subclasses extend the parameter vector, they need
-	## to overide this method.
+	## to override this method.
 	iOpt <-
 			if (!isUsingFixedVPD & !isUsingFixedAlpha) c(1:4) else
 			if ( isUsingFixedVPD & !isUsingFixedAlpha) 2:4 else
@@ -414,7 +415,7 @@ LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
 	##very low uncertainty (< a lower quantile) are assigned the lower quantile is
 	##assigned. This procedure downweighs records with a high uncertainty, but does
 	##not apply a large leverage for records with a very low uncertainty. Avoid
-	##this correction by suppyling setting \code{ctrl$isBoundLowerNEEUncertainty =
+	##this correction by setting \code{ctrl$isBoundLowerNEEUncertainty =
 	##FALSE}
 	Fc_unc <- if (isTRUE(ctrl$isBoundLowerNEEUncertainty) ) {
 	    #twutz: avoid excessive weights by small uncertainties (of 1 / unc^2)
@@ -467,7 +468,7 @@ LightResponseCurveFitter_isParameterInBounds <- function(
 	if (!is.finite(theta[2]) ) return(FALSE)
 	if (isTRUE(as.vector( (theta[2] > 100) && (sdTheta[2] >= theta[2]) )))
 	  return(FALSE)
-	##value<< FALSE if parameters are outisde reasonable bounds, TRUE otherwise
+	##value<< FALSE if parameters are outside reasonable bounds, TRUE otherwise
 	return(TRUE)
 }
 LightResponseCurveFitter$methods(isParameterInBounds =
@@ -478,7 +479,7 @@ LightResponseCurveFitter$methods(isParameterInBounds =
 LightResponseCurveFitter_optimLRC <- function(
 		### call the optimization function
 		theta				  ##<< numeric vector: starting parameters
-		, iOpt				##<< integer vector: positions of paramters to optimize
+		, iOpt				##<< integer vector: positions of parameters to optimize
 		, sdParameterPrior	##<< numeric vector: prior uncertainty
 		, ...				  ##<< further arguments to the cost function
 		, ctrl				##<< list of further controls
@@ -496,7 +497,7 @@ LightResponseCurveFitter_optimLRC <- function(
 			, control = list(reltol = ctrl$LRCFitConvergenceTolerance)
 			, method = "BFGS", hessian = isUsingHessian)
 	##value<<
-	## list of restult of \code{\link{optim}} amended with list
+	## list of result of \code{\link{optim}} amended with list
 	thetaOpt <- theta; thetaOpt[iOpt] <- resOptim$par
 	ans <- list(
 			theta = thetaOpt	##<< numeric vector: optimized parameter
@@ -511,8 +512,8 @@ LightResponseCurveFitter$methods(optimLRC = LightResponseCurveFitter_optimLRC)
 
 #' @export
 LightResponseCurveFitter_computeCost <- function(
-		### Computing residual sum of sqares for predictions vs. data of NEE
-		thetaOpt   ##<< parameter vecotr with components of theta0 that are optimized
+		### Computing residual sum of squares for predictions vs. data of NEE
+		thetaOpt   ##<< parameter vector with components of theta0 that are optimized
 		, theta		##<< parameter vector with positions as in argument of
 		  ## \code{\link{LightResponseCurveFitter_getParameterNames}}
 		, iOpt		##<< position in theta that are optimized

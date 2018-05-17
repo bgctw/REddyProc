@@ -119,7 +119,8 @@ or the yearly seasonYear$uStarAggr, if the former was non-finite}
 (nTemp x nAggSeason):
 estimates for each temperature subset for each season}
 \item{bins}{columns
-season, tempBin and uStarBin for each record of input ds
+\code{season}, \code{tempBin} and \code{uStarBin}
+for each record of input \code{ds}
 reporting classes of similar environmental conditions
 that the record belongs to.
 }}

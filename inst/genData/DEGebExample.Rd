@@ -15,13 +15,13 @@ For processing of the example data see \code{vignette("DEGebExample")}.
 }
 
 \details{
-DISCLAIMER: This example dataset should only be used for test purposes of the REddyProc R package. 
-For other uses, the data is openly available through the European Fluxes Database 
-(http://www.europe-fluxdata.eu/home/site-details?id=3) 
+DISCLAIMER: This example dataset should only be used for test purposes of the REddyProc R package.
+For other uses, the data is openly available through the European Fluxes Database
+(http://www.europe-fluxdata.eu/home/site-details?id=3)
 and upon registration the current version can be downloaded there.
 }
 
 
-\source{The data was downloaed from \code{http://www.europe-fluxdata.eu} at date 2016-01-25.}
+\source{The data was downloaded from \code{http://www.europe-fluxdata.eu} at date 2016-01-25.}
 %\references{}
 \keyword{dataset}

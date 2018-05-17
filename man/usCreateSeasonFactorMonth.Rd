@@ -14,7 +14,7 @@ length of the data set to be filled, specifying the month for each record}
 the data set to be filled, specifying the year}
   \item{startMonth}{integer vector specifying
 the starting month for each season, counting from one. Default is
-(Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Okt, Nov)}
+(Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Oct, Nov)}
 }
 \details{Compute factors to denote the season for uStar-Filtering by specifying
 starting months, with continuous seasons spanning year boundaries

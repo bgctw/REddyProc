@@ -35,7 +35,7 @@ gross primary production (GPP) and ecosystem respiration (Reco)
 
 The fit to the light-response-curve is done by default using the Rectangular
 hyperbolic function, as in Lasslop et al. (2010)
-Alternative fittings can be used by providing the correspodning subclass of
+Alternative fittings can be used by providing the corresponding subclass of
 \code{\link{LightResponseCurveFitter-class}} to \code{lrcFitter} argument.
 (see \code{\link{LightResponseCurveFitter_predictGPP}})
 
@@ -44,10 +44,10 @@ uses only measured data, i.e. with specified quality flag.
 With the common case where VPD is missing for fitting the LRC, by default
 (with \code{controlGLPart$isRefitMissingVPDWithNeglectVPDEffect = TRUE})
 is to redo the estimation of LRC parameters with neglecting the VPD-effect.
-Next, in the preditions (rows) with missing VPD are then replaced
+Next, in the predictions (rows) with missing VPD are then replaced
 with predictions
 based on LRC-fits that neglected the VPD effect.}
-\value{\item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/s}
+\value{\item{Reco_DT_<suffix>}{predicted ecosystem respiration: mumol CO2/m2/s}
 \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
 \item{GPP2000}{predicted gross primary production
 mumol CO2 / m2 / s for VPD = 0 at Rg = 2000}
@@ -76,7 +76,7 @@ that has a parameter estimate associated}
 successful or was rejected, see result of
 \code{\link{LightResponseCurveFitter_fitLRC}}}
 \item{FP_GPP2000}{predicted GPP at VPD = 0 and PAR = 2000:
-a surrogate for maximum photosynthethic capacity}
+a surrogate for maximum photosynthetic capacity}
 \item{FP_OPT_VPD}{list object
 of fitting results including iOpt and covParms}
 \item{FP_OPT_NoVPD}{same as

@@ -151,7 +151,7 @@ fCalcAVPfromVMFandPress <- function(
 #' @export
 fCalcRHfromAVPandTair <- function(
   ##description<<
-  ## Calculate relative humidity from actual vapour pressure and air tempature
+  ## Calculate relative humidity from actual vapour pressure and air temperature
   AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, hPa (mbar))
   , Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
   ##author<<

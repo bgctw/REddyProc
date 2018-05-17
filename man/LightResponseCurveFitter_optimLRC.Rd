@@ -6,7 +6,7 @@
     iOpt, sdParameterPrior, ..., ctrl, isUsingHessian)}
 \arguments{
   \item{theta}{numeric vector: starting parameters}
-  \item{iOpt}{integer vector: positions of paramters to optimize}
+  \item{iOpt}{integer vector: positions of parameters to optimize}
   \item{sdParameterPrior}{numeric vector: prior uncertainty}
   \item{\dots}{further arguments to the cost function}
   \item{ctrl}{list of further controls}
@@ -14,7 +14,7 @@
 Hessian at optimum}
 }
 
-\value{list of restult of \code{\link{optim}} amended with list
+\value{list of result of \code{\link{optim}} amended with list
 \item{theta}{numeric vector: optimized parameter
 vector including the fixed components}
 \item{iOpt}{integer vector: position of

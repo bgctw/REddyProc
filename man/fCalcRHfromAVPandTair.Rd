@@ -1,7 +1,7 @@
 \name{fCalcRHfromAVPandTair}
 \alias{fCalcRHfromAVPandTair}
 \title{fCalcRHfromAVPandTair}
-\description{Calculate relative humidity from actual vapour pressure and air tempature}
+\description{Calculate relative humidity from actual vapour pressure and air temperature}
 \usage{fCalcRHfromAVPandTair(AVP.V.n, Tair.V.n)}
 \arguments{
   \item{AVP.V.n}{Data vector of actual vapour pressure (AVP, hPa (mbar))}

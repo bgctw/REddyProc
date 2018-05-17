@@ -16,19 +16,20 @@
 by last reasonable fit}
 }
 \details{Optimization is performed for three initial parameter sets that differ
-by beta0 (* 1.3, * 0.8).
+by \code{beta0 (* 1.3, * 0.8)}.
 From those three, the optimization result is selected that yielded
 the lowest misfit.
-Starting values are: k = 0, beta = interpercentileRange(0.03, 0.97) of
-respiration, alpha = 0.1, R_ref
+Starting values are: \code{k = 0},
+\code{beta = interpercentileRange(0.03, 0.97)} of
+respiration, \code{alpha = 0.1}, \code{R_ref}
 from nightTime estimate.
-E0 is fixed to the night-time estimate, but varied for estimating
+\code{E0} is fixed to the night-time estimate, but varies for estimating
 parameter uncertainty.
 
 If \code{controlGLPart.l$nBootUncertainty == 0L} then the
 covariance matrix of the
 parameters is estimated by the Hessian of the LRC curve at optimum.
-Then, the additional uncertainty and covariance with uncertaint E0
+Then, the additional uncertainty and covariance with uncertainty E0
 is neglected.
 
 If \code{controlGLPart.l$nBootUncertainty > 0L} then the
@@ -57,7 +58,7 @@ convergence problems: \\
 , 1002: fitted parameters were outside reasonable bounds \\
 , 1003: too few valid records in window \\
 , 1004: near zero covariance in bootstrap indicating bad fit \\
-, 1005: covariance from curvature of fit yieled negative variances
+, 1005: covariance from curvature of fit yielded negative variances
 indicating bad fit \\
 , 1006: prediction of highest PAR in window was far from saturation
 indicating insufficient data to constrain LRC \\

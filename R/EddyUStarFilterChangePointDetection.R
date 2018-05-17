@@ -13,7 +13,7 @@
 	)
 	cf <- as.numeric(coef(seg1))
 	##value<< numeric vector with entries
-	c( 
+	c(
 			b0 = cf[1]			##<< intercept of second part
 			, b1 =-cf[2]		##<< first slope (second slope is fixed to zero)
 			, cp =-seg1$psi[2]	##<< estimated breakpoint
@@ -53,8 +53,8 @@ attr(.fitSeg2, "ex") <- function() {
 	x <- seq(0L, 1L, length.out = n)
 	noise <- rnorm(n, sd = 0.1)
 	y1 <- y2 <- y3 <- rep(1, n) + noise
-	iSlope <- 1:(n / 2L) 
-	y2[iSlope] <- 0.5 + x[iSlope] + noise[iSlope]  
+	iSlope <- 1:(n / 2L)
+	y2[iSlope] <- 0.5 + x[iSlope] + noise[iSlope]
 	y3[iSlope] <- 0.2 + (0.8 / 0.5) * x[iSlope] + noise[iSlope]
 	y <- y2
 	plot(y ~ x)
@@ -73,7 +73,7 @@ attr(.fitSeg2, "ex") <- function() {
 
 .estimateUStarSeasonCPTSeveralT <- function(
 		### similar to .estimateUStarSeason but with extended temperature classification
-		dsi						
+		dsi
 		, ctrlUstarSub.l
 		, ctrlUstarEst.l
 		, fEstimateUStarBinned
@@ -81,7 +81,7 @@ attr(.fitSeg2, "ex") <- function() {
 	nTaClasses <- 3L * ctrlUstarSub.l$taClasses - 3L	# number of temperature classes expanded
 	resNA <- 	list(
 			UstarTh.v = rep(NA_real_, nTaClasses)	##<< vector of uStar for temperature classes
-			, bins.F = data.frame(tempBin = rep(NA_integer_, nrow(dsi)) 
+			, bins.F = data.frame(tempBin = rep(NA_integer_, nrow(dsi))
 					, uStarBin = rep(NA_integer_, nrow(dsi)) )			##<< data.frame with columns tempBin, uStarBin for each row in dsi
 	)
 	if (nrow(dsi) < ctrlUstarSub.l$minRecordsWithinSeason) {
@@ -97,16 +97,16 @@ attr(.fitSeg2, "ex") <- function() {
 	orderTemp <- order(dsi[, "Tair"])
 	uStarBinSortedT <- integer(nrow(dsi))		# default value for methods that do not bin uStar
 	dsiSort <- dsi[orderTemp, , drop = FALSE] 	#sort values in a season by air temperature (later in class by ustar)
-	##details<< 
-	## In order for robustness, bin temperatue by several bin widths: 
+	##details<<
+	## In order for robustness, bin temperature by several bin widths:
 	## In addition wo width ctrlUstarSub.l$taClasses, width reduced by 1 and 2
 	## providing 7 + 6 + 5 = 18 classes for the median
 	# taClasses <- 7L
 	#
-	# for mosted detailed temperature classing, report classes with results 
+	# for mosted detailed temperature classing, report classes with results
 	TId0 <- .binWithEqualValuesBalanced(dsiSort[, "Tair"], ctrlUstarSub.l$taClasses)
 	TIdUnsorted <- uStarBinUnsortedT <- integer(length(orderTemp)); 	# 0L
-	TIdUnsorted[orderTemp] <- TId0	
+	TIdUnsorted[orderTemp] <- TId0
 	# plot(TIdUnsorted ~ dsi$Tair) # for checking Temperature binning
 	#
 	thresholdsTList <- lapply(ctrlUstarSub.l$taClasses - (0L:min(2L, ctrlUstarSub.l$taClasses-1L)) , function(taClasses) {
@@ -114,8 +114,8 @@ attr(.fitSeg2, "ex") <- function() {
 		#k <- 1L
 		thresholds <- vapply(1:taClasses, function(k) {
 					dsiSortTclass <- dsiSort[TId == k, ]
-					##details<< 
-					## Temperature classes, where NEE is still correlated to temperature 
+					##details<<
+					## Temperature classes, where NEE is still correlated to temperature
 					## are not used for uStar threshold estimation.
 					Cor1 = suppressWarnings(abs(cor(dsiSortTclass[, "Ustar"], dsiSortTclass[, "Tair"])) ) # maybe too few or degenerate cases
 					# TODO: check more correlations here? [check C code]
@@ -123,8 +123,8 @@ attr(.fitSeg2, "ex") <- function() {
 					#      Cor3 = abs(cor(dataMthTsort$tair, dataMthTsort$nee))
 					if ( (!is.finite(Cor1)) || (Cor1 > ctrlUstarEst.l$corrCheck)) return(NA_real_)
 					resCPT <- try(suppressWarnings(.fitSeg1(dsiSortTclass[, "Ustar"], dsiSortTclass[, "NEE"])), silent = TRUE)
-					threshold <- if (inherits(resCPT, "try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05) 
-								#c(NA_real_, NA_real_) else resCPT[c("cp", "sdCp")]	# testing weighted mean, no improment, simplify again 
+					threshold <- if (inherits(resCPT, "try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05)
+								#c(NA_real_, NA_real_) else resCPT[c("cp", "sdCp")]	# testing weighted mean, no improment, simplify again
 								c(NA_real_) else resCPT[c("cp")]
 					return(threshold)
 				}, FUN.VALUE = numeric(1L), USE.NAMES = FALSE)
@@ -141,7 +141,7 @@ attr(.fitSeg2, "ex") <- function() {
 .tmp.f <- function() {
 	tmp <- UstarTh.l
 	#tmp <- UstarAndSdSeasonsTemp
-	ggplot(tmp, aes(x = 1:length(UstarTh.v), y = UstarTh.v, color = as.factor(season))) + 
+	ggplot(tmp, aes(x = 1:length(UstarTh.v), y = UstarTh.v, color = as.factor(season))) +
 			geom_errorbar(aes(ymin = UstarTh.v-sdUstarTh.v, ymax = UstarTh.v + sdUstarTh.v), width = .1) +
 			#geom_line() +
 			geom_point()
@@ -150,6 +150,6 @@ attr(.fitSeg2, "ex") <- function() {
 .tmp.f <- function() {
 	tmp <- UstarTh.l
 	#tmp <- UstarAndSdSeasonsTemp
-	ggplot(dsiSortTclass, aes(x = ustar_level4, y = NEEorig_level4)) + 
+	ggplot(dsiSortTclass, aes(x = ustar_level4, y = NEEorig_level4)) +
 			geom_point() + geom_smooth()
 }

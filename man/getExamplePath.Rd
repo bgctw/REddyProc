@@ -7,9 +7,9 @@
     remoteDir = "")}
 \arguments{
   \item{filename}{the name of the example file}
-  \item{isTryDownload}{scalar locigal whether to try
+  \item{isTryDownload}{scalar logical whether to try
 downloading the file to package or tmp directory.
-Because of CRAN checks, need to explicitely set to TRUE}
+Because of CRAN checks, need to explicitly set to TRUE}
   \item{exampleDir}{directory where examples are
 looked up and downloaded to}
   \item{remoteDir}{the URL do download from}

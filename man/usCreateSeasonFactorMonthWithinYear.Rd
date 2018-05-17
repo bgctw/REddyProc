@@ -14,7 +14,7 @@ of the data set to be filled, specifying the month for each record}
 the data set to be filled, specifying the year}
   \item{startMonth}{integer vector specifying the starting
 month for each season, counting from one. Default is
-(Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Okt, Nov)}
+(Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Oct, Nov)}
 }
 \details{Calculate factors to denote the season for uStar-Filtering by specifying
 starting months, with seasons not spanning year boundaries
@@ -25,10 +25,9 @@ Jan, Feb, Dec.}
 \value{Integer vector length(dates), with each unique value representing one season}
 
 \author{TW
-seealso \code{\link{usCreateSeasonFactorMonth}}
 Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-help@bgc-jena.mpg.de> [cph], Thomas Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Olaf Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Kerstin Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Ladislav Šigut <sigut.l@czechglobe.cz> [ctb]}
 
 
 
-
+\seealso{\code{\link{usCreateSeasonFactorMonth}}}
 

@@ -31,9 +31,9 @@ sEddyProc_sEstUstarThreshold <- function(
 	sDATA$season <<-  resEst$bins$season
 	sDATA$tempBin <<-  resEst$bins$tempBin
 	sDATA$uStarBin <<-  resEst$bins$uStarBin
-	##value<< restult of \code{\link{usEstUstarThreshold}}. In addition the
+	##value<< result of \code{\link{usEstUstarThreshold}}. In addition the
 	## result is stored in class variable sUSTAR and the bins as
-	## additional columsn to sDATA
+	## additional columns to sDATA
 	resEst
 }
 sEddyProc$methods(sEstUstarThreshold = sEddyProc_sEstUstarThreshold)
@@ -317,7 +317,8 @@ usEstUstarThreshold = function(
 			## (nTemp x nAggSeason):
 			## estimates for each temperature subset for each season
 			, bins = ds[, c("season", "tempBin", "uStarBin")]		##<< columns
-			##season, tempBin and uStarBin for each record of input ds
+			## \code{season}, \code{tempBin} and \code{uStarBin}
+			##  for each record of input \code{ds}
 			## reporting classes of similar environmental conditions
 			## that the record belongs to.
 	)
@@ -471,7 +472,7 @@ attr(.plotNEEVersusUStarTempClass, "ex") <- function() {
 				#plot(NEE_avg ~ Ust_avg, dsiBinnedUstar)
 				if (any(!is.finite(dsiBinnedUstar[[2]])) ) {
 					stop("Encountered non-finite average NEE for a UStar bin.",
-							"You need to provide data with non-finite collumns uStar"
+							"You need to provide data with non-finite columns uStar"
 							," and NEE for UStar Threshold detection.")
 				}
 				UstarTh.v[k] <- if (dsiBinnedUstar[[1]][1] > ctrlUstarEst.l$firstUStarMeanCheck
@@ -578,7 +579,7 @@ usControlUstarSubsetting <- function(
 	# seasons param deprecated
   # TODO: add seasons handling to documentation
   #, seasons = 1 # switch for different seasonal modes #TODO: Update?!
-	, swThr = 10  		##<< nighttime data threshold for solar radion [Wm-2]
+	, swThr = 10  		##<< nighttime data threshold for solar radiation [Wm-2]
 	, minRecordsWithinTemp = 100		##<< integer scalar: the minimum number of
 	  ## Records within one Temperature-class
 	, minRecordsWithinSeason = 160	##<< integer scalar: the minimum number of
@@ -636,7 +637,7 @@ usCreateSeasonFactorMonth <- function(
 		  ## the data set to be filled, specifying the year
 		, startMonth = c(3, 6, 9, 12)		##<< integer vector specifying
 		  ##the starting month for each season, counting from one. Default is
-		  ## (Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Okt, Nov)
+		  ## (Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Oct, Nov)
 ) {
 	##author<<
 	## TW
@@ -703,10 +704,10 @@ usCreateSeasonFactorMonthWithinYear <- function(
 	  ## the data set to be filled, specifying the year
 	, startMonth = c(3, 6, 9, 12)		##<< integer vector specifying the starting
 	  ## month for each season, counting from one. Default is
-	  ## (Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Okt, Nov)
+	  ## (Dez, Jan, Feb)(Mar, April, May)(June, July, August), (Sept, Oct, Nov)
 ) {
 	##author<< TW
-	##seealso \code{\link{usCreateSeasonFactorMonth}}
+	##seealso<< \code{\link{usCreateSeasonFactorMonth}}
   ##details<<
   ## Calculate factors to denote the season for uStar-Filtering by specifying
   ## starting months, with seasons not spanning year boundaries
@@ -760,7 +761,7 @@ usCreateSeasonFactorYday <- function(
 	  ## the starting yearDay for each season in increasing order
 ) {
 	##author<< TW
-	##seealso \code{\link{usCreateSeasonFactorMonth}}
+	##seealso<< \code{\link{usCreateSeasonFactorMonth}}
 	##details<<
 	## With default parameterization, dates are assumed to denote begin
 	## or center of the eddy time period.
@@ -771,7 +772,8 @@ usCreateSeasonFactorYday <- function(
 	           , year = rep(sort(unique(year)), each = length(startYday)) )
 	usCreateSeasonFactorYdayYear(dates, yday, year, starts)
 	##value<<
-	## Integer vector of nrow ds, each unique class representing one season
+	## Integer vector of length \code{nrow(ds)},
+	## each unique class representing one season
 }
 
 .tmp.f  <- function() {
@@ -796,7 +798,7 @@ usCreateSeasonFactorYdayYear <- function(
 		  ## (integer e.g. 1998) for each season in increasing order
 ) {
 	##author<< TW
-	##seealso \code{\link{usCreateSeasonFactorMonth}}
+	##seealso<< \code{\link{usCreateSeasonFactorMonth}}
 	##details<<
 	## With default parameterization, dates are assumed to denote begin
 	## or center of the eddy time period.
@@ -826,7 +828,8 @@ usCreateSeasonFactorYdayYear <- function(
 	#plot(seasonFac ~ dates); levels(as.factor(seasonFac))
 	as.factor(seasonFac)
 	##value<<
-	## Integer vector of nrow ds, each unique class representing one season
+	## Integer vector of length \code{nrow(ds)},
+	## each unique class representing one season
 }
 
 
@@ -1208,7 +1211,7 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 	##author<< TW
 	##details<<
 		## The choice of the criterion for sufficiently turbulent conditions
-		## (u * > choosen threshold)
+		## (u * > chosen threshold)
 		## introduces large uncertainties in calculations based on gap-filled Eddy data.
 	  ## Hence, it is good practice to compare derived quantities based on
 	  ## gap-filled data using a range of u * threshold estimates.
@@ -1216,9 +1219,9 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 		## This method explores the probability density of the threshold by
 		## repeating its estimation
 		## on a bootstrapped sample.
-		## By default it returns the 90% confidence interval (arguement \code{probs}).
+		## By default it returns the 90% confidence interval (argument \code{probs}).
 		## For larger intervals the sample number need to be
-		## increased (arguement \code{probs}).
+		## increased (argument \code{probs}).
 
 		##seealso<< \code{\link{sEddyProc_sEstUstarThreshold}}
 		##, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}
@@ -1277,7 +1280,7 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 		stat <- do.call(rbind, c(list(Ustar.l0), Ustar.l))
 		##details<< \describe{\item{Quality Assurance}{
 		## If more than \code{ctrlUstarEst.l$minValidBootProp}
-		## (default 40%) did not report a treshold,
+		## (default 40%) did not report a threshold,
 		## no quantiles (i.e. NA) are reported.
 		## }}
 		resQuantiles <-	t(apply(stat, 2, quantile, probs = probs, na.rm = TRUE))
@@ -1294,9 +1297,9 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 				))
 		resDf
 		##value<<
-		## A data.frame with columns aggregationMode, year, and UStar estimate
-		## based on the unresampled data.
-		## The other columns correpond to the quantiles of Ustar estimate
+		## A data.frame with columns \code{aggregationMode}, \code{year},
+		## and \code{UStar} estimate based on the non-resampled data.
+		## The other columns correspond to the quantiles of Ustar estimate
 		## for given probabilities (argument \code{probs}) based on the distribution
 		## of estimates using resampled the data.
 }

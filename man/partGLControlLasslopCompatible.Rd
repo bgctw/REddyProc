@@ -1,7 +1,7 @@
 \name{partGLControlLasslopCompatible}
 \alias{partGLControlLasslopCompatible}
 \title{partGLControlLasslopCompatible}
-\description{Daytime flux partitioning parms compatibile with with the pvWave}
+\description{Daytime flux partitioning parms compatible with with the pvWave}
 \usage{partGLControlLasslopCompatible(nBootUncertainty = 0L, 
     minNRecInDayWindow = 10L, isAssociateParmsToMeanOfValids = FALSE, 
     isLasslopPriorsApplied = TRUE, isUsingLasslopQualityConstraints = TRUE, 
@@ -32,7 +32,7 @@ unreasonable low uncertainty.}
   \item{fixedTRefAtNightTime}{use fixed (degree Centigrade)
 temperature sensitivity
 instead of median data temperature as reference temperature in
-estimation of temperatue sensitivity from night data}
+estimation of temperature sensitivity from night data}
   \item{isExtendTRefWindow}{avoid successively extending the
 night-time window
 in order to estimate a temperature sensitivity where previous
@@ -52,8 +52,8 @@ isUsingLasslopQualityConstraints = TRUE.}
 but see option}
   \item{neglectNEEUncertaintyOnMissing}{if there are records with
 missing uncertainty of NEE inside one window, set all sdNEE to 1.
-This overules option replaceMissingSdNEEParms.}
-  \item{\dots}{further arguemtns to \code{\link{partGLControl}}}
+This overrules option replaceMissingSdNEEParms.}
+  \item{\dots}{further arguments to \code{\link{partGLControl}}}
 }
 
 

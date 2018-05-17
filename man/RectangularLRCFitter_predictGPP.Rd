@@ -1,7 +1,7 @@
 \name{RectangularLRCFitter_predictGPP}
 \alias{RectangularLRCFitter_predictGPP}
 \title{RectangularLRCFitter predictGPP}
-\description{Retangular hyperbolic Light Response function for GPP}
+\description{Rectangular hyperbolic Light Response function for GPP}
 \usage{RectangularLRCFitter_predictGPP(Rg, Amax, 
     alpha)}
 \arguments{

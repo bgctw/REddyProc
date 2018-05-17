@@ -18,7 +18,7 @@ fConvertTimeToPosix <- function(
   , Hour.s = 'none'        ##<< Column name of hour
   , Min.s = 'none'         ##<< Column name of min
   , TName.s = 'DateTime'   ##<< Column name of new column
-  , tz = 'GMT'				     ##<< timezone used to store the data. Advisded to keep
+  , tz = 'GMT'				     ##<< timezone used to store the data. Advised to keep
     ## GMT to avoid daytime shifting issues
   )
   ##author<<
@@ -218,7 +218,8 @@ fFullYearTimeSteps <- function(
   , DTS.n                ##<< Daily time steps
   , CallFunction.s = ''    ##<< Name of function called from
   #TEST: Year.i <- 2008; DTS.n <- 48
-  , tz = 'GMT'				##<< timezone used to store the data. Advisded to keep GMT to avoid daytime shifting issues
+  , tz = 'GMT'				##<< timezone used to store the data. Advised to keep
+  ## GMT to avoid daytime shifting issues
 )
   ##author<<
   ## AMM

@@ -9,7 +9,7 @@
 \arguments{
   \item{taClasses}{set number of air temperature classes}
   \item{UstarClasses}{set number of Ustar classes}
-  \item{swThr}{nighttime data threshold for solar radion [Wm-2]}
+  \item{swThr}{nighttime data threshold for solar radiation [Wm-2]}
   \item{minRecordsWithinTemp}{integer scalar: the minimum number of
 Records within one Temperature-class}
   \item{minRecordsWithinSeason}{integer scalar: the minimum number of

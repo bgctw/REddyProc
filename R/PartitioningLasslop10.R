@@ -29,7 +29,7 @@ partitionNEEGL <- function(
   ##
   ## The fit to the light-response-curve is done by default using the Rectangular
   ## hyperbolic function, as in Lasslop et al. (2010)
-  ## Alternative fittings can be used by providing the correspodning subclass of
+  ## Alternative fittings can be used by providing the corresponding subclass of
   ## \code{\link{LightResponseCurveFitter-class}} to \code{lrcFitter} argument.
   ## (see \code{\link{LightResponseCurveFitter_predictGPP}})
   #
@@ -48,7 +48,7 @@ partitionNEEGL <- function(
 		, VPDVar.s = VPDVar.s, RadVar.s = RadVar.s , Suffix.s = Suffix.s
 		, ..., controlGLPart = controlGLPart)
 	##value<<
-	## \item{Reco_DT_<suffix>}{predicted ecosystem respiraiton: mumol CO2/m2/s}
+	## \item{Reco_DT_<suffix>}{predicted ecosystem respiration: mumol CO2/m2/s}
 	## \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
 	## \item{GPP2000}{predicted gross primary production
 	##  mumol CO2 / m2 / s for VPD = 0 at Rg = 2000}
@@ -78,7 +78,7 @@ partitionNEEGL <- function(
 			  ## successful or was rejected, see result of
 			  ## \code{\link{LightResponseCurveFitter_fitLRC}}
 			, FP_GPP2000 = NA_real_ 	##<< predicted GPP at VPD = 0 and PAR = 2000:
-			  ## a surrogate for maximum photosynthethic capacity
+			  ## a surrogate for maximum photosynthetic capacity
 			, FP_OPT_VPD = vector(mode = "list", length =  nrow(ds))	##<< list object
 			  ## of fitting results including iOpt and covParms
 			, FP_OPT_NoVPD = vector(mode = "list", length =  nrow(ds))	##<< same as
@@ -189,7 +189,7 @@ partitionNEEGL <- function(
 		## With the common case where VPD is missing for fitting the LRC, by default
 		## (with \code{controlGLPart$isRefitMissingVPDWithNeglectVPDEffect = TRUE})
 		## is to redo the estimation of LRC parameters with neglecting the VPD-effect.
-		## Next, in the preditions (rows) with missing VPD are then replaced
+		## Next, in the predictions (rows) with missing VPD are then replaced
 		## with predictions
 		## based on LRC-fits that neglected the VPD effect.
 		iNAVPD <- which(is.na(ds[[VPDVar.s]] & is.na(dsAnsFluxes$GPP)))
@@ -291,7 +291,7 @@ partGLControl <- function(
 			## of Reco and GPP for small performance increase
 		, isFilterMeteoQualityFlag = FALSE	##<< set to TRUE to use only records
 		  ## where quality flag
-  		## of meteo drivers (Radation, Temperatrue, VPD) is zero, i.e.
+  		## of meteo drivers (radiation, temperature, VPD) is zero, i.e.
   		## non-gapfilled for parameter estimation.
   		## For prediction, the gap-filled value is used always, to produce
   		## predictions also for gaps.
@@ -301,7 +301,7 @@ partGLControl <- function(
 			## unreasonable low uncertainty.
 		, fixedTRefAtNightTime = NA		##<< if a finite value (degree Centigrade)
 		  ## is given, it is used instead of median data temperature as reference
-		  ## temperature in estimation of temperatue sensitivity from night data
+		  ## temperature in estimation of temperature sensitivity from night data
 		, isExtendTRefWindow = TRUE		##<< set to FALSE to avoid successively
 		  ## extending the night-time window
 			## in order to estimate a temperature sensitivity where previous estimates
@@ -331,13 +331,13 @@ partGLControl <- function(
 		  ## replacing missing standard deviation of NEE.
 			## see \code{replaceMissingSdByPercentage}.
 			## Default sets missing uncertainty to 20% of NEE but at least 0.7
-			## flux-units (usually mumo CO2 / m2 / s).
+			## flux-units (usually mumol CO2 / m2 / s).
 			## Specify c(NA, NA) to avoid replacing missings in standard deviation of
 			## NEE and to omit those records from LRC fit.
 		, neglectNEEUncertaintyOnMissing = FALSE	##<< If set to TRUE: if there are
 		  ## records with missing uncertainty of NEE inside one window,
 		  ## set all uncertainties to 1.
-			## This overules option replaceMissingSdNEEParms.
+			## This overrules option replaceMissingSdNEEParms.
 		, minPropSaturation = NA	##<< quality criterion for sufficient data
 		  ## in window. If GPP prediction of highest PAR of window is less than
 		  ## minPropSaturation * (GPP at light-saturation, i.e. beta)
@@ -386,7 +386,7 @@ attr(partGLControl, "ex") <- function() {
 
 #' @export
 partGLControlLasslopCompatible <- function(
-		### Daytime flux partitioning parms compatibile with with the pvWave
+		### Daytime flux partitioning parms compatible with with the pvWave
 		nBootUncertainty = 0L						##<< 0: Derive uncertainty from
 		  ## curvature of a single fit, neglecting the uncertainty of previously
 		  ## estimated temperature sensitivity, E0
@@ -406,7 +406,7 @@ partGLControlLasslopCompatible <- function(
 		, fixedTRefAtNightTime = 15				##<< use fixed (degree Centigrade)
 		  ## temperature sensitivity
 			## instead of median data temperature as reference temperature in
-			## estimation of temperatue sensitivity from night data
+			## estimation of temperature sensitivity from night data
 		, isExtendTRefWindow = FALSE				##<< avoid successively extending the
 		  ##night-time window
 			## in order to estimate a temperature sensitivity where previous
@@ -426,8 +426,8 @@ partGLControlLasslopCompatible <- function(
 		  ## but see option
 		, neglectNEEUncertaintyOnMissing = TRUE	##<< if there are records with
 		  ## missing uncertainty of NEE inside one window, set all sdNEE to 1.
-			## This overules option replaceMissingSdNEEParms.
-		, ... 									##<< further arguemtns to \code{\link{partGLControl}}
+			## This overrules option replaceMissingSdNEEParms.
+		, ... 									##<< further arguments to \code{\link{partGLControl}}
 ) {
 	##author<< TW
 	##seealso<< \code{\link{partGLControl}}
@@ -471,7 +471,7 @@ partGLExtractStandardData <- function(
 		  ## filled temperature variable
 		, QFTempValue.n = 0       			##<< Value of temperature quality flag
 		  ##for _good_ (original) data
-		, VPDVar.s = paste0('VPD_f')    ##<< Filled Vapor Pressure DeficitVPD (hPa)
+		, VPDVar.s = paste0('VPD_f')    ##<< Filled Vapor Pressure Deficit, VPD (hPa)
 		, QFVPDVar.s = paste0('VPD_fqc') 	##<< Quality flag of filled VPD variable
 		, QFVPDValue.n = 0        			##<< Value of VPD quality flag for
 		  ## _good_ (original) data
@@ -533,7 +533,8 @@ partGLExtractStandardData <- function(
 	#
 	##value<< a data.frame with columns
 	dsR <- data.frame(
-			sDateTime = ds[[1]]			##<< first column of ds, usually the time stamp
+			sDateTime = ds[[1]]			##<< first column of \code{ds},
+			  ## usually the time stamp
 			  ## not used, but usually first column is a dateTime is kept
 			  ## for aiding debug
 			, NEE = NEEFiltered			      ##<< NEE filtered for quality flay
@@ -816,7 +817,7 @@ partGLInterpolateFluxes <- function(
 	## LRC parameters are representative,
 	## here, the first record of the center day
 	# create a dataframe with index of rows of estimates before and after and
-	# correponding weights
+	# corresponding weights
 	iValidWin <- which(is.finite(resParms$parms_out_range))
 	summaryLRC <- resParms %>% select_(~-resOpt) %>% slice(iValidWin)
     resOptList <- resParms$resOpt[iValidWin]

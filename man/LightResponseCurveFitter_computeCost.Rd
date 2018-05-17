@@ -1,12 +1,12 @@
 \name{LightResponseCurveFitter_computeCost}
 \alias{LightResponseCurveFitter_computeCost}
 \title{LightResponseCurveFitter computeCost}
-\description{Computing residual sum of sqares for predictions vs. data of NEE}
+\description{Computing residual sum of squares for predictions vs. data of NEE}
 \usage{LightResponseCurveFitter_computeCost(thetaOpt, 
     theta, iOpt, flux, sdFlux, parameterPrior, 
     sdParameterPrior, ...)}
 \arguments{
-  \item{thetaOpt}{parameter vecotr with components of theta0 that are optimized}
+  \item{thetaOpt}{parameter vector with components of theta0 that are optimized}
   \item{theta}{parameter vector with positions as in argument of
 \code{\link{LightResponseCurveFitter_getParameterNames}}}
   \item{iOpt}{position in theta that are optimized}

@@ -21,7 +21,15 @@
   \item{T5.n}{Tolerance interval 5}
   \item{Verbose.b}{Print status information to screen}
 }
-
+\details{\describe{\item{Quality flags}{
+\itemize{
+\item 1: at least one variable and nDay <= 14
+\item 2: three variables and nDay in [14,56)
+or one variable and nDay in  [14,28)
+\item 3: three variables and nDay > 56
+or one variable and nDay > 28
+}
+}}}
 \value{LUT filling results in sTEMP data frame.}
 
 \author{AMM

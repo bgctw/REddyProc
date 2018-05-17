@@ -29,7 +29,7 @@ temperature variable (degC)}
 filled temperature variable}
   \item{QFTempValue.n}{Value of temperature quality flag
 for _good_ (original) data}
-  \item{VPDVar.s}{Filled Vapor Pressure DeficitVPD (hPa)}
+  \item{VPDVar.s}{Filled Vapor Pressure Deficit, VPD (hPa)}
   \item{QFVPDVar.s}{Quality flag of filled VPD variable}
   \item{QFVPDValue.n}{Value of VPD quality flag for
 _good_ (original) data}
@@ -54,7 +54,8 @@ Controlled by argument \code{replaceMissingSdNEEParms} in
 \code{\link{partGLControl}}, but overruled
 by argument \code{neglectNEEUncertaintyOnMissing}.}
 \value{a data.frame with columns
-\item{sDateTime}{first column of ds, usually the time stamp
+\item{sDateTime}{first column of \code{ds},
+usually the time stamp
 not used, but usually first column is a dateTime is kept
 for aiding debug}
 \item{NEE}{NEE filtered for quality flay}

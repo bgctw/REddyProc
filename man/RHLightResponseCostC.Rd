@@ -3,14 +3,14 @@
 \alias{_REddyProc_RHLightResponseCostC}
 \title{RHLightResponseCostC}
 
-\usage{RHLightResponseCostC(theta, flux, sdFlux, 
-    parameterPrior, sdParameterPrior, Rg, 
+\usage{RHLightResponseCostC(theta, flux, sdFlux,
+    parameterPrior, sdParameterPrior, Rg,
     VPD, Temp, VPD0, fixVPD)}
-    
+
 \description{
-	Computing residual sum of sqares for predictions vs. data of NEE implemented in C
+	Computing residual sum of squares for predictions vs. data of NEE implemented in C
 }
-    
+
 \arguments{
   \item{theta}{
 }

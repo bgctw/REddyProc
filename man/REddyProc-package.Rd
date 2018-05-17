@@ -44,7 +44,7 @@ These functions help with the preparation of your data for the analysis:
 
 Then the data can be processed with the \code{\link{sEddyProc-class}} R5 reference class:
 \itemize{
-\item{ Initalizing the R5 reference class: \code{\link{sEddyProc_initialize}} }
+\item{ Initializing the R5 reference class: \code{\link{sEddyProc_initialize}} }
 \item{ Estimating the turbulence criterion, Ustar threshold, for omitting data
   from periods of low turbulence:
 Functions \code{\link{sEddyProc_sEstUstarThreshold}} and

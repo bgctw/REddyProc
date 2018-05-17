@@ -178,7 +178,7 @@ sEddyProc_sFillLUT <- function(
         V3.V.n <- sDATA[Start.i:End.i, V3.s]
         V4.V.n <- sDATA[Start.i:End.i, V4.s]
         V5.V.n <- sDATA[Start.i:End.i, V5.s]
-        SubGap.i <- Gap.i - (Start.i-1)
+        SubGap.i <- Gap.i - (Start.i - 1)
 
         # Set LUT fill condition
         Rows.V.b <- !is.na(sTEMP$VAR_orig[Start.i:End.i])
@@ -202,6 +202,15 @@ sEddyProc_sFillLUT <- function(
           lVAR_fsd.n <- sd(lLUT.V.n)
 
           #Set window size and quality flag
+          ##details<< \describe{\item{Quality flags}{
+          ## \itemize{
+          ## \item 1: at least one variable and nDay <= 14
+          ## \item 2: three variables and nDay in [14,56)
+          ## or one variable and nDay in  [14,28)
+          ## \item 3: three variables and nDay > 56
+          ## or one variable and nDay > 28
+          ## }
+          ## }}
           lVAR_fwin.n  <- 2 * WinDays.i                      #! Full window length, congruent with MR PV-Wave, in paper single window sizes stated
           lVAR_fmeth.n <- NA_real_; lVAR_fqc.n <- NA_real_;
           if (V1.s != 'none' && V2.s != 'none' && V3.s != 'none') { #Three conditions
@@ -218,8 +227,8 @@ sEddyProc_sFillLUT <- function(
           }
           lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
         }
-        if (Verbose.b && Pos.i%%100 == 0)  message('.', appendLF = FALSE)
-        if (Verbose.b && Pos.i%%6000 == 0) message('\n.', appendLF = FALSE)
+        if (Verbose.b && Pos.i %% 100 == 0)  message('.', appendLF = FALSE)
+        if (Verbose.b && Pos.i %% 6000 == 0) message('\n.', appendLF = FALSE)
       }
       if (Verbose.b) message('', nrow(lGF.M))
     }
@@ -279,7 +288,7 @@ sEddyProc_sFillMDC <- function(
           } else {
             Index.V.i <- c(Index.V.i, Gap.i + c(-Day.i * sINFO$DTS + (-2:2)), Gap.i + c(Day.i * sINFO$DTS + (-2:2)))
           }
-        Index.V.i <- Index.V.i[Index.V.i>0 & Index.V.i <= nrow(sTEMP)]
+        Index.V.i <- Index.V.i[Index.V.i > 0 & Index.V.i <= nrow(sTEMP)]
 
         # If enough available data, fill gap
 		#iRecsSimilar <- Index.V.i[!is.na(sTEMP$VAR_orig[Index.V.i]) ]
@@ -307,14 +316,21 @@ sEddyProc_sFillMDC <- function(
             }
           }
 
+          ##details<< \describe{\item{Quality flag}{
+          ## \itemize{
+          ## \item 1: nDay <= 1
+          ## \item 2: nDay [2,5)
+          ## \item 3: nDay > 5
+          ## }
+          ## }}
           if (lVAR_fwin.n <= 1) lVAR_fqc.n <- 1
           if (lVAR_fwin.n >  1 & lVAR_fwin.n <= 5) lVAR_fqc.n <- 2
           if (lVAR_fwin.n >  5) lVAR_fqc.n <- 3
 
           lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
         }
-        if (Verbose.b && Pos.i%%100 == 0)  message('.', appendLF = FALSE)
-        if (Verbose.b && Pos.i%%6000 == 0) message('\n.', appendLF = FALSE)
+        if (Verbose.b && Pos.i %% 100 == 0)  message('.', appendLF = FALSE)
+        if (Verbose.b && Pos.i %% 6000 == 0) message('\n.', appendLF = FALSE)
       }
       if (Verbose.b) message('', nrow(lGF.M))
     }
@@ -609,7 +625,7 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
     ## The threshold value of a sufficient u * causes one of the largest uncertainty components within the gap-filled data.
     ## Hence, it is good practice to compare derived quantities based on gap-filled data using different u * threshold values.
 	##
-	## For example a user could provide the the following collumns in argument \code{UstarThres.df}
+	## For example a user could provide the the following columns in argument \code{UstarThres.df}
 	## and corresponding suffixes in argument \code{UstarSuffix.V.s}
 	## \itemize{
 	## \item season: identifier for which season this row is used.
@@ -653,6 +669,6 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
     ## Gap filling results in sTEMP data frame (with renamed columns), that can be retrieved by \code{\link{sEddyProc_sExportResults}}.
     ## Each of the columns is calculated for several u * r-estimates and distinguished by a suffix after the variable.
     ## E.g. with an first entry "U05" in \code{UstarSuffix.V.s} corresponding to the first column in  \code{UstarThres.m.n},
-	## the corresponding filled NEE can be found in output collumn "NEE_U05_f".
+	## the corresponding filled NEE can be found in output column "NEE_U05_f".
 }
 sEddyProc$methods(sMDSGapFillAfterUStarDistr = sEddyProc_sMDSGapFillAfterUStarDistr)

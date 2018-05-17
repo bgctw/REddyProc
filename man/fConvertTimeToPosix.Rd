@@ -15,7 +15,7 @@
   \item{Hour.s}{Column name of hour}
   \item{Min.s}{Column name of min}
   \item{TName.s}{Column name of new column}
-  \item{tz}{timezone used to store the data. Advisded to keep
+  \item{tz}{timezone used to store the data. Advised to keep
 GMT to avoid daytime shifting issues}
 }
 \details{The different time formats are converted to POSIX (GMT) and a 'TimeDate'

@@ -8,7 +8,7 @@
   \item{Dir.s}{Directory as a character string}
 }
 \details{Function fLoadFluxNCIntoDataframe, which loads data from NetCDF-Files, has
-been moved to addon package REddyProcNCDF.
+been moved to add-on package REddyProcNCDF.
 In addition, \code{\link{fLoadEuroFlux16}} loads data from several annual files in format corresponding to europe-fluxdata 2016.
 
 For using only part of the records, use \code{fFilterAttr} to keep units attributes.}

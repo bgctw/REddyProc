@@ -133,7 +133,7 @@ NonrectangularLRCFitter$methods(predictLRC = NonrectangularLRCFitter_predictLRC)
 
 #' @export
 NonrectangularLRCFitter_predictGPP  <- function(
-		### Nonrectangluar hyperbolic Light Response function for GPP
+		### Nonrectangular hyperbolic Light Response function for GPP
 		Rg   	##<< ppfd [numeric] -> photosynthetic flux density
 		## [mumol / m2 / s] or Global Radiation
 		, Amax	##<< numeric scalar or vector of length(Rg):
@@ -147,13 +147,13 @@ NonrectangularLRCFitter_predictGPP  <- function(
 	##details<<
 	## This function generalizes the \code{\link{RectangularLRCFitter_predictGPP}}
 	## by adding the convexity parameter \code{conv}.
-	## For conv -> 0 (logitconv -> -Inf): approaches the rectangluar hyperbolic.
-	## For conv -> 1 (logitconv -> + Inf): approaches a step function.
-	## Expected values of conv are about 0.7-0.9 (Moffat 2012).
-	zRoot <- ((alpha * Rg + Amax)^2)-(4 * alpha * Rg * conv * Amax)
-	zRoot[which(zRoot<0)] <- 0
+	## For \code{conv -> 0 (logitconv -> -Inf)}: approaches the rectangular hyperbolic.
+	## For \code{conv -> 1 (logitconv -> + Inf)}: approaches a step function.
+	## Expected values of \code{conv} are about 0.7-0.9 (Moffat 2012).
+	zRoot <- ((alpha * Rg + Amax)^2) - (4 * alpha * Rg * conv * Amax)
+	zRoot[which(zRoot < 0)] <- 0
 	##value<< numeric vector of length(Rg) of GPP
-	GPP <- (1 / (2 * conv)) * (alpha * Rg + Amax-sqrt(zRoot))
+	GPP <- (1 / (2 * conv)) * (alpha * Rg + Amax - sqrt(zRoot))
 }
 NonrectangularLRCFitter$methods(predictGPP = NonrectangularLRCFitter_predictGPP)
 
@@ -175,7 +175,7 @@ NonrectangularLRCFitter_computeLRCGradient <- function(
 		, TRef = 15			##<< numeric scalar of Temperature (degree Celsius)
 		## for reference respiration RRef
 ) {
-	##details<< differs from base by extracting conv parameter from theta
+	##details<< differs from base by extracting \code{conv} parameter from \code{theta}
 	## and adding gradient to logitconv (3rd parameter from computeGPPGradient)
 	if (is.matrix(theta) ) {
 		k <- theta[, 1]

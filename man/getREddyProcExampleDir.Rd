@@ -5,7 +5,7 @@
 \usage{getREddyProcExampleDir(isPreferParentDir = identical(Sys.getenv("NOT_CRAN"), 
     "true"), subDir = "REddyProcExamples")}
 \arguments{
-  \item{isPreferParentDir}{logical scalar, wheter to prefer
+  \item{isPreferParentDir}{logical scalar, whether to prefer
 temp parent directory instead of the R-session temp-Directory.
 See details.}
   \item{subDir}{the name of the subdirectory inside the
@@ -18,7 +18,7 @@ each new R-session in a session specific directory as given by
 IF TRUE, the parent of \code{\link{tempdir}} will be used, so that
 downloads of examples are preserved across R-sessions.
 This is the default if
-environement variable "NOT_CRAN" is defined,
+environment variable "NOT_CRAN" is defined,
 when running from testthat::\code{\link{check}}.}
 
 
