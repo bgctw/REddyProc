@@ -1,3 +1,8 @@
+# REddyProc 1.1.5
+
+Moving profiling code and associated dependencies out of the distributed code.
+
+
 # REddyProc 1.1.4
 
 Reworking dependencies

@@ -6,7 +6,6 @@
 ^README\.html$
 ^README_cache$
 ^README-.*\.png$
-^NEWS\.md$
 ^NEWS\.Rmd$
 ^vignettes/figure/.*$
 ^vignettes/cache/.*$
@@ -23,6 +22,7 @@
 ^.gitignore$
 ^.project$
 ^cranComments.md$
+^cran-comments.md$
 ^examples$
 ^develop$
 ^cache$
