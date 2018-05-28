@@ -24,7 +24,8 @@
     , QFValue.n = NA_real_ ##<< Value of quality flag for data to plot
     , Name.s             ##<< Name of plot
 	  , unit.s =		##<< unit string, defaults to attribute of the variable
-        attr(cbind(sDATA, sTEMP)[, Var.s], 'units')
+        attr(data[, Var.s], 'units')
+    , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
 ) {
     ##author<<
     ## KS, AMM
@@ -65,14 +66,15 @@ sEddyProc$methods(.sxSetTitle = .sEddyProc_sxSetTitle)
     , CallFunction.s = ''  ##<< Name of function called from
 	  , DotsPerInc.n = 72	  ##<< Number of dots per inch for converting width
         ## and height to pixels on png output
+    , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
 ) {
   ##author<<
   ## AMM, KS, TW
     'Open graphics device.'
     # Check if variable names exist and numeric before opening plot
     SubCallFunc.s <- paste(CallFunction.s, '.self$.sxOpenPlot', sep = ':::')
-    fCheckColNames(cbind(sDATA, sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
-    fCheckColNum(cbind(sDATA, sTEMP), c(Var.s, QFVar.s), SubCallFunc.s)
+    fCheckColNames(data, c(Var.s, QFVar.s), SubCallFunc.s)
+    fCheckColNum(data, c(Var.s, QFVar.s), SubCallFunc.s)
 
     #Set file name
     FileName.s <-
@@ -164,7 +166,7 @@ sEddyProc$methods(.sxClosePlot = .sEddyProc_sxClosePlot)
 #	YMin.n <- min(Data.V.n, na.rm = T)
 #	YMax.n <- max(Data.V.n, na.rm = T)
 #	#Set yearly data
-#	FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotFingerprintY')
+#	FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, dts, 'sPlotFingerprintY')
 #	Time.V.n <- FullYearData.F$DateTime
 #	Plot.V.n <- FullYearData.F$Data
 #
@@ -181,7 +183,7 @@ sEddyProc$methods(.sxClosePlot = .sEddyProc_sxClosePlot)
 #	if (!sum(!is.na(Plot.V.n)) == 0 && Legend.b == F) {
 #		# Plot fingerprint
 #		par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
-#		image(seq(0, 24, by = (24 / sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow = sINFO$DTS), zlim = c(YMin.n, YMax.n), col = col,
+#		image(seq(0, 24, by = (24 / dts)), DoY.V.d, matrix(Plot.V.n, nrow = dts), zlim = c(YMin.n, YMax.n), col = col,
 #				axes = F, xlab = '', ylab = '', main = Year.i)
 #		axis(1, at = XAxis.V.n, cex.axis = 1.0, tck = 0.03, col.axis = 'blue')
 #		axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03, labels = month.abb, padj = 1, col.axis = 'dark violet')
@@ -189,7 +191,7 @@ sEddyProc$methods(.sxClosePlot = .sEddyProc_sxClosePlot)
 #	} else if (Legend.b == F) {
 #		#Plot empy box
 #		par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
-#		image(seq(0, 24, by = (24 / sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow = sINFO$DTS), zlim = c(0, 1), col = col,
+#		image(seq(0, 24, by = (24 / dts)), DoY.V.d, matrix(Plot.V.n, nrow = dts), zlim = c(0, 1), col = col,
 #				axes = F, xlab = '', ylab = '', main = Year.i)
 #		axis(1, at = XAxis.V.n, cex.axis = 1.0, tck = 0.03, col.axis = 'blue')
 #		axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03, labels = month.abb, padj = 1, col.axis = 'dark violet')
@@ -227,6 +229,8 @@ sEddyProc_sPlotFingerprintY <- function(
 	, valueLimits = range(Plot.V.n, na.rm = TRUE)	##<< values outside this range
 	  ## will be set to the range borders to avoid distorting colour scale
 		## e.g. valueLimits = quantile(EddyProc.C$sDATA$NEE, prob = c(0.05, 0.95), na.rm = TRUE)
+	, data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
+	, dts = sINFO$DTS              ##<< numeric integer
 ) {
     ##author<<
     ## AMM, KS, TW
@@ -234,17 +238,20 @@ sEddyProc_sPlotFingerprintY <- function(
 	#
     'Plot fingerprint of specified year'
     # Set plot contents
-    Data.V.n <- fSetQF(cbind(sDATA, sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
+    Data.V.n <- fSetQF(data, Var.s, QFVar.s, QFValue.n, 'sPlotFingerprintY')
     # Scale to all data
     YMin.n <- min(Data.V.n, na.rm = T)
     YMax.n <- max(Data.V.n, na.rm = T)
     #Set yearly data
-    FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i
-          , sINFO$DTS, 'sPlotFingerprintY')
+    FullYearData.F <- fExpandToFullYear(data$sDateTime, Data.V.n, Year.i
+          , dts, 'sPlotFingerprintY')
     Time.V.n <- FullYearData.F$DateTime
     Plot.V.n <- FullYearData.F$Data
+    Plot.V.n[!is.finite(Plot.V.n)] <- NA
 	  # set outliers to range limits in order to not distort colour scale
 	  Plot.V.n <- pmax(pmin(Plot.V.n, valueLimits[2]), valueLimits[1])
+	  YMin.n <- max(YMin.n, min(Plot.V.n, na.rm = T))
+	  YMax.n <- min(YMax.n, max(Plot.V.n, na.rm = T))
 
     # Calculate plot parameters
     XAxis.V.n <- seq(0, 24, by = 2)
@@ -259,15 +266,19 @@ sEddyProc_sPlotFingerprintY <- function(
     if (!sum(!is.na(Plot.V.n)) == 0 && Legend.b == F) {
       # Plot fingerprint
       par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by = (24 / sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow = sINFO$DTS), zlim = c(YMin.n, YMax.n), col = Col.V,
-            axes = F, xlab = '', ylab = '', main = Year.i)
+      image(
+        seq(0, 24, by = (24 / dts)), DoY.V.d
+        , matrix(Plot.V.n, nrow = dts)
+        , zlim = c(YMin.n, YMax.n)
+        , col = Col.V
+        , axes = F, xlab = '', ylab = '', main = Year.i)
       axis(1, at = XAxis.V.n, cex.axis = 1.0, tck = 0.03, col.axis = 'blue')
       axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03, labels = month.abb, padj = 1, col.axis = 'dark violet')
       box()
     } else if (Legend.b == F) {
       #Plot empy box
       par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by = (24 / sINFO$DTS)), DoY.V.d, matrix(Plot.V.n, nrow = sINFO$DTS), zlim = c(0, 1), col = Col.V,
+      image(seq(0, 24, by = (24 / dts)), DoY.V.d, matrix(Plot.V.n, nrow = dts), zlim = c(0, 1), col = Col.V,
            axes = F, xlab = '', ylab = '', main = Year.i)
       axis(1, at = XAxis.V.n, cex.axis = 1.0, tck = 0.03, col.axis = 'blue')
       axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03, labels = month.abb, padj = 1, col.axis = 'dark violet')
@@ -348,6 +359,8 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
     , QFValue.n = NA_real_ ##<< Value of quality flag for data to plot
     , Month.i            ##<< Month to plot
     , Legend.b = T         ##<< Plot with legend
+    , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
+    , dts = sINFO$DTS              ##<< numeric integer
 ) {
     ##author<<
     ## AMM, KS
@@ -355,10 +368,10 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
     'Plot diurnal cycles of specified month'
     # Set plot contents
     # Diurnal cycles
-    Plot.V.n <- fSetQF(cbind(sDATA, sTEMP), Var.s, QFVar.s, QFValue.n, '.sPlotDiurnalCycleM')
-    Month.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%m')), nrow = sINFO$DTS)[1, ]
-    DYear.V.d <- matrix(as.numeric(format(sDATA$sDateTime, '%Y')), nrow = sINFO$DTS)[1, ]
-    Plot.M.n <- matrix(Plot.V.n, ncol = sINFO$DTS, byrow = T)
+    Plot.V.n <- fSetQF(data, Var.s, QFVar.s, QFValue.n, '.sPlotDiurnalCycleM')
+    Month.V.d <- matrix(as.numeric(format(data$sDateTime, '%m')), nrow = dts)[1, ]
+    DYear.V.d <- matrix(as.numeric(format(data$sDateTime, '%Y')), nrow = dts)[1, ]
+    Plot.M.n <- matrix(Plot.V.n, ncol = dts, byrow = T)
     # Average all years: Mean.M.m <- as.matrix(aggregate(Plot.M.n, by = list(Month.V.d), FUN = mean, simplify = T, na.rm = T)[, -1])
     Mean.F.m <- aggregate(Plot.M.n, by = list(Year = DYear.V.d, Month = Month.V.d), FUN = mean, simplify = T, na.rm = T)
 
@@ -372,11 +385,11 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
     par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
     if (sum(!is.na(Mean.F.m[Mean.F.m$Month == Month.i, c(-1, -2)])) > 0) {
       # Plot
-      plot(rep(0, sINFO$DTS)~seq(0.0, 23.5, by = (24 / sINFO$DTS)), type = 'n',
+      plot(rep(0, dts)~seq(0.0, 23.5, by = (24 / dts)), type = 'n',
             axes = F, xlab = '', ylab = '', ylim = c(YMin.n, YMax.n), main = month.name[Month.i])
       for (Year.i in sINFO$Y.START:sINFO$Y.END) {
         MeanY.V.m <- as.numeric(Mean.F.m[Mean.F.m$Year == Year.i & Mean.F.m$Month == Month.i, c(-1, -2)])
-        points(MeanY.V.m ~ seq(0.0, 23.5, by = (24 / sINFO$DTS)), type = 'o', lty = 'solid', lwd = 1, col = (Year.i-sINFO$Y.START) + 2, pch = 20, cex = 1)
+        points(MeanY.V.m ~ seq(0.0, 23.5, by = (24 / dts)), type = 'o', lty = 'solid', lwd = 1, col = (Year.i-sINFO$Y.START) + 2, pch = 20, cex = 1)
       }
       abline(h = 0, col = 'grey')
       axis(1, at = XAxis.V.n, cex.axis = 0.9, col.axis = 'blue')
@@ -385,7 +398,7 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
       box()
     } else {
       # Plot empty box
-      plot(rep(0, sINFO$DTS)~seq(0.0, 23.5, by = (24 / sINFO$DTS)), type = 'n', axes = F, xlab = '', ylab = '', main = month.name[Month.i])
+      plot(rep(0, dts)~seq(0.0, 23.5, by = (24 / dts)), type = 'n', axes = F, xlab = '', ylab = '', main = month.name[Month.i])
       axis(1, at = XAxis.V.n, cex.axis = 1.0, col.axis = 'blue')
       box()
       warning('.sPlotDiurnalCycleM::: No data available for month: ', month.name[Month.i], '!')
@@ -406,6 +419,8 @@ sEddyProc_sPlotDiurnalCycle <- function(
     , QFValue.n = NA_real_ ##<< Value of quality flag for data to plot
     , Format.s = 'pdf'     ##<< Graphics file format ('pdf' or 'png')
     , Dir.s = 'plots'      ##<< Directory for plotting
+    , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
+    , dts = sINFO$DTS              ##<< numeric integer
 ) {
     ##author<<
     ## KS, AMM
@@ -465,18 +480,20 @@ sEddyProc_sPlotHHFluxesY <- function(
     , QFVar.s = 'none'     ##<< Quality flag of variable to be filled
     , QFValue.n = NA_real_ ##<< Value of quality flag for data to plot
     , Year.i             ##<< Year to plot
+    , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
+    , dts = sINFO$DTS              ##<< numeric integer
 ) {
 ##author<<
     ## AMM, KS
     # TEST: sPlotHHFluxesY('NEE', 'none', NA, 1998)
     'Plot half-hourly fluxes of specified year'
     # Set plot contents
-    Data.V.n <- fSetQF(cbind(sDATA, sTEMP), Var.s, QFVar.s, QFValue.n, 'sPlotHHFluxesY')
-    FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotHHFluxesY')
+    Data.V.n <- fSetQF(data, Var.s, QFVar.s, QFValue.n, 'sPlotHHFluxesY')
+    FullYearData.F <- fExpandToFullYear(data$sDateTime, Data.V.n, Year.i, dts, 'sPlotHHFluxesY')
     Time.V.n <- FullYearData.F$DateTime
     Plot.V.n <- FullYearData.F$Data
     # Additional line with daily mean
-    DMean.V.n <- rep(apply(matrix(Plot.V.n, nrow = sINFO$DTS), 2, mean, na.rm = T), each = sINFO$DTS)
+    DMean.V.n <- rep(apply(matrix(Plot.V.n, nrow = dts), 2, mean, na.rm = T), each = dts)
 
     #Scale to all data
     YMin.n <- min(Plot.V.n, na.rm = T)
@@ -572,6 +589,8 @@ sEddyProc_sPlotDailySumsY <- function(
 	, timeFactor.n = 3600 * 24	##<< time conversion factor with default per second to per day
 	, massFactor.n = (44.0096 / 1000000) * (12.011 / 44.0096) ##<< mass conversion factor with default from mumol CO2 to g C
 	, unit.s = "gC/m2/day"	##<< resulting unit
+	, data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
+	, dts = sINFO$DTS              ##<< numeric integer
 ) {
     ##author<<
     ## AMM, KS
@@ -584,14 +603,14 @@ sEddyProc_sPlotDailySumsY <- function(
 	## The default parameters assume original units of mumol CO2 / m2 / second and convert to gC / m2 / day.
 	## The conversion factors allow plotting variables with different units
 	# Set plot contents
-    Data.V.n <- fSetQF(cbind(sDATA, sTEMP), Var.s, 'none', NA, 'sPlotDailySumsY')
-    FullYearData.F <- fExpandToFullYear(sDATA$sDateTime, Data.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')
+    Data.V.n <- fSetQF(data, Var.s, 'none', NA, 'sPlotDailySumsY')
+    FullYearData.F <- fExpandToFullYear(data$sDateTime, Data.V.n, Year.i, dts, 'sPlotDailySumsY')
     Time.V.n <- FullYearData.F$DateTime
     Plot.V.n <- FullYearData.F$Data
 
     if (VarUnc.s != 'none') {
-      DataSD.V.n <- fSetQF(cbind(sDATA, sTEMP), VarUnc.s, 'none', NA, 'sPlotDailySumsY')
-      PlotSD.V.n <- fExpandToFullYear(sDATA$sDateTime, DataSD.V.n, Year.i, sINFO$DTS, 'sPlotDailySumsY')$Data
+      DataSD.V.n <- fSetQF(data, VarUnc.s, 'none', NA, 'sPlotDailySumsY')
+      PlotSD.V.n <- fExpandToFullYear(data$sDateTime, DataSD.V.n, Year.i, dts, 'sPlotDailySumsY')$Data
     } else {
       # Set uncertainties to Zero
       PlotSD.V.n <- (rep(0, length(Plot.V.n)))
@@ -602,13 +621,13 @@ sEddyProc_sPlotDailySumsY <- function(
     CountMissingUnc.n <- sum(!is.na(Plot.V.n) & is.na(PlotSD.V.n))
 
     # Compute daily sums
-	nRecInDay <- sINFO$DTS
-    DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow = sINFO$DTS)[1, ]
-    DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow = sINFO$DTS)[1, ]
-	DAvg.V.d <- (1 / sINFO$DTS) * apply(matrix(Plot.V.n, nrow = nRecInDay), 2, mean)
+	nRecInDay <- dts
+    DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow = dts)[1, ]
+    DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow = dts)[1, ]
+	DAvg.V.d <- (1 / dts) * apply(matrix(Plot.V.n, nrow = nRecInDay), 2, mean)
     DSum.V.d <- DAvg.V.d * timeFactor.n * massFactor.n
     fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
-    #DUnc.V.d <- (1 / sINFO$DTS) * sqrt(apply(matrix(PlotSD.V.n, nrow = sINFO$DTS), 2, fSumOfSquares))
+    #DUnc.V.d <- (1 / dts) * sqrt(apply(matrix(PlotSD.V.n, nrow = dts), 2, fSumOfSquares))
 	# twutz: 160729:  * timeFactor.n * massFactor.n
 	DUnc.V.d <- (1 / nRecInDay) * sqrt(apply(matrix(PlotSD.V.n, nrow = nRecInDay), 2, fSumOfSquares)) * timeFactor.n * massFactor.n
 
@@ -714,7 +733,7 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
   	## sEddyProc$sPlotNEEVersusUStarForSeason - Image with NEE versus UStar for each Temperature class of given season
   	##description<<
   	## Generates image in specified format ('pdf' or 'png')
-  season = levels(sDATA$season)[1]	 ##<< string of season, i.e. time period, to plot
+  season = levels(data$season)[1]	 ##<< string of season, i.e. time period, to plot
   , format = 'pdf'     ##<< string of Graphics file format ('pdf' or 'png')
   , dir = 'plots'      ##<< string of Directory for plotting
   , UstarColName = "Ustar"		##<< column name for UStar
@@ -723,11 +742,12 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
   , WInch = 16 * 0.394		##<< width of the plot in inches, defaults to 16cm
   , HInchSingle = 6 * 0.394	##<< height of a subplot in inches, defaults to 6cm
   , ...						##<< other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings
+  , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
 ) {
   ##author<< TW
   'Image with daily sums of each year'
   # generate subset of data
-  dsSeason <- subset(.self$sDATA, season == season)
+  dsSeason <- subset(data, season == season)
   tempBinLevels <- sort(unique(dsSeason$tempBin))
   # Open plot
   PlotType.s <- paste('NEEvsUStar', season, sep = "_")

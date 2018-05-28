@@ -24,3 +24,12 @@ NULL
 #importFrom(segmented, segmented, seg.control)
 #importFrom(minpack.lm, nlsLM, nls.lm.control)
 
+
+# https://www.r-bloggers.com/re-exporting-the-magrittr-pipe-operator/
+#' re-export magrittr pipe operator
+#'
+#' @importFrom magrittr %>%
+#' @name %>%
+#' @rdname pipe
+#' @export
+NULL

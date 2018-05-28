@@ -4,12 +4,15 @@
 \description{The half-hourly fluxes for a single year are plotted to the current device,
 scaled to all data.}
 \usage{sEddyProc_sPlotHHFluxesY(Var.s, QFVar.s = "none", 
-    QFValue.n = NA_real_, Year.i)}
+    QFValue.n = NA_real_, Year.i, data = cbind(sDATA, 
+        sTEMP), dts = sINFO$DTS)}
 \arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}
   \item{QFValue.n}{Value of quality flag for data to plot}
   \item{Year.i}{Year to plot}
+  \item{data}{data.frame with variables to plot}
+  \item{dts}{numeric integer}
 }
 
 

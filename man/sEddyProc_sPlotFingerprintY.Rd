@@ -8,7 +8,8 @@ scaled to all data.}
     Col.V = colorRampPalette(c("#00007F", 
         "blue", "#007FFF", "cyan", "#7FFF7F", 
         "yellow", "#FF7F00", "red", "#7F0000"))(50), 
-    valueLimits = range(Plot.V.n, na.rm = TRUE))}
+    valueLimits = range(Plot.V.n, na.rm = TRUE), 
+    data = cbind(sDATA, sTEMP), dts = sINFO$DTS)}
 \arguments{
   \item{Var.s}{Variable to plot}
   \item{QFVar.s}{Quality flag of variable to be filled}
@@ -20,6 +21,8 @@ scaled to all data.}
   \item{valueLimits}{values outside this range
 will be set to the range borders to avoid distorting colour scale
 e.g. valueLimits = quantile(EddyProc.C$sDATA$NEE, prob = c(0.05, 0.95), na.rm = TRUE)}
+  \item{data}{data.frame with variables to plot}
+  \item{dts}{numeric integer}
 }
 
 
