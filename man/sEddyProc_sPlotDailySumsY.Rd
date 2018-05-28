@@ -10,7 +10,8 @@ The default parameters assume original units of mumol CO2 / m2 / second and conv
 The conversion factors allow plotting variables with different units}
 \usage{sEddyProc_sPlotDailySumsY(Var.s, VarUnc.s = "none", 
     Year.i, timeFactor.n = 3600 * 24, massFactor.n = (44.0096/1e+06) * 
-        (12.011/44.0096), unit.s = "gC/m2/day")}
+        (12.011/44.0096), unit.s = "gC/m2/day", 
+    data = cbind(sDATA, sTEMP), dts = sINFO$DTS)}
 \arguments{
   \item{Var.s}{(Filled) variable to plot}
   \item{VarUnc.s}{Uncertainty estimates for variable}
@@ -18,6 +19,8 @@ The conversion factors allow plotting variables with different units}
   \item{timeFactor.n}{time conversion factor with default per second to per day}
   \item{massFactor.n}{mass conversion factor with default from mumol CO2 to g C}
   \item{unit.s}{resulting unit}
+  \item{data}{data.frame with variables to plot}
+  \item{dts}{numeric integer}
 }
 
 
