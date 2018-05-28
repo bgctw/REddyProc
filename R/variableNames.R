@@ -97,7 +97,7 @@ POSIXctToBerkeleyJulianDate <- function(
     sDateTime  ##<< POSIXct vector
 ) {
   ##author<< TW,
-  ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}
+  ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}},
   ##details<<
   ## In the Berkeley-Release of the fluxnet data, the time is stored as an number
   ## with base10-digits representing YYYYMMddhhmm
@@ -116,6 +116,7 @@ BerkeleyJulianDateToPOSIXct <- function(
 ) {
   ##author<< TW,
   ##seealso<< \code{\link{POSIXctToBerkeleyJulianDate}}
+  ## \code{\link{fConvertTimeToPosix}}
   ##details<<
   ## In the Berkeley-Release of the fluxnet data, the time is stored as an number
   ## with base10-digits representing YYYYMMddhhmm

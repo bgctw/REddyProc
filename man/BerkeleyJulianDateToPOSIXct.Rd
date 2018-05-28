@@ -18,5 +18,6 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 
 
-\seealso{\code{\link{POSIXctToBerkeleyJulianDate}}}
+\seealso{\code{\link{POSIXctToBerkeleyJulianDate}}
+\code{\link{fConvertTimeToPosix}}}
 

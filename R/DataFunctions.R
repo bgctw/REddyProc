@@ -31,6 +31,8 @@ fConvertTimeToPosix <- function(
   ##details<<
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
   ## column is prefixed to the data frame
+  #
+  ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}
   #Check if specified columns exist and are in data frame, with 'none' as dummy
   NoneCols.b <- c(Year.s, Month.s, Day.s, Hour.s, Min.s) %in% 'none'
   fCheckColNames(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
