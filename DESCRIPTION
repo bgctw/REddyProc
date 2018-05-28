@@ -37,7 +37,7 @@ RoxygenNote: 6.0.1
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
-Imports: dplyr, purrr, rlang, mlegp, tibble
+Imports: dplyr, purrr, rlang, mlegp, tibble, magrittr
 Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown
 Collate: 
     'CheckVal.R'
