@@ -263,6 +263,9 @@ sEddyProc_sPlotFingerprintY <- function(
     DoY.V.d  <- c(0:max(as.numeric(format(Time.V.n, '%j')), na.rm = T))
 
     # Plot
+    Month1st.P <- as.POSIXct(paste(format(
+      min(FullYearData.F$DateTime), '%Y-%m-'),'01',sep = '')
+      , tz = attr(FullYearData.F$DateTime,"tzone"))
     if (!sum(!is.na(Plot.V.n)) == 0 && Legend.b == F) {
       # Plot fingerprint
       par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
@@ -273,30 +276,44 @@ sEddyProc_sPlotFingerprintY <- function(
         , col = Col.V
         , axes = F, xlab = '', ylab = '', main = Year.i)
       axis(1, at = XAxis.V.n, cex.axis = 1.0, tck = 0.03, col.axis = 'blue')
-      axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03, labels = month.abb, padj = 1, col.axis = 'dark violet')
+      axis(2, at = as.POSIXlt(
+        seq(Month1st.P, max(FullYearData.F$DateTime), by = "month"))$yday
+        , cex.axis = 1.0, tck = 0.03
+        , labels = month.abb, padj = 1, col.axis = 'dark violet')
+      # axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03
+      #     , labels = month.abb, padj = 1, col.axis = 'dark violet')
       box()
     } else if (Legend.b == F) {
       #Plot empy box
       par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
-      image(seq(0, 24, by = (24 / dts)), DoY.V.d, matrix(Plot.V.n, nrow = dts), zlim = c(0, 1), col = Col.V,
-           axes = F, xlab = '', ylab = '', main = Year.i)
+      image(
+        seq(0, 24, by = (24 / dts)), DoY.V.d
+        , matrix(Plot.V.n, nrow = dts)
+        , zlim = c(0, 1)
+        , col = Col.V
+        , axes = F, xlab = '', ylab = '', main = Year.i)
       axis(1, at = XAxis.V.n, cex.axis = 1.0, tck = 0.03, col.axis = 'blue')
-      axis(2, at = YAxis.V.n, cex.axis = 1.0, tck = 0.03, labels = month.abb, padj = 1, col.axis = 'dark violet')
+      axis(2, at = as.POSIXlt(
+        seq(Month1st.P, max(FullYearData.F$DateTime), by = "month"))$yday
+        , cex.axis = 1.0, tck = 0.03
+        , labels = month.abb, padj = 1, col.axis = 'dark violet')
       box()
       warning('sPlotFingerprintY::: No data available for year: ', Year.i, '!')
-    } else { #Plot legend and title
+    } else {#Plot legend and title
       Title.s <- .self$.sxSetTitle(Var.s, QFVar.s, QFValue.n, 'Fingerprint')
-      Seq.V.n <- seq(YMin.n, YMax.n, by = (YMax.n-YMin.n) / (length(Col.V)-1))
+      Seq.V.n <- seq(YMin.n, YMax.n, by = (YMax.n - YMin.n) / (length(Col.V) - 1))
       par(mai = c(3, 1, 3, 1))
-      image(Seq.V.n, c(0, 1), matrix(Seq.V.n, ncol = 1), col = Col.V, zlim = c(YMin.n, YMax.n),
-            xlab = Var.s, yaxt = 'n', ylab = '', main = Title.s)
+      image(
+        Seq.V.n, c(0, 1)
+        , matrix(Seq.V.n, ncol = 1)
+        , col = Col.V
+        , zlim = c(YMin.n, YMax.n)
+        , xlab = Var.s, yaxt = 'n', ylab = '', main = Title.s)
       box()
     }
 }
 sEddyProc$methods(sPlotFingerprintY = sEddyProc_sPlotFingerprintY)
 
-
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sPlotFingerprint <- function(
