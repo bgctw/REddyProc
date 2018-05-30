@@ -7,6 +7,14 @@ vignette: >
 
 ---
 
+```{r, include = FALSE}
+# do not execute on CRAN: 
+# https://stackoverflow.com/questions/28961431/computationally-heavy-r-vignettes
+is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
+             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
+knitr::opts_chunk$set(eval = !is_check)
+```
+
 ```{r setup, include = FALSE}
 library(knitr)
 #rmarkdown::render("vignettes/uStarCases.Rmd")
@@ -72,7 +80,7 @@ grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
 
 The user can provide value for uStar-filtering before gapfilling, using
 `sEddyProc_sMDSGapFillAfterUstar`. Output columns for this uStar scenario use
-the suffix as specified by argument `UstarSuffix.s` which defaults to "uStar". 
+the suffix as specified by argument `uStarSuffix` which defaults to "uStar". 
 
 The friction velocity, uStar, needs to be in column named "Ustar" of the input 
 dataset.
@@ -81,7 +89,7 @@ dataset.
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
 uStar <- 0.46
-EddyProc.C$sMDSGapFillAfterUstar('NEE', UstarThres.df = uStar)
+EddyProc.C$sMDSGapFillAfterUstar('NEE', uStarTh = uStar)
 grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
 
@@ -100,13 +108,62 @@ EddyProc.C$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3], dir = outDir 
 ```
 
 Next, the annual estimate is used as the default in gap-filling.
-Output columns use the suffix as specified by argument `UstarSuffix.s` 
+Output columns use the suffix as specified by argument `uSstarSuffix` 
 which defaults to "uStar".
 
 ```{r singleUStarGapfill, message = FALSE}
 #usGetAnnualSeasonUStarMap(EddyProc.C$sUSTAR_DETAILS$uStarTh)
 EddyProc.C$sMDSGapFillAfterUstar('NEE')
 grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+```
+## Scenarios across distribution of u* threshold estimate
+
+Chossing a different u* threshold effects filtering and the subsequent processing
+steps of gap-filling, and flux-partitioning. In order to quantify the uncertainty
+due to not exactly knowing the u* threshold, these processing steps should be
+repeated for different threshold scenarios, and the spread across the results should
+be investigated.
+
+First, the quantiles of the threshodl distribution are estimated by bootstrap.
+
+```{r uStarScen}
+EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+	c('NEE','Rg','Tair','VPD', 'Ustar'))
+EddyProc.C$sEstimateUstarScenarios(
+    nSample = 100L, probs = c(0.05, 0.5, 0.95))
+# inspect the thresholds to be used
+EddyProc.C$sGetUstarScenarios()
+```
+
+By default the annually aggregated threshold estimates are used for each season
+whithin one year as in the original method publication.
+Here, we tell to use the seasonal threshold estiamtes and to
+omit the first threshold scenario based on the un-bootstrapped data in the second 
+column.
+
+```{r uStarScenSetSeasonal}
+(uStarThAgg <- EddyProc.C$sGetEstimatedUstarThresholdDistribution())
+EddyProc.C$sSetUstarScenarios( usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
+# inspect the changed thresholds to be used
+EddyProc.C$sGetUstarScenarios()
+
+```
+
+Several function whose name ends with 'UstarScens'
+perform the subsequent processing steps for all uStar scenarios.
+They operate and create columns that differ between threshold scenarios by
+a suffix.
+
+```{r uStarScenGapfill, message=FALSE}
+EddyProc.C$sMDSGapFillUStarScens("NEE")
+grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+```
+```{r uStarScenMRPart, message=FALSE}
+EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
+EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
+EddyProc.C$sMRFluxPartitionUStarScens()
+grep("GPP_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
 
 ## See also

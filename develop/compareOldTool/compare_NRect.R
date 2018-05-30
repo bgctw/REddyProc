@@ -213,14 +213,17 @@ resForeach <- foreach (j=js, .errorhandling="pass") %dopar% {  #THIS IS THE CORR
 
     dsstmp <- Data.F[ Data.F$year_shift == y,]
 
-      tempodf <- partitionNEEGL(dsstmp,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="sdNEE",
-                                       TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-                                       RadVar.s="SW_IN_F",PotRadVar.s="Rg_pot", QFVPDValue.n=0,QFTempValue.n=0, Suffix.s="", nRecInDay= nRecInDay.i
-							   		   ,lrcFitter=NonrectangularLRCFitter()
-                                       ,controlGLPart=partGLControl(nBootUncertainty=5L, isAssociateParmsToMeanOfValids=FALSE,
-                                                                   isLasslopPriorsApplied=TRUE, smoothTempSensEstimateAcrossTime = FALSE,
-                                                                   isBoundLowerNEEUncertainty=FALSE,
-                                                                   fixedTempSens=data.frame(E0=200, sdE0=40, RRef=50)))
+    tempodf <- partitionNEEGL(
+      dsstmp,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="sdNEE"
+      , TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC"
+      , RadVar.s="SW_IN_F",PotRadVar.s="Rg_pot", QFVPDValue.n=0,QFTempValue.n=0
+      , suffix="", nRecInDay= nRecInDay.i
+      ,lrcFitter=NonrectangularLRCFitter()
+      ,controlGLPart=partGLControl(
+        nBootUncertainty=5L, isAssociateParmsToMeanOfValids=FALSE,
+        isLasslopPriorsApplied=TRUE, smoothTempSensEstimateAcrossTime = FALSE,
+        isBoundLowerNEEUncertainty=FALSE,
+        fixedTempSens=data.frame(E0=200, sdE0=40, RRef=50)))
 
     #,fixedTempSens=data.frame(E0=100, sdE0=80, RRef=50)
 
@@ -236,7 +239,7 @@ resForeach <- foreach (j=js, .errorhandling="pass") %dopar% {  #THIS IS THE CORR
   #    # The return value must be a data.frame or tibble
   #df.REddyNRHRFtmp <- partitionNEEGL(dssub,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="sdNEE",
   #                                   TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-  #                                   RadVar.s="SW_IN_F",PotRadVar.s="Rg_pot", QFVPDValue.n=0,QFTempValue.n=0, Suffix.s="", nRecInDay= nRecInDay.i
+  #                                   RadVar.s="SW_IN_F",PotRadVar.s="Rg_pot", QFVPDValue.n=0,QFTempValue.n=0, suffix="", nRecInDay= nRecInDay.i
   #                                   ,lrcFitter=NonrectangularLRCFitter()
   #                                   ,controlGLPart=partGLControl(nBootUncertainty=5L, isAssociateParmsToMeanOfValids=FALSE,
   #                                                                isLasslopPriorsApplied=TRUE, smoothTempSensEstimateAcrossTime = FALSE))
@@ -292,7 +295,7 @@ resForeach <- foreach (j=js, .errorhandling="pass") %dopar% {  #THIS IS THE CORR
 
   #df.REddyRHRF <- partitionNEEGL_2LRC(Data.F,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
   #                                    TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-  #                                    RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay.i= nRecInDay.i,NRHRfunction=FALSE,
+  #                                    RadVar.s="SW_IN_F",PotRadVar.s="DAY",suffix="", nRecInDay.i= nRecInDay.i,NRHRfunction=FALSE,
   #                                   controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
   #                                                                  isLasslopPriorsApplied=TRUE, smoothTempSensEstimateAcrossTime = FALSE))
 
@@ -302,14 +305,17 @@ resForeach <- foreach (j=js, .errorhandling="pass") %dopar% {  #THIS IS THE CORR
 
     dsstmp <- Data.F[ Data.F$year_shift == y,]
 
-    tempodf <- partitionNEEGL(dsstmp,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
-                                      TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-                                      RadVar.s="SW_IN_F",PotRadVar.s="Rg_pot", QFVPDValue.n=0,QFTempValue.n=0, Suffix.s="", nRecInDay= nRecInDay.i
-                                      ,lrcFitter=RectangularLRCFitterCVersion()
-                                      ,controlGLPart=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
-                                                                   isLasslopPriorsApplied=TRUE, smoothTempSensEstimateAcrossTime = FALSE,
-                                                                   isBoundLowerNEEUncertainty=FALSE,
-                                                                   fixedTempSens=data.frame(E0=200, sdE0=40, RRef=50)))
+    tempodf <- partitionNEEGL(
+      dsstmp,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE"
+      , TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC"
+      , RadVar.s="SW_IN_F",PotRadVar.s="Rg_pot", QFVPDValue.n=0,QFTempValue.n=0
+      , suffix="", nRecInDay= nRecInDay.i
+      , lrcFitter=RectangularLRCFitterCVersion()
+      , controlGLPart=partGLControl(
+        nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
+        isLasslopPriorsApplied=TRUE, smoothTempSensEstimateAcrossTime = FALSE,
+        isBoundLowerNEEUncertainty=FALSE,
+        fixedTempSens=data.frame(E0=200, sdE0=40, RRef=50)))
     #MIRCO Added Bounded uncertainty FALSE
 
     ifelse(y == yy[1],  df.REddyRHRFtmp <-tempodf, df.REddyRHRFtmp <- rbind(df.REddyRHRFtmp, tempodf) )

@@ -7,7 +7,7 @@ partitionNEEGL <- function(
 		, TempVar.s = 'Tair_f' 		##<< Filled air or soil temperature variable (degC)
 		, VPDVar.s = 'VPD_f'   		##<< Filled Vapor Pressure Deficit - VPD - (hPa)
 		, RadVar.s = 'Rg_f'         		##<< Filled radiation variable
-		, Suffix.s = ""		   		##<< string inserted into column names before
+		, suffix = ""		   		##<< string inserted into column names before
 		  ## identifier for NEE column defaults
 		  ## (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		, ...						##<< further arguments to
@@ -40,12 +40,12 @@ partitionNEEGL <- function(
   ## net ecosystem exchange into assimilation and respiration using
   ## a light response curve approach: critical issues and global evaluation.
   ## Global Change Biology, Volume 16, Issue 1, Pages 187-208
-	SuffixDash.s <- paste( (if (fCheckValString(Suffix.s)) "_" else "")
-	                 , Suffix.s, sep = "") # used to compute default NEEVar.s
+	SuffixDash.s <- paste( (if (fCheckValString(suffix)) "_" else "")
+	                 , suffix, sep = "") # used to compute default NEEVar.s
 	if (isVerbose) message('Start daytime flux partitioning for variable '
 	                       , NEEVar.s, ' with temperature ', TempVar.s, '.')
 	dsR <- partGLExtractStandardData(ds, NEEVar.s = NEEVar.s, TempVar.s = TempVar.s
-		, VPDVar.s = VPDVar.s, RadVar.s = RadVar.s , Suffix.s = Suffix.s
+		, VPDVar.s = VPDVar.s, RadVar.s = RadVar.s , suffix = suffix
 		, ..., controlGLPart = controlGLPart)
 	##value<<
 	## \item{Reco_DT_<suffix>}{predicted ecosystem respiration: mumol CO2/m2/s}
@@ -480,7 +480,7 @@ partGLExtractStandardData <- function(
 		, QFRadValue.n = 0       			  ##<< Value of radiation quality flag for
 		  ## _good_ (original) data
 		, PotRadVar.s = "PotRad_NEW"		##<< Variable name of potential rad. (W / m2)
-		, Suffix.s = ""		   			##<< string inserted into column names before
+		, suffix = ""		   			##<< string inserted into column names before
 		  ## identifier for NEE column defaults
 		  ## (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		, controlGLPart = partGLControl()	##<< further default parameters,
@@ -488,8 +488,8 @@ partGLExtractStandardData <- function(
 ) {
 	# Check if specified columns exist in sDATA or sTEMP and if numeric
 	# and plausible. Then apply quality flag
-	SuffixDash.s <- paste( (if (fCheckValString(Suffix.s)) "_" else "")
-	                       , Suffix.s, sep = "")
+	SuffixDash.s <- paste( (if (fCheckValString(suffix)) "_" else "")
+	                       , suffix, sep = "")
 	# Check if specified columns exist in sDATA or sTEMP and if numeric
 	# and plausible. Then apply quality flag
 	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s

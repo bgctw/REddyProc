@@ -525,7 +525,7 @@ test_that("partitionNEEGL",{
 			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <-
 			  c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
 			tmp <- partitionNEEGL(
-			  dsNEE2, RadVar.s = 'Rg_f', Suffix.s = "u50"
+			  dsNEE2, RadVar.s = 'Rg_f', suffix = "u50"
 			  , controlGLPart = partGLControl(
 			    nBootUncertainty = 0L, isAssociateParmsToMeanOfValids = FALSE) )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
@@ -562,7 +562,7 @@ test_that("partitionNEEGL with Lasslop options",{
 			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <-
 			  c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
 			dsNEE2$NEE_u50_fsd[24] <- NA
-			tmp <- partitionNEEGL( dsNEE2, RadVar.s = 'Rg_f', Suffix.s = "u50"
+			tmp <- partitionNEEGL( dsNEE2, RadVar.s = 'Rg_f', suffix = "u50"
 				, controlGLPart = partGLControlLasslopCompatible() )
 			tmp$sDateTime <- dsNEE2$sDateTime
 			tmp$iRec <- 1:nrow(tmp)

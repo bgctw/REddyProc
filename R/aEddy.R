@@ -185,6 +185,40 @@ sEddyProc_sSetUstarScenarios <- function(
     ## by default the column names of uStarTh unless its first season column
     colnames(uStarTh)[-1]
 ) {
+  ## The eddy covariance method does not work with low turbulence conditions.
+  ## Hence the periods with low turbulence
+  ## indicated by a low friction velocity u* needs to be filtered out and
+  ## gapfilled (see \code{\link{sEddyProc_sMDSGapFill}}).
+  ## The threshold value of a sufficient u* causes one of the largest
+  ## uncertainty components within the gap-filled data.
+  ## Hence, it is good practice to compare derived quantities based on
+  ## gap-filled data using different u* threshold values.
+  ##
+  ## For example a user could provide the the following columns in argument
+  ## \code{uStarTh}
+  ## \itemize{
+  ## \item season: identifier for which season this row is used.
+  ## \item Ustar: estimate on original series
+  ## \item U05: 5% of bootstrap
+  ## \item U50: median of bootstrap
+  ## \item U95: 95% of bootstrap)
+  ## }
+  ##
+  ## The following functions apply a processing step to all of the
+  ## scenarios.
+  ## \itemize{
+  ## \item \code{\link{sEddyProc_sMDSGapFillUStarScens}}: gap-filling
+  ## \item \code{\link{}}
+  ## \item \code{\link{}}
+  ## \item \code{\link{}}
+  ## \item \code{\link{}}
+  ## }
+  ## The generated output columns are distinguished by appending a suffix
+  ## to the respective column name.
+  ## Then the spread across those columns is an estimate of the uncertainty
+  ## introduced by not knowing the exact value of the u* threshold.
+  #
+  ##seealso<< \code{\link{sEddyProc_sGetUstarScenarios}}
   if (!("season" %in% colnames(sDATA)) ) stop(
     "Seasons not defined yet. Add column 'season' to dataset with entries"
     , " matching column season in UstarThres.df, e.g. by calling"
@@ -205,12 +239,22 @@ sEddyProc_sSetUstarScenarios <- function(
   if (length(uStarSuffixes) != nEstimates) stop(
     "umber of unique suffixes must correspond to number of uStar-thresholds"
     ,", i.e. number of columns in uStarTh - 1.")
-
   sUSTAR_SCEN <<- uStarTh
   colnames(sUSTAR_SCEN)[-1] <<- uStarSuffixes
 }
 sEddyProc$methods(sSetUstarScenarios = sEddyProc_sSetUstarScenarios)
 
+#' @export
+sEddyProc_sGetUstarScenarios <- function(
+  ### get the current uStar processing scenarios
+) {
+  ##details<< the associated suffixes can be retrieved by
+  ## \code{colnames(myClass$sGetUstarScenarios())[-1]}
+  ##value<< a data.frame with first column listing each season and
+  ## other column a scneario of uStar thresholds.
+  .self$sUSTAR_SCEN
+}
+sEddyProc$methods(sGetUstarScenarios = sEddyProc_sGetUstarScenarios)
 
 #' @export
 sEddyProc_sGetData <- function()

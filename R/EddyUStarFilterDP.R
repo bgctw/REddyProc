@@ -1321,7 +1321,7 @@ sEddyProc_sEstimateUstarScenarios <- function(
   .self$sSetUstarScenarios(usGetAnnualSeasonUStarMap(resDf))
   ##value<< updated class. Request results by
   ##\code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
-  .self
+  invisible(.self)
 }
 sEddyProc$methods(sEstimateUstarScenarios =
                     sEddyProc_sEstimateUstarScenarios)
@@ -1331,6 +1331,7 @@ sEddyProc$methods(sEstimateUstarScenarios =
 sEddyProc_sGetEstimatedUstarThresholdDistribution <- function(
   ### return the results of \code{\link{sEddyProc_sEstimateUstarScenarios}}
 ) {
+  ##seealso<< \code{\link{sEddyProc_sSetUstarScenarios}}
   ##value<<
   ## A data.frame with columns \code{aggregationMode}, \code{year},
   ## and \code{UStar} estimate based on the non-resampled data.
@@ -1341,4 +1342,18 @@ sEddyProc_sGetEstimatedUstarThresholdDistribution <- function(
 }
 sEddyProc$methods(sGetEstimatedUstarThresholdDistribution =
                     sEddyProc_sGetEstimatedUstarThresholdDistribution)
+
+#' @export
+sEddyProc_sApplyUStarScen <- function(
+  ### apply a function with changing the suffix argument
+  FUN  ##<< function to be applied
+  , ...  ##<< rufther arguements to FUN
+) {
+  uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
+  resScen <- lapply(uStarSuffixes, function(suffix){
+    FUN(..., suffix = suffix)
+  })
+}
+sEddyProc$methods(sApplyUStarScen =
+                    sEddyProc_sApplyUStarScen)
 

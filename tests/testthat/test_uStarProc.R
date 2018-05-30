@@ -1,8 +1,7 @@
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+++ Unit tests for sEddyProc functions +++
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# Author: AMM
-#require(testthat)
+.tmp.f <- function(){
+  Sys.setenv(NOT_CRAN = "true")
+  require(testthat)
+}
 context("sEddyProc-Class")
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -17,14 +16,42 @@ EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
 # construct multiyear dataset
 EddyData99.F <- EddyData.F
 EddyData99.F$Year <- 1999
-EddyDataWithPosix2yr.F <- suppressMessages(fConvertTimeToPosix(rbind(EddyData.F, EddyData99.F), 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
+EddyDataWithPosix2yr.F <- suppressMessages(fConvertTimeToPosix(
+  rbind(EddyData.F, EddyData99.F)
+  , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
 rm( EddyData99.F )
 
 test_that("UStarProcessing",{
-  skip("TODO")
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(
-    nSample = 100L, probs = c(0.05, 0.5, 0.95))
-  EddyProc.C$sSetUstarScenarios(usGetAnnualSeasonUStarMap(uStarTh))
+  skip_on_cran()
+  EddyProc.C <- sEddyProc$new(
+    'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD', 'Ustar'))
+  EddyProc.C$sEstimateUstarScenarios(
+    nSample = 30L, probs = c(0.1, 0.5, 0.9))
+  uStarScen <- EddyProc.C$sGetUstarScenarios()
+  expect_equal( colnames(uStarScen), c("season", "uStar", "U10", "U50", "U90"))
+  # omit the uStar scenario
+  EddyProc.C$sSetUstarScenarios(uStarScen[-2])
+  uStarScen <- EddyProc.C$sGetUstarScenarios()
+  expect_equal( colnames(uStarScen), c("season", "U10", "U50", "U90"))
+  # go on with processing without the need to specify sceanrios again
+  EddyProc.C$sMDSGapFillUStarScens("NEE")
+  dsFilled <- EddyProc.C$sExportResults()
+  expect_true(all(
+    c("NEE_U10_f","NEE_U50_f","NEE_U90_f") %in% colnames(dsFilled)))
+  expect_true(all(
+    c("NEE_U10_fqc","NEE_U50_fqc","NEE_U90_fqc") %in% colnames(dsFilled)))
+  expect_true(!any(c("NEE_f","NEE_uStar_f") %in% colnames(dsFilled)))
+  # MR flux partitioning
+  EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+  EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
+  EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
+  #EddyProc.C$sApplyUStarScen( EddyProc.C$sMRFluxPartition )
+  EddyProc.C$sMRFluxPartitionUStarScens()
+  dsFilled <- EddyProc.C$sExportResults()
+  expect_true(all(
+    c("GPP_U10_f","GPP_U50_f","GPP_U90_f") %in% colnames(dsFilled)))
+  expect_true(all(
+    c("GPP_U10_fqc","GPP_U50_fqc","GPP_U90_fqc") %in% colnames(dsFilled)))
+  expect_true(!any(c("GPP_f","GPP_uStar_f") %in% colnames(dsFilled)))
 })
 

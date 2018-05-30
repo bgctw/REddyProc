@@ -191,7 +191,7 @@ computeSite <- function(siteName, fileName, scenConf){
 			,RadVar.s = "Rg_f"
 			#,PotRadVar.s = "day"
 			,PotRadVar.s = "PotRad"
-			,Suffix.s = "",
+			,suffix = "",
 			controlGLPart = ctrlOpt
 	)
 	dsResOpt$DateTime <- dsMonth$DateTime
@@ -201,7 +201,7 @@ computeSite <- function(siteName, fileName, scenConf){
 		#ctrlDefault$fixedTempSens <- ctrl$fixedTempSens
 		dsResDefault <- partitionNEEGL(dsMonth,NEEVar.s = "NEE_f",QFNEEVar.s = "NEE_fqc",QFNEEValue.n = 0,NEESdVar.s = "NEE_fs_unc",
 				TempVar.s = "Tair_f",QFTempVar.s = "Tair_fqc",QFTempValue.n = 0,VPDVar.s = "VPD_f",QFVPDVar.s = "VPD_fqc",
-				QFVPDValue.n = 0,RadVar.s = "Rg",PotRadVar.s = "day",Suffix.s = "",
+				QFVPDValue.n = 0,RadVar.s = "Rg",PotRadVar.s = "day",suffix = "",
 				controlGLPart = ctrlDefault
 		)
 		dsResDefault$DateTime <- dsResOpt$DateTime <- dsMonth$DateTime
@@ -365,7 +365,7 @@ sink(file.path(outputDir,'readmegen.txt')); {
 	#ds <- dfall_posix[,!(names(dfall) %in% c("Day","Hour"))]
 	ds <- partGLExtractStandardData(dfall_posix,NEEVar.s = "NEE_f",QFNEEVar.s = "NEE_fqc",QFNEEValue.n = 0,NEESdVar.s = "NEE_fs_unc",
 			TempVar.s = "Tair_f",QFTempVar.s = "Tair_fqc",QFTempValue.n = 0,VPDVar.s = "VPD_f",QFVPDVar.s = "VPD_fqc",
-			QFVPDValue.n = 0,RadVar.s = "Rg",PotRadVar.s = "day",Suffix.s = "",
+			QFVPDValue.n = 0,RadVar.s = "Rg",PotRadVar.s = "day",suffix = "",
 			controlGLPart = ctrlOpt)
 	ds$julday <- dfall_posix$julday
 	.tmp.maxPAR <- function(){

@@ -10,6 +10,14 @@ vignette: >
   %\usepackage[UTF-8]{inputenc}
 ---
 
+```{r, include = FALSE}
+# do not execute on CRAN: 
+# https://stackoverflow.com/questions/28961431/computationally-heavy-r-vignettes
+is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
+             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
+knitr::opts_chunk$set(eval = !is_check)
+```
+
 ```{r setup, include = FALSE}
 library(knitr)
 # rmarkdown::render("vignettes/DEGebExample.Rmd")
@@ -106,15 +114,15 @@ by taking the maximum across the seasons, and the overall estimate is the mean a
 By default the gap-filling uses annually aggregated estimates of uStar-Threshold.
 This usually works for sites with continuous vegetation cover.
 For the crop-site of this example, we will use a different threshold for each of the defined seasons.
-This is achieved by providing the seasonal estimates with argument `UstarThres.df`.
+This is achieved by providing the seasonal estimates with argument `uStarTh`.
 The season factor has already been stored with the class when calling `EddyProc.C$sEstUstarThreshold`. 
 
 ```{r DEGeb_estUStar1c}
-	(UstarThres.df <- usGetSeasonalSeasonUStarMap(uStarTh))
+	(uStarTh <- usGetSeasonalSeasonUStarMap(uStarTh))
 ```	
 ```{r DEGeb_gapFill1, cache = TRUE, output = 'hide', message = FALSE}
 	EddyProc.C$sMDSGapFillAfterUstar(
-	  'NEE', FillAll.b = FALSE, UstarThres.df = UstarThres.df, Verbose.b = FALSE)
+	  'NEE', FillAll.b = FALSE, uStarTh = uStarTh, Verbose.b = FALSE)
 ```		
 
 
@@ -133,15 +141,19 @@ different estimates of the uStar Threshold.
 
 
 ```{r DEGeb_estUStarBoot1, cache = TRUE, message = FALSE}
-	# here, because of speed only 30 samples instead of 100, and 10% and 90% 
-	# percentile instead of 5%,50%, and 95%
-	uStarRes <- EddyProc.C$sEstUstarThresholdDistribution( 
-	  seasonFactor.v = seasonFactor, nSample = 30L, probs = c(0.1,0.9))
-	(UstarThres.df <- usGetSeasonalSeasonUStarMap(uStarRes))
+EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.1, Long_deg.n = 10.9, TimeZone_h.n = 1)  #Location of Gebesee
+# here, because of processing time only 30 samples instead of 100, and 10% and 90% 
+# percentile instead of default 5%,50%, and 95% with 100 samples
+EddyProc.C$sEstimateUstarScenarios( 
+  seasonFactor.v = seasonFactor, nSample = 30L, probs = c(0.1,0.9))
+(uStarTh <- usGetSeasonalSeasonUStarMap(
+  EddyProc.C$sGetEstimatedUstarThresholdDistribution()
+))
+EddyProc.C$sSetUstarScenarios(uStarTh)
 ```	
 ```{r DEGeb_gapFillBoot1, cache = TRUE, message = FALSE, output = 'hide'}
-	EddyProc.C$sMDSGapFillAfterUStarDistr(
-	  'NEE', FillAll.b = FALSE, UstarThres.df = UstarThres.df)
+EddyProc.C$sMDSGapFillUStarScens('NEE', FillAll.b = FALSE)
 ```
 
 Additional output columns are produced for each uStar quantile. 
@@ -149,17 +161,18 @@ Additional output columns are produced for each uStar quantile.
 ```{r}
 	grep("^NEE.*_f$", colnames( EddyProc.C$sExportResults()), value = TRUE )
 ```		
-		
-In order to provide results of different uStar Threshold estimates to the NEE 
-Flux-partitioning, the 
-argument suffix.s is used. The output columns of the Gap-Filling carry the same suffix.
+
+Several methods provide processing steps for all scenarios.
+In addition, method `sApplyUStarScen` calls a user-specified function repeatedly
+with a mofified argument `suffix`. 
+For example, the flux partitioning across all threshold scnearios can be
+invoked by the following code.
 
 ```{r DEGeb_fluxPart1, cache = TRUE}
 	EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
-	for (suffix in c('U10', 'U90')) {
-		EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
-	}
-	grep("U10", colnames(EddyProc.C$sExportResults()), value = TRUE) 	
+  EddyProc.C$sApplyUStarScen( EddyProc.C$sMRFluxPartition )
+	#grep("U10", colnames(EddyProc.C$sExportResults()), value = TRUE) 	
+	grep("^GPP.*_f$", colnames( EddyProc.C$sExportResults()), value = TRUE )
 ```
 
 Using change point detection instead of moving point method for UStar Threshold estimation
@@ -180,8 +193,7 @@ The CPT method is usually yields higher thresholds and marks more data as Gap.
 						ctrlUstarEst.l = usControlUstarEst(isUsingCPTSeveralT = TRUE)
 						,seasonFactor.v = seasonFactor
 				)$uStarTh
-	(UstarThresCP.df <- usGetSeasonalSeasonUStarMap(resUStar))
-	#UstarThres.df
+	(uStarThCP <- usGetSeasonalSeasonUStarMap(resUStar))
 ```
 
 

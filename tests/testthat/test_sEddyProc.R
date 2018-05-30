@@ -165,7 +165,7 @@ test_that("Test sMDSGapFillAfterUStar default case",{
   #EddyProc.C$trace("sMDSGapFillAfterUstar", recover)
   #EddyProc.C$untrace("sMDSGapFillAfterUstar")
   EddyProc.C$sMDSGapFillAfterUstar(
-    'NEE', FillAll.b = FALSE, UstarThres.df	= uStar98)
+    'NEE', FillAll.b = FALSE, uStarTh	= uStar98)
   expect_equal(
     uStar98, min(EddyProc.C$sDATA$Ustar[
       EddyProc.C$sTEMP$NEE_uStar_fqc == 0 &
@@ -178,7 +178,7 @@ test_that("Test sMDSGapFillAfterUStar single value",{
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
   uStarFixed <- 0.46
   EddyProc.C$sMDSGapFillAfterUstar(
-    'NEE', FillAll.b = FALSE, UstarThres.df = uStarFixed)
+    'NEE', FillAll.b = FALSE, uStarTh = uStarFixed)
   expect_equal( uStarFixed, min(EddyProc.C$sDATA$Ustar[
     EddyProc.C$sTEMP$NEE_uStar_fqc == 0 & (EddyProc.C$sDATA$Rg < 10)]
     , na.rm = TRUE), tolerance = 0.05  )
@@ -188,10 +188,10 @@ test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
   EddyProc.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
   uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
-  UstarThres.df <- usGetAnnualSeasonUStarMap(uStarTh)[-1, ,drop = FALSE]
+  uStarTh <- usGetAnnualSeasonUStarMap(uStarTh)[-1, ,drop = FALSE]
   expect_error(
     EddyProc.C$sMDSGapFillAfterUstar(
-      'NEE', UstarThres.df = UstarThres.df, FillAll.b = FALSE)
+      'NEE', uStarTh = uStarTh, FillAll.b = FALSE)
   )
 })
 
@@ -199,11 +199,11 @@ test_that("Test sMDSGapFillAfterUStar error on na-values",{
   EddyProc.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
   uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
-  UstarThres.df <- usGetAnnualSeasonUStarMap(uStarTh)
-  UstarThres.df[1,2] <- NA
+  uStarTh <- usGetAnnualSeasonUStarMap(uStarTh)
+  uStarTh[1,2] <- NA
   expect_error(
     EddyProc.C$sMDSGapFillAfterUstar(
-      'NEE', UstarThres.df = UstarThres.df, FillAll.b = FALSE)
+      'NEE', uStarTh = uStarTh, FillAll.b = FALSE)
   )
 })
 
@@ -216,11 +216,11 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   #EddySetups.C <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L )
   #(uStarRes <- EddySetups.C$sGetEstimatedUstarThresholdDistribution())
   (uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L ))
-  (UstarThres.df <- usGetAnnualSeasonUStarMap(uStarRes))
+  (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes))
   #expUStarScen <- usGetAnnualSeasonUStarMap(uStarRes)
   #expect_equal( EddySetups.C$sUSTAR_SCEN, expUStarScen)
   EddySetups.C$sMDSGapFillAfterUStarDistr(
-    'NEE', UstarThres.df = UstarThres.df, FillAll.b = FALSE )
+    'NEE', uStarTh = uStarTh, FillAll.b = FALSE )
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
   cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
@@ -234,7 +234,7 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   EddySetups.C$sSetLocationInfo(
     Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
   for (suffix in c('U05', 'U50')) {
-    EddySetups.C$sMRFluxPartition(Suffix.s = suffix)
+    EddySetups.C$sMRFluxPartition(suffix = suffix)
   }
   cNames2 <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
   expect_true( all(			c("PotRad_U50",	"FP_NEEnight_U50", "FP_Temp_U50"
@@ -252,9 +252,9 @@ test_that("Test sMDSGapFillAfterUStarDistr single row",{
   (uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L ))
   # take only the first row, would throw an error in test on season mismatch,
   # but with one row applied for all
-  (UstarThres.df <- usGetAnnualSeasonUStarMap(uStarRes)[1, c(1,3,4),drop = FALSE])
+  (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes)[1, c(1,3,4),drop = FALSE])
   EddySetups.C$sMDSGapFillAfterUStarDistr(
-    'NEE', UstarThres.df = UstarThres.df, FillAll.b = FALSE)
+    'NEE', uStarTh = uStarTh, FillAll.b = FALSE)
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
   cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
