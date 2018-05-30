@@ -1,11 +1,11 @@
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ R script with sEddyProc R5 reference class definition and methods +++
 #+++ Dependencies: DataFunctions.R, package 'methods' for R5 reference class
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ sEddyProc class: Initialization
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' R5 reference class for processing of site-level half-hourly eddy data
 #'
@@ -22,109 +22,127 @@ sEddyProc <- setRefClass('sEddyProc', fields = list(
   , sINFO = 'list'         ##<< List with site information
   , sLOCATION = 'list'		##<< List with site location information
   , sTEMP = 'data.frame'   ##<< Data frame with (temporary) result data
-  , sUSTAR = 'list'		##<< List with results form uStar Threshold estimation
-# Note: The documenation of the class is not processed by 'inlinedocs'
+  , sUSTAR_DETAILS = 'list'		##<< List with results from uStar Threshold estimation
+  , sUSTAR = 'data.frame'		  ##<< data.frame with uStar thresholds per
+  ## aggregation mode and season
+  , sUSTAR_SCEN = 'data.frame'		##<< data.frame with uStar thresholds per season
+  # Note: The documenation of the class is not processed by 'inlinedocs'
 ))
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_initialize <- function(
-    ##title<<
-    ## sEddyProc_initialize - Initialization of sEddyProc
-    ##description<<
-	## This function is called when writing \code{sEddyProc$new}.
-    ## It creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data
-    ID.s                ##<< String with site ID
-    , Data.F             ##<< Data frame with at least three month of half-hourly site-level eddy data
-    , ColNames.V.s       ##<< Vector with selected column names, the less columns the faster the processing
-    , ColPOSIXTime.s = 'DateTime' ##<< Column name with POSIX time stamp
-    , DTS.n = 48           ##<< Daily time steps
-	, ColNamesNonNumeric.V.s = character(0)	##<< Names of columns that should not be checked for numeric type, e.g. season column
-	, Lat_deg.n = NA_real_    	##<< Latitude in (decimal) degrees (-90 to + 90)
-	, Long_deg.n = NA_real_   	##<< Longitude in (decimal) degrees (-180 to + 180)
-	, TimeZone_h.n = NA_integer_	##<< Time zone (in hours) shift to UTC, e.g. 1 for Berlin
-    , ...                ##<< ('...' required for initialization of class fields)
-    ##author<<
-    ## AMM
-    # TEST: ID.s <- 'Tha'; Data.F <- EddyDataWithPosix.F; ColPOSIXTime.s <- 'DateTime'; ColNames.V.s <- c('NEE', 'Rg', 'Tair', 'VPD'); DTS.n = 48
+  ##title<<
+  ## sEddyProc_initialize - Initialization of sEddyProc
+  ##description<<
+  ## This function is called when writing \code{sEddyProc$new}.
+  ## It creates the fields of the sEddyProc R5 reference class for processing
+  ## of half-hourly eddy data
+  ID.s                ##<< String with site ID
+  , Data.F             ##<< Data frame with at least three month of half-hourly
+  ## site-level eddy data
+  , ColNames.V.s       ##<< Vector with selected column names, the less columns
+  ## the faster the processing
+  , ColPOSIXTime.s = 'DateTime' ##<< Column name with POSIX time stamp
+  , DTS.n = 48           ##<< Daily time steps
+  , ColNamesNonNumeric.V.s = character(0)	##<< Names of columns that should not
+  ## be checked for numeric type, e.g. season column
+  , Lat_deg.n = NA_real_    	##<< Latitude in (decimal) degrees (-90 to + 90)
+  , Long_deg.n = NA_real_   	##<< Longitude in (decimal) degrees (-180 to + 180)
+  , TimeZone_h.n = NA_integer_	##<< Time zone: hours shift to UTC, e.g. 1 for Berlin
+  , ...                ##<< ('...' required for initialization of class fields)
+  ##author<< AMM
 ) {
-	##detail<< A method of class \code{\link{sEddyProc-class}}.
-    'Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data'
-    # Check entries
-    if (!fCheckValString(ID.s) || is.na(ID.s) )
-      stop('For ID, a character string must be provided!')
-    fCheckColNames(Data.F, c(ColPOSIXTime.s, ColNames.V.s), 'fNewSData')
+  ##detail<< A method of class \code{\link{sEddyProc-class}}.
+  'Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data'
+  # Check entries
+  if (!fCheckValString(ID.s) || is.na(ID.s) )
+    stop('For ID, a character string must be provided!')
+  fCheckColNames(Data.F, c(ColPOSIXTime.s, ColNames.V.s), 'fNewSData')
 
-    ##details<<
-    ## The time stamp must be provided in POSIX format, see also \code{\link{fConvertTimeToPosix}}.
-    ## For required properties of the time series, see \code{\link{fCheckHHTimeSeries}}.
-    fCheckHHTimeSeries(Data.F[, ColPOSIXTime.s], DTS.n = DTS.n, 'sEddyProc.initialize')
+  ##details<<
+  ## The time stamp must be provided in POSIX format, see also
+  ## \code{\link{fConvertTimeToPosix}}.
+  ## For required properties of the time series, see \code{\link{fCheckHHTimeSeries}}.
+  fCheckHHTimeSeries(Data.F[, ColPOSIXTime.s], DTS.n = DTS.n, 'sEddyProc.initialize')
 
-    ##details<<
-    ## Internally the half-hour time stamp is shifted to the middle of the measurement period (minus 15 minutes or 30 minutes).
-    Time.V.p <- Data.F[, ColPOSIXTime.s] - (0.5 * 24 / DTS.n * 60 * 60)  #half-period time offset in seconds
+  ##details<<
+  ## Internally the half-hour time stamp is shifted to the middle of the
+  ## measurement period (minus 15 minutes or 30 minutes).
+  #half-period time offset in seconds
+  Time.V.p <- Data.F[, ColPOSIXTime.s] - (0.5 * 24 / DTS.n * 60 * 60)
 
-    ##details<<
-    ## All other columns may only contain numeric data.
-    ## Please use NA as a gap flag for missing data or low quality data not to be used in the processing.
-    ## The columns are also checked for plausibility with warnings if outside range.
-    fCheckColNum(Data.F, setdiff(ColNames.V.s, ColNamesNonNumeric.V.s), 'sEddyProc.initialize')
-    fCheckColPlausibility(Data.F, ColNames.V.s, 'sEddyProc.initialize')
+  ##details<<
+  ## All other columns may only contain numeric data.
+  ## Please use NA as a gap flag for missing data or low quality data not to
+  ## be used in the processing.
+  ## The columns are also checked for plausibility with warnings if outside range.
+  fCheckColNum(
+    Data.F, setdiff(ColNames.V.s, ColNamesNonNumeric.V.s), 'sEddyProc.initialize')
+  fCheckColPlausibility(Data.F, ColNames.V.s, 'sEddyProc.initialize')
 
-    ##details<<
-    ## sID is a string for the site ID.
-    sID <<- ID.s
-    ##details<<
-    ## sDATA is a data frame with site data.
-	sDATA <<- cbind(sDateTime = Time.V.p, Data.F[, ColNames.V.s, drop = FALSE])
-    ##details<<
-    ## sTEMP is a temporal data frame with the processing results.
-	sTEMP <<- data.frame(sDateTime = Time.V.p)
-    #Initialization of site data information from POSIX time stamp.
-    YStart.n <- as.numeric(format(sDATA$sDateTime[1], '%Y'))
-    YEnd.n <- as.numeric(format(sDATA$sDateTime[length(sDATA$sDateTime)], '%Y'))
-    YNums.n <- (YEnd.n - YStart.n + 1)
-    if (YNums.n > 1) {
-      YName.s <- paste(substr(YStart.n, 3, 4), '-', substr(YEnd.n, 3, 4), sep = '')
-    } else {
-      YName.s <- as.character(YStart.n)
-    }
+  ##details<<
+  ## sID is a string for the site ID.
+  sID <<- ID.s
+  ##details<<
+  ## sDATA is a data frame with site data.
+  sDATA <<- cbind(sDateTime = Time.V.p, Data.F[, ColNames.V.s, drop = FALSE])
+  ##details<<
+  ## sTEMP is a temporal data frame with the processing results.
+  sTEMP <<- data.frame(sDateTime = Time.V.p)
+  #Initialization of site data information from POSIX time stamp.
+  YStart.n <- as.numeric(format(sDATA$sDateTime[1], '%Y'))
+  YEnd.n <- as.numeric(format(sDATA$sDateTime[length(sDATA$sDateTime)], '%Y'))
+  YNums.n <- (YEnd.n - YStart.n + 1)
+  if (YNums.n > 1) {
+    YName.s <- paste(substr(YStart.n, 3, 4), '-', substr(YEnd.n, 3, 4), sep = '')
+  } else {
+    YName.s <- as.character(YStart.n)
+  }
 
-    ##details<<
-    ## sINFO is a list containing the time series information.
-	##describe<<
-	sINFO <<- list(
-      DIMS = length(sDATA$sDateTime) ##<< Number of data rows
-      , DTS = DTS.n                   ##<< Number of daily time steps (24 or 48)
-      , Y.START = YStart.n            ##<< Starting year
-      , Y.END = YEnd.n                ##<< Ending year
-      , Y.NUMS = YNums.n              ##<< Number of years
-      , Y.NAME = YName.s              ##<< Name for years
-    )
-	##end<<
+  ##details<<
+  ## sINFO is a list containing the time series information.
+  ##describe<<
+  sINFO <<- list(
+    DIMS = length(sDATA$sDateTime) ##<< Number of data rows
+    , DTS = DTS.n                   ##<< Number of daily time steps (24 or 48)
+    , Y.START = YStart.n            ##<< Starting year
+    , Y.END = YEnd.n                ##<< Ending year
+    , Y.NUMS = YNums.n              ##<< Number of years
+    , Y.NAME = YName.s              ##<< Name for years
+  )
+  ##end<<
 
-	##details<<
-	## sLOCATION is a list of information on site location and timezone (see \code{\link{sEddyProc_sSetLocationInfo}}).
-	.self$sSetLocationInfo( Lat_deg.n , Long_deg.n , TimeZone_h.n)
+  ##details<<
+  ## \code{sUSTAR_SCEN} a data.frame 	with first column the season, and other
+  ## columns different uStar threshold estimates, as returned by
+  ## \code{\link{usGetAnnualSeasonUStarMap}}
+  sUSTAR_SCEN <<- data.frame()
 
-    ##details<<
-    ## sTEMP is a data frame used only temporally.
+  ##details<<
+  ## sLOCATION is a list of information on site location and timezone
+  ## (see \code{\link{sEddyProc_sSetLocationInfo}}).
+  .self$sSetLocationInfo( Lat_deg.n , Long_deg.n , TimeZone_h.n)
 
-    #Initialize class fields
-    message('New sEddyProc class for site \'', ID.s, '\'')
+  ##details<<
+  ## sTEMP is a data frame used only temporally.
 
-    callSuper(...) # Required for initialization of class fields as last call of function
-    ##value<<
-    ## Initialized fields of sEddyProc.
+  #Initialize class fields
+  message('New sEddyProc class for site \'', ID.s, '\'')
+
+  # Required for initialization of class fields as last call of function
+  callSuper(...)
+  ##value<<
+  ## Initialized fields of sEddyProc.
 }
 sEddyProc$methods( initialize = sEddyProc_initialize)
 
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ sEddyProc class: Data handling functions
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sSetLocationInfo <- function(
@@ -136,9 +154,14 @@ sEddyProc_sSetLocationInfo <- function(
 	##author<< TW
 	# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
 	# and therefore should be stored with the class, instead of passed each time.
-	if (!is.na(Lat_deg.n) & (Lat_deg.n < -90 | Lat_deg.n > 90)) stop("Latitude must be in interval -90 to + 90")
-	if (!is.na(Long_deg.n) & (Long_deg.n < -180 | Long_deg.n > 180)) stop("Longitude must be in interval -180 to + 180")
-	if (!is.na(TimeZone_h.n) & (TimeZone_h.n < -12 | TimeZone_h.n > + 12 | TimeZone_h.n != as.integer(TimeZone_h.n))) stop("Timezone must be an integer in interval -12 to 12")
+	if (!is.na(Lat_deg.n) & (Lat_deg.n < -90 | Lat_deg.n > 90)) stop(
+	  "Latitude must be in interval -90 to + 90")
+	if (!is.na(Long_deg.n) & (Long_deg.n < -180 | Long_deg.n > 180)) stop(
+	  "Longitude must be in interval -180 to + 180")
+	if (!is.na(TimeZone_h.n) &
+	    (TimeZone_h.n < -12 | TimeZone_h.n > + 12 |
+	     TimeZone_h.n != as.integer(TimeZone_h.n))) stop(
+	       "Timezone must be an integer in interval -12 to 12")
 	sLOCATION <<- list(
 			Lat_deg.n = Lat_deg.n
 			, Long_deg.n = Long_deg.n
@@ -146,6 +169,47 @@ sEddyProc_sSetLocationInfo <- function(
 	)
 }
 sEddyProc$methods(sSetLocationInfo = sEddyProc_sSetLocationInfo)
+
+#' @export
+sEddyProc_sSetUstarScenarios <- function(
+  ### set uStar processing scenarios
+  uStarTh              ##<< data.frame as returned by
+  ## \code{\link{sEddyProc_sEstUstarThresholdDistribution}}:
+  ## First column, season names, and remaining columns different estimates of
+  ## uStar Threshold.
+  ## If the data.frame has only one row, then each uStar threshold estimate is
+  ## applied to the entire dataset.
+  ## Entries in first column must match levels in argument \code{seasonFactor}
+  ## of \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
+  , uStarSuffixes =    ##<< the suffixes appended to result column names
+    ## by default the column names of uStarTh unless its first season column
+    colnames(uStarTh)[-1]
+) {
+  if (!("season" %in% colnames(sDATA)) ) stop(
+    "Seasons not defined yet. Add column 'season' to dataset with entries"
+    , " matching column season in UstarThres.df, e.g. by calling"
+    , " yourEddyProcClass$sEstUstarThresholdDistribution(...)")
+  if (!all(is.finite(as.matrix(uStarTh[, -1])))) warning(
+    "Provided non-finite uStarThreshold for some periods."
+    ," All values in corresponding period will be marked as gap.")
+  if (nrow(uStarTh) == 1L) {
+    uStarTh <- cbind(data.frame(
+      season = levels(.self$sDATA$season)), uStarTh[, -1], row.names = NULL)
+  }
+  iMissing <- which( !(levels(.self$sDATA$season) %in% uStarTh[[1]]))
+  if (length(iMissing)) stop(
+    "Need to provide uStar threshold for all seasons, but was missing for seasons"
+    , paste(levels(.self$sDATA$season)[iMissing], collapse = ","))
+  nEstimates <- ncol(uStarTh) - 1L
+  uStarSuffixes <- unique(uStarSuffixes)
+  if (length(uStarSuffixes) != nEstimates) stop(
+    "umber of unique suffixes must correspond to number of uStar-thresholds"
+    ,", i.e. number of columns in uStarTh - 1.")
+
+  sUSTAR_SCEN <<- uStarTh
+  colnames(sUSTAR_SCEN)[-1] <<- uStarSuffixes
+}
+sEddyProc$methods(sSetUstarScenarios = sEddyProc_sSetUstarScenarios)
 
 
 #' @export
@@ -165,7 +229,7 @@ sEddyProc_sGetData <- function()
 sEddyProc$methods( sGetData = sEddyProc_sGetData)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sExportData <- function()
@@ -187,10 +251,11 @@ sEddyProc_sExportData <- function()
 sEddyProc$methods( sExportData = sEddyProc_sExportData)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #' @export
 sEddyProc_sExportResults <- function(
-	  isListColumnsExported = FALSE	##<< if TRUE export list columns in addition to numeric columns,
+	  isListColumnsExported = FALSE	##<< if TRUE export list columns in addition
+	  ## to numeric columns,
 		## such as the covariance matrices of the the day-time-partitioning LRC fits
 )
     ##title<<
@@ -210,7 +275,7 @@ sEddyProc_sExportResults <- function(
 sEddyProc$methods(sExportResults = sEddyProc_sExportResults)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 sEddyProc_sPrintFrames <- function(
     ##title<<
@@ -232,5 +297,5 @@ sEddyProc_sPrintFrames <- function(
 sEddyProc$methods(sPrintFrames = sEddyProc_sPrintFrames)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

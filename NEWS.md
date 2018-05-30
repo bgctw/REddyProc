@@ -1,7 +1,10 @@
+
+- Changed default column suffix in sEddyProc_sMDSGapFillAfterUstar from 
+'withUstar' to 'uStar' for consistency with sEddyProc_sMDSGapFillAfterUStarDistr
+
 # REddyProc 1.1.5
 
 Moving profiling code and associated dependencies out of the distributed code.
-
 
 # REddyProc 1.1.4
 

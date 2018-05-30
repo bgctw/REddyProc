@@ -27,12 +27,12 @@ sEddyProc_sEstUstarThreshold <- function(
 	                      , TempColName, RgColName)]
 	colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
 	resEst <- usEstUstarThreshold(ds, ...)
-	sUSTAR <<- resEst[c("uStarTh", "seasonYear", "season", "tempInSeason")]
+	sUSTAR_DETAILS <<- resEst[c("uStarTh", "seasonYear", "season", "tempInSeason")]
 	sDATA$season <<-  resEst$bins$season
 	sDATA$tempBin <<-  resEst$bins$tempBin
 	sDATA$uStarBin <<-  resEst$bins$uStarBin
 	##value<< result of \code{\link{usEstUstarThreshold}}. In addition the
-	## result is stored in class variable sUSTAR and the bins as
+	## result is stored in class variable sUSTAR_DETAILS and the bins as
 	## additional columns to sDATA
 	resEst
 }
@@ -1157,6 +1157,8 @@ usGetAnnualSeasonUStarMap <- function(
 	# transform column names of "x%" to "Ux" with leading zeros
 	colnames(res2)[-(1:2)] <- (gsub(" ", "0", sprintf("U%2s", gsub("%", ""
 	                                             , colnames(res2)[-(1:2)]))))
+	##value<< a data frame with first column the season, and other columns
+	## different uStar threshold estimates
 	res2
 }
 
@@ -1185,136 +1187,158 @@ usGetSeasonalSeasonUStarMap <- function(
 
 #' @export
 sEddyProc_sEstUstarThresholdDistribution <- function(
-		### Estimating the distribution of u * threshold by bootstrapping over data
-		ctrlUstarEst.l = usControlUstarEst()			    ##<< control parameters
-		  ## for estimating uStar on a single binned series,
-		  ## see \code{\link{usControlUstarEst}}
-		, ctrlUstarSub.l = usControlUstarSubsetting()	##<< control parameters
-		  ## for subsetting time series (number of temperature and Ustar classes
-		  ## \ldots), see \code{\link{usControlUstarSubsetting}}
-		, UstarColName = "Ustar"		##<< column name for UStar
-		, NEEColName = "NEE"			  ##<< column name for NEE
-		, TempColName = "Tair"		  ##<< column name for air temperature
-		, RgColName = "Rg"			    ##<< column name for solar radiation for
-		  ## omitting night time data
-		, ...		##<< further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}
-		, seasonFactor.v = usCreateSeasonFactorMonth(sDATA$sDateTime)
-		  ### factor of seasons to split (data is resampled only within the seasons)
-		, seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, ds$sDateTime)
-		  ### named integer vector: for each seasonFactor level, get the year that
-		  ### this season belongs to
-		, nSample = 100L				      ##<< the number of repetitions in the bootstrap
-    , probs = c(0.05, 0.5, 0.95)	##<< the quantiles of the bootstrap sample
-		  ## to return. Default is the 5%, median and 95% of the bootstrap
-		, verbose.b = TRUE				##<< set to FALSE to omit printing progress
+		### Estimate the distribution of u* threshold by bootstrapping over data
+		...  ##<< further parameters to
+		## \code{\link{sEddyProc_sEstimateUstarScenarios}}
 ) {
-	##author<< TW
-	##details<<
-		## The choice of the criterion for sufficiently turbulent conditions
-		## (u * > chosen threshold)
-		## introduces large uncertainties in calculations based on gap-filled Eddy data.
-	  ## Hence, it is good practice to compare derived quantities based on
-	  ## gap-filled data using a range of u * threshold estimates.
-		##
-		## This method explores the probability density of the threshold by
-		## repeating its estimation
-		## on a bootstrapped sample.
-		## By default it returns the 90% confidence interval (argument \code{probs}).
-		## For larger intervals the sample number need to be
-		## increased (argument \code{probs}).
-
-		##seealso<< \code{\link{sEddyProc_sEstUstarThreshold}}
-		##, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}
-		res0 <- suppressMessages(.self$sEstUstarThreshold(
-				UstarColName = UstarColName
-				, NEEColName = NEEColName
-				, TempColName = TempColName
-				, RgColName = RgColName
-				, ...
-				, ctrlUstarEst.l = ctrlUstarEst.l, ctrlUstarSub.l = ctrlUstarSub.l
-				, seasonFactor.v = seasonFactor.v	))
-		iPosAgg <- which(res0$uStarTh$aggregationMode == "single")
-		iPosYears <- which(res0$uStarTh$aggregationMode == "year")
-		iPosSeasons <- which(res0$uStarTh$aggregationMode == "season")
-		years0 <- res0$uStarTh$year[iPosYears]
-		seasons0 <- res0$uStarTh$season[iPosSeasons]
-		ds <- sDATA[, c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)]
-		colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
-		ds$seasonFactor.v <- seasonFactor.v
-		fWrapper <- function(iSample, ...) {
-			dsBootWithinSeason <- ds2 <- ds %>%
-			  split(.$seasonFactor.v) %>%
-			  map_df(function(dss) {
-						iSample <- sample.int(nrow(dss), replace = TRUE)
-						dss[iSample, , drop = FALSE]
-					})
-			if (isTRUE(verbose.b) ) message(".", appendLF = FALSE)
-			res <- usEstUstarThreshold(dsBootWithinSeason, ...
-							, seasonFactor.v = seasonFactor.v
-							, ctrlUstarEst.l = ctrlUstarEst.l, ctrlUstarSub.l = ctrlUstarSub.l	)
-			gc()
-			# need to check if years and seasons have been calculated
-			# differently due to subsetting with
-			# too few values within a season
-			# then report NA for those cases
-			resAgg <- res$uStarTh$uStar[iPosAgg]
-			years <- res$uStarTh$year[iPosYears]
-			resYears <- structure(
-					if (all(years == years0) ) res$uStarTh$uStar[iPosYears] else
-					  rep(NA_real_, length(years0)), names = as.character(years0) )
-			resSeasons <- structure(
-					if (
-					    nrow(res$uStarTh) == nrow(res0$uStarTh) &&
-					    all((seasons <- res$uStarTh$season[iPosSeasons]) == seasons0)
-					   ) res$uStarTh$uStar[iPosSeasons] else rep(NA_real_, length(seasons0))
-					, names = as.character(seasons0) )
-			return(c(aggYears = resAgg, resYears, resSeasons))
-			#return(length(res$UstarSeason$uStar))
-			#res$UstarAggr
-		}
-		Ustar.l0 <- res0$uStarTh$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
-		Ustar.l <- suppressMessages(
-				Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
-		)
-		if (isTRUE(verbose.b) ) message("")	# line break
-		stat <- do.call(rbind, c(list(Ustar.l0), Ustar.l))
-		##details<< \describe{\item{Quality Assurance}{
-		## If more than \code{ctrlUstarEst.l$minValidBootProp}
-		## (default 40%) did not report a threshold,
-		## no quantiles (i.e. NA) are reported.
-		## }}
-		resQuantiles <-	t(apply(stat, 2, quantile, probs = probs, na.rm = TRUE))
-		iInvalid <- colSums(is.finite(stat)) / nrow(stat) <
-		  ctrlUstarEst.l$minValidBootProp
-		resQuantiles[iInvalid, ] <- NA_real_
-		rownames(resQuantiles) <- NULL
-		resDf <- cbind(res0$uStarTh, resQuantiles)
-		message(paste("Estimated UStar distribution of:\n"
-		        , paste(capture.output(resDf[resDf$aggregationMode == "single"
-		                                     , -(1:3)]), collapse = "\n")
-						, "\nby using ", nSample, "bootstrap samples and controls:\n"
-						  , paste(capture.output(unlist(ctrlUstarSub.l)), collapse = "\n")
-				))
-		resDf
-		##value<<
-		## A data.frame with columns \code{aggregationMode}, \code{year},
-		## and \code{UStar} estimate based on the non-resampled data.
-		## The other columns correspond to the quantiles of Ustar estimate
-		## for given probabilities (argument \code{probs}) based on the distribution
-		## of estimates using resampled the data.
+  ##details<< This method returns the results directly, whithou modifying
+  ## the class. It is there for portability reasons. Recommended is the
+  ## usage of method \code{\link{sEddyProc_sEstimateUstarScenarios}} to
+  ## update the class and then getting the results from the class by
+  ## \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+  updatedClass <- .self$sEstimateUstarScenarios(...)
+  ##value<< result of
+  ## \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+  updatedClass$sGetEstimatedUstarThresholdDistribution()
 }
 sEddyProc$methods(sEstUstarThresholdDistribution =
                     sEddyProc_sEstUstarThresholdDistribution)
 
 
-.tmp.f <-  function() {
-		# load the data and generate DateTime column
-		EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH'
-		                    , Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
-		EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-		                          , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-		(res <- EddyProc.C$sEstUstarThresholdDistribution(nSample = 10))
-		# for real applications use larger sample size
-		usGetAnnualSeasonUStarMap(res)
+#' @export
+sEddyProc_sEstimateUstarScenarios <- function(
+  ### Estimate the distribution of u* threshold by bootstrapping over data
+  ctrlUstarEst.l = usControlUstarEst()			    ##<< control parameters
+  ## for estimating uStar on a single binned series,
+  ## see \code{\link{usControlUstarEst}}
+  , ctrlUstarSub.l = usControlUstarSubsetting()	##<< control parameters
+  ## for subsetting time series (number of temperature and Ustar classes
+  ## \ldots), see \code{\link{usControlUstarSubsetting}}
+  , UstarColName = "Ustar"		##<< column name for UStar
+  , NEEColName = "NEE"			  ##<< column name for NEE
+  , TempColName = "Tair"		  ##<< column name for air temperature
+  , RgColName = "Rg"			    ##<< column name for solar radiation for
+  ## omitting night time data
+  , ...		##<< further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}
+  , seasonFactor.v = usCreateSeasonFactorMonth(sDATA$sDateTime)
+  ### factor of seasons to split (data is resampled only within the seasons)
+  , seasonFactorsYear = usGetYearOfSeason(seasonFactor.v, ds$sDateTime)
+  ### named integer vector: for each seasonFactor level, get the year that
+  ### this season belongs to
+  , nSample = 100L				      ##<< the number of repetitions in the bootstrap
+  , probs = c(0.05, 0.5, 0.95)	##<< the quantiles of the bootstrap sample
+  ## to return. Default is the 5%, median and 95% of the bootstrap
+  , verbose.b = TRUE				##<< set to FALSE to omit printing progress
+) {
+  ##author<< TW
+  ##details<<
+  ## The choice of the criterion for sufficiently turbulent conditions
+  ## (u * > chosen threshold)
+  ## introduces large uncertainties in calculations based on gap-filled Eddy data.
+  ## Hence, it is good practice to compare derived quantities based on
+  ## gap-filled data using a range of u * threshold estimates.
+  ##
+  ## This method explores the probability density of the threshold by
+  ## repeating its estimation
+  ## on a bootstrapped sample.
+  ## By default it returns the 90% confidence interval (argument \code{probs}).
+  ## For larger intervals the sample number need to be
+  ## increased (argument \code{probs}).
+
+  ##seealso<< \code{\link{sEddyProc_sEstUstarThreshold}}
+  ##, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}
+  res0 <- suppressMessages(.self$sEstUstarThreshold(
+    UstarColName = UstarColName
+    , NEEColName = NEEColName
+    , TempColName = TempColName
+    , RgColName = RgColName
+    , ...
+    , ctrlUstarEst.l = ctrlUstarEst.l, ctrlUstarSub.l = ctrlUstarSub.l
+    , seasonFactor.v = seasonFactor.v	))
+  iPosAgg <- which(res0$uStarTh$aggregationMode == "single")
+  iPosYears <- which(res0$uStarTh$aggregationMode == "year")
+  iPosSeasons <- which(res0$uStarTh$aggregationMode == "season")
+  years0 <- res0$uStarTh$year[iPosYears]
+  seasons0 <- res0$uStarTh$season[iPosSeasons]
+  ds <- sDATA[, c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)]
+  colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
+  ds$seasonFactor.v <- seasonFactor.v
+  fWrapper <- function(iSample, ...) {
+    dsBootWithinSeason <- ds2 <- ds %>%
+      split(.$seasonFactor.v) %>%
+      map_df(function(dss) {
+        iSample <- sample.int(nrow(dss), replace = TRUE)
+        dss[iSample, , drop = FALSE]
+      })
+    if (isTRUE(verbose.b) ) message(".", appendLF = FALSE)
+    res <- usEstUstarThreshold(dsBootWithinSeason, ...
+                               , seasonFactor.v = seasonFactor.v
+                               , ctrlUstarEst.l = ctrlUstarEst.l, ctrlUstarSub.l = ctrlUstarSub.l	)
+    gc()
+    # need to check if years and seasons have been calculated
+    # differently due to subsetting with
+    # too few values within a season
+    # then report NA for those cases
+    resAgg <- res$uStarTh$uStar[iPosAgg]
+    years <- res$uStarTh$year[iPosYears]
+    resYears <- structure(
+      if (all(years == years0) ) res$uStarTh$uStar[iPosYears] else
+        rep(NA_real_, length(years0)), names = as.character(years0) )
+    resSeasons <- structure(
+      if (
+        nrow(res$uStarTh) == nrow(res0$uStarTh) &&
+        all((seasons <- res$uStarTh$season[iPosSeasons]) == seasons0)
+      ) res$uStarTh$uStar[iPosSeasons] else rep(NA_real_, length(seasons0))
+      , names = as.character(seasons0) )
+    return(c(aggYears = resAgg, resYears, resSeasons))
+    #return(length(res$UstarSeason$uStar))
+    #res$UstarAggr
+  }
+  Ustar.l0 <- res0$uStarTh$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
+  Ustar.l <- suppressMessages(
+    Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
+  )
+  if (isTRUE(verbose.b) ) message("")	# line break
+  stat <- do.call(rbind, c(list(Ustar.l0), Ustar.l))
+  ##details<< \describe{\item{Quality Assurance}{
+  ## If more than \code{ctrlUstarEst.l$minValidBootProp}
+  ## (default 40%) did not report a threshold,
+  ## no quantiles (i.e. NA) are reported.
+  ## }}
+  resQuantiles <-	t(apply(stat, 2, quantile, probs = probs, na.rm = TRUE))
+  iInvalid <- colSums(is.finite(stat)) / nrow(stat) <
+    ctrlUstarEst.l$minValidBootProp
+  resQuantiles[iInvalid, ] <- NA_real_
+  rownames(resQuantiles) <- NULL
+  resDf <- cbind(res0$uStarTh, resQuantiles)
+  message(paste("Estimated UStar distribution of:\n"
+                , paste(capture.output(resDf[resDf$aggregationMode == "single"
+                                             , -(1:3)]), collapse = "\n")
+                , "\nby using ", nSample, "bootstrap samples and controls:\n"
+                , paste(capture.output(unlist(ctrlUstarSub.l)), collapse = "\n")
+  ))
+  .self$sUSTAR <- resDf
+  .self$sSetUstarScenarios(usGetAnnualSeasonUStarMap(resDf))
+  ##value<< updated class. Request results by
+  ##\code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+  .self
 }
+sEddyProc$methods(sEstimateUstarScenarios =
+                    sEddyProc_sEstimateUstarScenarios)
+
+
+#' @export
+sEddyProc_sGetEstimatedUstarThresholdDistribution <- function(
+  ### return the results of \code{\link{sEddyProc_sEstimateUstarScenarios}}
+) {
+  ##value<<
+  ## A data.frame with columns \code{aggregationMode}, \code{year},
+  ## and \code{UStar} estimate based on the non-resampled data.
+  ## The other columns correspond to the quantiles of Ustar estimate
+  ## for given probabilities (argument \code{probs}) based on the distribution
+  ## of estimates using resampled the data.
+  .self$sUSTAR
+}
+sEddyProc$methods(sGetEstimatedUstarThresholdDistribution =
+                    sEddyProc_sGetEstimatedUstarThresholdDistribution)
 

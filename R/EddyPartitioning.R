@@ -165,7 +165,7 @@ sEddyProc_sMRFluxPartition <- function(
 			## (e.g. due to different ustar filters),
 			## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
 			## If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names
-			## (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s = 'WithUstar').
+			## (e.g. 'NEE_f' will be renamed to 'NEE_uStar_f' and 'NEE_fqc' to 'NEE_uStar_fqc' for the Suffix.s = 'uStar').
 			## Currently, this works only with defaults of FluxVar.s = 'NEE_f' and QFFluxVar.s = 'NEE_fqc'.
 			## }}
 			# Rename new columns generated during flux partitioning:
