@@ -1,3 +1,6 @@
+---
+output: github_document
+---
 
 <!-- 
 README.md is generated from README.Rmd. Please edit that file
@@ -5,19 +8,26 @@ README.md is generated from README.Rmd. Please edit that file
 rmarkdown::render("README.Rmd") 
 maybe clear cache before
 -->
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc) [![Travis-CI Build Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
 
-Overview
---------
+
+
+
+
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
+[![Travis-CI Build Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
+
+
+## Overview
 
 `REddyProc` package supports processing (half)hourly data from Eddy-Covariance sensors.
 
-There is an online-formular to use the functionality of the package including description at <https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
+There is an online-formular to use the functionality of the package including
+description at
+<https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
 
-Installation
-------------
+## Installation
 
-``` r
+```r
 # Release stable version from CRAN
 install.packages("REddyProc")
 
@@ -26,19 +36,23 @@ install.packages("REddyProc")
 devtools::install_github("bgctw/REddyProc")
 ```
 
-The REddyProc~package requires a quite recent versions of the tidyverse packages. On encountering problems on installations with older versions should run the following code before installing REddyProc.
+The REddyProc~package requires a quite recent 
+versions of the tidyverse packages. On encountering problems on installations 
+with older versions should run the following code before installing REddyProc.
 
-``` r
+```r
 install.packages("tidyverse")
 update.packages(oldPkgs="dplyr")
 ```
 
-Usage
------
+## Usage
 
-A simple example performs Lookuptable-based gapFilling of Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled values.
+A simple example performs Lookuptable-based gapFilling of
+Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled
+values.
 
-``` r
+
+```r
 library(REddyProc)
 #+++ Input data from csv (example needs to be downloaded)
 examplePath <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
@@ -76,21 +90,32 @@ FilledEddyData.F <- EddyProc.C$sExportResults()
 EddyProc.C$sPlotFingerprintY('NEE_f', Year.i = 1998)
 ```
 
-![](README-example-1.png)
+![plot of chunk example](README-example-1.png)
 
-Further examples are in [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md) and [vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
 
-Docker images
--------------
 
-Docker images are provided that comprise rstudio, rocker/tidyverse, and REddyProc. There are different version for the latest push to github, for the version on CRAN and for specific tags starting from 1.1.4.
+Further examples are in
+[vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md)
+and
+[vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
 
--   bgctw/reddyproc:latest
--   bgctw/reddyproc\_cran
--   bgctw/reddyproc:`tag`
+
+## Docker images
+Docker images are provided that comprise rstudio, rocker/tidyverse, and REddyProc.
+There are different version for the latest push to github, for the version on CRAN and for specific tags starting 
+from 1.1.4.
+
+- bgctw/reddyproc:latest   
+- bgctw/reddyproc_cran
+- bgctw/reddyproc:`tag`
 
 They are usually run with installed docker by saying at a shell:
+```
+docker run --rm -p 8787:8787 <imagename>
+```
+Then the url `localhost:8787` should bring up RStudio in the browser window, where
+you can type the above usage example.
 
-    docker run --rm -p 8787:8787 <imagename>
 
-Then the url `localhost:8787` should bring up RStudio in the browser window, where you can type the above usage example.
+
+
