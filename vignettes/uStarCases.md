@@ -9,41 +9,12 @@ vignette: >
 
 ---
 
-```{r, include = FALSE}
-# do not execute on CRAN: 
-# https://stackoverflow.com/questions/28961431/computationally-heavy-r-vignettes
-is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
-             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
-knitr::opts_chunk$set(eval = !is_check)
-```
-
-```{r setup, include = FALSE}
-library(knitr)
-#rmarkdown::render("vignettes/uStarCases.Rmd")
-opts_knit$set(root.dir = '..')
-opts_chunk$set(
-    #, fig.align = "center"
-    #, fig.width = 3.27, fig.height = 2.5, dev.args = list(pointsize = 10)
-    #,cache = TRUE
-    #, fig.width = 4.3, fig.height = 3.2, dev.args = list(pointsize = 10)
-    #, fig.width = 6.3, fig.height = 6.2, dev.args = list(pointsize = 10)
-    # works with html but causes problems with latex
-    #,out.extra = 'style = "display:block; margin: auto"' 
-    )
-knit_hooks$set(spar = function(before, options, envir) {
-    if (before) {
-        par(las = 1 )                   #also y axis labels horizontal
-        par(mar = c(2.0,3.3,0,0) + 0.3 )  #margins
-        par(tck = 0.02 )                          #axe-tick length inside plots             
-        par(mgp = c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
-     }
-})
-```
 
 
-```{r, include = FALSE, warning = FALSE}
-#themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
-```
+
+
+
+
 
 # Different treatments of uStar threshold
 
@@ -53,7 +24,8 @@ bootstrapped estimates of the threshold as in `vignette('useCase')`.
 
 First, some setup.
 
-```{r init, message = FALSE, output = 'hide'}
+
+```r
 #+++ load libraries used in this vignette
 library(REddyProc)
 library(dplyr)
@@ -71,11 +43,16 @@ Subsequent processing steps can be performed without further uStar filtering
 using `sEddyProc_sMDSGapFill`. Corresponding result columns then have
 no uStar specific suffix. 
 
-```{r noUStar, message = FALSE}
+
+```r
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
 EddyProc.C$sMDSGapFill('NEE')
 grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+```
+
+```
+## [1] "NEE_f"
 ```
 
 ## User-specified uStar threshold
@@ -87,7 +64,8 @@ the suffix as specified by argument `uStarSuffix` which defaults to "uStar".
 The friction velocity, uStar, needs to be in column named "Ustar" of the input 
 dataset.
 
-```{r userUStar, message = FALSE}
+
+```r
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
 uStar <- 0.46
@@ -95,16 +73,35 @@ EddyProc.C$sMDSGapFillAfterUstar('NEE', uStarTh = uStar)
 grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
 
+```
+## [1] "NEE_uStar_f"
+```
+
 ## Sinlge uStar threshold estimate
 
 The uStar threshold can be estimated from the uStar-NEE relationship 
 from the data without estimating its uncertainty by a bootstrap.
 
-```{r singleUStar, message = FALSE}
+
+```r
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
 # estimating the thresholds based on the data (without bootstrap)
 (uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh)
+```
+
+```
+##   aggregationMode seasonYear  season     uStar
+## 1          single         NA    <NA> 0.4162500
+## 2            year       1998    <NA> 0.4162500
+## 3          season       1998 1998001 0.4162500
+## 4          season       1998 1998003 0.4162500
+## 5          season       1998 1998006 0.3520000
+## 6          season       1998 1998009 0.3369231
+## 7          season       1998 1998012 0.1740000
+```
+
+```r
 # may plot saturation of NEE with UStar for a specified season to pdf
 EddyProc.C$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3], dir = outDir )
 ```
@@ -113,10 +110,15 @@ Next, the annual estimate is used as the default in gap-filling.
 Output columns use the suffix as specified by argument `uSstarSuffix` 
 which defaults to "uStar".
 
-```{r singleUStarGapfill, message = FALSE}
+
+```r
 #usGetAnnualSeasonUStarMap(EddyProc.C$sUSTAR_DETAILS$uStarTh)
 EddyProc.C$sMDSGapFillAfterUstar('NEE')
 grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+```
+
+```
+## [1] "NEE_uStar_f"
 ```
 ## Scenarios across distribution of u* threshold estimate
 
@@ -128,13 +130,52 @@ be investigated.
 
 First, the quantiles of the threshodl distribution are estimated by bootstrap.
 
-```{r uStarScen}
+
+```r
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
+```
+
+```
+## New sEddyProc class for site 'DE-Tha'
+```
+
+```r
 EddyProc.C$sEstimateUstarScenarios(
     nSample = 100L, probs = c(0.05, 0.5, 0.95))
+```
+
+```
+## 
+```
+
+```
+## Estimated UStar distribution of:
+##      uStar        5%       50%       95%
+## 1 0.41625 0.3720107 0.4463021 0.6579375 
+## by using  100 bootstrap samples and controls:
+##                        taClasses                    UstarClasses 
+##                               7                              20 
+##                           swThr            minRecordsWithinTemp 
+##                              10                             100 
+##          minRecordsWithinSeason            minRecordsWithinYear 
+##                             160                            3000 
+## isUsingOneBigSeasonOnFewRecords 
+##                               1
+```
+
+```r
 # inspect the thresholds to be used
 EddyProc.C$sGetUstarScenarios()
+```
+
+```
+##    season   uStar       U05       U50       U95
+## 1 1998001 0.41625 0.3720107 0.4463021 0.6579375
+## 2 1998003 0.41625 0.3720107 0.4463021 0.6579375
+## 3 1998006 0.41625 0.3720107 0.4463021 0.6579375
+## 4 1998009 0.41625 0.3720107 0.4463021 0.6579375
+## 5 1998012 0.41625 0.3720107 0.4463021 0.6579375
 ```
 
 By default the annually aggregated threshold estimates are used for each season
@@ -143,12 +184,43 @@ Here, we tell to use the seasonal threshold estiamtes and to
 omit the first threshold scenario based on the un-bootstrapped data in the second 
 column.
 
-```{r uStarScenSetSeasonal}
+
+```r
 (uStarThAgg <- EddyProc.C$sGetEstimatedUstarThresholdDistribution())
+```
+
+```
+##   aggregationMode seasonYear  season     uStar        5%       50%
+## 1          single         NA    <NA> 0.4162500 0.3720107 0.4463021
+## 2            year       1998    <NA> 0.4162500 0.3720107 0.4463021
+## 3          season       1998 1998001 0.4162500 0.3720107 0.4463021
+## 4          season       1998 1998003 0.4162500 0.3263455 0.4088182
+## 5          season       1998 1998006 0.3520000 0.3211214 0.3858333
+## 6          season       1998 1998009 0.3369231 0.2684043 0.3829583
+## 7          season       1998 1998012 0.1740000 0.1883429 0.4150785
+##         95%
+## 1 0.6579375
+## 2 0.6579375
+## 3 0.6579375
+## 4 0.5553000
+## 5 0.4443083
+## 6 0.5187952
+## 7 0.5549714
+```
+
+```r
 EddyProc.C$sSetUstarScenarios( usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
 # inspect the changed thresholds to be used
 EddyProc.C$sGetUstarScenarios()
+```
 
+```
+##    season       U05       U50       U95
+## 3 1998001 0.3720107 0.4463021 0.6579375
+## 4 1998003 0.3263455 0.4088182 0.5553000
+## 5 1998006 0.3211214 0.3858333 0.4443083
+## 6 1998009 0.2684043 0.3829583 0.5187952
+## 7 1998012 0.1883429 0.4150785 0.5549714
 ```
 
 Several function whose name ends with 'UstarScens'
@@ -156,16 +228,26 @@ perform the subsequent processing steps for all uStar scenarios.
 They operate and create columns that differ between threshold scenarios by
 a suffix.
 
-```{r uStarScenGapfill, message=FALSE}
+
+```r
 EddyProc.C$sMDSGapFillUStarScens("NEE")
 grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
-```{r uStarScenMRPart, message=FALSE}
+
+```
+## [1] "NEE_U05_f" "NEE_U50_f" "NEE_U95_f"
+```
+
+```r
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
 EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
 EddyProc.C$sMRFluxPartitionUStarScens()
 grep("GPP_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+```
+
+```
+## [1] "GPP_U05_f" "GPP_U50_f" "GPP_U95_f"
 ```
 
 ## See also

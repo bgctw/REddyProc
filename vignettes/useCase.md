@@ -68,74 +68,73 @@ in aggregated fluxes. Hence, several quantiles of the distribution of
 the uncertain uStar threshold are estimated by a bootstrap.
 
 The friction velocity, uStar, needs to be in column named "Ustar" of the input 
-dataset.
+dataset. 
 
 
 ```r
-uStarTh <- EddyProc.C$sEstUstarThresholdDistribution(
-  nSample = 100L, probs = c(0.05, 0.5, 0.95)) 
-#filter(uStarTh, aggregationMode == "year")
-select(uStarTh, -seasonYear)
+EddyProc.C$sEstimateUstarScenarios(
+    nSample = 100L, probs = c(0.05, 0.5, 0.95))
+EddyProc.C$sGetEstimatedUstarThresholdDistribution()
 ```
 
 ```
-##   aggregationMode  season     uStar        5%       50%       95%
-## 1          single    <NA> 0.4162500 0.3762929 0.4496429 0.6290729
-## 2            year    <NA> 0.4162500 0.3762929 0.4496429 0.6290729
-## 3          season 1998001 0.4162500 0.3762929 0.4496429 0.6290729
-## 4          season 1998003 0.4162500 0.3119556 0.4077083 0.5588958
-## 5          season 1998006 0.3520000 0.2614071 0.3892857 0.4685000
-## 6          season 1998009 0.3369231 0.2291751 0.3918973 0.5338566
-## 7          season 1998012 0.1740000 0.2635545 0.4300000 0.6180205
+##   aggregationMode seasonYear  season     uStar        5%       50%
+## 1          single         NA    <NA> 0.4162500 0.3762929 0.4496429
+## 2            year       1998    <NA> 0.4162500 0.3762929 0.4496429
+## 3          season       1998 1998001 0.4162500 0.3762929 0.4496429
+## 4          season       1998 1998003 0.4162500 0.3119556 0.4077083
+## 5          season       1998 1998006 0.3520000 0.2614071 0.3892857
+## 6          season       1998 1998009 0.3369231 0.2291751 0.3918973
+## 7          season       1998 1998012 0.1740000 0.2635545 0.4300000
+##         95%
+## 1 0.6290729
+## 2 0.6290729
+## 3 0.6290729
+## 4 0.5588958
+## 5 0.4685000
+## 6 0.5338566
+## 7 0.6180205
 ```
 
 
-The output reports uStar estimates of 0.42 for 
+
+The output reports annually aggregated uStar estimates of 0.42 for 
 the orignal data and 0.38, 0.45, 0.63 for lower, median, 
 and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
-Therefore, there are estimates for different time periods, called seasons, reported
-as different rows. These season-estimates can be aggregated to entire years or to
-a single value across years, reported by rows with corresponding aggregation mode.
+Therefore, there are estimates for different time periods, called seasons.
+These season-estimates are by default aggregated to entire years.
 
-The subsequent post processing steps will be repeated using the three quantiles of 
-the uStar distribution. They require to specify a uStar-threshold for each 
+The subsequent post processing steps will be repeated using the four u* threshold 
+sceanrios (non-resampled and tree quantiles of the bootstrapped distribution). 
+They require to specify a uStar-threshold for each 
 season and a suffix to distinguish the outputs related to different thresholds.
+By default the annually aggregated estimates are used for each season
+within the year.
 
-For this example of an evergreen forest site, we choose to use the same 
-annually aggregated uStar threshold
-estimate in each season within a year. Further, we store the column names from the 
-estimation result to variable `uStarSuffixes`, in order to distinguish 
-generated columns.
 
 ```r
-uStarThAnnual <- usGetAnnualSeasonUStarMap(uStarTh)[-2]
-uStarSuffixes <- colnames(uStarThAnnual)[-1]
-print(uStarThAnnual)
+EddyProc.C$sGetUstarScenarios()
 ```
 
 ```
-##    season       U05       U50       U95
-## 1 1998001 0.3762929 0.4496429 0.6290729
-## 2 1998003 0.3762929 0.4496429 0.6290729
-## 3 1998006 0.3762929 0.4496429 0.6290729
-## 4 1998009 0.3762929 0.4496429 0.6290729
-## 5 1998012 0.3762929 0.4496429 0.6290729
+##    season   uStar       U05       U50       U95
+## 1 1998001 0.41625 0.3762929 0.4496429 0.6290729
+## 2 1998003 0.41625 0.3762929 0.4496429 0.6290729
+## 3 1998006 0.41625 0.3762929 0.4496429 0.6290729
+## 4 1998009 0.41625 0.3762929 0.4496429 0.6290729
+## 5 1998012 0.41625 0.3762929 0.4496429 0.6290729
 ```
 
 ## Gap-filling
-The second post-processing step is filling the gaps using information of the 
+The second post-processing step is filling the gaps in NEE using information of the 
 valid data. Here, we decide to use the same annual uStar threshold estimate 
 in each season, as obtained above, and decide to compute uncertainty also 
 for valid records (FillAll). 
 
 
 ```r
-EddyProc.C$sMDSGapFillAfterUStarDistr('NEE',
-   UstarThres.df = uStarThAnnual,
-   UstarSuffix.V.s = uStarSuffixes,
-	 FillAll = TRUE
-)
+EddyProc.C$sMDSGapFillUStarScens('NEE')
 ```
 
 The screen output (not shown here) already shows that the uStar-filtering and
@@ -150,7 +149,7 @@ see `vignette("uStarCases")`.
 For each of the different uStar threshold estimates
 a separate set of output columns of filled NEE and its 
 uncertainty is generated, distinguished by the suffixes given with 
-`uStarSuffixes`. Suffix "_f" denotes the filled value and "_fsd" the 
+`uStarSuffixes`. <Suffix>"_f" denotes the filled value and "_fsd" the 
 estimated standard devation of its uncertainty.
 
 
@@ -160,8 +159,8 @@ grep("NEE_.*_fsd$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
 
 ```
-## [1] "NEE_U05_f" "NEE_U50_f" "NEE_U95_f"
-## [1] "NEE_U05_fsd" "NEE_U50_fsd" "NEE_U95_fsd"
+## [1] "NEE_uStar_f" "NEE_U05_f"   "NEE_U50_f"   "NEE_U95_f"  
+## [1] "NEE_uStar_fsd" "NEE_U05_fsd"   "NEE_U50_fsd"   "NEE_U95_fsd"
 ```
 
 A fingerprint-plot of one of the new variables shows that gaps have been filled.
@@ -193,10 +192,7 @@ Now we are ready to invoke the partitioning, here by the night-time approach,
 for each of the several filled NEE columns.
 
 ```r
-#variable uStarSuffixes was defined above at the end of uStar threshold estimation
-resPart <- lapply(uStarSuffixes, function(suffix){
-					 EddyProc.C$sMRFluxPartition(Suffix.s = suffix)
-				})
+EddyProc.C$sMRFluxPartitionUStarScens()
 ```
 
 
@@ -209,7 +205,8 @@ grep("GPP.*_f$|Reco",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
 
 ```
-## [1] "Reco_U05"  "GPP_U05_f" "Reco_U50"  "GPP_U50_f" "Reco_U95"  "GPP_U95_f"
+## [1] "Reco_uStar"  "GPP_uStar_f" "Reco_U05"    "GPP_U05_f"   "Reco_U50"   
+## [6] "GPP_U50_f"   "Reco_U95"    "GPP_U95_f"
 ```
 
 Visualizations of the results by a fingerprint plot gives a compact overview. 
@@ -225,6 +222,9 @@ computing columns `GPP_DT` and `Recco_DT`.
 
 ## Estimating the uncertainty of aggregated results
 
+The results of the different u* threshold scenarios can be used for estimating
+the uncertainty due to not knowing the threshold.
+
 First, the mean of the GPP across all the year is computed for each
 uStar-scenario and converted from ${\mu mol\, CO_2\, 
 m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
@@ -232,6 +232,7 @@ m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
 
 ```r
 FilledEddyData.F <- EddyProc.C$sExportResults()
+uStarSuffixes <- colnames(EddyProc.C$sGetUstarScenarios())[-1]
 #suffix <- uStarSuffixes[2]
 GPPAggCO2 <- sapply( uStarSuffixes, function(suffix) {
 	GPPHalfHour <- FilledEddyData.F[[paste0("GPP_",suffix,"_f")]]
@@ -243,8 +244,8 @@ print(GPPAgg)
 ```
 
 ```
-##      U05      U50      U95 
-## 1898.418 1956.090 1923.919
+##    uStar      U05      U50      U95 
+## 1919.152 1898.418 1956.090 1923.919
 ```
 
 The difference between those aggregated values is a first estimate of 
