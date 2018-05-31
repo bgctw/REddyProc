@@ -4,7 +4,7 @@
 \description{Estimate the Ustar threshold by aggregating the estimates for
 seasonal and temperature subsets.}
 \usage{usEstUstarThreshold(ds, seasonFactor = usCreateSeasonFactorMonth(ds$sDateTime), 
-    seasonFactorsYear = usGetYearOfSeason(seasonFactor, 
+    yearOfSeasonFactor = usGetYearOfSeason(seasonFactor, 
         ds$sDateTime), ctrlUstarEst = usControlUstarEst(), 
     ctrlUstarSub = usControlUstarSubsetting(), 
     fEstimateUStarBinned = usEstUstarThresholdSingleFw2Binned, 
@@ -12,7 +12,7 @@ seasonal and temperature subsets.}
 \arguments{
   \item{ds}{data.frame with columns "sDateTime", "Ustar", "NEE", "Tair", and "Rg"}
   \item{seasonFactor}{factor for subsetting times (see details)}
-  \item{seasonFactorsYear}{named integer vector: for each seasonFactor level, get the year
+  \item{yearOfSeasonFactor}{named integer vector: for each seasonFactor level, get the year
 (aggregation period) that this season belongs to}
   \item{ctrlUstarEst}{control parameters for estimating uStar on a single binned series,
 see \code{\link{usControlUstarEst}}}

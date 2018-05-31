@@ -48,7 +48,7 @@ usEstUstarThreshold = function(
 		ds 	##<< data.frame with columns "sDateTime", "Ustar", "NEE", "Tair", and "Rg"
 		, seasonFactor = usCreateSeasonFactorMonth(ds$sDateTime)
 		    ### factor for subsetting times (see details)
-		, seasonFactorsYear = usGetYearOfSeason(seasonFactor, ds$sDateTime)
+		, yearOfSeasonFactor = usGetYearOfSeason(seasonFactor, ds$sDateTime)
 		    ### named integer vector: for each seasonFactor level, get the year
 		    ### (aggregation period) that this season belongs to
 		, ctrlUstarEst = usControlUstarEst()
@@ -121,7 +121,7 @@ usEstUstarThreshold = function(
       "encountered NA in seasonFactor.",
       " Need to specify a valid season for each record.")
   ds$season <- as.factor(seasonFactor)
-	ds$seasonYear <- seasonFactorsYear[seasonFactor]
+	ds$seasonYear <- yearOfSeasonFactor[seasonFactor]
 	ds$tempBin <- NA_integer_
 	ds$uStarBin <- NA_integer_
 	# extract valid (nighttime records)
@@ -140,7 +140,7 @@ usEstUstarThreshold = function(
 	nRecValidInSeason <- merge(data.frame(season = levels(ds$season) )
 	                           , tdsc, all.x = TRUE)
 	nRecValidInSeasonYear <- merge(nRecValidInSeason, data.frame(
-	  season = names(seasonFactorsYear), seasonYear = seasonFactorsYear)
+	  season = names(yearOfSeasonFactor), seasonYear = yearOfSeasonFactor)
 	                            , all.x = TRUE)
 	nYear <- nRecValidInSeasonYear %>%
 	  group_by(!!sym("seasonYear")) %>%
@@ -1220,11 +1220,8 @@ sEddyProc_sEstimateUstarScenarios <- function(
   , RgColName = "Rg"			    ##<< column name for solar radiation for
   ## omitting night time data
   , ...		##<< further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}
-  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime)
-  ### factor of seasons to split (data is resampled only within the seasons)
-  , seasonFactorsYear = usGetYearOfSeason(seasonFactor, ds$sDateTime)
-  ### named integer vector: for each seasonFactor level, get the year that
-  ### this season belongs to
+  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<<
+  ## factor of seasons to split (data is resampled only within the seasons)
   , nSample = 100L				      ##<< the number of repetitions in the bootstrap
   , probs = c(0.05, 0.5, 0.95)	##<< the quantiles of the bootstrap sample
   ## to return. Default is the 5%, median and 95% of the bootstrap
@@ -1271,9 +1268,10 @@ sEddyProc_sEstimateUstarScenarios <- function(
         dss[iSample, , drop = FALSE]
       })
     if (isTRUE(isVerbose) ) message(".", appendLF = FALSE)
-    res <- usEstUstarThreshold(dsBootWithinSeason, ...
-                               , seasonFactor = seasonFactor
-                               , ctrlUstarEst = ctrlUstarEst, ctrlUstarSub = ctrlUstarSub	)
+    res <- usEstUstarThreshold(
+      dsBootWithinSeason, ...
+      , seasonFactor = seasonFactor
+      , ctrlUstarEst = ctrlUstarEst, ctrlUstarSub = ctrlUstarSub	)
     gc()
     # need to check if years and seasons have been calculated
     # differently due to subsetting with

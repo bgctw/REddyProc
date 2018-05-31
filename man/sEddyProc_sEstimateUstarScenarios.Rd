@@ -7,9 +7,8 @@
     UstarColName = "Ustar", NEEColName = "NEE", 
     TempColName = "Tair", RgColName = "Rg", 
     ..., seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime), 
-    seasonFactorsYear = usGetYearOfSeason(seasonFactor, 
-        ds$sDateTime), nSample = 100L, probs = c(0.05, 
-        0.5, 0.95), isVerbose = TRUE)}
+    nSample = 100L, probs = c(0.05, 0.5, 
+        0.95), isVerbose = TRUE)}
 \arguments{
   \item{ctrlUstarEst}{control parameters
 for estimating uStar on a single binned series,
@@ -23,9 +22,8 @@ for subsetting time series (number of temperature and Ustar classes
   \item{RgColName}{column name for solar radiation for
 omitting night time data}
   \item{\dots}{further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}}
-  \item{seasonFactor}{factor of seasons to split (data is resampled only within the seasons)}
-  \item{seasonFactorsYear}{named integer vector: for each seasonFactor level, get the year that
-this season belongs to}
+  \item{seasonFactor}{
+}
   \item{nSample}{the number of repetitions in the bootstrap}
   \item{probs}{the quantiles of the bootstrap sample
 to return. Default is the 5\%, median and 95\% of the bootstrap}
