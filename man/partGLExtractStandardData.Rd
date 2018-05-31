@@ -11,7 +11,7 @@
     VPDVar.s = paste0("VPD_f"), QFVPDVar.s = paste0("VPD_fqc"), 
     QFVPDValue.n = 0, RadVar.s = "Rg_f", 
     QFRadVar.s = paste0("Rg_fqc"), QFRadValue.n = 0, 
-    PotRadVar.s = "PotRad_NEW", Suffix.s = "", 
+    PotRadVar.s = "PotRad_NEW", suffix = "", 
     controlGLPart = partGLControl())}
 \arguments{
   \item{ds}{dataset with all the specified input columns and
@@ -38,7 +38,7 @@ _good_ (original) data}
   \item{QFRadValue.n}{Value of radiation quality flag for
 _good_ (original) data}
   \item{PotRadVar.s}{Variable name of potential rad. (W / m2)}
-  \item{Suffix.s}{string inserted into column names before
+  \item{suffix}{string inserted into column names before
 identifier for NEE column defaults
 (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).}
   \item{controlGLPart}{further default parameters,

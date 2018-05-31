@@ -16,7 +16,7 @@ omitting night time data}
 }
 
 \value{result of \code{\link{usEstUstarThreshold}}. In addition the
-result is stored in class variable sUSTAR and the bins as
+result is stored in class variable sUSTAR_DETAILS and the bins as
 additional columns to sDATA}
 
 \author{TW

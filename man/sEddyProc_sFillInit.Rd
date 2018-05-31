@@ -7,7 +7,8 @@
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}
-  \item{QFValue.n}{Value of quality flag for _good_ (original) data, other data is set to missing}
+  \item{QFValue.n}{Value of quality flag for _good_ (original) data,
+other data is set to missing}
   \item{FillAll.b}{Fill all values to estimate uncertainties}
 }
 \details{Description of newly generated variables with gap filled data and qualifiers: \cr

@@ -1,43 +1,51 @@
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#+++ R script with sEddyProc methods for flux partitioning +++
-#+++ Flux partitionig algorithm, adapted after the PV-Wave code and paper by Markus Reichstein +++
-#+++ Dependencies: Eddy.R, DataFunctions.R
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#TEST: FluxVar.s <- 'NEE_f'; QFFluxVar.s <- 'NEE_fqc'; QFFluxValue.n <- 0; TempVar.s <- 'Tair_f'; QFTempVar.s <- 'Tair_fqc'; QFTempValue.n <- 0
-#TEST: RadVar.s <- 'Rg'; Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0; CallFunction.s = 'test'
-#TEST: NightFlux.s = 'FP_VARnight';  TempVar.s = 'FP_Temp_NEW'; WinDays.i = 7; DayStep.i = 5; TempRange.n = 5; NumE_0.n = 3; Trim.n = 5
-#TEST: NightFlux.s = 'FP_VARnight';  TempVar.s = 'FP_Temp_NEW'; E_0.s = 'E_0_NEW'; WinDays.i = 4; DayStep.i = 4;
-#TEST: sDATA <- EddyProc.C$sDATA; sTEMP <- EddyProc.C$sTEMP
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#' @export
+sEddyProc_sGLFluxPartitionUStarScens <- function(
+  ### Flux partitioning after Reichstein et al. (2005)
+  ...  ##<< arguments to \code{\link{sEddyProc_sGLFluxPartition}}
+) {
+  ##details<<
+  ## Daytime-based partitioning of measured net ecosystem fluxes into
+  ## gross primary production (GPP) and ecosystem respiration (Reco)
+  ## for all u* trheshold scenarios.
+  tmp <- sApplyUStarScen( .self$sGLFluxPartition, ... )
+  NULL
+}
+sEddyProc$methods(sGLFluxPartitionUStarScens = sEddyProc_sGLFluxPartitionUStarScens)
+
 #' @export
 sEddyProc_sGLFluxPartition <- function(
-	##title<<
-	## sGLFluxPartition: Flux partitioning after Lasslop et al. (2010)
-	##description<<
-	## Daytime-based partitioning of measured net ecosystem fluxes into gross primary production (GPP)
-	## and ecosystem respiration (Reco)
-	...		##<< arguments to \code{\link{partitionNEEGL}} additional to the dataset \code{ds}
-		## such as \code{Suffix.s}
+  ### Daytime-based Flux partitioning after Lasslop et al. (2010)
+	...		##<< arguments to \code{\link{partitionNEEGL}} in addition to the dataset
+	## such as \code{suffix}
 	, debug.l = list(		     ##<< List with debugging control.
 			##describe<<
-			useLocaltime.b = FALSE	##<< if TRUE use local time zone instead of geo-solar time to compute potential radiation
+			useLocaltime.b = FALSE	##<< if TRUE use local time zone instead of
+			## geo-solar time to compute potential radiation
 			##end<<
 		)
-	, isWarnReplaceColumns = TRUE		##<< set to FALSE to avoid the warning on replacing output columns
+	, isWarnReplaceColumns = TRUE		##<< set to FALSE to avoid the warning on
+	## replacing output columns
 ) {
-	##author<<
-	## MM, TW
+  ##details<<
+  ## Daytime-based partitioning of measured net ecosystem fluxes into gross
+  ## primary production (GPP)
+  ## and ecosystem respiration (Reco)
+  ##author<< MM, TW
 	##references<<
-	## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net ecosystem exchange into assimilation and respiration using
-	## a light response curve approach: critical issues and global evaluation. Global Change Biology, Volume 16, Issue 1, Pages 187-208
+	## Lasslop G, Reichstein M, Papale D, et al. (2010) Separation of net
+	## ecosystem exchange into assimilation and respiration using
+	## a light response curve approach: critical issues and global evaluation.
+	## Global Change Biology, Volume 16, Issue 1, Pages 187-208
 	.self$sCalcPotRadiation(useSolartime.b = !isTRUE(debug.l$useLocaltime.b) )
 	dsAns <- partitionNEEGL(cbind(.self$sDATA, .self$sTEMP), ...
 			, nRecInDay = sINFO$DTS
 					)
 	iExisting <- na.omit(match(colnames(dsAns), colnames(.self$sTEMP)  ))
 	if (length(iExisting) ) {
-		if (isWarnReplaceColumns) warning("replacing existing output columns", paste(colnames(.self$sTEMP)[iExisting], collapse = ", "))
+		if (isWarnReplaceColumns) warning(
+		  "replacing existing output columns"
+		  , paste(colnames(.self$sTEMP)[iExisting], collapse = ", "))
 		sTEMP <<- .self$sTEMP[, -iExisting]
 	}
 	sTEMP <<- cbind(.self$sTEMP, dsAns)
@@ -46,6 +54,35 @@ sEddyProc_sGLFluxPartition <- function(
 	## Flux partitioning results are in sTEMP data frame of the class.
 }
 sEddyProc$methods(sGLFluxPartition = sEddyProc_sGLFluxPartition)
+
+#' @export
+sEddyProc_sMRFluxPartitionUStarScens <- function(
+  ### Flux partitioning after Reichstein et al. (2005)
+  ...  ##<< arguments to \code{\link{sEddyProc_sMRFluxPartition}}
+) {
+  ##details<<
+  ## Nighttime-based partitioning of measured net ecosystem fluxes into
+  ## gross primary production (GPP) and ecosystem respiration (Reco)
+  ## for all u* threshold scenarios.
+  tmp <- sApplyUStarScen( .self$sMRFluxPartition, ... )
+  ##value<< NULL, it adds output columns in the class
+  invisible(tmp)
+}
+sEddyProc$methods(sMRFluxPartitionUStarScens = sEddyProc_sMRFluxPartitionUStarScens)
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++ R script with sEddyProc methods for flux partitioning +++
+#+++ Flux partitionig algorithm, adapted after the PV-Wave code and paper by
+#+++ Markus Reichstein +++
+#+++ Dependencies: Eddy.R, DataFunctions.R
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#TEST: FluxVar.s <- 'NEE_f'; QFFluxVar.s <- 'NEE_fqc'; QFFluxValue.n <- 0; TempVar.s <- 'Tair_f'; QFTempVar.s <- 'Tair_fqc'; QFTempValue.n <- 0
+#TEST: RadVar.s <- 'Rg'; Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0; CallFunction.s = 'test'
+#TEST: NightFlux.s = 'FP_VARnight';  TempVar.s = 'FP_Temp_NEW'; WinDays.i = 7; DayStep.i = 5; TempRange.n = 5; NumE_0.n = 3; Trim.n = 5
+#TEST: NightFlux.s = 'FP_VARnight';  TempVar.s = 'FP_Temp_NEW'; E_0.s = 'E_0_NEW'; WinDays.i = 4; DayStep.i = 4;
+#TEST: sDATA <- EddyProc.C$sDATA; sTEMP <- EddyProc.C$sTEMP
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sMRFluxPartition <- function(
@@ -61,7 +98,7 @@ sEddyProc_sMRFluxPartition <- function(
 				, QFTempValue.n = 0       ##<< Value of temperature quality flag for _good_ (original) data
 				, RadVar.s = 'Rg'         ##<< Unfilled (original) radiation variable
 				, T_ref.n = 273.15 + 15     ##<< Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature
-				, Suffix.s = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
+				, suffix = ''		     ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
 				, debug.l = list(		     ##<< List with debugging control (passed also to \code{sEddyProc_sRegrE0fromShortTerm}).
 						##describe<<
 						useLocaltime.b = FALSE	##<< see details on solar vs local time
@@ -97,10 +134,10 @@ sEddyProc_sMRFluxPartition <- function(
 			## prior to the partitioning!
 			## }}
 
-			# If the default variable names are used and a Suffix.s is provided, then the suffix is added to the variable name (see also comment below)
-			if (FluxVar.s == 'NEE_f' && QFFluxVar.s == 'NEE_fqc' && fCheckValString(Suffix.s) ) {
-				FluxVar.s <- paste('NEE_', Suffix.s, '_f', sep = '')
-				QFFluxVar.s <- paste('NEE_', Suffix.s, '_fqc', sep = '')
+			# If the default variable names are used and a suffix is provided, then the suffix is added to the variable name (see also comment below)
+			if (FluxVar.s == 'NEE_f' && QFFluxVar.s == 'NEE_fqc' && fCheckValString(suffix) ) {
+				FluxVar.s <- paste('NEE_', suffix, '_f', sep = '')
+				QFFluxVar.s <- paste('NEE_', suffix, '_fqc', sep = '')
 			}
 
 			# Check if specified columns exist in sDATA or sTEMP and if numeric and plausible. Then apply quality flag
@@ -164,21 +201,21 @@ sEddyProc_sMRFluxPartition <- function(
 			## Attention: When processing the same site data set with different setups for the gap filling or flux partitioning
 			## (e.g. due to different ustar filters),
 			## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
-			## If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names
-			## (e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s = 'WithUstar').
+			## If a suffix is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the suffix will be added to their variable names
+			## (e.g. 'NEE_f' will be renamed to 'NEE_uStar_f' and 'NEE_fqc' to 'NEE_uStar_fqc' for the suffix = 'uStar').
 			## Currently, this works only with defaults of FluxVar.s = 'NEE_f' and QFFluxVar.s = 'NEE_fqc'.
 			## }}
 			# Rename new columns generated during flux partitioning:
 			# For nighttime NEE (FP_NEEnight or FP_NEEnight_Suffix)
-			colnames(sTEMP) <<- gsub('_VARnight', paste('_NEEnight', (if (fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep = ''), colnames(.self$sTEMP))
+			colnames(sTEMP) <<- gsub('_VARnight', paste('_NEEnight', (if (fCheckValString(suffix)) '_' else ''), suffix, sep = ''), colnames(.self$sTEMP))
 			# For the results columns, the _NEW is dropped and the suffix added
-			colnames(sTEMP) <<- gsub('_NEW', paste((if (fCheckValString(Suffix.s)) '_' else ''), Suffix.s, sep = ''), colnames(.self$sTEMP))
+			colnames(sTEMP) <<- gsub('_NEW', paste((if (fCheckValString(suffix)) '_' else ''), suffix, sep = ''), colnames(.self$sTEMP))
 			# Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
 			if (length(names(iDupl <- which(table(colnames(.self$sTEMP)) > 1))) )  {
 				warning(paste0('sMRFluxPartition::: Duplicated columns found! (',
 								paste(names(iDupl), collapse = ", ")
 								, ')  Deleting each first of duplicate columns.'
-								, ' Please use different Suffix.s when processing different setups on the same dataset!'))
+								, ' Please use different suffix when processing different setups on the same dataset!'))
 				for (cname in names(iDupl) ) sTEMP[cname] <<- NULL	# need to remove columns else some tests fail
 			}
 

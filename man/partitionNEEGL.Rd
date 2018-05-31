@@ -5,7 +5,7 @@
 \usage{partitionNEEGL(ds, NEEVar.s = paste0("NEE", 
     SuffixDash.s, "_f"), TempVar.s = "Tair_f", 
     VPDVar.s = "VPD_f", RadVar.s = "Rg_f", 
-    Suffix.s = "", ..., controlGLPart = partGLControl(), 
+    suffix = "", ..., controlGLPart = partGLControl(), 
     isVerbose = TRUE, nRecInDay = 48L, lrcFitter = RectangularLRCFitter())}
 \arguments{
   \item{ds}{dataset with all the specified input columns
@@ -14,7 +14,7 @@ and full days in equidistant times}
   \item{TempVar.s}{Filled air or soil temperature variable (degC)}
   \item{VPDVar.s}{Filled Vapor Pressure Deficit - VPD - (hPa)}
   \item{RadVar.s}{Filled radiation variable}
-  \item{Suffix.s}{string inserted into column names before
+  \item{suffix}{string inserted into column names before
 identifier for NEE column defaults
 (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).}
   \item{\dots}{further arguments to

@@ -9,7 +9,7 @@ library(ncdf)
 	# workaround copy functions from ncdf4
 	library(ncdf4)
 	open.ncdf <- nc_open
-	get.var.ncdf <- function(...){ as.vector(ncvar_get(...))} 	
+	get.var.ncdf <- function(...){ as.vector(ncvar_get(...))}
 }
 
 
@@ -66,7 +66,7 @@ Time.F <- data.frame(
     as.integer(substr(timeStampChar,11,12))/60)
 
 # Removing NA for sites with hourly data
-Time.F <- Time.F[!is.na(as.integer(substr(timeStampChar,1,4))),]  
+Time.F <- Time.F[!is.na(as.integer(substr(timeStampChar,1,4))),]
 # Data.F$julian<-julian(Data.F$month,Data.F$day,Data.F$year)-julian(1,1,na.omit(unique(Data.F$year))[1])
 
 
@@ -74,7 +74,7 @@ Time.F <- Time.F[!is.na(as.integer(substr(timeStampChar,1,4))),]
 # Variables needed for the partitioning are:
 # - NEE - NEE time series (gap filled)
 # - NEE_QC - quality flag indicating which values are measured (e.g. NEE_VUT_USTAR50_QC == 0)
-# - SW_IN_F/VPD_F - Shortwave radiation, VPD, 
+# - SW_IN_F/VPD_F - Shortwave radiation, VPD,
 # - SW_IN_POT SW potential radiation
 # - DAY: 0 - night; 1 - day --> Trevor this is the variable that you have to define for your excercise (see below)
 
@@ -97,7 +97,7 @@ Data.F  <- data.frame(SW_IN_F=SW_IN_F,
                       RECO_DT_CUT_50=RECO_DT_CUT_50,
                       NEE_DT_VUT_50=NEE_DT_VUT_50)  #This should be changed according to the needs
 
-Data.F <- Data.F[!is.na(as.integer(substr(timeStampChar,1,4))),]   # same condition as for Time.F above 
+Data.F <- Data.F[!is.na(as.integer(substr(timeStampChar,1,4))),]   # same condition as for Time.F above
 
 Data.F <- cbind(Time.F,Data.F)
 # add timesStamp column DataTime
@@ -112,8 +112,8 @@ Data.F <- fConvertTimeToPosix(Data.F, 'YMDH', Year.s='year', Month.s='month',Day
 
 #xTrevor: I changed the line 65 in the script PartitioningLasslop10.R
 # ORIGINAL isNight <- (ds[,RadVar.s] <= 4 & ds[[PotRadVar.s]] == 0) # 4 W/m2 is the threshold used in Lasslop
-# MODIFIED isNight <- (ds[[PotRadVar.s]] == 0) 
-# Where PotRadVar.s can be a binary variable that you pass to the function (Data.F$DAY). YOu can define what is day and night in the script and useing different thresholds 
+# MODIFIED isNight <- (ds[[PotRadVar.s]] == 0)
+# Where PotRadVar.s can be a binary variable that you pass to the function (Data.F$DAY). YOu can define what is day and night in the script and useing different thresholds
 #xTrevor: Please source PartitioningLasslop10_xTrevor.R at the beginning of the script
 
 #-- Below I report the example to run the partitioning considering DAY when SW_IN_F > 4 W/m2, and at line 131 > 10W/m2
@@ -124,11 +124,11 @@ nRecInDay.i=24
 years <- unique(YEAR)
 years <- years[-c(1,2,3)]   # model does not work for 1993 ("system is computationally singular")
 
-		
+
 #yr <- 2009
 #yr <- 2001
 
-ctrl <- partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, 
+ctrl <- partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
 		isLasslopPriorsApplied=TRUE,isBoundLowerNEEUncertainty=FALSE,
 		isFilterMeteoQualityFlag=FALSE
 		,smoothTempSensEstimateAcrossTime=FALSE
@@ -140,17 +140,19 @@ ctrl <- partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
 	  cat("starting year",yr,fill=T)
 	  if (yr == years[1]){
 		#dataYr <- Data.F
-		dataYr <- Data.F[Data.F[,"YEAR"] == yr,]
-	    df.REddy_Ha1 <- partitionNEEGL(dataYr,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
-	                                   TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-	                                   RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
-	                                   controlGLPart=ctrl)
+	    dataYr <- Data.F[Data.F[,"YEAR"] == yr,]
+	    df.REddy_Ha1 <- partitionNEEGL(
+	      dataYr,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
+	      TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
+	      RadVar.s="SW_IN_F",PotRadVar.s="DAY",suffix="", nRecInDay= nRecInDay.i,
+	      controlGLPart=ctrl)
 	  } else {  # important: make sure it's identical to the first call!!
-	    df.REddy_Ha1_year <- tmp <- partitionNEEGL(dataYr,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
-	                                        TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-	                                        RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
-	                                        controlGLPart=ctrl)
-	    
+	    df.REddy_Ha1_year <- tmp <- partitionNEEGL(
+	      dataYr,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
+	      TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
+	      RadVar.s="SW_IN_F",PotRadVar.s="DAY",suffix="", nRecInDay= nRecInDay.i,
+	      controlGLPart=ctrl)
+
 	    df.REddy_Ha1 <- rbind(df.REddy_Ha1,df.REddy_Ha1_year)
 	  }
 	}
@@ -160,7 +162,7 @@ ctrl <- partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE,
 
 df.REddy_Ha1 <- partitionNEEGL(Data.F,NEEVar.s="NEE",QFNEEVar.s="NEE_QC",QFNEEValue.n = 0,NEESdVar.s="NEE_SE",
 		TempVar.s="TA_F",QFTempVar.s="TA_F_QC",VPDVar.s="VPD_F",QFVPDVar.s="VPD_F_QC",
-		RadVar.s="SW_IN_F",PotRadVar.s="DAY",Suffix.s="", nRecInDay= nRecInDay.i,
+		RadVar.s="SW_IN_F",PotRadVar.s="DAY",suffix="", nRecInDay= nRecInDay.i,
 		controlGLPart=ctrl)
 
 .tmp.f <- function(){
@@ -190,7 +192,7 @@ df.hf <- cbind(df.REddy_Ha1,Data.F2,NEE_DT,GPP_good,Reco_good)
  plot(df.hf$FP_alpha,xlab="Timestep",ylab="alpha")
  plot(df.hf$FP_beta,xlab="Timestep",ylab="beta")
  plot(df.hf$FP_k,xlab="Timestep",ylab="k")
-  
+
  ## GPP and Reco timeseries
  par(mfrow=c(1,2))
  plot(df.hf$GPP_DT,col="grey",xlab="Timestep",ylab="GPP")
@@ -208,7 +210,7 @@ selyear <- c(1994:2012)
 pr2 <- df.hf[df.hf$year %in% selyear,]
 
 
-## GPP 
+## GPP
 par(mfrow=c(1,2))
 plot(pr2$GPP_DT,col="grey",xlab="Timestep",ylab="GPP",ylim=c(0,40))
 points(pr2$GPP_good,col="black")
@@ -260,13 +262,13 @@ dev.copy2pdf(file=paste0(path,"Plots/HarvardForest/HF_NEE_obs_mod_",selyear,"_al
 
 ## meteo filter?
 ## replace 1 with 0
-# 
+#
 # #### To compare: the same command from above
 # # df.REddy <- partitionNEEGL(dfall,NEEVar.s="NEE_f",QFNEEVar.s="NEE_fqc",QFNEEValue.n = 0,NEESdVar.s="NEE_fs_unc",
 # #                            TempVar.s="Tair_f",QFTempVar.s="Tair_fqc",QFTempValue.n=0,VPDVar.s="VPD_f",QFVPDVar.s="VPD_fqc",
-# #                            QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",Suffix.s=""
+# #                            QFVPDValue.n=0,RadVar.s="Rg",PotRadVar.s="day",suffix=""
 # #                            ,controlGLPart.l=partGLControl(nBootUncertainty=0L, isAssociateParmsToMeanOfValids=FALSE, isLasslopPriorsApplied=TRUE,
 # #                                                           isBoundLowerNEEUncertainty=FALSE))
-# 
-# 
+#
+#
 

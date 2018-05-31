@@ -3,10 +3,10 @@
 \title{usEstUstarThresholdSingleFw1Binned}
 \description{estimate the Ustar threshold for single subset, using FW1 algorithm}
 \usage{usEstUstarThresholdSingleFw1Binned(Ust_bins.f, 
-    ctrlUstarEst.l = usControlUstarEst())}
+    ctrlUstarEst = usControlUstarEst())}
 \arguments{
   \item{Ust_bins.f}{data.frame with columns NEE_avg and Ust_avg, of Ustar bins}
-  \item{ctrlUstarEst.l}{parameter list,
+  \item{ctrlUstarEst}{parameter list,
 see \code{\link{usControlUstarEst}} for defaults and description}
 }
 \details{Relying on binned NEE and Ustar}

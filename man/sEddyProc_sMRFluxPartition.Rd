@@ -6,7 +6,7 @@
     QFFluxVar.s = "NEE_fqc", QFFluxValue.n = 0, 
     TempVar.s = "Tair_f", QFTempVar.s = "Tair_fqc", 
     QFTempValue.n = 0, RadVar.s = "Rg", T_ref.n = 273.15 + 
-        15, Suffix.s = "", debug.l = list(useLocaltime.b = FALSE), 
+        15, suffix = "", debug.l = list(useLocaltime.b = FALSE), 
     parsE0Regression = list())}
 \arguments{
   \item{FluxVar.s}{Variable name of column with original and filled net ecosystem fluxes (NEE)}
@@ -17,7 +17,7 @@
   \item{QFTempValue.n}{Value of temperature quality flag for _good_ (original) data}
   \item{RadVar.s}{Unfilled (original) radiation variable}
   \item{T_ref.n}{Reference temperature in Kelvin (degK) used in \code{fLloydTaylor} for regressing Flux and Temperature}
-  \item{Suffix.s}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
+  \item{suffix}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
   \item{debug.l}{List with debugging control (passed also to \code{sEddyProc_sRegrE0fromShortTerm}).\describe{
 \item{useLocaltime.b}{see details on solar vs local time}
 }}
@@ -58,8 +58,8 @@ Therefore it might differ from implementations that use local winter clock time 
 Attention: When processing the same site data set with different setups for the gap filling or flux partitioning
 (e.g. due to different ustar filters),
 a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
-If a Suffix.s is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the Suffix.s will be added to their variable names
-(e.g. 'NEE_f' will be renamed to 'NEE_WithUstar_f' and 'NEE_fqc' to 'NEE_WithUstar_fqc' for the Suffix.s = 'WithUstar').
+If a suffix is provided and if the defaults for FluxVar.s and QFFluxVar.s are used, the suffix will be added to their variable names
+(e.g. 'NEE_f' will be renamed to 'NEE_uStar_f' and 'NEE_fqc' to 'NEE_uStar_fqc' for the suffix = 'uStar').
 Currently, this works only with defaults of FluxVar.s = 'NEE_f' and QFFluxVar.s = 'NEE_fqc'.
 }}}
 \value{Flux partitioning results (see variables in details) in sTEMP data frame (with renamed columns).

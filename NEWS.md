@@ -1,7 +1,23 @@
+
+## support consistent processing across u* threshold scenarios 
+- also subsequent gapfilling and partitioning
+- keep information about u* thresholds and scenarios in class
+- adapted vignettes and overview
+
+## simplify argument naming and defaults
+- Changed default column suffix in sEddyProc_sMDSGapFillAfterUstar from 
+'withUstar' to 'uStar' for consistency with sEddyProc_sMDSGapFillAfterUStarDistr
+- Changed argument name 'Suffix.s' to 'suffix'
+- Changed removed suffixes from argument names in 
+  sEddyProc_sEstUstarThresholdDistribution
+
+## improve fingerprint plots
+- fingerprint plots align month axis at the 1st of month instead of center
+- fingerprint plots change Infinity to NA before plotting
+
 # REddyProc 1.1.5
 
 Moving profiling code and associated dependencies out of the distributed code.
-
 
 # REddyProc 1.1.4
 

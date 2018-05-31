@@ -6,7 +6,7 @@
     QFValue.n = NA_real_, V1.s = "Rg", T1.n = 50, 
     V2.s = "VPD", T2.n = 5, V3.s = "Tair", 
     T3.n = 2.5, FillAll.b = TRUE, Verbose.b = TRUE, 
-    Suffix.s = "")}
+    suffix = "")}
 \arguments{
   \item{Var.s}{Variable to be filled}
   \item{QFVar.s}{Quality flag of variable to be filled}
@@ -19,7 +19,7 @@
   \item{T3.n}{Tolerance interval 3 (default: 2.5 degC)}
   \item{FillAll.b}{Fill all values to estimate uncertainties}
   \item{Verbose.b}{Print status information to screen}
-  \item{Suffix.s}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
+  \item{suffix}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
 }
 \details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
 

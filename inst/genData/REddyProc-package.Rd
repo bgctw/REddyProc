@@ -56,6 +56,25 @@ Functions \code{\link{sEddyProc_sEstUstarThreshold}} and
 \item{ Flux partitioning based on Day-Time: \code{\link{sEddyProc_sGLFluxPartition}} }
 }%itemize
 
+Processing across different scenarios of u* threshold estimate is supported by
+\itemize{
+\item{ Estimating the turbulence criterion, Ustar threshold, for omitting data
+  from periods of low turbulence:
+\code{\link{sEddyProc_sEstimateUstarScenarios}} and associated
+\itemize{
+\item query the thresholds to be used \code{\link{sEddyProc_sGetUstarScenarios}}
+\item set the thresholds to be used \code{\link{sEddyProc_sSetUstarScenarios}}
+\item query the estimated thresholds all different aggregation levels
+\code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+}} %itemize and %item
+\item{ Gap-Filling:
+\code{\link{sEddyProc_sMDSGapFillUStarScens}} }
+\item{ Flux partitioning based on Night-Time:
+\code{\link{sEddyProc_sMRFluxPartitionUStarScens}} }
+\item{ Flux partitioning based on Day-Time:
+\code{\link{sEddyProc_sGLFluxPartitionUStarScens}} }
+}%itemize
+
 Before or after processing, the data can be plotted:
 \itemize{
 \item{ Fingerprint: \code{\link{sEddyProc_sPlotFingerprint}} }
