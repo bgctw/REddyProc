@@ -533,7 +533,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
     uStarThresVec <- rep(uStarTh, nrow(.self$sDATA) )
   } else {
     if (!("season" %in% colnames(sDATA)) ) stop(
-      "Seasons not defined yet. Provide argument seasonFactor.v to sEstUstarThreshold.")
+      "Seasons not defined yet. Provide argument seasonFactor to sEstUstarThreshold.")
     # make sure merge will work
     colnames(uStarTh) <- c("season", "uStarThreshold")
     if (any(!is.finite(uStarTh$uStarThreshold))) stop(
@@ -630,7 +630,7 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
   ## and remaining columns different estimates of uStar Threshold.
   ## If the data.frame has only one row, then each uStar threshold estimate
   ## is applied to the entire dataset.
-  ## Entries in first column must match levels in argument \code{seasonFactor.v}
+  ## Entries in first column must match levels in argument \code{seasonFactor}
   , uStarSuffixes = colnames(uStarTh)[-1]  ##<< String vector
   ## to distinguish result columns for different ustar values.
   ## Its length must correspond to column numbers in \code{UstarThres.m.n}.

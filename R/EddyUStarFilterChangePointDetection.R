@@ -74,23 +74,23 @@ attr(.fitSeg2, "ex") <- function() {
 .estimateUStarSeasonCPTSeveralT <- function(
 		### similar to .estimateUStarSeason but with extended temperature classification
 		dsi
-		, ctrlUstarSub.l
-		, ctrlUstarEst.l
+		, ctrlUstarSub
+		, ctrlUstarEst
 		, fEstimateUStarBinned
 ) {
-	nTaClasses <- 3L * ctrlUstarSub.l$taClasses - 3L	# number of temperature classes expanded
+	nTaClasses <- 3L * ctrlUstarSub$taClasses - 3L	# number of temperature classes expanded
 	resNA <- 	list(
 			UstarTh.v = rep(NA_real_, nTaClasses)	##<< vector of uStar for temperature classes
 			, bins.F = data.frame(tempBin = rep(NA_integer_, nrow(dsi))
 					, uStarBin = rep(NA_integer_, nrow(dsi)) )			##<< data.frame with columns tempBin, uStarBin for each row in dsi
 	)
-	if (nrow(dsi) < ctrlUstarSub.l$minRecordsWithinSeason) {
-		warning("sEstUstarThreshold: too few finite records within season (n = ", nrow(dsi), "). Need at least n = ", ctrlUstarSub.l$minRecordsWithinSeason, ". Returning NA for this Season.")
+	if (nrow(dsi) < ctrlUstarSub$minRecordsWithinSeason) {
+		warning("sEstUstarThreshold: too few finite records within season (n = ", nrow(dsi), "). Need at least n = ", ctrlUstarSub$minRecordsWithinSeason, ". Returning NA for this Season.")
 		return(resNA)
 	}
-	if (nrow(dsi) / ctrlUstarSub.l$taClasses < ctrlUstarSub.l$minRecordsWithinTemp) {
-		warning("sEstUstarThreshold: too few finite records within season (n = ", nrow(dsi), ") for ", ctrlUstarSub.l$taClasses
-				, " temperature classes. Need at least n = ", ctrlUstarSub.l$minRecordsWithinTemp * ctrlUstarSub.l$taClasses
+	if (nrow(dsi) / ctrlUstarSub$taClasses < ctrlUstarSub$minRecordsWithinTemp) {
+		warning("sEstUstarThreshold: too few finite records within season (n = ", nrow(dsi), ") for ", ctrlUstarSub$taClasses
+				, " temperature classes. Need at least n = ", ctrlUstarSub$minRecordsWithinTemp * ctrlUstarSub$taClasses
 				, ". Returning NA for this Season.")
 		return(resNA)
 	}
@@ -99,18 +99,18 @@ attr(.fitSeg2, "ex") <- function() {
 	dsiSort <- dsi[orderTemp, , drop = FALSE] 	#sort values in a season by air temperature (later in class by ustar)
 	##details<<
 	## In order for robustness, bin temperature by several bin widths:
-	## In addition wo width ctrlUstarSub.l$taClasses, width reduced by 1 and 2
+	## In addition wo width ctrlUstarSub$taClasses, width reduced by 1 and 2
 	## providing 7 + 6 + 5 = 18 classes for the median
 	# taClasses <- 7L
 	#
 	# for mosted detailed temperature classing, report classes with results
-	TId0 <- .binWithEqualValuesBalanced(dsiSort[, "Tair"], ctrlUstarSub.l$taClasses)
+	TId0 <- .binWithEqualValuesBalanced(dsiSort[, "Tair"], ctrlUstarSub$taClasses)
 	TIdUnsorted <- uStarBinUnsortedT <- integer(length(orderTemp)); 	# 0L
 	TIdUnsorted[orderTemp] <- TId0
 	# plot(TIdUnsorted ~ dsi$Tair) # for checking Temperature binning
 	#
-	thresholdsTList <- lapply(ctrlUstarSub.l$taClasses - (0L:min(2L, ctrlUstarSub.l$taClasses-1L)) , function(taClasses) {
-		TId <- if (taClasses ==  ctrlUstarSub.l$taClasses) TId0 else .binWithEqualValuesBalanced(dsiSort[, "Tair"], taClasses)
+	thresholdsTList <- lapply(ctrlUstarSub$taClasses - (0L:min(2L, ctrlUstarSub$taClasses-1L)) , function(taClasses) {
+		TId <- if (taClasses ==  ctrlUstarSub$taClasses) TId0 else .binWithEqualValuesBalanced(dsiSort[, "Tair"], taClasses)
 		#k <- 1L
 		thresholds <- vapply(1:taClasses, function(k) {
 					dsiSortTclass <- dsiSort[TId == k, ]
@@ -121,7 +121,7 @@ attr(.fitSeg2, "ex") <- function() {
 					# TODO: check more correlations here? [check C code]
 					#      Cor2 = abs(cor(dataMthTsort$Ustar, dataMthTsort$nee))
 					#      Cor3 = abs(cor(dataMthTsort$tair, dataMthTsort$nee))
-					if ( (!is.finite(Cor1)) || (Cor1 > ctrlUstarEst.l$corrCheck)) return(NA_real_)
+					if ( (!is.finite(Cor1)) || (Cor1 > ctrlUstarEst$corrCheck)) return(NA_real_)
 					resCPT <- try(suppressWarnings(.fitSeg1(dsiSortTclass[, "Ustar"], dsiSortTclass[, "NEE"])), silent = TRUE)
 					threshold <- if (inherits(resCPT, "try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05)
 								#c(NA_real_, NA_real_) else resCPT[c("cp", "sdCp")]	# testing weighted mean, no improment, simplify again
@@ -133,7 +133,7 @@ attr(.fitSeg2, "ex") <- function() {
 	invisible(list(
 			UstarTh.v = do.call(c, thresholdsTList) 	##<< vector of uStar for temperature classes
 			, bins.F = data.frame(tempBin = TIdUnsorted, uStarBin = 0L) ##<< data.frame with columns tempBin, uStarBin for each row in dsi.
-				## Temperatue bins are reported for binning according to ctrlUstarSub.l$taClasses.
+				## Temperatue bins are reported for binning according to ctrlUstarSub$taClasses.
 				## There is only a single uStar bin with value 0L.
 	))
 }

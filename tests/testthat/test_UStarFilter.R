@@ -53,12 +53,12 @@ test_that("usEstUstarThresholdSingleFw2Binned",{
 									1.09888888888889, 2.36666666666667, 0.985555555555556, 1.30777777777778,
 									1.63555555555556, 1.75777777777778, 1.84222222222222, 1.59, -0.316666666666667
 							)), .Names = c("Ust_avg", "NEE_avg"), row.names = c(NA, -20L), class = "data.frame")
-			ctrlUstarEst.l <- list(ustPlateauFwd = 10, ustPlateauBack = 6, plateauCrit = 0.95,
+			ctrlUstarEst <- list(ustPlateauFwd = 10, ustPlateauBack = 6, plateauCrit = 0.95,
 							corrCheck = 0.5)
 					#?usEstUstarThresholdSingleFw2Binned
 			#trace(usEstUstarThresholdSingleFw2Binned, recover)	# untrace(usEstUstarThresholdSingleFw2Binned)
 			UstarEst <- REddyProc:::usEstUstarThresholdSingleFw2Binned(
-			  Ust_bins.f, ctrlUstarEst.l = ctrlUstarEst.l )
+			  Ust_bins.f, ctrlUstarEst = ctrlUstarEst )
 			#plot( NEE_avg ~ Ust_avg , Ust_bins.f);	abline(v = UstarEst)
 			expect_equal( UstarEst, 0.46, tolerance = 0.01 )
 		})
@@ -93,21 +93,21 @@ test_that("sEstUstarThreshold: changing to FW1",{
 test_that("sEstUstarThreshold: different seasons",{
 			EddySetups.C <- sEddyProc$new(
 			  'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-			seasonFactor.v <- usCreateSeasonFactorYdayYear(
+			seasonFactor <- usCreateSeasonFactorYdayYear(
 			  EddySetups.C$sDATA$sDateTime, starts = data.frame(
 							startyday = c(30,300,45,280),startyear = c(1998,1998,1999,1999) ))
 			expect_warning(	# on too few records
-				resUStar <- EddySetups.C$sEstUstarThreshold(seasonFactor.v = seasonFactor.v )
+				resUStar <- EddySetups.C$sEstUstarThreshold(seasonFactor = seasonFactor )
 			)
-			expect_equal( levels(seasonFactor.v), levels(EddySetups.C$sDATA$season))
+			expect_equal( levels(seasonFactor), levels(EddySetups.C$sDATA$season))
 		})
 
 test_that("sEstUstarThreshold: using ChangePointDetection",{
 			EddySetups.C <- sEddyProc$new(
 			  'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
 			(resUStar <- EddySetups.C$sEstUstarThreshold(
-								#ctrlUstarEst.l = usControlUstarEst(isUsingCPT = TRUE)
-								ctrlUstarEst.l = usControlUstarEst(isUsingCPTSeveralT  = TRUE)
+								#ctrlUstarEst = usControlUstarEst(isUsingCPT = TRUE)
+								ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT  = TRUE)
 			))$uStarTh
 			# CPT does no binning uStar
 			expect_equal( c(0L), as.vector(na.omit(unique(EddySetups.C$sDATA$uStarBin))))
@@ -140,7 +140,7 @@ test_that("sEstUstarThreshold: multi-year and One-big-season",{
 			  'DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
 			expect_warning(
 			res <- EddyProc.C$sEstUstarThreshold(
-								seasonFactor.v =
+								seasonFactor =
 								  usCreateSeasonFactorMonthWithinYear(EddyProc.C$sDATA$sDateTime)
 								))
 			expect_true(

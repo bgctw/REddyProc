@@ -41,7 +41,7 @@ All reference classes extend and inherit methods from \code{"\linkS4class{envRef
 
   uStar threshold estimation
   \describe{
-    \item{\code{\link{sEddyProc_sEstUstarThresholdDistribution}(ctrlUstarEst.l, ctrlUstarSub.l, UstarColName, NEEColName, TempColName, RgColName, ..., seasonFactor.v, seasonFactorsYear, nSample, probs, verbose.b)}}{}
+    \item{\code{\link{sEddyProc_sEstUstarThresholdDistribution}(ctrlUstarEst.l, ctrlUstarSub.l, UstarColName, NEEColName, TempColName, RgColName, ..., seasonFactor, seasonFactorsYear, nSample, probs, verbose.b)}}{}
     \item{\code{\link{sEddyProc_sEstUstarThreshold}(UstarColName, NEEColName, TempColName, RgColName, ...)}}{}
     \item{\code{\link{sEddyProc_sPlotNEEVersusUStarForSeason}(season.s, Format.s, Dir.s, UstarColName, NEEColName, TempColName, WInch, HInchSingle, ...)}}{}
   }
