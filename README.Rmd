@@ -99,7 +99,7 @@ EddyProc.C$sPlotFingerprintY('NEE_f', Year.i = 1998)
 Further examples are in
 [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md)
 and
-[vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
+[vignette(DEGebExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
 
 
 ## Docker images
