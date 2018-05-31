@@ -89,8 +89,9 @@ Docker images are provided that comprise rstudio, rocker/tidyverse, and REddyPro
 -   bgctw/reddyproc\_cran
 -   bgctw/reddyproc:`tag`
 
-They are usually run with installed docker by saying at a shell:
+They are usually run with installed docker by typing at a shell:
 
     docker run --rm -p 8787:8787 <imagename>
 
-Then the url `localhost:8787` should bring up RStudio in the browser window, where you can type the above usage example.
+Then the loading url `localhost:8787` in a browser window should bring up RStudio
+(default username and password are both rstudio), where you can type the above usage example.
