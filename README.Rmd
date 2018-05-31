@@ -1,5 +1,6 @@
 ---
-output: github_document
+output: 
+  github_document
 ---
 
 <!-- 
@@ -12,9 +13,9 @@ maybe clear cache before
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "README-"
+  collapse = TRUE
+  , comment = "#>"
+  , fig.path = "README-"
 )
 ```
 
@@ -55,7 +56,7 @@ A simple example performs Lookuptable-based gapFilling of
 Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled
 values.
 
-```{r example, results='hide', message=FALSE, cache=TRUE}
+```{r example, results='hide', message=FALSE}
 library(REddyProc)
 #+++ Input data from csv (example needs to be downloaded)
 examplePath <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
