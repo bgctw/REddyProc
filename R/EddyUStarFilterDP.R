@@ -1222,7 +1222,7 @@ sEddyProc_sEstimateUstarScenarios <- function(
   , ...		##<< further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}
   , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<<
   ## factor of seasons to split (data is resampled only within the seasons)
-  , nSample = 100L				      ##<< the number of repetitions in the bootstrap
+  , nSample = 200L				      ##<< the number of repetitions in the bootstrap
   , probs = c(0.05, 0.5, 0.95)	##<< the quantiles of the bootstrap sample
   ## to return. Default is the 5%, median and 95% of the bootstrap
   , isVerbose = TRUE				##<< set to FALSE to omit printing progress

@@ -7,7 +7,7 @@
     UstarColName = "Ustar", NEEColName = "NEE", 
     TempColName = "Tair", RgColName = "Rg", 
     ..., seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime), 
-    nSample = 100L, probs = c(0.05, 0.5, 
+    nSample = 200L, probs = c(0.05, 0.5, 
         0.95), isVerbose = TRUE)}
 \arguments{
   \item{ctrlUstarEst}{control parameters
