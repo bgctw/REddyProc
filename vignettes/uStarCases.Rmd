@@ -104,7 +104,7 @@ from the data without estimating its uncertainty by a bootstrap.
 EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
 # estimating the thresholds based on the data (without bootstrap)
-(uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh)
+(uStarTh <- EddyProc.C$sEstUstarThold())
 # may plot saturation of NEE with UStar for a specified season to pdf
 EddyProc.C$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3], dir = outDir )
 ```
@@ -133,7 +133,7 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
 	c('NEE','Rg','Tair','VPD', 'Ustar'))
 EddyProc.C$sEstimateUstarScenarios(
     nSample = 100L, probs = c(0.05, 0.5, 0.95))
-# inspect the thresholds to be used
+# inspect the thresholds to be used by default
 EddyProc.C$sGetUstarScenarios()
 ```
 
@@ -146,9 +146,8 @@ column.
 ```{r uStarScenSetSeasonal}
 (uStarThAgg <- EddyProc.C$sGetEstimatedUstarThresholdDistribution())
 EddyProc.C$sSetUstarScenarios( usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
-# inspect the changed thresholds to be used
+# inspect the changed thresholds to be used, default annual aggregate
 EddyProc.C$sGetUstarScenarios()
-
 ```
 
 Several function whose name ends with 'UstarScens'
@@ -160,6 +159,7 @@ a suffix.
 EddyProc.C$sMDSGapFillUStarScens("NEE")
 grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
+
 ```{r uStarScenMRPart, message=FALSE}
 EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
 EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)

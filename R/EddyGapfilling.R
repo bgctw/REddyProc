@@ -520,7 +520,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
   ##seealso<<
   ## \itemize{
   ## \item \code{\link{sEddyProc_sEstimateUstarScenarios}} and
-  ## \code{link{sEddyProc_sEstUstarThreshold}} for estimating the
+  ## \code{link{sEddyProc_sEstUstarThold}} for estimating the
   ## u* threshold from the data.
   ## \item \code{\link{sEddyProc_sMDSGapFillUStarScens}} for
   ## automated gapfilling for several scenarios of u* threshold estimates.
@@ -532,17 +532,17 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
       , " but got a vector.")
     uStarThresVec <- rep(uStarTh, nrow(.self$sDATA) )
   } else {
-    if (!("season" %in% colnames(sDATA)) ) stop(
-      "Seasons not defined yet. Provide argument seasonFactor to sEstUstarThreshold.")
+    if (!("season" %in% colnames(sTEMP)) ) stop(
+      "Seasons not defined yet. Provide argument seasonFactor to sEstUstarThold.")
     # make sure merge will work
     colnames(uStarTh) <- c("season", "uStarThreshold")
     if (any(!is.finite(uStarTh$uStarThreshold))) stop(
       "must provide finite uStarThresholds")
-    iMissingLevels <- which(!(levels(.self$sDATA$season) %in% uStarTh$season))
+    iMissingLevels <- which(!(levels(.self$sTEMP$season) %in% uStarTh$season))
     if (length(iMissingLevels) ) stop(
       "missing uStarTrheshold for seasons "
-      , paste(levels(.self$sDATA$season)[iMissingLevels], collapse = ", "))
-    tmpDs <- merge(subset(sDATA, select = "season"), uStarTh, all.x = TRUE)
+      , paste(levels(.self$sTEMP$season)[iMissingLevels], collapse = ", "))
+    tmpDs <- merge(subset(sTEMP, select = "season"), uStarTh, all.x = TRUE)
     uStarThresVec <- tmpDs[, 2L]
   }
   # Check column names (with 'none' as dummy)

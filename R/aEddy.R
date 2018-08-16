@@ -174,10 +174,10 @@ sEddyProc$methods(sSetLocationInfo = sEddyProc_sSetLocationInfo)
 sEddyProc_sSetUstarScenarios <- function(
   ### set uStar processing scenarios
   uStarTh              ##<< data.frame as returned by
-  ## \code{\link{sEddyProc_sEstUstarThresholdDistribution}}:
+  ## \code{\link{usGetAnnualSeasonUStarMap}}:
   ## First column, season names, and remaining columns different estimates of
   ## uStar Threshold.
-  ## If the data.frame has only one row, then each uStar threshold estimate is
+  ## If \code{uStarTh} has only one row, then each uStar threshold estimate is
   ## applied to the entire dataset.
   ## Entries in first column must match levels in argument \code{seasonFactor}
   ## of \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
@@ -203,15 +203,20 @@ sEddyProc_sSetUstarScenarios <- function(
   ## \item U50: median of bootstrap
   ## \item U95: 95% of bootstrap)
   ## }
+  ## Usually, Scenarios are retrieved from resuls of estimating the
+  ## distribution by \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
+  ## and then taking either
+  ## \itemize{
+  ## \item annually aggregated value for all seasons
+  ##   (\code{\link{usGetAnnualSeasonUStarMap}}) or
+  ## \item seasonal estimates (\code{\link{usGetSeasonalSeasonUStarMap}}).
+  ## }
   ##
   ## The following functions apply a processing step to all of the
   ## scenarios.
   ## \itemize{
   ## \item \code{\link{sEddyProc_sMDSGapFillUStarScens}}: gap-filling
-  ## \item \code{\link{}}
-  ## \item \code{\link{}}
-  ## \item \code{\link{}}
-  ## \item \code{\link{}}
+  ## \item \code{\link{sEddyProc_sMRFluxPartitionUStarScens}}: flux-partitioning
   ## }
   ## The generated output columns are distinguished by appending a suffix
   ## to the respective column name.
@@ -219,21 +224,21 @@ sEddyProc_sSetUstarScenarios <- function(
   ## introduced by not knowing the exact value of the u* threshold.
   #
   ##seealso<< \code{\link{sEddyProc_sGetUstarScenarios}}
-  if (!("season" %in% colnames(sDATA)) ) stop(
+  if (!("season" %in% colnames(sTEMP)) ) stop(
     "Seasons not defined yet. Add column 'season' to dataset with entries"
     , " matching column season in UstarThres.df, e.g. by calling"
-    , " yourEddyProcClass$sEstUstarThresholdDistribution(...)")
+    , " yourEddyProcClass$sSetUStarSeasons(...)")
   if (!all(is.finite(as.matrix(uStarTh[, -1])))) warning(
     "Provided non-finite uStarThreshold for some periods."
     ," All values in corresponding period will be marked as gap.")
   if (nrow(uStarTh) == 1L) {
     uStarTh <- cbind(data.frame(
-      season = levels(.self$sDATA$season)), uStarTh[, -1], row.names = NULL)
+      season = levels(.self$sTEMP$season)), uStarTh[, -1], row.names = NULL)
   }
-  iMissing <- which( !(levels(.self$sDATA$season) %in% uStarTh[[1]]))
+  iMissing <- which( !(levels(.self$sTEMP$season) %in% uStarTh[[1]]))
   if (length(iMissing)) stop(
     "Need to provide uStar threshold for all seasons, but was missing for seasons"
-    , paste(levels(.self$sDATA$season)[iMissing], collapse = ","))
+    , paste(levels(.self$sTEMP$season)[iMissing], collapse = ","))
   nEstimates <- ncol(uStarTh) - 1L
   uStarSuffixes <- unique(uStarSuffixes)
   if (length(uStarSuffixes) != nEstimates) stop(
@@ -248,6 +253,8 @@ sEddyProc$methods(sSetUstarScenarios = sEddyProc_sSetUstarScenarios)
 sEddyProc_sGetUstarScenarios <- function(
   ### get the current uStar processing scenarios
 ) {
+  ##seealso<<
+  ## \code{\link{sEddyProc_sSetUstarScenarios}}
   ##details<< the associated suffixes can be retrieved by
   ## \code{colnames(myClass$sGetUstarScenarios())[-1]}
   ##value<< a data.frame with first column listing each season and

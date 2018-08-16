@@ -1,4 +1,3 @@
-
 ## support consistent processing across u* threshold scenarios 
 
 - also subsequent gapfilling and partitioning
@@ -8,7 +7,8 @@
 ## simplify argument naming and defaults
 
 - Changed default column suffix in sEddyProc_sMDSGapFillAfterUstar from 
-'withUstar' to 'uStar' for consistency with sEddyProc_sMDSGapFillAfterUStarDistr
+  'withUstar' to 'uStar' for consistency with 
+  'sEddyProc_sMDSGapFillAfterUStarDistr'
 - Changed argument name 'Suffix.s' to 'suffix'
 - Changed removed suffixes from argument names in 
   sEddyProc_sEstUstarThresholdDistribution
@@ -18,10 +18,23 @@
 - fingerprint plots align month axis at the 1st of month instead of center
 - fingerprint plots change Infinity to NA before plotting
 
+## deprecated method 'sEddyProc_sEstUstarThreshold'
+
+And replace by 'sEddyProc_sEstUstarThold' with a simpler return value of
+only the component 'uStarTh' of the former complex return value.
+Use cases relying on the other return value components can still get them
+from class variable 'sUSTAR_DETAILS'.
+
+Currently, the method gives only a warning, but will be removed 
+in future in version 2.x of REddyproc.
+
 ## further changes
 
 - set default number of uStar bootstrap samples 
   to 200 to be consistent with the paper.
+- prevent bug when calling 'sEddyProc_sEstUstarThresholdDistribution'
+  with a single element vector.
+
 
 # REddyProc 1.1.5
 
