@@ -56,7 +56,7 @@ The estimation of Ustar on a single binned series can be selected argument
 
 This function is called by
 \itemize{
-\item{ \code{\link{sEddyProc_sEstUstarThreshold}} which stores the result
+\item{ \code{\link{sEddyProc_sEstUstarThold}} which stores the result
 in the class variables (sUSTAR and sDATA).}
 \item{ \code{\link{sEddyProc_sEstUstarThresholdDistribution}} which
 additionally estimates median and confidence intervals for each year

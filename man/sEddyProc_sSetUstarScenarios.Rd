@@ -5,10 +5,10 @@
 \usage{sEddyProc_sSetUstarScenarios(uStarTh, uStarSuffixes = colnames(uStarTh)[-1])}
 \arguments{
   \item{uStarTh}{data.frame as returned by
-\code{\link{sEddyProc_sEstUstarThresholdDistribution}}:
+\code{\link{usGetAnnualSeasonUStarMap}}:
 First column, season names, and remaining columns different estimates of
 uStar Threshold.
-If the data.frame has only one row, then each uStar threshold estimate is
+If \code{uStarTh} has only one row, then each uStar threshold estimate is
 applied to the entire dataset.
 Entries in first column must match levels in argument \code{seasonFactor}
 of \code{\link{sEddyProc_sEstUstarThresholdDistribution}}}

@@ -6,7 +6,9 @@
     format = "pdf", dir = "plots", UstarColName = "Ustar", 
     NEEColName = "NEE", TempColName = "Tair", 
     WInch = 16 * 0.394, HInchSingle = 6 * 
-        0.394, ..., data = cbind(sDATA, sTEMP))}
+        0.394, ..., data = cbind(sDATA, sTEMP, 
+        sUSTAR_DETAILS$bins[, c("uStarBin", 
+            "tempBin")]))}
 \arguments{
   \item{season}{string of season, i.e. time period, to plot}
   \item{format}{string of Graphics file format ('pdf' or 'png')}
@@ -17,7 +19,8 @@
   \item{WInch}{width of the plot in inches, defaults to 16cm}
   \item{HInchSingle}{height of a subplot in inches, defaults to 6cm}
   \item{\dots}{other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings}
-  \item{data}{data.frame with variables to plot}
+  \item{data}{data.frame
+with variables to plot}
 }
 
 

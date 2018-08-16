@@ -759,10 +759,10 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
   , WInch = 16 * 0.394		##<< width of the plot in inches, defaults to 16cm
   , HInchSingle = 6 * 0.394	##<< height of a subplot in inches, defaults to 6cm
   , ...						##<< other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings
-  , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
+  , data = cbind(sDATA, sTEMP, sUSTAR_DETAILS$bins[,c("uStarBin","tempBin")])   ##<< data.frame
+  ## with variables to plot
 ) {
   ##author<< TW
-  'Image with daily sums of each year'
   # generate subset of data
   dsSeason <- subset(data, season == season)
   tempBinLevels <- sort(unique(dsSeason$tempBin))
@@ -784,7 +784,7 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
 		  for (tempBinI in seq_along(tempBinLevels) ) {
 			  screen(1L + tempBinI)
 			  tempBinLevel <- tempBinLevels[tempBinI]
-			  uStarTh <- sUSTAR$tempInSeason[tempBinLevel, season]
+			  uStarTh <- sUSTAR_DETAILS$tempInSeason[tempBinLevel, season]
 			  dss <- filter_(dsSeason,  ~tempBin == tempBinLevel)
 			  par(las = 1)                   #also y axis labels horizontal
 			  par(mar = c(2.0, 3.3, 0, 0) + 0.3)  #margins

@@ -159,7 +159,7 @@ test_that("Test sMDSGapFillAfterUStar default case",{
   skip_on_cran()
   EddyProc.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+  uStarTh <- EddyProc.C$sEstUstarThold()
   uStar98 <- subset(
     uStarTh, aggregationMode == "year" & seasonYear == 1998, "uStar" )[1,1]
   #EddyProc.C$trace("sMDSGapFillAfterUstar", recover)
@@ -187,7 +187,7 @@ test_that("Test sMDSGapFillAfterUStar single value",{
 test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
   EddyProc.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+  uStarTh <- EddyProc.C$sEstUstarThold()
   uStarTh <- usGetAnnualSeasonUStarMap(uStarTh)[-1, ,drop = FALSE]
   expect_error(
     EddyProc.C$sMDSGapFillAfterUstar(
@@ -198,7 +198,7 @@ test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
 test_that("Test sMDSGapFillAfterUStar error on na-values",{
   EddyProc.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+  uStarTh <- EddyProc.C$sEstUstarThold()
   uStarTh <- usGetAnnualSeasonUStarMap(uStarTh)
   uStarTh[1,2] <- NA
   expect_error(
@@ -242,6 +242,19 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
                         "GPP_U50_f", "GPP_U50_fqc")
                       %in% cNames2) )
 })
+
+test_that("Test sMDSGapFillAfterUStarDistr single quantile",{
+  skip_on_cran()
+  eddyC <- sEddyProc$new(
+    'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+  uStarRes <- eddyC$sEstUstarThresholdDistribution(
+    nSample = 2L, probs = 0.5,
+    ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT = TRUE))
+  expect_true( all(c("uStar","50%") %in% names(uStarRes)))
+  expect_true( all(is.finite(uStarRes$uStar)))
+  expect_true( all(is.finite(uStarRes$"50%")))
+})
+
 
 test_that("Test sMDSGapFillAfterUStarDistr single row",{
   skip_on_cran()

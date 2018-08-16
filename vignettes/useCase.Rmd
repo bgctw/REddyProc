@@ -150,16 +150,19 @@ EddyProc.C$sDATA$NEE_median <- EddyProc.C$sDATA$NEE_orig <-
   EddyProc.C$sDATA$NEE_low <- EddyProc.C$sDATA$NEE_upper <- NULL
 ```
 
-The output reports annually aggregated uStar estimates of `r if (!is_check) signif(unlist(EddyProc.C$sGetUstarScenarios()[1,2]),2)` for 
-the orignal data and `r if (!is_check) signif(unlist(EddyProc.C$sGetUstarScenarios()[1,3:5]),2)` for lower, median, 
+The output reports annually aggregated uStar estimates of 
+`r if (!is_check) signif(unlist(EddyProc.C$sGetUstarScenarios()[1,2]),2)` for 
+the orignal data and 
+`r if (!is_check) signif(unlist(EddyProc.C$sGetUstarScenarios()[1,3:5]),2)` 
+for lower, median, 
 and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
 Therefore, there are estimates for different time periods, called seasons.
 These season-estimates are by default aggregated to entire years.
 
-The subsequent post processing steps will be repeated using the four u* threshold 
+The subsequent post processing steps will be repeated using the four $u_*$ threshold 
 sceanrios (non-resampled and tree quantiles of the bootstrapped distribution). 
-They require to specify a uStar-threshold for each 
+They require to specify a $u_*$-threshold for each 
 season and a suffix to distinguish the outputs related to different thresholds.
 By default the annually aggregated estimates are used for each season
 within the year.
@@ -170,7 +173,7 @@ EddyProc.C$sGetUstarScenarios()
 
 ## Gap-filling
 The second post-processing step is filling the gaps in NEE using information of the 
-valid data. Here, we decide to use the same annual uStar threshold estimate 
+valid data. Here, we decide to use the same annual $u_*$ threshold estimate 
 in each season, as obtained above, and decide to compute uncertainty also 
 for valid records (FillAll). 
 
@@ -178,16 +181,16 @@ for valid records (FillAll).
 EddyProc.C$sMDSGapFillUStarScens('NEE')
 ```
 
-The screen output (not shown here) already shows that the uStar-filtering and
-gap-filling was repeated for each given estimate of the uStar threshold
+The screen output (not shown here) already shows that the $u_*$-filtering and
+gap-filling was repeated for each given estimate of the $u_*$ threshold
 , i.e. column in 
 `uStarThAnnual`, with marking 22% to 38% of the data as gap. 
-For gap-filling without prior uStar-filtering using `sEddyProc_sMDSGapFill`
-or for applying single or user-specified uStar thresholds using 
+For gap-filling without prior $u_*$-filtering using `sEddyProc_sMDSGapFill`
+or for applying single or user-specified $u_*$ thresholds using 
 `sEddyProc_sMDSGapFillAfterUstar`
 see `vignette("uStarCases")`.
 
-For each of the different uStar threshold estimates
+For each of the different $u_*$ threshold estimates
 a separate set of output columns of filled NEE and its 
 uncertainty is generated, distinguished by the suffixes given with 
 `uStarSuffixes`. <Suffix>"_f" denotes the filled value and "_fsd" the 
@@ -247,7 +250,7 @@ plot( dss$GPP_U05_fqc ~ dss$NEE_U50_fqc )
 ```
 
 The results are stored in columns `Reco` and `GPP_f` modified by the respective 
-uStar threshold suffix. 
+$u_*$ threshold suffix. 
 ```{r}
 grep("GPP.*_f$|Reco",names(EddyProc.C$sExportResults()), value = TRUE)
 ```
@@ -262,11 +265,11 @@ computing columns `GPP_DT` and `Recco_DT`.
 
 ## Estimating the uncertainty of aggregated results
 
-The results of the different u* threshold scenarios can be used for estimating
+The results of the different $u_*$ threshold scenarios can be used for estimating
 the uncertainty due to not knowing the threshold.
 
 First, the mean of the GPP across all the year is computed for each
-uStar-scenario and converted from ${\mu mol\, CO_2\, 
+$u_*$-scenario and converted from ${\mu mol\, CO_2\, 
 m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
 
 ```{r aggregateGPP}
@@ -283,7 +286,7 @@ print(GPPAgg)
 ```
 
 The difference between those aggregated values is a first estimate of 
-uncertainty range in GPP due to uncertainty of the uStar threshold.
+uncertainty range in GPP due to uncertainty of the $u_*$ threshold.
 ```{r, results = 'hide'}
 (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 ```
@@ -292,12 +295,12 @@ In this run of the example a relative error of about
 is inferred.
 
 For a better but more time consuming uncertainty estimate, specify a larger
-sample of uStar threshold values, for each repeat the post-processing, and 
+sample of $u_*$ threshold values, for each repeat the post-processing, and 
 compute statistics from the larger sample of resulting GPP columns. This can be
 achieved by specifying a larger sequence of quantiles when calling 
-`sEstUstarThresholdDistribution`.
+`sEstimateUstarScenarios`.
 ```{r, eval = FALSE}
-sEstUstarThresholdDistribution( 
+sEstimateUstarScenarios( 
   nSample = 200, probs = seq(0.025,0.975,length.out = 39) )
 ```
 

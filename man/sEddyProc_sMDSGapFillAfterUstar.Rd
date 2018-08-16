@@ -49,7 +49,7 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 \seealso{\itemize{
 \item \code{\link{sEddyProc_sEstimateUstarScenarios}} and
-\code{link{sEddyProc_sEstUstarThreshold}} for estimating the
+\code{link{sEddyProc_sEstUstarThold}} for estimating the
 u* threshold from the data.
 \item \code{\link{sEddyProc_sMDSGapFillUStarScens}} for
 automated gapfilling for several scenarios of u* threshold estimates.

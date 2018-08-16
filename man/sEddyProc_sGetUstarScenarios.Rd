@@ -12,5 +12,5 @@ other column a scneario of uStar thresholds.}
 
 
 
-
+\seealso{\code{\link{sEddyProc_sSetUstarScenarios}}}
 

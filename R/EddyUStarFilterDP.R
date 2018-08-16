@@ -8,33 +8,88 @@
 #if (!exists("sEddyProc")) source("R / aEddy.R")
 
 #' @export
-sEddyProc_sEstUstarThreshold <- function(
-	  ##title<<
-	  ## sEddyProc$sEstUstarThreshold - Estimating ustar threshold
-	  ##description<<
-	  ## Calling \code{\link{usEstUstarThreshold}} for class data and storing results
-		UstarColName = "Ustar"		##<< column name for UStar
-		, NEEColName = "NEE"			##<< column name for NEE
-		, TempColName = "Tair"		##<< column name for air temperature
-		, RgColName = "Rg"			  ##<< column name for solar radiation for
-		  ## omitting night time data
-		, ...						          ##<< further arguments to
-		  ## \code{\link{usEstUstarThreshold}}
+sEddyProc_sEstUstarThold <- function(
+  ##title<<
+  ## sEddyProc$sEstUstarThreshold - Estimating ustar threshold
+  ##description<<
+  ## Calling \code{\link{usEstUstarThreshold}} for class data and storing results
+  UstarColName = "Ustar"		##<< column name for UStar
+  , NEEColName = "NEE"			##<< column name for NEE
+  , TempColName = "Tair"		##<< column name for air temperature
+  , RgColName = "Rg"			  ##<< column name for solar radiation for
+  ## omitting night time data
+  , ...						          ##<< further arguments to
+  ## \code{\link{usEstUstarThreshold}}
+  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<<
+  ## factor of seasons to split
 ) {
-	##author<<
-	## TW
-	ds <- .self$sDATA[, c("sDateTime", UstarColName, NEEColName
-	                      , TempColName, RgColName)]
-	colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
-	resEst <- usEstUstarThreshold(ds, ...)
-	sUSTAR_DETAILS <<- resEst[c("uStarTh", "seasonYear", "season", "tempInSeason")]
-	sDATA$season <<-  resEst$bins$season
-	sDATA$tempBin <<-  resEst$bins$tempBin
-	sDATA$uStarBin <<-  resEst$bins$uStarBin
-	##value<< result of \code{\link{usEstUstarThreshold}}. In addition the
-	## result is stored in class variable sUSTAR_DETAILS and the bins as
-	## additional columns to sDATA
-	resEst
+  ##author<< TW
+  if (length(seasonFactor) )
+    .self$sSetUStarSeasons(seasonFactor)
+  if (is.null(.self$sTEMP$season)) stop(
+    "uStar seasons need to be set by argument 'seasonFactor' or before",
+    " calling sEddyProc_sEstUstarThold by method sEddyProc_sSetUStarSeasons")
+  ds <- .self$sDATA[, c("sDateTime", UstarColName, NEEColName
+                        , TempColName, RgColName)]
+  colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
+  resEst <- usEstUstarThreshold(ds, seasonFactor = .self$sTEMP$season, ...)
+  sUSTAR_DETAILS <<- resEst
+    #resEst[c("uStarTh", "seasonYear", "season", "tempInSeason")]
+  ##value<< result component \code{uStarTh} of \code{\link{usEstUstarThreshold}}.
+  ## In addition the result is stored in class variable \code{sUSTAR_DETAILS}.
+  resEst$uStar
+}
+sEddyProc$methods(sEstUstarThold = sEddyProc_sEstUstarThold)
+
+#' @export
+sEddyProc_sSetUStarSeasons <- function(
+  ### Defining seasons for the uStar threshold estimation
+  seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime)
+  ### factor for subsetting times with different uStar threshold (see details)
+) {
+  ##author<< TW
+  sTEMP$season <<- seasonFactor
+  ##value<< class with updated \code{seasonFactor}
+  invisible(.self)
+}
+sEddyProc$methods(sSetUStarSeasons = sEddyProc_sSetUStarSeasons)
+
+#' @export
+sEddyProc_sEstUstarThreshold <- function(
+  ##title<<
+  ## sEddyProc$sEstUstarThreshold - Estimating ustar threshold
+  ##description<<
+  ## Calling \code{\link{usEstUstarThreshold}} for class data and storing results
+  UstarColName = "Ustar"		##<< column name for UStar
+  , NEEColName = "NEE"			##<< column name for NEE
+  , TempColName = "Tair"		##<< column name for air temperature
+  , RgColName = "Rg"			  ##<< column name for solar radiation for
+  ## omitting night time data
+  , ...						          ##<< further arguments to
+  ## \code{\link{usEstUstarThreshold}}
+  , isWarnDeprecated = TRUE			##<< set to FALSE to avoid deprecated warning.
+) {
+  ##author<< TW
+  if (isWarnDeprecated) warning(
+    "sEddyProc_sEstUstarThreshold has been deprecated and will be removed"
+    , " in future. Instead, use function"
+    , " sEddyProc_sEstUstarThold, which returns only component 'uStarTh' of"
+    , " the current result. The other components are still available"
+    , " with class variable sUSTAR_DETAILS.")
+  ds <- .self$sDATA[, c("sDateTime", UstarColName, NEEColName
+                        , TempColName, RgColName)]
+  colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
+  resEst <- usEstUstarThreshold(ds, ...)
+  sUSTAR_DETAILS <<-
+    resEst[c("uStarTh", "seasonYear", "season", "tempInSeason")]
+  # sDATA$season <<-  resEst$bins$season
+  # sDATA$tempBin <<-  resEst$bins$tempBin
+  # sDATA$uStarBin <<-  resEst$bins$uStarBin
+  sTEMP$season <<-  resEst$bins$season
+  ##value<< result of \code{\link{usEstUstarThreshold}}. In addition the
+  ## result is stored in class variable sUSTAR_DETAILS and the bins as
+  ## additional columns to sTemp
+  resEst
 }
 sEddyProc$methods(sEstUstarThreshold = sEddyProc_sEstUstarThreshold)
 
@@ -103,7 +158,7 @@ usEstUstarThreshold = function(
 	##
 	## This function is called by
 	## \itemize{
-	## \item{ \code{\link{sEddyProc_sEstUstarThreshold}} which stores the result
+	## \item{ \code{\link{sEddyProc_sEstUstarThold}} which stores the result
 	##    in the class variables (sUSTAR and sDATA).}
 	## \item{ \code{\link{sEddyProc_sEstUstarThresholdDistribution}} which
 	##    additionally estimates median and confidence intervals for each year
@@ -326,28 +381,6 @@ usEstUstarThreshold = function(
 }
 
 
-.tmp.f <- function() {
-  EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH'
-                          , Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
-                        , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-  #ds <- head(ds, 2000)
-  (Result.L <- EddyProc.C$sEstUstarThreshold())
-  seasonI <- "1998008"
-  EddyProc.C$sPlotNEEVersusUStarForSeason(seasonI)
-  dsSeason <- subset(EddyProc.C$sDATA, season == seasonI)
-  # tempBinI <- 4
-  for (tempBinI in sort(unique(dsSeason$tempBin))) {
-    # check ordering
-    #plot(tempBin ~ Tair, dsc, col = rainbow(8)[as.factor(dsc$season)] )
-    uStarTh <- Result.L$UstarSeasonTemp[tempBinI, seasonI]
-    dss <- subset(dsSeason,  tempBin == tempBinI)
-    .plotNEEVersusUStarTempClass(dss, uStarTh)
-  }
-  (Results.L2 <- EddyProc.C$sEstUstarThreshold(ctrlUstarEst =
-                              usControlUstarEst(isUsingCPTSeveralT = TRUE)))
-}
-
 .plotNEEVersusUStarTempClass <- function(
 	### plot NEE versus uStar for data of a subset with estimates
 	NEEUStar.F		##<< data.frame or tibble with columns of NEE, Ustar and
@@ -356,11 +389,11 @@ usEstUstarThreshold = function(
 	, UstarColName = "Ustar"		##<< column name for UStar
 	, NEEColName = "NEE"			##<< column name for NEE
 	, TempColName = "Tair"		##<< column name for air temperature
-	, xlab = bquote("uStar (" * m~s^-1 * ")")
+	, xlab = bquote(u['*']*" (" * m~s^-1 * ")")
 	, ylab = bquote("NEE (" * gC~ m^-2~yr^-1 * ")")
 ) {
 	##author<< TW
-	dss <- NEEUStar.F[, c(NEEColName, UstarColName, TempColName, "uStarBin", "sDateTime")]
+  dss <- NEEUStar.F[, c(NEEColName, UstarColName, TempColName, "uStarBin", "sDateTime")]
 	colnames(dss) <- c("NEE", "Ustar", "Temp", "uStarBin", "sDateTime")
 	##details<< for each uStarBin, mean of NEE and uStar is calculated.
 	dssm <- dss %>%
@@ -371,7 +404,7 @@ usEstUstarThreshold = function(
 		, xlab = xlab, ylab = ylab
 		#, col = rainbow(20)[dss$uStarBin] )
 	)
-	points(mNEE ~ mUStar, dssm, pch = " + ", cex = 1.5)
+	points(mNEE ~ mUStar, dssm, pch = "+", cex = 1.5)
 	abline(v = uStarTh, lty = "dashed", col = "darkgrey", lwd = 2)
 	dateRange <- strftime(range(dss$sDateTime), "%d.%m.%y")
 	#\u2103 is degree Centigrade (degree symbol is not ascii) but does not
@@ -389,9 +422,12 @@ usEstUstarThreshold = function(
 attr(.plotNEEVersusUStarTempClass, "ex") <- function() {
 	EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F
 	                   , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-	res <- EddyProc.C$sEstUstarThreshold()
-	.plotNEEVersusUStarTempClass(subset(EddyProc.C$sDATA
-	       , season == "1998001" & tempBin == 5 & is.finite(NEE)), uStarTh = 0.65)
+	res <- EddyProc.C$sEstUstarThold()
+	dss <- cbind(EddyProc.C$sDATA, EddyProc.C$sTEMP
+	             , EddyProc.C$sUSTAR_DETAILS$bins[,c("uStarBin","tempBin")])
+	REddyProc:::.plotNEEVersusUStarTempClass(
+	  subset(dss, season == "1998001" & tempBin == 5 & is.finite(NEE))
+	  , uStarTh = 0.65)
 }
 
 .estimateUStarSeason <- function(
@@ -1242,24 +1278,25 @@ sEddyProc_sEstimateUstarScenarios <- function(
   ## For larger intervals the sample number need to be
   ## increased (argument \code{probs}).
 
-  ##seealso<< \code{\link{sEddyProc_sEstUstarThreshold}}
+  ##seealso<< \code{\link{sEddyProc_sEstUstarThold}}
   ##, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}
-  res0 <- suppressMessages(.self$sEstUstarThreshold(
+  .self$sSetUStarSeasons(seasonFactor)
+  ds <- sDATA[, c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)]
+  colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
+  ds$seasonFactor <- .self$sTEMP$season
+  res0 <- suppressMessages(.self$sEstUstarThold(
     UstarColName = UstarColName
     , NEEColName = NEEColName
     , TempColName = TempColName
     , RgColName = RgColName
     , ...
     , ctrlUstarEst = ctrlUstarEst, ctrlUstarSub = ctrlUstarSub
-    , seasonFactor = seasonFactor	))
-  iPosAgg <- which(res0$uStarTh$aggregationMode == "single")
-  iPosYears <- which(res0$uStarTh$aggregationMode == "year")
-  iPosSeasons <- which(res0$uStarTh$aggregationMode == "season")
-  years0 <- res0$uStarTh$year[iPosYears]
-  seasons0 <- res0$uStarTh$season[iPosSeasons]
-  ds <- sDATA[, c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)]
-  colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
-  ds$seasonFactor <- seasonFactor
+    , seasonFactor = NULL	))
+  iPosAgg <- which(res0$aggregationMode == "single")
+  iPosYears <- which(res0$aggregationMode == "year")
+  iPosSeasons <- which(res0$aggregationMode == "season")
+  years0 <- res0$seasonYear[iPosYears]
+  seasons0 <- res0$season[iPosSeasons]
   fWrapper <- function(iSample, ...) {
     dsBootWithinSeason <- ds2 <- ds %>%
       split(.$seasonFactor) %>%
@@ -1270,7 +1307,7 @@ sEddyProc_sEstimateUstarScenarios <- function(
     if (isTRUE(isVerbose) ) message(".", appendLF = FALSE)
     res <- usEstUstarThreshold(
       dsBootWithinSeason, ...
-      , seasonFactor = seasonFactor
+      , seasonFactor = dsBootWithinSeason$season
       , ctrlUstarEst = ctrlUstarEst, ctrlUstarSub = ctrlUstarSub	)
     gc()
     # need to check if years and seasons have been calculated
@@ -1284,7 +1321,7 @@ sEddyProc_sEstimateUstarScenarios <- function(
         rep(NA_real_, length(years0)), names = as.character(years0) )
     resSeasons <- structure(
       if (
-        nrow(res$uStarTh) == nrow(res0$uStarTh) &&
+        nrow(res$uStarTh) == nrow(res0) &&
         all((seasons <- res$uStarTh$season[iPosSeasons]) == seasons0)
       ) res$uStarTh$uStar[iPosSeasons] else rep(NA_real_, length(seasons0))
       , names = as.character(seasons0) )
@@ -1292,7 +1329,8 @@ sEddyProc_sEstimateUstarScenarios <- function(
     #return(length(res$UstarSeason$uStar))
     #res$UstarAggr
   }
-  Ustar.l0 <- res0$uStarTh$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
+  # collect into one big matrix
+  Ustar.l0 <- res0$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
   Ustar.l <- suppressMessages(
     Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
   )
@@ -1303,12 +1341,16 @@ sEddyProc_sEstimateUstarScenarios <- function(
   ## (default 40%) did not report a threshold,
   ## no quantiles (i.e. NA) are reported.
   ## }}
-  resQuantiles <-	t(apply(stat, 2, quantile, probs = probs, na.rm = TRUE))
+  # workaround: if probs is a scalar, apply returns vector without names
+  # in order to get the matrix in all caes, prepend extend probs
+  # and delete the the corresponding row afterwards
+  resQuantiles0 <-	apply(stat, 2, quantile, probs = c(0,probs), na.rm = TRUE)
+  resQuantiles <- t(resQuantiles0[-1,,drop = FALSE])
   iInvalid <- colSums(is.finite(stat)) / nrow(stat) <
     ctrlUstarEst$minValidBootProp
   resQuantiles[iInvalid, ] <- NA_real_
   rownames(resQuantiles) <- NULL
-  resDf <- cbind(res0$uStarTh, resQuantiles)
+  resDf <- cbind(res0, resQuantiles)
   message(paste("Estimated UStar distribution of:\n"
                 , paste(capture.output(resDf[resDf$aggregationMode == "single"
                                              , -(1:3)]), collapse = "\n")
