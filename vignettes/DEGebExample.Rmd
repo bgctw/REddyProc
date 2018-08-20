@@ -92,7 +92,7 @@ seasonStarts <- as.data.frame( do.call( rbind, list(
           ,c(305,2006) 		
 )))
 seasonFactor <- usCreateSeasonFactorYdayYear(
-  DEGebExample$DateTime + 15*60, starts = seasonStarts)
+  DEGebExample$DateTime - 15*60, starts = seasonStarts)
 plot( NEE ~ DateTime, DEGebExample )
 seasonStartsDate <- fConvertTimeToPosix( data.frame(Year = seasonStarts[,2]
 	, DoY = seasonStarts[,1], Hour = 0.25),'YDH'
