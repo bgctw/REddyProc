@@ -11,7 +11,8 @@
 fConvertTimeToPosix <- function(
   ### Convert different time formats to POSIX
   Data.F                   ##<< Data frame with time columns to be converted
-  , TFormat.s              ##<< Abbreviation for implemented time formats
+  , TFormat.s              ##<< Abbreviation for implemented time formats,
+  ## see details
   , Year.s = 'none'        ##<< Column name of year
   , Month.s = 'none'       ##<< Column name of month
   , Day.s = 'none'         ##<< Column name of day
@@ -41,14 +42,28 @@ fConvertTimeToPosix <- function(
                , 'fConvertTimeToPosix')
   ##details<<
   ## Implemented time formats:
+  ## \describe{
+  ## \item{YDH}{ year, day of year, hour in decimal
+  ## (e.g. 1998, 1, 10.5).
+  ## The day (of year) format is (1-365 or 1-366 in leap years).
+  ## The hour format is decimal time (0.0-23.5).
+  ## }
+  ## \item{YMDH}{year, month, day of month, hour in decimal
+  ## (e.g. 1998, 1, 1, 10.5)
+  ## The month format is (1-12)
+  ## The day (of month) format is (1-31).
+  ## }
+  ## \item{YMDHM}{year, month, day of month, integer hour, minute
+  ## (e.g. 1998, 1, 1, 10, 30)
+  ## The hour format is (0-23)
+  ## The minute format is (0-59)
+  ## }
+  ## }
   if (TFormat.s == 'YDH') {
     if (any(c(Year.s, Day.s, Hour.s) == 'none') )
       stop('With time format \'YDH\' year, day of year (DoY), and hour need to be specified!')
-    ## YDH - year, day of year, hour in decimal (e.g. 1998, 1, 10.5)
     fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
-    ## The day format is day of year (DoY, 1-365 or 1-366 in leap years).
     fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
-    ## The hour format is decimal time (0.0-23.5).
     fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
     ## 366d-correction and 24h-correction to the first day in next year,
     ## see unit test in test_fConvertTimeToPosix.R for details.
