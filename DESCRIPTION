@@ -11,7 +11,9 @@ Authors@R: c( person( "Department for Biogeochemical Integration at MPI-BGC, Jen
               ,person( "Kerstin", "Sickel", role=c("ctb","trl"), email="ksickel@bgc-jena.mpg.de" )
               ,person( "Ladislav", "Šigut", role=c("ctb"), email="sigut.l@czechglobe.cz" )
               )
-Description: Standard and extensible Eddy-Covariance data post-processing includes  
+Description: Standard and extensible Eddy-Covariance data post-processing 
+  (Wutzler et al. (2018) <doi:10.5194/bg-15-5015-2018>)
+  includes  
   uStar-filtering, gap-filling, and flux-partitioning.
   The Eddy-Covariance (EC)  micrometeorological technique quantifies continuous 
   exchange fluxes of gases, energy, and momentum between an ecosystem and the atmosphere.

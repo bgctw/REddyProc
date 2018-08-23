@@ -78,7 +78,7 @@ EddyProc.C$sPlotFingerprintY('NEE_f', Year.i = 1998)
 
 ![](README-example-1.png)
 
-Further examples are in [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md) and [vignette(DEGEbExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
+Further examples are in [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md) and [vignette(DEGebExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md) and further md-files of the [vignettes directory](https://github.com/bgctw/REddyProc/blob/master/vignettes).
 
 Docker images
 -------------
@@ -95,3 +95,10 @@ They are usually run with installed docker by typing at a shell:
 
 Then the loading url `localhost:8787` in a browser window should bring up RStudio
 (default username and password are both rstudio), where you can type the above usage example.
+
+Reference
+---------
+
+The methodology and benchmark of `REddyProc` 1.1.3 is descibed in the following paper:
+
+Wutzler, T., Lucas-Moffat, A., Migliavacca, M., Knauer, J., Sickel, K., Šigut, L., Menzer, O., and Reichstein, M. (2018): Basic and extensible post-processing of eddy covariance flux data with REddyProc, Biogeosciences, 15, 5015-5030, <https://doi.org/10.5194/bg-15-5015-2018>.
