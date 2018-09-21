@@ -34,6 +34,8 @@ in future in version 2.x of REddyproc.
   to 200 to be consistent with the paper.
 - prevent bug when calling 'sEddyProc_sEstUstarThresholdDistribution'
   with a single element vector.
+- on failing 'sEddyProc_sMRFluxPartition' tell user how to relax 
+  temperature range constraint    
 
 
 # REddyProc 1.1.5
