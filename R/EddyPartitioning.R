@@ -427,9 +427,14 @@ fRegrE0fromShortTerm = function(
   #
   # Abort flux partitioning if regression of E_0 failed
   if (is.na(E_0_trim.n) ) {
-	  # twutz 150226: just warning and returning negative value gives problems later on, maybe better stop and catch exception
-	  warning(CallFunction.s, ':::fRegrE0fromShortTerm::: Less than ', NumE_0.n, ' valid values for E_0 after regressing ',
-			  nrow(NLSRes.F), ' periods! Aborting partitioning.')
+	  # twutz 150226: just warning and returning negative value gives problems
+	  # later on, maybe better stop and catch exception
+	  warning(CallFunction.s, ':::fRegrE0fromShortTerm::: Less than ', NumE_0.n
+	          , ' valid values for E_0 after regressing ',
+			  nrow(NLSRes.F), ' periods! Aborting partitioning.\n'
+			  ,'You may try relaxing the temperature range constraint by '
+			  , 'setting TempRange.n = 3 (instead of default 5C). '
+			  , 'See argument parsE0Regression in sMRFluxPartitioning.')
 	  return(-111)
   }
   E_0_trim.n
