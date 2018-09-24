@@ -2,9 +2,11 @@
 \alias{fConvertGlobalToVisible}
 \title{fConvertGlobalToVisible}
 \description{Partition global (solar) radiation into only visible (the rest is UV and infrared)}
-\usage{fConvertGlobalToVisible(Global.V.n)}
+\usage{fConvertGlobalToVisible(Global = Global.V.n, 
+    Global.V.n)}
 \arguments{
-  \item{Global.V.n}{Data vector of global radiation (W m-2)}
+  \item{Global}{Data vector of global radiation (W m-2)}
+  \item{Global.V.n}{deprecated}
 }
 
 \value{Data vector of visible part of solar radiation (VisRad, W m-2)}

@@ -2,7 +2,7 @@
 \alias{sEddyProc_sCalcPotRadiation}
 \title{sEddyProc sCalcPotRadiation}
 \description{compute potential radiation from position and time}
-\usage{sEddyProc_sCalcPotRadiation(useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE, 
+\usage{sEddyProc_sCalcPotRadiation(useSolartime = TRUE, 
     useSolartime.b)}
 \arguments{
   \item{useSolartime}{

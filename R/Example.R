@@ -92,7 +92,7 @@ getFilledExampleDETha98Data <- function(
     # Example_DETha98 is a lazyData object of REddyProc
     # nee to prefix package name here, to satisfy R CMD CHECK
     Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98
-                    , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+                    , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
     Example_DETha98_sDate <- cbind(
       sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
     EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate

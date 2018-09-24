@@ -11,34 +11,50 @@
 fConvertTimeToPosix <- function(
   ### Convert different time formats to POSIX
   Data.F                   ##<< Data frame with time columns to be converted
-  , TFormat.s              ##<< Abbreviation for implemented time formats,
+  , TFormat = TFormat.s    ##<< Abbreviation for implemented time formats,
   ## see details
-  , Year.s = 'none'        ##<< Column name of year
-  , Month.s = 'none'       ##<< Column name of month
-  , Day.s = 'none'         ##<< Column name of day
-  , Hour.s = 'none'        ##<< Column name of hour
-  , Min.s = 'none'         ##<< Column name of min
-  , TName.s = 'DateTime'   ##<< Column name of new column
+  , Year = if (!missing(Year.s)) Year.s else 'none'        ##<< Column name of year
+  , Month = if (!missing(Month.s)) Month.s else 'none'       ##<< Column name of month
+  , Day = if (!missing(Day.s)) Day.s else 'none'         ##<< Column name of day
+  , Hour = if (!missing(Hour.s)) Hour.s else 'none'        ##<< Column name of hour
+  , Min = if (!missing(Min.s)) Min.s else 'none'         ##<< Column name of min
+  , TName = if (!missing(TName.s)) TName.s else 'DateTime'   ##<< Column name of new column
+  , TFormat.s  ##<< deprecated
+  , Year.s ##<< deprecated
+  , Month.s ##<< deprecated
+  , Day.s ##<< deprecated
+  , Hour.s ##<< deprecated
+  , Min.s ##<< deprecated
+  , TName.s ##<< deprecated
   , tz = 'GMT'				     ##<< timezone used to store the data. Advised to keep
     ## GMT to avoid daytime shifting issues
-  )
+){
+  varNamesDepr <- c(
+    "TFormat.s","Year.s","Month.s","Day.s","Hour.s","Min.s","TName.s")
+  varNamesNew <- c(
+    "TFormat","Year","Month","Day","Hour","Min","TName")
+  iDepr = which(!c(
+    missing(TFormat.s),missing(Year.s),missing(Month.s),missing(Day.s)
+    ,missing(Hour.s),missing(Min.s),missing(TName.s)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
   ##author<<
   ## AMM
   # TEST: see unit tests in test_fConvertTimeToPosix
-  # TEST: Year.s = 'none'; Month.s = 'none'; Day.s = 'none'; Hour.s = 'none'; Min.s = 'none'
-  # TEST: Data.F <- Date.F.x; TFormat.s <- 'YDH'; Year.s = 'FluxnetYear.n'; Day.s = 'FluxnetDoY.n'; Hour.s = 'FluxnetHourDec.n'
+  # TEST: Year = 'none'; Month = 'none'; Day = 'none'; Hour = 'none'; Min = 'none'
+  # TEST: Data.F <- Date.F.x; TFormat <- 'YDH'; Year = 'FluxnetYear.n'; Day = 'FluxnetDoY.n'; Hour = 'FluxnetHourDec.n'
   #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year) is 366 but year is already the next year, use YMDHM instead!
-{
   ##details<<
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
   ## column is prefixed to the data frame
   #
   ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}
   #Check if specified columns exist and are in data frame, with 'none' as dummy
-  NoneCols.b <- c(Year.s, Month.s, Day.s, Hour.s, Min.s) %in% 'none'
-  fCheckColNames(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
+  NoneCols.b <- c(Year, Month, Day, Hour, Min) %in% 'none'
+  fCheckColNames(Data.F, c(Year, Month, Day, Hour, Min)[!NoneCols.b]
                  , 'fConvertTimeToPosix')
-  fCheckColNum(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
+  fCheckColNum(Data.F, c(Year, Month, Day, Hour, Min)[!NoneCols.b]
                , 'fConvertTimeToPosix')
   ##details<<
   ## Implemented time formats:
@@ -59,18 +75,18 @@ fConvertTimeToPosix <- function(
   ## The minute format is (0-59)
   ## }
   ## }
-  if (TFormat.s == 'YDH') {
-    if (any(c(Year.s, Day.s, Hour.s) == 'none') )
+  if (TFormat == 'YDH') {
+    if (any(c(Year, Day, Hour) == 'none') )
       stop('With time format \'YDH\' year, day of year (DoY), and hour need to be specified!')
-    fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
-    fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Day, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Hour, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
     ## 366d-correction and 24h-correction to the first day in next year,
     ## see unit test in test_fConvertTimeToPosix.R for details.
-    lYear.V.n <- Data.F[, Year.s]
-    lDoY.V.n <- Data.F[, Day.s]
-    lHour.V.n <- Data.F[, Hour.s] %/% 1
-    lMin.V.n <- 60 * Data.F[, Hour.s] %% 1
+    lYear.V.n <- Data.F[, Year]
+    lDoY.V.n <- Data.F[, Day]
+    lHour.V.n <- Data.F[, Hour] %/% 1
+    lMin.V.n <- 60 * Data.F[, Hour] %% 1
     #Check time format
     #Important to set time zone to GMT to avoid problems with daylight savings timeshifts
     lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%j-%H-%M', tz = tz)
@@ -90,61 +106,61 @@ fConvertTimeToPosix <- function(
       stop(
         sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: '
         , which(is.na(lTime.V.p)))
-  } else if (TFormat.s == 'YMDH') {
-    if (any(c(Year.s, Month.s, Day.s, Hour.s) == 'none') )
+  } else if (TFormat == 'YMDH') {
+    if (any(c(Year, Month, Day, Hour) == 'none') )
       stop('With time format \'YMDH\' year, month, day, and hour need to be specified!')
     ## YMDH - year, month, day of month, hour in decimal (e.g. 1998, 1, 1, 10.5)
-    fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The month format is (1-12)
-    fCheckOutsideRange(Data.F, Month.s, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Month, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
     ## The day format is day of month (1-31).
-    fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Day, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
     ## The hour format is decimal time (0.0-23.5)
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', ' >= ', 24.0), 'fConvertTimeToPosix (For format \'YMDH\' no 24h correction in old R versions (2.13 and below))')
+    fCheckOutsideRange(Data.F, Hour, c('<', 0.0, '|', ' >= ', 24.0), 'fConvertTimeToPosix (For format \'YMDH\' no 24h correction in old R versions (2.13 and below))')
     ## No extra corrections.
-    lYear.V.n <- Data.F[, Year.s]
-    lMonth.V.n <- Data.F[, Month.s]
-    lDay.V.n <- Data.F[, Day.s]
-    lHour.V.n <- Data.F[, Hour.s] %/% 1
-    lMin.V.n <- 60 * Data.F[, Hour.s] %% 1
+    lYear.V.n <- Data.F[, Year]
+    lMonth.V.n <- Data.F[, Month]
+    lDay.V.n <- Data.F[, Day]
+    lHour.V.n <- Data.F[, Hour] %/% 1
+    lMin.V.n <- 60 * Data.F[, Hour] %% 1
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
     lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%m-%d-%H-%M', tz = tz)
     if (sum(is.na(lTime.V.p)) > 0)
       stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
 
-  } else if (TFormat.s == 'YMDHM') {
-    if (any(c(Year.s, Month.s, Day.s, Hour.s, Min.s) == 'none') )
+  } else if (TFormat == 'YMDHM') {
+    if (any(c(Year, Month, Day, Hour, Min) == 'none') )
       stop('With time format \'YMDHM\' year, month, day, hour and min need to be specified!')
     ## YMDHM - year, month, day of month, integer hour, minute (e.g. 1998, 1, 1, 10, 30)
-    fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The month format is (1-12)
-    fCheckOutsideRange(Data.F, Month.s, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Month, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
     ## The day format is day of month (1-31).
-    fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
+    fCheckOutsideRange(Data.F, Day, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
     ## The hour format is (0-23)
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0, '|', '>', 23), 'fConvertTimeToPosix(YMDH no 24h correction)')
+    fCheckOutsideRange(Data.F, Hour, c('<', 0, '|', '>', 23), 'fConvertTimeToPosix(YMDH no 24h correction)')
     ## The minute format is (0-59)
-    fCheckOutsideRange(Data.F, Min.s, c('<', 0, '|', '>', 59), 'fConvertTimeToPosix(YMDH no 24h correction)')
+    fCheckOutsideRange(Data.F, Min, c('<', 0, '|', '>', 59), 'fConvertTimeToPosix(YMDH no 24h correction)')
     ## No extra corrections.
-    lYear.V.n <- Data.F[, Year.s]
-    lMonth.V.n <- Data.F[, Month.s]
-    lDay.V.n <- Data.F[, Day.s]
-    lHour.V.n <- Data.F[, Hour.s]
-    lMin.V.n <- Data.F[, Min.s]
+    lYear.V.n <- Data.F[, Year]
+    lMonth.V.n <- Data.F[, Month]
+    lDay.V.n <- Data.F[, Day]
+    lHour.V.n <- Data.F[, Hour]
+    lMin.V.n <- Data.F[, Min]
     #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
     lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%m-%d-%H-%M', tz = tz)
     if (sum(is.na(lTime.V.p)) > 0)
        stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
 
   } else {
-    stop('Unknown time format ', TFormat.s, '!')
+    stop('Unknown time format ', TFormat, '!')
   }
   #POSIXlt converted to POSIXct in data.frame... !
   Data.F <- cbind(lTime.V.p, Data.F)
-  names(Data.F)[1] <- TName.s
-  attr(Data.F[, TName.s], 'units') <- 'POSIXDate Time'
-  attr(Data.F[, TName.s], 'varnames') <- TName.s
-  message('Converted time format \'', TFormat.s, '\' to POSIX with column name \'', TName.s, '\'.')
+  names(Data.F)[1] <- TName
+  attr(Data.F[, TName], 'units') <- 'POSIXDate Time'
+  attr(Data.F[, TName], 'varnames') <- TName
+  message('Converted time format \'', TFormat, '\' to POSIX with column name \'', TName, '\'.')
 
   Data.F
   ##value<<

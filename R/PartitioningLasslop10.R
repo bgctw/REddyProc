@@ -475,14 +475,14 @@ partGLExtractStandardData <- function(
 		### Relevant columns from original input with defined names
 		ds								##<< dataset with all the specified input columns and
 		  ## full days in equidistant times
-		, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0('NEE', suffixDash, '_f')		##<< Variable of NEE
+		, NEEVar =  paste0('NEE', suffixDash, '_f')		##<< Variable of NEE
 		, QFNEEVar = if (!missing(QFNEEVar.s)) QFNEEVar.s else paste0('NEE', suffixDash, '_fqc')   ##<< Quality
 		  ## flag of variable
 		, QFNEEValue = if (!missing(QFNEEValue.n)) QFNEEValue.n else 0         						##<< Value of quality flag for
 		  ## _good_ (original) data
 		, NEESdVar = if (!missing(NEESdVar.s)) NEESdVar.s else paste0('NEE', suffixDash, '_fsd')	##<< Variable of
 		  ## standard deviation of net ecosystem fluxes
-		, TempVar = if (!missing(TempVar.s)) TempVar.s else paste0('Tair_f')     ##<< Filled air or soil
+		, TempVar = paste0('Tair_f')     ##<< Filled air or soil
 		  ## temperature variable (degC)
 		, QFTempVar = if (!missing(QFTempVar.s)) QFTempVar.s else paste0('Tair_fqc') ##<< Quality flag of
 		  ## filled temperature variable
@@ -518,6 +518,8 @@ partGLExtractStandardData <- function(
 		, controlGLPart = partGLControl()	##<< further default parameters,
 		  ## see \code{\link{partGLControl}}
 ) {
+  if (!missing(NEEVar.s)) NEEVar <- NEEVar.s   # in default, lines too wide
+  if (!missing(TempVar.s)) TempVar <- TempVar.s
   varNamesDepr <- c(
     "NEEVar.s","TempVar.s","VPDVar.s","RadVar.s","Suffix.s"
     ,"QFNEEVar.s" ,"QFNEEValue.n" ,"QFTempVar.s" ,"QFTempValue.n"

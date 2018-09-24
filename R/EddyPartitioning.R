@@ -323,15 +323,18 @@ sEddyProc$methods(sMRFluxPartition = sEddyProc_sMRFluxPartition)
 #' @export
 sEddyProc_sCalcPotRadiation <- function(
   ### compute potential radiation from position and time
-  useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE	##<<
+  useSolartime = TRUE	##<<
   ## by default corrects hour (given in local winter time)
   ## for latitude to solar time(where noon is exactly at 12:00).
   ## Set this to FALSE to directly use local winter time
   , useSolartime.b 	##<< by default corrects hour (given in local winter time)
 ) {
-  if (!missing(useSolartime.b)) warning(
-    "sEddyProc_sCalcPotRadiation: argument name useSolartime.b is deprecated"
-    , "use instead useSolartime")
+  if (!missing(useSolartime.b)) {
+    useSolartime <- useSolartime.b
+    warning(
+      "sEddyProc_sCalcPotRadiation: argument name useSolartime.b is deprecated"
+      , "use instead useSolartime")
+  }
   # queriing $hour is timezone agnostic, Also works if sDateTime as GMT while
   # actual time being in another time zone
   DoY.V.n <- as.POSIXlt(sDATA$sDateTime)$yday + 1L

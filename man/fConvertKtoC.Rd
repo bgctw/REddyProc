@@ -2,9 +2,10 @@
 \alias{fConvertKtoC}
 \title{fConvertKtoC}
 \description{Convert degree Kelvin to degree Celsius}
-\usage{fConvertKtoC(Kelvin.V.n)}
+\usage{fConvertKtoC(Kelvin = Kelvin.V.n, Kelvin.V.n)}
 \arguments{
-  \item{Kelvin.V.n}{Data vector in Kelvin (degK)}
+  \item{Kelvin}{Data vector in Kelvin (degK)}
+  \item{Kelvin.V.n}{deprecated, use Kelvin instead}
 }
 
 \value{Data vector in temperature Celsius (Temp_C, degC)}

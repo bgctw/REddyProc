@@ -12,17 +12,18 @@
 fConvertCtoK <- function(
   ##description<<
   ## Convert degree Celsius to degree Kelvin
-  Celsius.V.n           ##<< Data vector in Celsius (degC)
-  ##author<<
-  ## AMM
-)
-{
+  Celsius = Celsius.V.n      ##<< Data vector in Celsius (degC)
+  , Celsius.V.n            ##<< deprecated way of specifying Celsius
+) {
+  ##author<< AMM
+  if (!missing(Celsius.V.n)) warning(
+    "fConvertCtoK: argument name Celsius.V.n is deprecated, use instead Celsius.")
   fCheckOutsideRange(
-    cbind(Celsius = Celsius.V.n), 'Celsius', c('<', -273.15), 'fConvertCtoK')
-  Kelvin.V.n <-  Celsius.V.n + 273.15
-  attr(Kelvin.V.n, 'varnames') <- 'Temp_K'
-  attr(Kelvin.V.n, 'units') <- 'degK'
-  return(Kelvin.V.n)
+    cbind(Celsius = Celsius), 'Celsius', c('<', -273.15), 'fConvertCtoK')
+  Kelvin <-  Celsius + 273.15
+  attr(Kelvin, 'varnames') <- 'Temp_K'
+  attr(Kelvin, 'units') <- 'degK'
+  return(Kelvin)
   ##value<<
   ## Data vector in temperature Kelvin (Temp_K, degK)
 }
@@ -31,30 +32,34 @@ fConvertCtoK <- function(
 fConvertKtoC <- function(
   ##description<<
   ## Convert degree Kelvin to degree Celsius
-  Kelvin.V.n            ##<< Data vector in Kelvin (degK)
-  ##author<<
-  ## AMM
-)
-{
-  fCheckOutsideRange(cbind(Kelvin = Kelvin.V.n), 'Kelvin', c('<', 0), 'fConvertKtoC')
-  Celsius.V.n <-  Kelvin.V.n - 273.15
-  attr(Celsius.V.n, 'varnames') <- 'Temp_C'
-  attr(Celsius.V.n, 'units') <- 'degC'
-  return(Celsius.V.n)
+  Kelvin = Kelvin.V.n            ##<< Data vector in Kelvin (degK)
+  , Kelvin.V.n            ##<< deprecated, use Kelvin instead
+  ##author<< AMM
+) {
+  if (!missing(Kelvin.V.n)) warning(
+    "fConvertKtoC: argument name Kelvin.V.n is deprecated, use instead Kelvin.")
+  fCheckOutsideRange(cbind(Kelvin = Kelvin), 'Kelvin', c('<', 0), 'fConvertKtoC')
+  Celsius <-  Kelvin - 273.15
+  attr(Celsius, 'varnames') <- 'Temp_C'
+  attr(Celsius, 'units') <- 'degC'
+  return(Celsius)
   ##value<<
   ## Data vector in temperature Celsius (Temp_C, degC)
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fConvertVisibleWm2toPhotons <- function(
   ##description<<
   ## Convert units of visible radiation from irradiance to photons flux
-  Wm2.V.n               ##<< Data vector in units of irradiance (W m-2)
-  )
-{
-  # With Planck's equation at 550 nm wavelength (see also FormelBackup.doc and NormanWeiss1985 paper)
+  Wm2 = Wm2.V.n               ##<< Data vector in units of irradiance (W m-2)
+  , Wm2.V.n               ##<< deprecated
+) {
+  if (!missing(Wm2.V.n)) warning(
+    "fConvertVisibleWm2toPhotons: argument name Wm2.V.n is deprecated, use instead Wm2.")
+  # With Planck's equation at 550 nm wavelength (see also FormelBackup.doc and
+  # NormanWeiss1985 paper)
   Photons.V.n <- 4.6 * Wm2.V.n
   attr(Vis.V.n, 'varnames') <- 'PPFD'
   attr(Vis.V.n, 'units') <- 'umol_m-2_s-1'
@@ -67,13 +72,14 @@ fConvertVisibleWm2toPhotons <- function(
 fConvertGlobalToVisible <- function(
   ##description<<
   ## Partition global (solar) radiation into only visible (the rest is UV and infrared)
-  Global.V.n            ##<< Data vector of global radiation (W m-2)
-  ##author<<
-  ## AMM
-)
-{
+  Global = Global.V.n            ##<< Data vector of global radiation (W m-2)
+  , Global.V.n            ##<< deprecated
+  ##author<< AMM
+) {
+  if (!missing(Global.V.n)) warning(
+    "fConvertGlobalToVisible: argument name Global.V.n is deprecated, use instead Global")
   # Ratio of visible to total solar radiation, see Weiss-Norman 1985 paper
-  Vis.V.n <- 0.5 * Global.V.n
+  Vis.V.n <- 0.5 * Global
   attr(Vis.V.n, 'varnames') <- 'VisRad'
   attr(Vis.V.n, 'units') <- 'W_m-2'
   return(Vis.V.n)
@@ -82,24 +88,35 @@ fConvertGlobalToVisible <- function(
 }
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Latent variable calculations
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcVPDfromRHandTair <- function(
   ##description<<
   ## Calculate VPD from rH and Tair
-  RH.V.n                ##<< Data vector of relative humidity (rH, %)
-  , Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
-  ##author<<
-  ## AMM
-  )
-{
-  fCheckOutsideRange(cbind(RelHumidity_Percent = RH.V.n), 'RelHumidity_Percent', c('<', 0, '|', '>', 100), 'fCalcVPDfromRHandTair')
-  fCheckOutsideRange(cbind(AirTemp_degC = Tair.V.n), 'AirTemp_degC', c('<', -70, '|', '>', 60), 'fCalcVPDfromRHandTair')
-  # See Kolle Logger Tools Software 2012 (Magnus coefficients for water between 0 and 100 degC)
-  VPD.V.n <- 6.1078 * (1 -RH.V.n / 100) * exp(17.08085 * Tair.V.n / (234.175 + Tair.V.n))
+  rH = RH.V.n         ##<< Data vector of relative humidity (rH, %)
+  , Tair = Tair.V.n   ##<< Data vector of air temperature (Tair, degC)
+  , RH.V.n                ##<< deprecated
+  , Tair.V.n              ##<< deprecated
+  ##author<< AMM
+) {
+  varNamesDepr <- c("RH.V.n","Tair.V.n")
+  varNamesNew <- c("rh","Tair")
+  iDepr = which(!c(missing(RH.V.n),missing(Tair.V.n)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  fCheckOutsideRange(
+    cbind(RelHumidity_Percent = rH), 'RelHumidity_Percent'
+    , c('<', 0, '|', '>', 100), 'fCalcVPDfromRHandTair')
+  fCheckOutsideRange(
+    cbind(AirTemp_degC = Tair), 'AirTemp_degC'
+    , c('<', -70, '|', '>', 60), 'fCalcVPDfromRHandTair')
+  # See Kolle Logger Tools Software 2012 (Magnus coefficients for
+  # water between 0 and 100 degC)
+  VPD.V.n <- 6.1078 * (1 - rH / 100) * exp(17.08085 * Tair / (234.175 + Tair))
   attr(VPD.V.n, 'varnames') <- 'VPD'
   attr(VPD.V.n, 'units') <- 'hPa'
   return(VPD.V.n)
@@ -107,19 +124,22 @@ fCalcVPDfromRHandTair <- function(
   ## Data vector of vapour pressure deficit (VPD, hPa (mbar))
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcSVPfromTair <- function(
   ##description<<
   ## Calculate SVP (of water) from Tair
-  Tair.V.n              ##<< Data vector of air temperature (Tair, degC)
-  ##author<<
-  ## AMM
-  ) {
+  Tair = Tair.V.n  ##<< Data vector of air temperature (Tair, degC)
+  , Tair.V.n       ##<< deprecated
+  ##author<< AMM
+) {
+  if (!missing(Tair.V.n)) warning(
+    "fCalcSVPfromTair: argument name Tair.V.n is deprecated, use instead Tair.")
   # Approximation formula after CANVEG (Berkeley) code
   TZero.c <- 273.15  #Absolute zero
-  SVP.V.n <- exp(54.8781919 - 6790.4985 / (Tair.V.n + TZero.c) - 5.02808 * log(Tair.V.n + TZero.c))
+  SVP.V.n <- exp(54.8781919 - 6790.4985 / (Tair + TZero.c)
+                 - 5.02808 * log(Tair + TZero.c))
   attr(SVP.V.n, 'varnames') <- 'SVP'
   attr(SVP.V.n, 'units') <- 'hPa'
   return(SVP.V.n)
@@ -127,47 +147,60 @@ fCalcSVPfromTair <- function(
   ## Data vector of saturation vapor pressure (SVP, hPa (mbar))
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcAVPfromVMFandPress <- function(
   ##description<<
   ## Calculate AVP from VMF and Press
-  VMF.V.n                ##<< Vapor mole fraction (VMF, mol / mol)
-  , Press.V.n             ##<< Atmospheric pressure (Press, hPa)
-  ##author<<
-  ## AMM
-  ) {
+  VMF = VMF.V.n           ##<< Vapor mole fraction (VMF, mol / mol)
+  , Press = Press.V.n     ##<< Atmospheric pressure (Press, hPa)
+  , VMF.V.n               ##<< deprecated
+  , Press.V.n             ##<< deprecated
+  ##author<< AMM
+) {
+  varNamesDepr <- c("VMF.V.n","Press.V.n")
+  varNamesNew <- c("VMF","Press")
+  iDepr = which(!c(missing(VMF.V.n),missing(Press.V.n)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
   # Calculation of actual vapor pressure, also called vapor partial pressure
-  AVP.V.n <- (VMF.V.n) * Press.V.n
-  attr(AVP.V.n, 'varnames') <- 'AVP'
-  attr(AVP.V.n, 'units') <- 'hPa'
-  return(AVP.V.n)
+  AVP <- (VMF.V.n) * Press.V.n
+  attr(AVP, 'varnames') <- 'AVP'
+  attr(AVP, 'units') <- 'hPa'
+  return(AVP)
   ##value<<
   ## Data vector of actual vapor pressure (AVP, hPa (mbar))
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcRHfromAVPandTair <- function(
   ##description<<
   ## Calculate relative humidity from actual vapour pressure and air temperature
-  AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, hPa (mbar))
+  AVP = AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, hPa (mbar))
+  , Tair = Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
+  , AVP.V.n               ##<< Data vector of actual vapour pressure (AVP, hPa (mbar))
   , Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
-  ##author<<
-  ## AMM
-  )
-{
+  ##author<< AMM
+) {
+  varNamesDepr <- c("AVP.V.n","Tair.V.n")
+  varNamesNew <- c("AVP","Tair")
+  iDepr = which(!c(missing(AVP.V.n),missing(Tair.V.n)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
   # Definition of relative humidity (ratio of AVP to SVP)
-  SVP.V.n <- fCalcSVPfromTair(Tair.V.n)
-  RH.V.n <- AVP.V.n / SVP.V.n * 100
+  SVP.V.n <- fCalcSVPfromTair(Tair)
+  rH <- AVP / SVP.V.n * 100
   # Restrict to physically plausible range
-  RH.V.n <- ifelse(RH.V.n >= 0, RH.V.n, 0)
-  RH.V.n <- ifelse(RH.V.n <= 100, RH.V.n, 100)
-  attr(RH.V.n, 'varnames') <- 'rH'
-  attr(RH.V.n, 'units') <- '%'
-  return(RH.V.n)
+  rH <- ifelse(rH >= 0, rH, 0)
+  rH <- ifelse(rH <= 100, rH, 100)
+  attr(rH, 'varnames') <- 'rH'
+  attr(rH, 'units') <- '%'
+  return(rH)
   ##value<<
   ## Data vector of relative humidity (rH, %)
 }
@@ -178,13 +211,21 @@ fCalcRHfromAVPandTair <- function(
 fCalcETfromLE <- function(
   ##description<<
   ## Calculate ET from LE and Tair
-  LE.V.n                ##<< Data vector of latent heat (LE, W m-2)
-  , Tair.V.n             ##<< Data vector of air temperature (Tair, degC)
-  ##author<<
-  ## AMM
-  ) {
-  # Calculated from the water density and latent heat of vaporation, see Moffat manuscript on WUE
-  ET.V.n <- LE.V.n / ((2.501 - 0.00236 * Tair.V.n) * 18.016)
+  LE = LE.V.n             ##<< Data vector of latent heat (LE, W m-2)
+  , Tair = Tair.V.n       ##<< Data vector of air temperature (Tair, degC)
+  , LE.V.n                ##<< deprecated
+  , Tair.V.n              ##<< deprecated
+  ##author<< AMM
+) {
+  varNamesDepr <- c("LE.V.n","Tair.V.n")
+  varNamesNew <- c("LE","Tair")
+  iDepr = which(!c(missing(LE.V.n),missing(Tair.V.n)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  # Calculated from the water density and latent heat of vaporation,
+  # see Moffat manuscript on WUE
+  ET.V.n <- LE.V.n / ((2.501 - 0.00236 * Tair) * 18.016)
   attr(ET.V.n, 'varnames') <- 'ET'
   attr(ET.V.n, 'units') <- 'mmol_m-2_s-1'
   return(ET.V.n)
@@ -192,7 +233,7 @@ fCalcETfromLE <- function(
   ## Data vector of evapotranspiration (ET, mmol H20 m-2 s-1)
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fLloydTaylor <- function(
@@ -216,13 +257,15 @@ fLloydTaylor <- function(
   ##author<<
   ## AMM
   ##reference<<
-  ## Lloyd J, Taylor JA (1994) On the temperature dependence of soil respiration. Functional Ecology, 8, 315-323.
+  ## Lloyd J, Taylor JA (1994) On the temperature dependence of soil respiration.
+  ## Functional Ecology, 8, 315-323.
 ) {
   varNamesDepr <- c(
     "R_ref.n","E_0.n","Tsoil.n","T_ref.n","T_0.n")
   varNamesNew <- c(
     "RRef","E0","TSoil","TRef","T0")
-  iDepr = which(!c(missing(R_ref.n),missing(E_0.n),missing(Tsoil.n),missing(T_ref.n),missing(T_0.n)))
+  iDepr = which(!c(
+    missing(R_ref.n),missing(E_0.n),missing(Tsoil.n),missing(T_ref.n),missing(T_0.n)))
   if (length(iDepr)) warning(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
@@ -256,7 +299,7 @@ fCalcSunPosition <- function(
   , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
   , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
   , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
-  , useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE	##<<
+  , useSolartime = TRUE	##<<
   ## by default corrects hour (given in local winter time) for latitude
   ## to solar time (where noon is exactly at 12:00). Set this to FALSE
   ## to directly use local winter time
@@ -268,6 +311,7 @@ fCalcSunPosition <- function(
   , useSolartime.b = TRUE	##<< deprecated
   ##author<<  ## AMM
 ) {
+  if (!missing(useSolartime.b)) useSolartime <- useSolartime.b
   varNamesDepr <- c(
     "DoY.V.n","Hour.V.n","Lat_deg.n","Long_deg.n","TimeZone_h.n"
     ,"useSolartime.b")
@@ -406,9 +450,9 @@ fCalcPotRadiation <- function(
   , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
   , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
   , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
-  , useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE	##<<
-  ##by default corrects hour (given in local winter time) for latitude to solar time
-  ##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
+  , useSolartime = TRUE	##<<
+  ## by default corrects hour (given in local winter time) for latitude to solar time
+  ## (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
   , DoY.V.n            ##<< deprecated
   , Hour.V.n           ##<< deprecated
   , Lat_deg.n          ##<< deprecated
@@ -419,6 +463,7 @@ fCalcPotRadiation <- function(
   ## AMM
   #For testing PotRadiation(julday, hour)
 ) {
+  if (!missing(useSolartime.b)) useSolartime <- useSolartime.b
   varNamesDepr <- c(
     "DoY.V.n","Hour.V.n","Lat_deg.n","Long_deg.n","TimeZone_h.n"
     ,"useSolartime.b")

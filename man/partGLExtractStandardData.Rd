@@ -2,11 +2,11 @@
 \alias{partGLExtractStandardData}
 \title{partGLExtractStandardData}
 \description{Relevant columns from original input with defined names}
-\usage{partGLExtractStandardData(ds, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0("NEE", 
+\usage{partGLExtractStandardData(ds, NEEVar = paste0("NEE", 
     suffixDash, "_f"), QFNEEVar = if (!missing(QFNEEVar.s)) QFNEEVar.s else paste0("NEE", 
     suffixDash, "_fqc"), QFNEEValue = if (!missing(QFNEEValue.n)) QFNEEValue.n else 0, 
     NEESdVar = if (!missing(NEESdVar.s)) NEESdVar.s else paste0("NEE", 
-        suffixDash, "_fsd"), TempVar = if (!missing(TempVar.s)) TempVar.s else paste0("Tair_f"), 
+        suffixDash, "_fsd"), TempVar = paste0("Tair_f"), 
     QFTempVar = if (!missing(QFTempVar.s)) QFTempVar.s else paste0("Tair_fqc"), 
     QFTempValue = if (!missing(QFTempValue.n)) QFTempValue.n else 0, 
     VPDVar = if (!missing(VPDVar.s)) VPDVar.s else paste0("VPD_f"), 
