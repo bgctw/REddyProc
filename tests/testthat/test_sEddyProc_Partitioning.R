@@ -1,24 +1,28 @@
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Unit tests for sEddyProc functions regarding partioning +++
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Author: TW
 #require(testthat)
 context("sEddyProc-Class partitioning")
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-if( !exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
+if (!exists(".binUstar") ) .binUstar <- REddyProc:::.binUstar
 
-# Example is accessible if package is installed, otherwise need to load it from data directory below package root
-if( !exists("Example_DETha98")) load("data/Example_DETha98.RData")
+# Example is accessible if package is installed, otherwise need to load
+# it from data directory below package root
+if (!exists("Example_DETha98")) load("data/Example_DETha98.RData")
 EddyData.F <- Example_DETha98
 
 #Include POSIX time stamp column
-EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(EddyData.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour'))
+EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
+  EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
 
-EddyHour.C <- suppressMessages(sEddyProc$new('DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),], c('NEE','Rg', 'Tair', 'VPD'), DTS.n=24))
-suppressMessages(EddyHour.C$sMDSGapFill('Tair', Verbose.b=F))
-suppressMessages(EddyHour.C$sMDSGapFill('NEE', Verbose.b=F))
+EddyHour.C <- suppressMessages(sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),]
+  , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24))
+suppressMessages(EddyHour.C$sMDSGapFill('Tair', Verbose.b = F))
+suppressMessages(EddyHour.C$sMDSGapFill('NEE', Verbose.b = F))
 
 
 test_that("fOptimSingleE0",{
@@ -52,16 +56,20 @@ test_that("fOptimSingleE0",{
 					0.32, 0.8, 1.01, -0.41, 2.52, 0.36, 0.33, 0.57, -0.06, 0.82,
 					8.82, -0.04, -3.96, -0.53, 2.75, 1.45, -0.39, -2.06, 0.03, 0.18,
 					-1.21, 2.44, 0.49, 0.05, -0.17, 2.93, 4.77, 1.85, -0.35)
-			res <- REddyProc:::fOptimSingleE0( NEEnight.V.n, Temp_degK.V.n,T_ref.n=273.15+15, recoverOnError=TRUE)
+			res <- REddyProc:::fOptimSingleE0(
+			  NEEnight.V.n, Temp_degK.V.n, TRef = 273.15 + 15
+#			  , recoverOnError = TRUE
+			)
 			expect_true( is.numeric(res) )
-			expect_true( length(res)> 1 )
+			expect_true( length(res) > 1 )
 			expect_true( all(is.finite(res) ))
-
-			if( require("minpack.lm")){
-				resL <- REddyProc:::fOptimSingleE0_Lev( NEEnight.V.n, Temp_degK.V.n,T_ref.n=273.15+15, recoverOnError=TRUE)
+      #
+			if (require("minpack.lm")) {
+				resL <- REddyProc:::fOptimSingleE0_Lev(
+				  NEEnight.V.n, Temp_degK.V.n, TRef = 273.15 + 15, recoverOnError = TRUE)
 			}
 			expect_true( is.numeric(res) )
-			expect_true( length(res)> 1 )
+			expect_true( length(res) > 1 )
 			expect_true( all(is.finite(res) ))
 		})
 
@@ -82,35 +90,38 @@ test_that("fRegrE0fromShortTerm",{
 					10.1, 9.4, 8.7, 8.8, 8.7, 10.1, 12.1, 13.6, 14.7, 11.9, 11.4,
 					9.8)
 			set.seed(0815)
-			NightFlux.V.n <- do.call(c, lapply( c(238,320,296), function(E0){ fLloydTaylor(10, E0, TempVar.V.n+273.15)+rnorm(length(TempVar.V.n ))}))
+			NightFlux.V.n <- do.call(c, lapply( c(238,320,296), function(E0){
+			  fLloydTaylor(10, E0, TempVar.V.n + 273.15) + rnorm(length(TempVar.V.n ))}))
 			#plot(NightFlux.V.n ~ 	rep(TempVar.V.n,3) )
-			DayCounter.V.i <- rep(1:300, each=5) [ 1:length(NightFlux.V.n)]
+			DayCounter.V.i <- rep(1:300, each = 5) [ 1:length(NightFlux.V.n)]
 			#trace(fRegrE0fromShortTerm,recover)		#untrace(fRegrE0fromShortTerm)
-			E0 <- REddyProc:::fRegrE0fromShortTerm( NightFlux.V.n, rep(TempVar.V.n,3), DayCounter.V.i, T_ref.n=273.15+15 )
-			expect_equal( E0, 300, tolerance=15, scale=1 )
+			E0 <- REddyProc:::fRegrE0fromShortTerm(
+			  NightFlux.V.n, rep(TempVar.V.n,3), DayCounter.V.i, TRef = 273.15 + 15 )
+			expect_equal( E0, 300, tolerance = 15, scale = 1 )
 			#
 		})
 
-
-
 test_that("sMRFluxPartition Standard",{
-			EddyHour.C$sSetLocationInfo(Lat_deg.n=51, Long_deg.n=7, TimeZone_h.n=1)
-            EddyHour.C$sMRFluxPartition()
-            expect_that( EddyHour.C$sTEMP$E_0[1], equals(133.7, tolerance = .1))
-        })
+  EddyHour.C$sSetLocationInfo(
+    Lat_deg.n = 51, Long_deg.n = 7, TimeZone_h.n = 1)
+  EddyHour.C$sMRFluxPartition()
+  expect_that( EddyHour.C$sTEMP$E_0[1], equals(133.7, tolerance = .1))
+})
 
 
 test_that("Using fixed E0",{
-            E0 <- 120
-            #EddyHour.C$trace("sMRFluxPartition", recover )            # EddyHour.C$untrace("sMRFluxPartition")
-			EddyHour.C$sTEMP$E_0 <- NULL
-			EddyHour.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
-			# warning on duplicted columns with former test
-			suppressWarnings( EddyHour.C$sMRFluxPartition( debug.l=list(fixedE0=E0) ))   # calling sRegrE0fromShortTerm
-            expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance=1e-6)
-            #colnames(EddyHour.C$sTEMP)
-        })
+  E0 <- 120
+  #EddyHour.C$trace("sMRFluxPartition", recover ) # EddyHour.C$untrace("sMRFluxPartition")
+  EddyHour.C$sTEMP$E_0 <- NULL
+  EddyHour.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+  # warning on duplicted columns with former test
+  #suppressWarnings(
+    EddyHour.C$sMRFluxPartition( debug.l = list(fixedE0 = E0) )
+    #)   # calling sRegrE0fromShortTerm
+  expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance = 1e-6)
+  #colnames(EddyHour.C$sTEMP)
+})
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 

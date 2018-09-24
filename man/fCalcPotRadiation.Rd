@@ -2,16 +2,25 @@
 \alias{fCalcPotRadiation}
 \title{fCalcPotRadiation}
 \description{Calculate the potential radiation}
-\usage{fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n, 
-    Long_deg.n, TimeZone_h.n, useSolartime.b = TRUE)}
+\usage{fCalcPotRadiation(DoY = Doy.V.n, Hour = Hour.V.n, 
+    LatDeg = Lat_deg.n, LongDeg = Long_deg.n, 
+    TimeZone = TimeZone_h.n, useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE, 
+    DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, 
+    TimeZone_h.n, useSolartime.b = TRUE)}
 \arguments{
-  \item{DoY.V.n}{Data vector with day of year (DoY), same length as Hour or length 1}
-  \item{Hour.V.n}{Data vector with time as decimal hour of local time zone}
-  \item{Lat_deg.n}{Latitude in (decimal) degrees}
-  \item{Long_deg.n}{Longitude in (decimal) degrees}
-  \item{TimeZone_h.n}{Time zone (in hours)}
-  \item{useSolartime.b}{by default corrects hour (given in local winter time) for latitude to solar time
-<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time}
+  \item{DoY}{Data vector with day of year (DoY), same length as Hour or length 1}
+  \item{Hour}{Data vector with time as decimal hour of local time zone}
+  \item{LatDeg}{Latitude in (decimal) degrees}
+  \item{LongDeg}{Longitude in (decimal) degrees}
+  \item{TimeZone}{Time zone (in hours)}
+  \item{useSolartime}{
+}
+  \item{DoY.V.n}{deprecated}
+  \item{Hour.V.n}{deprecated}
+  \item{Lat_deg.n}{deprecated}
+  \item{Long_deg.n}{deprecated}
+  \item{TimeZone_h.n}{deprecated}
+  \item{useSolartime.b}{deprecated}
 }
 
 \value{Data vector of potential radiation (PotRad, W_m-2)}
@@ -24,10 +33,9 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 \examples{
 hour <- seq(8, 16, by = 0.1)
-potRadSolar <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone =+ 1)
-suppressWarnings(
-  potRadLocal <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone =+ 1
-	  , useSolartime.b = FALSE))
+potRadSolar <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone = +1)
+potRadLocal <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone = +1
+	  , useSolartime = FALSE)
 plot(potRadSolar ~ hour, type = 'l')
 abline(v = 13, lty = "dotted")
 lines(potRadLocal ~  hour, col = "blue")

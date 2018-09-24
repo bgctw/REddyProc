@@ -233,6 +233,10 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
   EddySetups.C$sSetLocationInfo(
     Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+  # EddySetups.C <- sEddyProc$new(
+  #   'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))$import(
+  #     EddySetups.C
+  #   )
   for (suffix in c('U05', 'U50')) {
     EddySetups.C$sMRFluxPartition(suffix = suffix)
   }

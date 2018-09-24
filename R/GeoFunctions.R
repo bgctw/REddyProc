@@ -1,12 +1,12 @@
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ R script with geo functions to calculate latent variables or convert units
 #+++ Dependencies: fCheckOutsideRange() in DataFunctions.R
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Unit conversions
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fConvertCtoK <- function(
@@ -17,7 +17,8 @@ fConvertCtoK <- function(
   ## AMM
 )
 {
-  fCheckOutsideRange(cbind(Celsius = Celsius.V.n), 'Celsius', c('<', -273.15), 'fConvertCtoK')
+  fCheckOutsideRange(
+    cbind(Celsius = Celsius.V.n), 'Celsius', c('<', -273.15), 'fConvertCtoK')
   Kelvin.V.n <-  Celsius.V.n + 273.15
   attr(Kelvin.V.n, 'varnames') <- 'Temp_K'
   attr(Kelvin.V.n, 'units') <- 'degK'
@@ -199,19 +200,34 @@ fLloydTaylor <- function(
   ## Temperature dependence of soil respiration
   ##description<<
   ## Temperature dependence of soil respiration after Equation 11 in Lloyd & Taylor (1994)
-  R_ref.n               ##<< Respiration rate at reference temperature
-  , E_0.n                ##<< Temperature sensitivity ("activation energy") in Kelvin (degK)
-  , Tsoil.n              ##<< Soil temperature in Kelvin (degK)
-  , T_ref.n = 273.15 + 10    ##<< Reference temperature of 10 degC in Kelvin (degK)
-  , T_0.n = 227.13         ##<< Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
+  RRef = R_ref.n          ##<< Respiration rate at reference temperature
+  , E0 = E_0.n            ##<< Temperature sensitivity ("activation energy")
+  ## in Kelvin (degK)
+  , TSoil = Tsoil.n       ##<< Soil temperature in Kelvin (degK)
+  , TRef = if (missing(T_ref.n)) 273.15 + 10 else T_ref.n ##<<
+  ## Reference temperature of 10 degC in Kelvin (degK)
+  , T0 = if (missing(T_0.n)) 227.13 else T_0.n        ##<<
+  ## Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
+  , R_ref.n    ##<< deprecated way to specify RRef
+  , E_0.n      ##<< deprecated way to specify E0
+  , Tsoil.n    ##<< deprecated way to specify Tsoil
+  , T_ref.n    ##<< deprecated way to specify TRef
+  , T_0.n      ##<< deprecated way to specify T0
   ##author<<
   ## AMM
   ##reference<<
   ## Lloyd J, Taylor JA (1994) On the temperature dependence of soil respiration. Functional Ecology, 8, 315-323.
-)
-{
+) {
+  varNamesDepr <- c(
+    "R_ref.n","E_0.n","Tsoil.n","T_ref.n","T_0.n")
+  varNamesNew <- c(
+    "RRef","E0","TSoil","TRef","T0")
+  iDepr = which(!c(missing(R_ref.n),missing(E_0.n),missing(Tsoil.n),missing(T_ref.n),missing(T_0.n)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
   # Fitting temperature T_0 from  paper
-  R <- R_ref.n * exp(E_0.n * (1 / (T_ref.n-T_0.n) - 1 / (Tsoil.n-T_0.n) ) )
+  R <- RRef * exp(E0 * (1 / (TRef - T0) - 1 / (TSoil - T0) ) )
   attr(R, 'varnames') <- 'R'
   attr(R, 'units') <- 'umol_m-2_s-1'
   return(R)
@@ -219,126 +235,159 @@ fLloydTaylor <- function(
   ## Data vector of soil respiration rate (R, umol CO2 m-2 s-1)
 }
 attr(fLloydTaylor, "ex") <- function() {
-  	T <- c(-10:30)
-	resp <- fLloydTaylor(10, 330, T + 273.15)
+  T <- c(-10:30)
+  resp <- fLloydTaylor(10, 330, T + 273.15)
 	plot(resp ~ T)
 }
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Solar radiation properties
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcSunPosition <- function(
   ##description<<
   ## Calculate the position of the sun
-  DoY.V.n               ##<< Data vector with day of year (DoY)
-  , Hour.V.n             ##<< Data vector with time as decimal hour
-  , Lat_deg.n            ##<< Latitude in (decimal) degrees
-  , Long_deg.n           ##<< Longitude in (decimal) degrees
-  , TimeZone_h.n         ##<< Time zone (in hours)
-  , useSolartime.b = TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
-	##<< where noon is exactly at 12:00. Set this to FALSE to compare to code that uses local winter time
-  ##author<<
-  ## AMM
-  #TEST: data('Example_DETha98', package = 'REddyProc'); DoY.V.n <- EddyData.F$DoY; Hour.V.n <- EddyData.F$Hour;
-  #TEST: Lat_deg.n <- 51.0; Long_deg.n <- 13.6; TimeZone_h.n <- 1.0
-  #TEST: fCalcSunPosition(EddyData.F$DoY, EddyData.F$Hour, Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1.0)
-)
-{
+  DoY = DoY.V.n             ##<<
+  ## Data vector with day of year (DoY), same length as Hour or length 1
+  , Hour = Hour.V.n           ##<<
+  ## Data vector with time as decimal hour of local time zone
+  , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
+  , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
+  , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
+  , useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE	##<<
+  ## by default corrects hour (given in local winter time) for latitude
+  ## to solar time (where noon is exactly at 12:00). Set this to FALSE
+  ## to directly use local winter time
+  , DoY.V.n            ##<< deprecated
+  , Hour.V.n           ##<< deprecated
+  , Lat_deg.n          ##<< deprecated
+  , Long_deg.n         ##<< deprecated
+  , TimeZone_h.n       ##<< deprecated
+  , useSolartime.b = TRUE	##<< deprecated
+  ##author<<  ## AMM
+) {
+  varNamesDepr <- c(
+    "DoY.V.n","Hour.V.n","Lat_deg.n","Long_deg.n","TimeZone_h.n"
+    ,"useSolartime.b")
+  varNamesNew <- c(
+    "DoY","Hour","LatDeg","LongDeg","TimeZone"
+    ,"useSolartime")
+  iDepr = which(!c(
+    missing(DoY.V.n),missing(Hour.V.n),missing(Lat_deg.n),missing(Long_deg.n)
+    ,missing(TimeZone_h.n),missing(useSolartime.b)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  #
   # Formulas taken from Alessandro Cescatti's C ++ code
   # Fractional year in radians
-  FracYear_rad.V.n <- 2 * pi * (DoY.V.n-1) / 365.24
+  FracYearRad <- 2 * pi * (DoY - 1) / 365.24
 
   # Equation of time in hours, accounting for changes in the time of solar noon
-  EqTime_h.V.n <- (0.0072 * cos(FracYear_rad.V.n) - 0.0528 * cos(2 * FracYear_rad.V.n) - 0.0012 * cos(3 * FracYear_rad.V.n) - 0.1229 * sin(FracYear_rad.V.n)
-                    - 0.1565 * sin(2 * FracYear_rad.V.n) - 0.0041 * sin(3 * FracYear_rad.V.n) )
+  EqTimeHour <- (0.0072 * cos(FracYearRad) - 0.0528 * cos(2 * FracYearRad)
+                 - 0.0012 * cos(3 * FracYearRad) - 0.1229 * sin(FracYearRad)
+                    - 0.1565 * sin(2 * FracYearRad) - 0.0041 * sin(3 * FracYearRad) )
 
   # Local time in hours
-  LocTime_h.V.n <- (Long_deg.n / 15 - TimeZone_h.n)
+  LocTimeHour <- (LongDeg / 15 - TimeZone)
 
   ##details<<
-  ## This code assumes that Hour is given in local winter time zone, and corrects it by longitude to
+  ## This code assumes that Hour is given in local winter time zone, and
+  ## corrects it by longitude to
   ## solar time (where noon is exactly at 12:00).
   ## Note: This is different form reference PVWave-code,
   ## that does not account for solar time and uses winter time zone.
-  ## Set argument \code{useSolartime.b} to FALSE to use the local winter time instead.
+  ## Set argument \code{useSolartime.b} to FALSE to use the
+  ## local winter time instead.
 
   # Solar time
   # Correction for local time and equation of time
-  SolTime_h.V.n <- if (useSolartime.b) {
+  SolTimeHour <- if (useSolartime) {
     # Correction for local time and equation of time
-    Hour.V.n + LocTime_h.V.n + EqTime_h.V.n
+    Hour + LocTimeHour + EqTimeHour
   } else {
-    #! Note: For reproducing values close to Fluxnet Rg_pot which is without local time and eq of time correction
+    #! Note: For reproducing values close to Fluxnet Rg_pot which is without
+    #local time and eq of time correction
     #! (CEIP is even different)
-    warning('Solar position calculated without correction for local time and equation of time.')
-    Hour.V.n
+    warning('Solar position calculated without correction for local time '
+            , 'and equation of time.')
+    Hour
   }
   # Conversion to radians
-  SolTime_rad.V.n <- (SolTime_h.V.n - 12) * pi / 12.0
+  SolTimeRad <- (SolTimeHour - 12) * pi / 12.0
   # Correction for solar time < -pi to positive, important for SolAzim_rad.V.n below
-  SolTime_rad.V.n <- ifelse(SolTime_rad.V.n < -pi, SolTime_rad.V.n + 2 * pi, SolTime_rad.V.n)
-  attr(SolTime_h.V.n, 'varnames') <- 'SolTime'
-  attr(SolTime_h.V.n, 'units') <- 'hour'
+  SolTimeRad <- ifelse(SolTimeRad < -pi, SolTimeRad + 2 * pi, SolTimeRad)
+  attr(SolTimeHour, 'varnames') <- 'SolTime'
+  attr(SolTimeHour, 'units') <- 'hour'
 
   #Solar declination in radians, accounting for the earth axis tilt
-  SolDecl_rad.V.n <- ( (0.33281-22.984 * cos(FracYear_rad.V.n) - 0.34990 * cos(2 * FracYear_rad.V.n) - 0.13980 * cos(3 * FracYear_rad.V.n)
-                        + 3.7872 * sin(FracYear_rad.V.n) + 0.03205 * sin(2 * FracYear_rad.V.n) + 0.07187 * sin(3 * FracYear_rad.V.n)) / 180 * pi)
-  attr(SolDecl_rad.V.n, 'varnames') <- 'SolDecl'
-  attr(SolDecl_rad.V.n, 'units') <- 'rad'
+  SolDeclRad <- ((0.33281 - 22.984 * cos(FracYearRad) - 0.34990 * cos(2 * FracYearRad)
+                   - 0.13980 * cos(3 * FracYearRad) + 3.7872 * sin(FracYearRad)
+                  + 0.03205 * sin(2 * FracYearRad)
+                   + 0.07187 * sin(3 * FracYearRad)) / 180 * pi)
+  attr(SolDeclRad, 'varnames') <- 'SolDecl'
+  attr(SolDeclRad, 'units') <- 'rad'
 
   # Solar elevation (vertical, zenithal angle) in radians with zero for horizon
-  SolElev_rad.V.n <-  asin(sin(SolDecl_rad.V.n) * sin(Lat_deg.n / 180 * pi)
-                           + cos(SolDecl_rad.V.n) * cos(Lat_deg.n / 180 * pi) * cos(SolTime_rad.V.n))
-  attr(SolElev_rad.V.n, 'varnames') <- 'SolElev'
-  attr(SolElev_rad.V.n, 'units') <- 'rad'
+  SolElevRad <-  asin(sin(SolDeclRad) * sin(LatDeg / 180 * pi)
+                           + cos(SolDeclRad)*cos(LatDeg/180*pi)*cos(SolTimeRad))
+  attr(SolElevRad, 'varnames') <- 'SolElev'
+  attr(SolElevRad, 'units') <- 'rad'
 
   # Solar azimuth (horizontal angle) with zero for North
-  SolAzim_cos.V.n <- ( (cos(SolDecl_rad.V.n) * cos(SolTime_rad.V.n) - sin(SolElev_rad.V.n) * cos(Lat_deg.n / 180 * pi) )
-                       / (sin(Lat_deg.n / 180 * pi) * cos(SolElev_rad.V.n) ) )
+  SolAzimCos <- ((cos(SolDeclRad) * cos(SolTimeRad)
+                   - sin(SolElevRad) * cos(LatDeg / 180 * pi) )
+                       / (sin(LatDeg / 180 * pi) * cos(SolElevRad) ) )
   # Correction if off edge values
-  SolAzim_cos.V.n[SolAzim_cos.V.n > + 1] <- 1
-  SolAzim_cos.V.n[SolAzim_cos.V.n < -1] <- 1
+  SolAzimCos[SolAzimCos > +1] <- 1
+  SolAzimCos[SolAzimCos < -1] <- 1
   # Conversion to radians
-  SolAzim_rad.V.n <- acos(SolAzim_cos.V.n)
+  SolAzim_rad.V.n <- acos(SolAzimCos)
   # Determine if solar azimuth is East or West depending on solar time
-  SolAzim_rad.V.n <- ifelse(SolTime_rad.V.n < 0, pi - SolAzim_rad.V.n, pi + SolAzim_rad.V.n)
-  attr(SolAzim_cos.V.n, 'varnames') <- 'SolAzim'
-  attr(SolAzim_cos.V.n, 'units') <- 'rad'
+  SolAzim_rad.V.n <- ifelse(
+    SolTimeRad < 0, pi - SolAzim_rad.V.n, pi + SolAzim_rad.V.n)
+  attr(SolAzimCos, 'varnames') <- 'SolAzim'
+  attr(SolAzimCos, 'units') <- 'rad'
 
   ##value<<
   ## Data list with the following items:
   SolPosition.L <- list(
-    SolTime = SolTime_h.V.n     ##<< Solar time (SolTime, hours)
-    , SolDecl = SolDecl_rad.V.n  ##<< Solar declination (SolDecl, rad)
-    , SolElev = SolElev_rad.V.n  ##<< Solar elevation with 0 at horizon (SolElev, rad)
+    SolTime = SolTimeHour     ##<< Solar time (SolTime, hours)
+    , SolDecl = SolDeclRad  ##<< Solar declination (SolDecl, rad)
+    , SolElev = SolElevRad  ##<< Solar elevation with 0 at horizon (SolElev, rad)
     , SolAzim = SolAzim_rad.V.n  ##<< Solar azimuth with 0 at North (SolAzim, rad)
   )
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcExtRadiation <- function(
   ##description<<
-  ## Calculate the extraterrestrial solar radiation with the eccentricity correction
-  DoY.V.n           ##<< Data vector with day of year (DoY)
+  ## Calculate the extraterrestrial solar radiation with the
+  ## eccentricity correction
+  DoY = DoY.V.n
+  , DoY.V.n           ##<< Data vector with day of year (DoY)
   ##author<<
   ## AMM
-)
-{
-  # Calculate extraterrestrial solar radiation after Lanini, 2010 (Master thesis, Bern University)
+) {
+  if (!missing(DoY)) warning(
+    "Argument name 'DoY.V.n' is deprecated. Use instead DoY")
+  # Calculate extraterrestrial solar radiation after Lanini, 2010
+  # (Master thesis, Bern University)
   # Fractional year in radians
-  FracYear_rad.V.n <- 2 * pi * (DoY.V.n-1) / 365.24
+  FracYearRad <- 2 * pi * (DoY - 1) / 365.24
 
   # Total solar irradiance
   SolarIrr_Wm2.c <- 1366.1 #W / m-2
 
   #Eccentricity correction
-  ExtRadiation.V.n <- SolarIrr_Wm2.c * (1.00011 + 0.034221 * cos(FracYear_rad.V.n) + 0.00128 * sin(FracYear_rad.V.n)
-                                        + 0.000719 * cos(2 * FracYear_rad.V.n) + 0.000077 * sin(2 * FracYear_rad.V.n))
+  ExtRadiation.V.n <- SolarIrr_Wm2.c * (
+    1.00011 + 0.034221 * cos(FracYearRad) + 0.00128 * sin(FracYearRad)
+     + 0.000719 * cos(2 * FracYearRad) + 0.000077 * sin(2 * FracYearRad)
+     )
   attr(ExtRadiation.V.n, 'varnames') <- 'ExtRad'
   attr(ExtRadiation.V.n, 'units') <- 'W_m-2'
   ExtRadiation.V.n
@@ -346,40 +395,61 @@ fCalcExtRadiation <- function(
   ## Data vector of extraterrestrial radiation (ExtRad, W_m-2)
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCalcPotRadiation <- function(
   ##description<<
   ## Calculate the potential radiation
-  DoY.V.n             ##<< Data vector with day of year (DoY), same length as Hour or length 1
-  , Hour.V.n           ##<< Data vector with time as decimal hour of local time zone
-  , Lat_deg.n          ##<< Latitude in (decimal) degrees
-  , Long_deg.n         ##<< Longitude in (decimal) degrees
-  , TimeZone_h.n       ##<< Time zone (in hours)
-  , useSolartime.b = TRUE	##<< by default corrects hour (given in local winter time) for latitude to solar time
-	##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
+  DoY = DoY.V.n             ##<< Data vector with day of year (DoY), same length as Hour or length 1
+  , Hour = Hour.V.n           ##<< Data vector with time as decimal hour of local time zone
+  , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
+  , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
+  , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
+  , useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE	##<<
+  ##by default corrects hour (given in local winter time) for latitude to solar time
+  ##<< (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
+  , DoY.V.n            ##<< deprecated
+  , Hour.V.n           ##<< deprecated
+  , Lat_deg.n          ##<< deprecated
+  , Long_deg.n         ##<< deprecated
+  , TimeZone_h.n       ##<< deprecated
+  , useSolartime.b = TRUE	##<< deprecated
   ##author<<
   ## AMM
   #For testing PotRadiation(julday, hour)
 ) {
-  # Calculate potential radiation from solar elevation and extraterrestrial solar radiation
-  SolElev_rad.V.n <- fCalcSunPosition(DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, TimeZone_h.n, useSolartime.b = useSolartime.b)$SolElev
-  ExtRadiation.V.n <- fCalcExtRadiation(DoY.V.n)
-  PotRadiation.V.n <- ifelse(SolElev_rad.V.n <= 0, 0, ExtRadiation.V.n * sin(SolElev_rad.V.n) )
-
-  attr(PotRadiation.V.n, 'varnames') <- 'PotRad'
-  attr(PotRadiation.V.n, 'units') <- attr(ExtRadiation.V.n, 'units')
-  PotRadiation.V.n
+  varNamesDepr <- c(
+    "DoY.V.n","Hour.V.n","Lat_deg.n","Long_deg.n","TimeZone_h.n"
+    ,"useSolartime.b")
+  varNamesNew <- c(
+    "DoY","Hour","LatDeg","LongDeg","TimeZone"
+    ,"useSolartime")
+  iDepr = which(!c(
+    missing(DoY.V.n),missing(Hour.V.n),missing(Lat_deg.n),missing(Long_deg.n)
+    ,missing(TimeZone_h.n),missing(useSolartime.b)))
+  if (length(iDepr)) warning(
+    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  # Calculate potential radiation from solar elevation and extraterrestrial
+  # solar radiation
+  SolElevRad <- fCalcSunPosition(
+    DoY, Hour, LatDeg, LongDeg, TimeZone
+    , useSolartime = useSolartime)$SolElev
+  ExtRadiation <- fCalcExtRadiation(DoY)
+  PotRadiation <- ifelse(
+    SolElevRad <= 0, 0, ExtRadiation * sin(SolElevRad) )
+  attr(PotRadiation, 'varnames') <- 'PotRad'
+  attr(PotRadiation, 'units') <- attr(ExtRadiation, 'units')
+  PotRadiation
   ##value<<
   ## Data vector of potential radiation (PotRad, W_m-2)
 }
 attr(fCalcPotRadiation, "ex") <- function() {
 	hour <- seq(8, 16, by = 0.1)
-	potRadSolar <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone =+ 1)
-	suppressWarnings(
-	  potRadLocal <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone =+ 1
-		  , useSolartime.b = FALSE))
+	potRadSolar <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone = +1)
+	potRadLocal <- fCalcPotRadiation(160, hour, 39.94, -5.77, TimeZone = +1
+		  , useSolartime = FALSE)
 	plot(potRadSolar ~ hour, type = 'l')
 	abline(v = 13, lty = "dotted")
 	lines(potRadLocal ~  hour, col = "blue")

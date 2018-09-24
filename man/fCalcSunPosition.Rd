@@ -2,22 +2,33 @@
 \alias{fCalcSunPosition}
 \title{fCalcSunPosition}
 \description{Calculate the position of the sun}
-\usage{fCalcSunPosition(DoY.V.n, Hour.V.n, Lat_deg.n, 
-    Long_deg.n, TimeZone_h.n, useSolartime.b = TRUE)}
+\usage{fCalcSunPosition(DoY = Doy.V.n, Hour = Hour.V.n, 
+    LatDeg = Lat_deg.n, LongDeg = Long_deg.n, 
+    TimeZone = TimeZone_h.n, useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE, 
+    DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, 
+    TimeZone_h.n, useSolartime.b = TRUE)}
 \arguments{
-  \item{DoY.V.n}{Data vector with day of year (DoY)}
-  \item{Hour.V.n}{Data vector with time as decimal hour}
-  \item{Lat_deg.n}{Latitude in (decimal) degrees}
-  \item{Long_deg.n}{Longitude in (decimal) degrees}
-  \item{TimeZone_h.n}{Time zone (in hours)}
-  \item{useSolartime.b}{by default corrects hour (given in local winter time) for latitude to solar time
-<< where noon is exactly at 12:00. Set this to FALSE to compare to code that uses local winter time}
+  \item{DoY}{Data vector with day of year (DoY), same length as Hour or length 1}
+  \item{Hour}{Data vector with time as decimal hour of local time zone}
+  \item{LatDeg}{Latitude in (decimal) degrees}
+  \item{LongDeg}{Longitude in (decimal) degrees}
+  \item{TimeZone}{Time zone (in hours)}
+  \item{useSolartime}{
 }
-\details{This code assumes that Hour is given in local winter time zone, and corrects it by longitude to
+  \item{DoY.V.n}{deprecated}
+  \item{Hour.V.n}{deprecated}
+  \item{Lat_deg.n}{deprecated}
+  \item{Long_deg.n}{deprecated}
+  \item{TimeZone_h.n}{deprecated}
+  \item{useSolartime.b}{deprecated}
+}
+\details{This code assumes that Hour is given in local winter time zone, and
+corrects it by longitude to
 solar time (where noon is exactly at 12:00).
 Note: This is different form reference PVWave-code,
 that does not account for solar time and uses winter time zone.
-Set argument \code{useSolartime.b} to FALSE to use the local winter time instead.}
+Set argument \code{useSolartime.b} to FALSE to use the
+local winter time instead.}
 \value{Data list with the following items:
 \item{SolTime}{Solar time (SolTime, hours)}
 \item{SolDecl}{Solar declination (SolDecl, rad)}
