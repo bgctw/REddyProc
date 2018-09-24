@@ -343,7 +343,7 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	## that occure if reference temperature
 	## is outside the center of the data.
 	resFit <- try(
-			nls(formula = R_eco ~ fLloydTaylor(RRef, E0, Temp, T_ref.n = TRefFit)
+			nls(formula = R_eco ~ fLloydTaylor(RRef, E0, Temp, TRef = TRefFit)
 			    , algorithm = 'default', trace = FALSE,
 					data = as.data.frame(cbind(R_eco = REco, Temp = temperatureKelvin))
 					, start = list(RRef = mean(REco, na.rm = TRUE)
@@ -353,7 +353,7 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 			, silent = TRUE)
 	#plot(REco ~ I(temperatureKelvin-273.15) )
 	#lines(fLloydTaylor(coef(resFit)["RRef"], coef(resFit)["E0"]
-	#, temperatureKelvin, T_ref.n = TRefFit) ~ I(temperatureKelvin-273.15))
+	#, temperatureKelvin, TRef = TRefFit) ~ I(temperatureKelvin-273.15))
 	if (inherits(resFit, "try-error")) {
 		#stop("debug partGLEstimateTempSensInBounds")
 		#plot(REco.V.n	~ temperatureKelvin.V.n)
@@ -388,7 +388,7 @@ partGLEstimateTempSensInBoundsE0Only <- function(
 	# from recover at fitting E0
 	temp <- temperatureKelvin - 273.15
 	plot(REco ~ temp)
-	lines(fLloydTaylor(RRefFit, E0, temperatureKelvin, T_ref.n = TRefFit) ~ temp)
+	lines(fLloydTaylor(RRefFit, E0, temperatureKelvin, TRef = TRefFit) ~ temp)
 }
 
 partGLSmoothTempSens <- function(
@@ -492,7 +492,7 @@ partGLFitNightRespRefOneWindow = function(
 				coef(lm15)
 			} else
 				fLloydTaylor(E0Win$RRefFit[winInfo$iWindow], E0, TRefInKelvin
-				             , T_ref.n = E0Win$TRefFit[winInfo$iWindow])
+				             , TRef = E0Win$TRefFit[winInfo$iWindow])
 	RRefBounded <- max(0, RRef)
 	##value<< named numeric vector with single entry RRef
 	c(RRef = RRefBounded)

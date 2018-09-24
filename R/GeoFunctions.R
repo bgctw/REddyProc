@@ -373,7 +373,7 @@ fCalcExtRadiation <- function(
   ##author<<
   ## AMM
 ) {
-  if (!missing(DoY)) warning(
+  if (!missing(DoY.V.n)) warning(
     "Argument name 'DoY.V.n' is deprecated. Use instead DoY")
   # Calculate extraterrestrial solar radiation after Lanini, 2010
   # (Master thesis, Bern University)

@@ -19,15 +19,22 @@ sEddyProc_sGLFluxPartition <- function(
   ### Daytime-based Flux partitioning after Lasslop et al. (2010)
   ...		##<< arguments to \code{\link{partitionNEEGL}} in addition to the dataset
   ## such as \code{suffix}
-  , debug = list(		     ##<< List with debugging control.
+  , debug = list(   ##<< List with debugging control.
     ##describe<<
     useLocaltime = FALSE	##<< if TRUE use local time zone instead of
     ## geo-solar time to compute potential radiation
     ##end<<
   )
+  , debug.l ##<< deprecated, renamed to debug
   , isWarnReplaceColumns = TRUE		##<< set to FALSE to avoid the warning on
   ## replacing output columns
 ) {
+  if (!missing(debug.l)) {
+    warning(
+      "sEddyProc_sGLFluxPartition: argument name debug.l is deprecated. "
+      , "use debug instead.")
+    debug <- debug.l
+  }
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into gross
   ## primary production (GPP)
@@ -38,7 +45,7 @@ sEddyProc_sGLFluxPartition <- function(
   ## ecosystem exchange into assimilation and respiration using
   ## a light response curve approach: critical issues and global evaluation.
   ## Global Change Biology, Volume 16, Issue 1, Pages 187-208
-  .self$sCalcPotRadiation(useSolartime.b = !isTRUE(debug$useLocaltime) )
+  .self$sCalcPotRadiation(useSolartime = !isTRUE(debug$useLocaltime) )
   dsAns <- partitionNEEGL(cbind(.self$sDATA, .self$sTEMP), ...
                           , nRecInDay = sINFO$DTS
   )
@@ -215,7 +222,7 @@ sEddyProc_sMRFluxPartition <- function(
   # Calculate potential radiation
   #! New code: Local time and equation of time accounted for in potential
   #radiation calculation
-  .self$sCalcPotRadiation(useSolartime.b = !isTRUE(debug$useLocaltime) )
+  .self$sCalcPotRadiation(useSolartime = !isTRUE(debug$useLocaltime) )
   #
   # Filter night time values only
   #! Note: Rg <= 10 congruent with MR PV-Wave, in paper Rg <= 20

@@ -2,15 +2,16 @@
 \alias{sEddyProc_sGLFluxPartition}
 \title{sEddyProc sGLFluxPartition}
 \description{Daytime-based Flux partitioning after Lasslop et al. (2010)}
-\usage{sEddyProc_sGLFluxPartition(..., debug.l = list(useLocaltime.b = FALSE), 
-    isWarnReplaceColumns = TRUE)}
+\usage{sEddyProc_sGLFluxPartition(..., debug = list(useLocaltime = FALSE), 
+    debug.l, isWarnReplaceColumns = TRUE)}
 \arguments{
   \item{\dots}{arguments to \code{\link{partitionNEEGL}} in addition to the dataset
 such as \code{suffix}}
-  \item{debug.l}{List with debugging control.\describe{
-\item{useLocaltime.b}{if TRUE use local time zone instead of
+  \item{debug}{List with debugging control.\describe{
+\item{useLocaltime}{if TRUE use local time zone instead of
 geo-solar time to compute potential radiation}
 }}
+  \item{debug.l}{deprecated, renamed to debug}
   \item{isWarnReplaceColumns}{set to FALSE to avoid the warning on
 replacing output columns}
 }

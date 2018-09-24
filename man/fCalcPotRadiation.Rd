@@ -2,7 +2,7 @@
 \alias{fCalcPotRadiation}
 \title{fCalcPotRadiation}
 \description{Calculate the potential radiation}
-\usage{fCalcPotRadiation(DoY = Doy.V.n, Hour = Hour.V.n, 
+\usage{fCalcPotRadiation(DoY = DoY.V.n, Hour = Hour.V.n, 
     LatDeg = Lat_deg.n, LongDeg = Long_deg.n, 
     TimeZone = TimeZone_h.n, useSolartime = if (!missing(useSolartime.b)) useSolartime.b else TRUE, 
     DoY.V.n, Hour.V.n, Lat_deg.n, Long_deg.n, 

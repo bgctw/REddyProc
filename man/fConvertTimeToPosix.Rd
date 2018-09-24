@@ -2,20 +2,32 @@
 \alias{fConvertTimeToPosix}
 \title{fConvertTimeToPosix}
 \description{Convert different time formats to POSIX}
-\usage{fConvertTimeToPosix(Data.F, TFormat.s, Year.s = "none", 
-    Month.s = "none", Day.s = "none", Hour.s = "none", 
-    Min.s = "none", TName.s = "DateTime", 
-    tz = "GMT")}
+\usage{fConvertTimeToPosix(Data.F, TFormat = TFormat.s, 
+    Year = if (!missing(Year.s)) Year.s else "none", 
+    Month = if (!missing(Month.s)) Month.s else "none", 
+    Day = if (!missing(Day.s)) Day.s else "none", 
+    Hour = if (!missing(Hour.s)) Hour.s else "none", 
+    Min = if (!missing(Min.s)) Min.s else "none", 
+    TName = if (!missing(TName.s)) TName.s else "DateTime", 
+    TFormat.s, Year.s, Month.s, Day.s, Hour.s, 
+    Min.s, TName.s, tz = "GMT")}
 \arguments{
   \item{Data.F}{Data frame with time columns to be converted}
-  \item{TFormat.s}{Abbreviation for implemented time formats,
+  \item{TFormat}{Abbreviation for implemented time formats,
 see details}
-  \item{Year.s}{Column name of year}
-  \item{Month.s}{Column name of month}
-  \item{Day.s}{Column name of day}
-  \item{Hour.s}{Column name of hour}
-  \item{Min.s}{Column name of min}
-  \item{TName.s}{Column name of new column}
+  \item{Year}{Column name of year}
+  \item{Month}{Column name of month}
+  \item{Day}{Column name of day}
+  \item{Hour}{Column name of hour}
+  \item{Min}{Column name of min}
+  \item{TName}{Column name of new column}
+  \item{TFormat.s}{deprecated}
+  \item{Year.s}{deprecated}
+  \item{Month.s}{deprecated}
+  \item{Day.s}{deprecated}
+  \item{Hour.s}{deprecated}
+  \item{Min.s}{deprecated}
+  \item{TName.s}{deprecated}
   \item{tz}{timezone used to store the data. Advised to keep
 GMT to avoid daytime shifting issues}
 }
