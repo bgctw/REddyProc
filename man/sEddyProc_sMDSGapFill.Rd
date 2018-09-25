@@ -1,6 +1,6 @@
 \name{sEddyProc_sMDSGapFill}
 \alias{sEddyProc_sMDSGapFill}
-\title{sEddyProc$sMDSGapFill - MDS gap filling algorithm}
+\title{sEddyProc sMDSGapFill}
 \description{MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.}
 \usage{sEddyProc_sMDSGapFill(Var = Var.s, QFVar = if (!missing(QFVar.s)) QFVar.s else "none", 
     QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_, 
@@ -11,24 +11,35 @@
     V3 = if (!missing(V3.s)) V3.s else "Tair", 
     T3 = if (!missing(T3.n)) T3.n else 2.5, 
     FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE, 
-    Verbose = if (!missing(Verbose.b)) Verbose.b else TRUE, 
+    isVerbose = if (!missing(Verbose.b)) Verbose.b else TRUE, 
     suffix = if (!missing(Suffix.s)) Suffix.s else "", 
     Var.s, QFVar.s, QFValue.n, V1.s, T1.n, 
     V2.s, T2.n, V3.s, T3.n, FillAll.b, Verbose.b, 
     Suffix.s)}
 \arguments{
   \item{Var}{Variable to be filled}
-  \item{QFVar}{Quality flag of variable to be filled}
-  \item{QFValue}{Value of quality flag for _good_ (original) data, other data is set to missing}
-  \item{V1}{Condition variable 1 (default: Global radiation 'Rg' in  W m-2)}
-  \item{T1}{Tolerance interval 1 (default: 50 W m-2)}
-  \item{V2}{Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)}
-  \item{T2}{Tolerance interval 2 (default: 5 hPa)}
-  \item{V3}{Condition variable 3 (default: Air temperature 'Tair' in degC)}
-  \item{T3}{Tolerance interval 3 (default: 2.5 degC)}
-  \item{FillAll}{Fill all values to estimate uncertainties}
-  \item{Verbose}{Print status information to screen}
-  \item{suffix}{String suffix needed for different processing setups on the same dataset (for explanations see below)}
+  \item{QFVar}{
+}
+  \item{QFValue}{
+}
+  \item{V1}{Condition variable 1
+(default: Global radiation 'Rg' in  W m-2)}
+  \item{T1}{Tolerance interval 1
+(default: 50 W m-2)}
+  \item{V2}{Condition variable 2
+(default: Vapour pressure deficit 'VPD' in hPa)}
+  \item{T2}{Tolerance interval 2
+(default: 5 hPa)}
+  \item{V3}{Condition variable 3
+(default: Air temperature 'Tair' in degC)}
+  \item{T3}{Tolerance interval 3
+(default: 2.5 degC)}
+  \item{FillAll}{
+}
+  \item{isVerbose}{
+}
+  \item{suffix}{
+}
   \item{Var.s}{deprecated}
   \item{QFVar.s}{deprecated}
   \item{QFValue.n}{deprecated}
@@ -42,12 +53,16 @@
   \item{Verbose.b}{deprecated}
   \item{Suffix.s}{deprecated}
 }
-\details{Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
+\details{Initialize temporal data frame sTEMP for newly generated gap filled data and
+qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
 
-MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sEddyProc_sFillLUT}}
-and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different window sizes as described in the reference.
+MDS gap filling algorithm calls the subroutines Look Up Table
+\code{\link{sEddyProc_sFillLUT}}
+and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different
+window sizes as described in the reference.
 
-To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}}, set condition variable V1 to 'none'.
+To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}},
+set condition variable V1 to 'none'.
 
 \describe{\item{Different processing setups on the same dataset}{
 Attention: When processing the same site data set with different setups for the gap filling or flux partitioning

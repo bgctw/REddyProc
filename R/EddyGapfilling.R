@@ -4,14 +4,8 @@
 #Markus Reichstein
 #+++ Dependencies: Eddy.R, DataFunctions.R, EddyUStarFilerDP.R
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# TEST: create a suitable instance EPTha.C and then copy the class variables into global variables for debugging
-# TEST: sDATA <- EPTha.C$sDATA; sINFO <- EPTha.C$sINFO; sTEMP <- EPTha.C$sTEMP; Var.s <- 'NEE'; QFVar.s <- 'none'; QFValue.n <- NA_real_;
-# TEST: V1.s <- 'Rg'; T1.n <- 50; V2.s <- 'VPD'; T2.n <- 5; V3.s <- 'Tair'; T3.n <- 2.5; FillAll.b <- TRUE; Verbose.b <- TRUE
-# TEST: V4.s = 'none'; T4.n = NA_real_; V5.s = 'none'; T5.n = NA_real_; sTEMP <- NULL;
-# TEST: FluxVar.s = 'NEE'; UstarVar.s = 'Ustar'; UstarThres.n <- 0.35; uStarSuffix <- 'test'
 
 #' @include aEddy.R
-
 #' @export
 sEddyProc_sFillInit <- function(
   ### Initializes data frame sTEMP for newly generated gap filled data and qualifiers.
@@ -41,25 +35,34 @@ sEddyProc_sFillInit <- function(
   ## Description of newly generated variables with gap filled data and qualifiers: \cr
   ##details<<
   ## VAR\emph{_orig} - Original values used for gap filling \cr
-  ## VAR\emph{_f   } - Original values and gaps filled with mean of selected datapoints (condition depending on gap filling method) \cr
-  ## VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and window length (0 = original data, 1 = most reliable, 2 = medium, 3 = least reliable) \cr
+  ## VAR\emph{_f   } - Original values and gaps filled with mean of selected
+  ## datapoints (condition depending on gap filling method) \cr
+  ## VAR\emph{_fqc} - Quality flag assigned depending on gap filling method and
+  ## window length (0 = original data, 1 = most reliable, 2 = medium, 3 = least reliable) \cr
   ## VAR\emph{_fall} - All values considered as gaps (for uncertainty estimates) \cr
-  ## VAR\emph{_fall_qc} - Quality flag assigned depending on gap filling method and window length (1 = most reliable, 2 = medium, 3 = least reliable) \cr
+  ## VAR\emph{_fall_qc} - Quality flag assigned depending on gap filling method
+  ## and window length (1 = most reliable, 2 = medium, 3 = least reliable) \cr
   ## VAR\emph{_fnum} - Number of datapoints used for gap-filling \cr
-  ## VAR\emph{_fsd} - Standard deviation of datapoints used for gap filling (uncertainty) \cr
-  ## VAR\emph{_fmeth} - Method used for gap filling (1 = similar meteo condition (sFillLUT with Rg, VPD, Tair), 2 = similar meteo (sFillLUT with Rg only), 3 = mean diurnal course (sFillMDC)) \cr
+  ## VAR\emph{_fsd} - Standard deviation of datapoints used for gap
+  ## filling (uncertainty) \cr
+  ## VAR\emph{_fmeth} - Method used for gap filling (1 = similar meteo
+  ## condition (sFillLUT with Rg, VPD, Tair), 2 = similar meteo
+  ## (sFillLUT with Rg only), 3 = mean diurnal course (sFillMDC)) \cr
   ## VAR\emph{_fwin} - Full window length used for gap filling \cr
 
   lTEMP <- data.frame(
-    VAR_orig = Var.V.n               # Original values of variable VAR used for gap filling
-    , VAR_f = NA_real_                # Original values and filled gaps
-    , VAR_fqc = NA_real_              # Quality flag assigned depending on gap filling method and window length
-    , VAR_fall = NA_real_             # All values considered as gaps (for uncertainty estimates)
-    , VAR_fall_qc = NA_real_          # Quality flag assigned depending on gap filling method and window length
-    , VAR_fnum = NA_real_             # Number of datapoints used for gap-filling
-    , VAR_fsd = NA_real_              # Standard deviation of data points used for filling
-    , VAR_fmeth = NA_real_            # Method used for gap filling
-    , VAR_fwin = NA_real_             # Full window length used for gap filling
+    VAR_orig = Var.V.n      # Original values of variable VAR used for gap filling
+    , VAR_f = NA_real_       # Original values and filled gaps
+    , VAR_fqc = NA_real_     # Quality flag assigned depending on gap filling
+    ## method and window length
+    , VAR_fall = NA_real_    # All values considered as gaps
+    ## (for uncertainty estimates)
+    , VAR_fall_qc = NA_real_ # Quality flag assigned depending on gap filling
+    ## method and window length
+    , VAR_fnum = NA_real_    # Number of datapoints used for gap-filling
+    , VAR_fsd = NA_real_     # Standard deviation of data points used for filling
+    , VAR_fmeth = NA_real_   # Method used for gap filling
+    , VAR_fwin = NA_real_    # Full window length used for gap filling
   )
 
   # Set fqc to zero for original values
@@ -77,7 +80,8 @@ sEddyProc_sFillInit <- function(
 
   ##details<<
   ## Long gaps (larger than 60 days) are not filled.
-  #! Not congruent with PV-Wave, there the code is performed on single years only with long gaps of 60 days in the beginning or end skipped.
+  #! Not congruent with PV-Wave, there the code is performed on single years
+  #only with long gaps of 60 days in the beginning or end skipped.
   GapLength.V.n <- fCalcLengthOfGaps(lTEMP$VAR_orig)
   kMaxGap.n <- sINFO$DTS * 60 #Halfhours in 60 days
   while (max(GapLength.V.n) > kMaxGap.n) {
@@ -86,31 +90,33 @@ sEddyProc_sFillInit <- function(
     Start.i <- End.i - max(GapLength.V.n) + 1
     lTEMP$VAR_fall[Start.i:End.i] <- -9999.0 #Set to -9999.0 as a flag for long gaps
     GapLength.V.n[Start.i:End.i] <- -1 #Set to -1 since accounted for
-    warning('sMDSGapFill::: The long gap between position ', Start.i, ' and ', End.i, ' will not be filled!')
+    warning(
+      'sMDSGapFill::: The long gap between position ', Start.i, ' and '
+      , End.i, ' will not be filled!')
   }
 
   if (FillAll.b == T) {
-    message('Initialized variable \'', Var.s, '\' with ', sum(is.na(lTEMP$VAR_orig)),
-            ' real gaps for gap filling of all ', sum(is.na(lTEMP$VAR_fall)) , ' values (to estimate uncertainties).')
+    message(
+      'Initialized variable \'', Var.s, '\' with ', sum(is.na(lTEMP$VAR_orig))
+      , ' real gaps for gap filling of all ', sum(is.na(lTEMP$VAR_fall))
+      , ' values (to estimate uncertainties).')
   } else {
     message('Initialized variable \'', Var.s, '\' with ', sum(is.na(lTEMP$VAR_orig)),
             ' real gaps for gap filling.')
   }
 
-  sTEMP <<- data.frame(c(sTEMP, lTEMP))	# twutz: error prone if sTEMP already contains columns of lTEMP
+  # twutz: error prone if sTEMP already contains columns of lTEMP
+  sTEMP <<- data.frame(c(sTEMP, lTEMP))
   return(invisible(NULL))
 }
 sEddyProc$methods(sFillInit = sEddyProc_sFillInit)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sFillLUT <- function(
-  ##title<<
-  ## sEddyProc$sFillLUT - Gap filling with Look-Up Table (LUT)
-  ##description<<
-  ## Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size
+  ### Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size
   WinDays.i             ##<< Window size for filling in days
   , V1.s = 'none'          ##<< Condition variable 1
   , T1.n = NA_real_        ##<< Tolerance interval 1
@@ -123,21 +129,19 @@ sEddyProc_sFillLUT <- function(
   , V5.s = 'none'          ##<< Condition variable 5
   , T5.n = NA_real_        ##<< Tolerance interval 5
   , Verbose.b = TRUE       ##<< Print status information to screen
-)
-##author<<
-## AMM
-#TEST: WinDays.i <- 7; Pos.i <- 18;
-{
-  'Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size'
-
-  #! Attention: For performance reasons, gap filled values and properties are first written to single variables and local matrix lGF.M
+) {
+##author<< AMM
+  #! Attention: For performance reasons, gap filled values and properties are
+  #first written to single variables and local matrix lGF.M
   #! (rather than changing single values in sTEMP which copies the data frame each time!)
   #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
-  lGF.M <- matrix(NA_real_, nrow = 0, ncol = 7, dimnames = list(NULL, c('index', 'mean', 'fnum', 'fsd', 'fmeth', 'fwin', 'fqc')))
+  lGF.M <- matrix(NA_real_, nrow = 0, ncol = 7, dimnames = list(
+    NULL, c('index', 'mean', 'fnum', 'fsd', 'fmeth', 'fwin', 'fqc')))
 
   # Check if sTEMP has been initialized with new VAR_ columns
-  if (!exists('VAR_f', sTEMP) )
-    stop('sFillLUT::: Temporal data frame sTEMP for processing results has not been initalized with sFillInit!')
+  if (!exists('VAR_f', sTEMP) ) stop(
+    'sFillLUT::: Temporal data frame sTEMP for processing results has not '
+    , 'been initalized with sFillInit!')
 
   # Determine gap positions
   ToBeFilled.V.i <- which(is.na(sTEMP$VAR_fall))
@@ -145,8 +149,9 @@ sEddyProc_sFillLUT <- function(
     for (Pos.i in 1:length(ToBeFilled.V.i) ) {
       # Message on progress if wanted
       NoneCols.b <- c(V1.s, V2.s, V3.s, V4.s, V5.s) %in% 'none'
-      if (Verbose.b && Pos.i == 1)  message('Look up table with window size of ', WinDays.i, ' days with ',
-                                            paste(c(V1.s, V2.s, V3.s, V4.s, V5.s)[!NoneCols.b], collapse = ' '))
+      if (Verbose.b && Pos.i == 1)  message(
+        'Look up table with window size of ', WinDays.i, ' days with '
+        , paste(c(V1.s, V2.s, V3.s, V4.s, V5.s)[!NoneCols.b], collapse = ' '))
       # Set window size
       Gap.i   <- ToBeFilled.V.i[Pos.i]
       if (T == T) {
@@ -164,13 +169,15 @@ sEddyProc_sFillLUT <- function(
 
       #! Special treatment of Rg to be congruent with MR PV-Wave, in paper not mentioned
       T1red.n <- if (grepl('Rg', V1.s) ) {
-        # Reduce tolerance of radiation if variable name contains 'Rg' to [20, 50] depending on measurement
+        # Reduce tolerance of radiation if variable name contains 'Rg' to
+        # [20, 50] depending on measurement
         max(min(T1.n, sDATA[Gap.i, V1.s], na.rm = T), 20, na.rm = T)
       } else {
         T1.n
       }
 
-      # For performance reasons, write sDATA subrange into vectors (speed up about factor of 1.5)
+      # For performance reasons, write sDATA subrange into vectors
+      # (speed up about factor of 1.5)
       V1.V.n <- sDATA[Start.i:End.i, V1.s]
       V2.V.n <- sDATA[Start.i:End.i, V2.s]
       V3.V.n <- sDATA[Start.i:End.i, V3.s]
@@ -209,21 +216,29 @@ sEddyProc_sFillLUT <- function(
         ## or one variable and nDay > 28
         ## }
         ## }}
-        lVAR_fwin.n  <- 2 * WinDays.i                      #! Full window length, congruent with MR PV-Wave, in paper single window sizes stated
+        #! Full window length, congruent with MR PV-Wave, in paper
+        #single window sizes stated
+        lVAR_fwin.n  <- 2 * WinDays.i
         lVAR_fmeth.n <- NA_real_; lVAR_fqc.n <- NA_real_;
-        if (V1.s != 'none' && V2.s != 'none' && V3.s != 'none') { #Three conditions
+        if (V1.s != 'none' && V2.s != 'none' && V3.s != 'none') {
+          #Three conditions
           lVAR_fmeth.n <- 1
-          if (lVAR_fwin.n <= 14) lVAR_fqc.n <- 1        #! Limit '14' congruent with MR PV-Wave, in paper different limit of '28' (stated as single window size of 14 days)
+          #! Limit '14' congruent with MR PV-Wave, in paper different limit
+          #of '28' (stated as single window size of 14 days)
+          if (lVAR_fwin.n <= 14) lVAR_fqc.n <- 1
           if (lVAR_fwin.n >  14 & lVAR_fwin.n <= 56) lVAR_fqc.n <- 2
           if (lVAR_fwin.n >  56) lVAR_fqc.n <- 3
         }
-        if (V1.s != 'none' && V2.s == 'none' && V3.s == 'none') { #One condition only
+        if (V1.s != 'none' && V2.s == 'none' && V3.s == 'none') {
+          #One condition only
           lVAR_fmeth.n <- 2
           if (lVAR_fwin.n <= 14) lVAR_fqc.n <- 1
           if (lVAR_fwin.n >  14 & lVAR_fwin.n <= 28) lVAR_fqc.n <- 2
           if (lVAR_fwin.n >  28) lVAR_fqc.n <- 3
         }
-        lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
+        lGF.M <- rbind(lGF.M, c(
+          lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n
+          , lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
       }
       if (Verbose.b && Pos.i %% 100 == 0)  message('.', appendLF = FALSE)
       if (Verbose.b && Pos.i %% 6000 == 0) message('\n.', appendLF = FALSE)
@@ -233,49 +248,47 @@ sEddyProc_sFillLUT <- function(
   # Copy gap filled values and properties to sTEMP
   if (nrow(lGF.M) > 0) {
     # Fill all rows in VAR_fall and co
-    sTEMP[lGF.M[, 'index'], c('VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fmeth', 'VAR_fwin', 'VAR_fall_qc')] <<-
+    sTEMP[lGF.M[, 'index'], c(
+      'VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fmeth', 'VAR_fwin', 'VAR_fall_qc')] <<-
       lGF.M[, c('mean', 'fnum', 'fsd', 'fmeth', 'fwin', 'fqc')]
     # Only fill gaps in VAR_f and VAR_fqc
     Gaps.b <- is.na(sTEMP[lGF.M[, 'index'], 'VAR_f'])
-    sTEMP[lGF.M[, 'index'], c('VAR_f', 'VAR_fqc')][Gaps.b, ] <<- as.data.frame(lGF.M[, c('mean', 'fqc') , drop = FALSE])[Gaps.b, ]
+    sTEMP[lGF.M[, 'index'], c('VAR_f', 'VAR_fqc')][Gaps.b, ] <<-
+      as.data.frame(lGF.M[, c('mean', 'fqc') , drop = FALSE])[Gaps.b, ]
   }
 
-  return(invisible(sTEMP[, c('VAR_orig', 'VAR_f', 'VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fwin')])) #Other columns are specific for full MR MDS algorithm
+  #Other columns are specific for full MR MDS algorithm
+  return(invisible(sTEMP[, c(
+    'VAR_orig', 'VAR_f', 'VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fwin')]))
   ##value<<
   ## LUT filling results in sTEMP data frame.
 }
 sEddyProc$methods(sFillLUT = sEddyProc_sFillLUT)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sFillMDC <- function(
-  ##title<<
-  ## sEddyProc$sFillMDC - Gap filling with Mean Diurnal Course (MDC)
-  ##description<<
-  ## Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days
-  WinDays.i           ##<< Window size for filling in days
-  , Verbose.b = TRUE     ##<< Print status information to screen
-)
-  ##author<<
-  ## AMM
-  # TEST: WinDays.i <- 2; Pos.i <- 100
-{
-  'Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days'
-
+  ### Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days
+  WinDays.i            ##<< Window size for filling in days
+  , Verbose.b = TRUE   ##<< Print status information to screen
+) {
+  ##author<< AMM
   #! Attention: For performance reasons, gap filled values and properties are first written to single
   #! variables and local matrix lGF.M
   #! (rather than changing single values in sTEMP which copies the data frame each time!)
   #! Improved algorithm speed by more than a factor of 10 (maybe even 100...)
-  lGF.M <- matrix(NA_real_, nrow = 0, ncol = 7, dimnames = list(NULL, c('index', 'mean', 'fnum', 'fsd', 'fmeth', 'fwin', 'fqc')))
+  lGF.M <- matrix(NA_real_, nrow = 0, ncol = 7, dimnames = list(NULL, c(
+    'index', 'mean', 'fnum', 'fsd', 'fmeth', 'fwin', 'fqc')))
 
   # Determine gap positions
   ToBeFilled.V.i <- which(is.na(sTEMP$VAR_fall))
   if (length(ToBeFilled.V.i) > 0) {
     for (Pos.i in 1:length(ToBeFilled.V.i)) {
       # Message on progress if wanted
-      if (Verbose.b && Pos.i == 1) message('Mean diurnal course with window size of ', WinDays.i, ' days: .', sep = '')
+      if (Verbose.b && Pos.i == 1) message(
+        'Mean diurnal course with window size of ', WinDays.i, ' days: .', sep = '')
 
       # Set index within window size
       Gap.i   <- ToBeFilled.V.i[Pos.i]
@@ -284,7 +297,9 @@ sEddyProc_sFillMDC <- function(
         if (Day.i == 0) {
           Index.V.i <- c(Index.V.i, Gap.i + (-2:2))
         } else {
-          Index.V.i <- c(Index.V.i, Gap.i + c(-Day.i * sINFO$DTS + (-2:2)), Gap.i + c(Day.i * sINFO$DTS + (-2:2)))
+          Index.V.i <- c(
+            Index.V.i, Gap.i + c(-Day.i * sINFO$DTS + (-2:2))
+            , Gap.i + c(Day.i * sINFO$DTS + (-2:2)))
         }
       Index.V.i <- Index.V.i[Index.V.i > 0 & Index.V.i <= nrow(sTEMP)]
 
@@ -304,9 +319,12 @@ sEddyProc_sFillMDC <- function(
         #Set window size and quality flag
         if (T == T) {
           #! Non-congruent with MR PV-Wave
-          lVAR_fwin.n <- 2 * WinDays.i + 1                 #! Full window length, not congruent with MR PV-Wave (see below), in paper single window sizes stated
+          ##! Full window length, not congruent with MR PV-Wave (see below),
+          ##in paper single window sizes stated
+          lVAR_fwin.n <- 2 * WinDays.i + 1
         } else {
-          #! Code if required to be congruent with MR PV-Wave --> window calculation changes depending on size
+          #! Code if required to be congruent with MR PV-Wave -->
+          #window calculation changes depending on size
           lVAR_fwin.n <- if (WinDays.i < 7) {
             2 * WinDays.i + 1
           } else {
@@ -325,7 +343,9 @@ sEddyProc_sFillMDC <- function(
         if (lVAR_fwin.n >  1 & lVAR_fwin.n <= 5) lVAR_fqc.n <- 2
         if (lVAR_fwin.n >  5) lVAR_fqc.n <- 3
 
-        lGF.M <- rbind(lGF.M, c(lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n, lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
+        lGF.M <- rbind(lGF.M, c(
+          lVAR_index.i, lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n
+          , lVAR_fmeth.n, lVAR_fwin.n, lVAR_fqc.n))
       }
       if (Verbose.b && Pos.i %% 100 == 0)  message('.', appendLF = FALSE)
       if (Verbose.b && Pos.i %% 6000 == 0) message('\n.', appendLF = FALSE)
@@ -335,29 +355,31 @@ sEddyProc_sFillMDC <- function(
   # Copy gap filled values and properties to sTEMP
   if (nrow(lGF.M) > 0) {
     # Fill all rows in VAR_fall and co
-    sTEMP[lGF.M[, 'index'], c('VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fmeth', 'VAR_fwin', 'VAR_fall_qc')] <<-
+    sTEMP[lGF.M[, 'index'], c(
+      'VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fmeth', 'VAR_fwin', 'VAR_fall_qc')] <<-
       lGF.M[, c('mean', 'fnum', 'fsd', 'fmeth', 'fwin', 'fqc')]
     # Only fill gaps in VAR_f and VAR_fqc
     Gaps.b <- is.na(sTEMP[lGF.M[, 'index'], 'VAR_f'])
-    # twutz: inserted drop = FALSE, otherwise one-row matrix was not converted to data.frame correctly
-    sTEMP[lGF.M[, 'index'], c('VAR_f', 'VAR_fqc')][Gaps.b, ] <<- as.data.frame(lGF.M[, c('mean', 'fqc') , drop = FALSE])[Gaps.b, ]
+    # twutz: inserted drop = FALSE, otherwise one-row matrix was not
+    # converted to data.frame correctly
+    sTEMP[lGF.M[, 'index'], c('VAR_f', 'VAR_fqc')][Gaps.b, ] <<-
+      as.data.frame(lGF.M[, c('mean', 'fqc') , drop = FALSE])[Gaps.b, ]
   }
 
-  return(invisible(sTEMP[, c('VAR_orig', 'VAR_f', 'VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fwin')])) #Other columns are specific for full MR MDS algorithm
+  #Other columns are specific for full MR MDS algorithm
+  return(invisible(sTEMP[, c(
+    'VAR_orig', 'VAR_f', 'VAR_fall', 'VAR_fnum', 'VAR_fsd', 'VAR_fwin')]))
   ##value<<
   ## MDC filling results in sTEMP data frame.
 }
 sEddyProc$methods(sFillMDC = sEddyProc_sFillMDC)
 
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 sEddyProc_sMDSGapFill <- function(
-  ##title<<
-  ## sEddyProc$sMDSGapFill - MDS gap filling algorithm
-  ##description<<
-  ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
+  ### MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
   Var = Var.s                 ##<< Variable to be filled
   , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'       ##<<
   ## Quality flag of variable to be filled
@@ -377,7 +399,7 @@ sEddyProc_sMDSGapFill <- function(
   ## (default: 2.5 degC)
   , FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE       ##<<
   ## Fill all values to estimate uncertainties
-  , Verbose = if (!missing(Verbose.b)) Verbose.b else TRUE       ##<<
+  , isVerbose = if (!missing(Verbose.b)) Verbose.b else TRUE       ##<<
   ## Print status information to screen
   , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<<
   ## String suffix needed for different processing setups on the same dataset
@@ -397,6 +419,20 @@ sEddyProc_sMDSGapFill <- function(
   #! , QF.V.b = TRUE        ##<< boolean vector of length nRow(sData),
   ## to allow specifying bad data directly (those entries that are set to FALSE)
 ) {
+  varNamesDepr <- c(
+    "Var.s","QFVar.s","QFValue.n","V1.s","T1.n"
+    ,"V2.s","T2.n","V3.s","T3.n","FillAll.b","Verbose.b","Suffix.s")
+  varNamesNew <- c(
+    "Var","QFVar","QFValue","V1","T1"
+    ,"V2","T2","V3","T3","FillAll","isVerbose","suffix")
+  iDepr = which(!c(
+    missing(Var.s),missing(QFVar.s),missing(QFValue.n),missing(V1.s)
+    ,missing(T1.n),missing(V2.s),missing(T2.n),missing(V3.s),missing(T3.n)
+    ,missing(FillAll.b),missing(Verbose.b),missing(Suffix.s)))
+  if (length(iDepr)) warning(
+    "Arguments names ",paste(varNamesDepr[iDepr], collapse = ",")
+    ," have been deprecated."
+    ," Please, use instead ", paste(varNamesNew[iDepr], collapse = ","))
   ##author<< AMM, TW
   ##references<<
   ## Reichstein, M. et al. (2005) On the separation of net ecosystem exchange
@@ -407,7 +443,7 @@ sEddyProc_sMDSGapFill <- function(
   ## Initialize temporal data frame sTEMP for newly generated gap filled data and
   ## qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
   # sTEMP <<- sTEMP[, 1L, drop = FALSE]
-  if (!is.null(sFillInit(Var.s, QFVar, QFValue, FillAll)) ) #! , QF.V.b = QF.V.b)) )
+  if (!is.null(sFillInit(Var, QFVar, QFValue, FillAll)) ) #! , QF.V.b = QF.V.b)) )
     return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
   #+++ Handling of special cases of meteo condition variables V1, V2, V3
   # If variables are at default values but do not exist as columns, set to 'none'
@@ -418,9 +454,9 @@ sEddyProc_sMDSGapFill <- function(
   # as meteo condition variable.
   #! Attention: Non-congruent with MR PV-Wave. There artificial gaps in
   #Rg, VPD, Tair are filled with itself.
-  if ( (V1 ==   'Rg' && !(V1 %in% c(colnames(sDATA)))) || (V1 == Var.s) )   V1 <- 'none'
-  if ( (V2 ==  'VPD' && !(V2 %in% c(colnames(sDATA)))) || (V2 == Var.s) )   V2 <- 'none'
-  if ( (V3 == 'Tair' && !(V3 %in% c(colnames(sDATA)))) || (V3 == Var.s) )   V3 <- 'none'
+  if ( (V1 ==   'Rg' && !(V1 %in% c(colnames(sDATA)))) || (V1 == Var) )   V1 <- 'none'
+  if ( (V2 ==  'VPD' && !(V2 %in% c(colnames(sDATA)))) || (V2 == Var) )   V2 <- 'none'
+  if ( (V3 == 'Tair' && !(V3 %in% c(colnames(sDATA)))) || (V3 == Var) )   V3 <- 'none'
   # Check column names (with 'none' as dummy)
   # (Numeric type and plausibility have been checked on initialization of sEddyProc)
   fCheckColNames(cbind(sDATA, sTEMP), c(V1, V2, V3), 'sMDSGapFill')
@@ -443,47 +479,58 @@ sEddyProc_sMDSGapFill <- function(
   ## set condition variable V1 to 'none'.
   # Check availablility of meteorological data for LUT
   Met.n <-
-    if (V1 != 'none' && V2 != 'none' && V3 != 'none'
-        && sum(!is.na(sDATA[, V1])) != 0 && sum(!is.na(sDATA[, V2])) != 0 && sum(!is.na(sDATA[, V3])) != 0) {
+    if (
+      V1 != 'none' && V2 != 'none' && V3 != 'none'
+        && sum(!is.na(sDATA[, V1])) != 0 && sum(!is.na(sDATA[, V2])) != 0 &&
+        sum(!is.na(sDATA[, V3])) != 0
+        ) {
       #All three meteo conditions are available and valid to use:
-      message('Full MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1, ', ', V2, ', ', V3, ') and MDC.')
+      message(
+        'Full MDS algorithm for gap filling of \''
+        , attr(sTEMP$VAR_f, 'varnames'), '\' with LUT('
+        , V1, ', ', V2, ', ', V3, ') and MDC.')
       3
     } else if (V1 != 'none' && sum(!is.na(sDATA[, V1])) != 0) {
       #Only one meteo condition available for LUT
-      message('Limited MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1, ' only) and MDC.')
+      message(
+        'Limited MDS algorithm for gap filling of \''
+        , attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1, ' only) and MDC.')
       1
     } else {
       #No meteo condition available (use MDC only)
-      message('Restriced MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with no meteo conditions and hence only MDC.')
-      if (Var.s != 'Rg') warning('sMDSGapFill::: No meteo available for MDS gap filling!')
+      message(
+        'Restriced MDS algorithm for gap filling of \''
+        , attr(sTEMP$VAR_f, 'varnames')
+        , '\' with no meteo conditions and hence only MDC.')
+      if (Var != 'Rg') warning(
+        'sMDSGapFill::: No meteo available for MDS gap filling!')
       0
     }
-
   #+++ Full MDS algorithm
   # Step 1: Look-up table (method 1) with window size +-7 days
-  if (Met.n == 3) sFillLUT(7, V1, T1, V2, T2, V3, T3, Verbose.b = Verbose)
+  if (Met.n == 3) sFillLUT(7, V1, T1, V2, T2, V3, T3, Verbose.b = isVerbose)
   # Step 2: Look-up table (method 1) with window size +-14 days
-  if (Met.n == 3) sFillLUT(14, V1, T1, V2, T2, V3, T3, Verbose.b = Verbose)
+  if (Met.n == 3) sFillLUT(14, V1, T1, V2, T2, V3, T3, Verbose.b = isVerbose)
   # Step 3: Look-up table, Rg only (method 2) with window size +-7 days,
-  if (Met.n == 3 || Met.n == 1) sFillLUT(7, V1, T1, Verbose.b = Verbose)
+  if (Met.n == 3 || Met.n == 1) sFillLUT(7, V1, T1, Verbose.b = isVerbose)
   # Step 4: Mean diurnal course (method 3) with window size 0 (same day)
-  sFillMDC(0, Verbose.b = Verbose)
+  sFillMDC(0, Verbose.b = isVerbose)
   # Step 5: Mean diurnal course (method 3) with window size +-1, +-2 days
-  sFillMDC(1, Verbose.b = Verbose)
-  sFillMDC(2, Verbose.b = Verbose)
+  sFillMDC(1, Verbose.b = isVerbose)
+  sFillMDC(2, Verbose.b = isVerbose)
   # Step 6: Look-up table (method 1) with window size +-21, +-28, ..., +-70
-  if (Met.n == 3) for (WinDays.i in seq(21, 70, 7) ) sFillLUT(WinDays.i, V1, T1, V2, T2, V3, T3, Verbose.b = Verbose)
+  if (Met.n == 3) for (WinDays.i in seq(21, 70, 7) ) sFillLUT(WinDays.i, V1, T1, V2, T2, V3, T3, Verbose.b = isVerbose)
   # Step 7: Look-up table (method 2) with window size +-14, +-21, ..., +-70
-  if (Met.n == 3 || Met.n == 1) for (WinDays.i in seq(14, 70, 7) ) sFillLUT(WinDays.i, V1, T1, Verbose.b = Verbose)
+  if (Met.n == 3 || Met.n == 1) for (WinDays.i in seq(14, 70, 7) ) sFillLUT(WinDays.i, V1, T1, Verbose.b = isVerbose)
   # Step 8: Mean diurnal course (method 3) with window size +-7, +-14, ..., +-210 days
-  for (WinDays.i in seq(7, 210, 7) ) sFillMDC(WinDays.i, Verbose.b = Verbose)
+  for (WinDays.i in seq(7, 210, 7) ) sFillMDC(WinDays.i, Verbose.b = isVerbose)
 
   # Set long gaps again to NA
   sTEMP$VAR_fall <<- suppressMessages(fConvertGapsToNA(sTEMP$VAR_fall))
 
   # Message on gap filling
   TimeDiff.p <- as.numeric(Sys.time()) - as.numeric(TimeStart.p)
-  message('Finished gap filling of \'', Var.s, '\' in ', floor(TimeDiff.p), ' seconds. Artificial gaps filled: ', length(sTEMP$VAR_fall) - sum(is.na(sTEMP$VAR_fall)),
+  message('Finished gap filling of \'', Var, '\' in ', floor(TimeDiff.p), ' seconds. Artificial gaps filled: ', length(sTEMP$VAR_fall) - sum(is.na(sTEMP$VAR_fall)),
           ', real gaps filled: ', sum(is.na(sTEMP$VAR_orig)),
           ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
 
@@ -493,7 +540,7 @@ sEddyProc_sMDSGapFill <- function(
   ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
   ## }}
   # Rename new columns generated during gap filling
-  colnames(sTEMP) <<- gsub('VAR_', paste(Var.s, (if (fCheckValString(suffix)) '_' else ''), suffix, '_', sep = ''), colnames(sTEMP))
+  colnames(sTEMP) <<- gsub('VAR_', paste(Var, (if (fCheckValString(suffix)) '_' else ''), suffix, '_', sep = ''), colnames(sTEMP))
   # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
   if (length(names(which(table(colnames(sTEMP)) > 1))) )  {
     warning('sMDSGapFill::: Duplicated columns found! Please specify different suffix when processing different setups on the same dataset!')

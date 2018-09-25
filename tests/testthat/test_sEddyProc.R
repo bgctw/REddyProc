@@ -146,7 +146,7 @@ test_that("Test sMDSGapFill",{
   # Shorter version for hourly
   EddyHour.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix2.F[c(F,T),][1:(24*3*30),]
-    , c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS.n = 24)
+    , c('NEE','Rg', 'Tair', 'VPD', 'QF'), DTS = 24)
   EddyHour.C$sMDSGapFill('Tair','QF', 0, Verbose.b = F)
   Results.F <- EddyHour.C$sExportResults()
   #Equal to 68 with old MR PV-Wave congruent settings

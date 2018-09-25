@@ -143,8 +143,9 @@ sEddyProc_sMRFluxPartition <- function(
     ,missing(TempVar.s),missing(QFTempVar.s),missing(QFTempValue.n)
     ,missing(RadVar.s),missing(T_ref.n),missing(Suffix.s),missing(debug.l)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
-    ," Please, use instead ", varNamesNew[iDepr])
+    "Arguments names ",paste(varNamesDepr[iDepr], collapse = ",")
+    ," have been deprecated."
+    ," Please, use instead ", paste(varNamesNew[iDepr], collapse = ","))
   ##references<<
   ## Reichstein M, Falge E, Baldocchi D et al. (2005) On the separation of
   ## net ecosystem exchange
@@ -341,16 +342,16 @@ sEddyProc_sCalcPotRadiation <- function(
   Hour.V.n <-
     as.POSIXlt(sDATA$sDateTime)$hour + as.POSIXlt(sDATA$sDateTime)$min / 60
   # Check that location info has been set
-  if (!(is.finite(sLOCATION$Lat_deg.n) &
-        is.finite(sLOCATION$Long_deg.n) &
-        is.finite(sLOCATION$TimeZone_h.n)))
+  if (!(is.finite(sLOCATION$LatDeg) &
+        is.finite(sLOCATION$LongDeg) &
+        is.finite(sLOCATION$TimeZoneHour)))
     stop(
       "Need to set valid location information (sSetLocationInfo) before "
       , "calling sCalcPotRadiation.")
   ##value<< column PotRad_NEW in sTEMP
   sTEMP$PotRad_NEW <<- fCalcPotRadiation(
-    DoY.V.n, Hour.V.n, sLOCATION$Lat_deg.n, sLOCATION$Long_deg.n
-    , sLOCATION$TimeZone_h.n, useSolartime = useSolartime)
+    DoY.V.n, Hour.V.n, sLOCATION$LatDeg, sLOCATION$LongDeg
+    , sLOCATION$TimeZoneHour, useSolartime = useSolartime)
 }
 sEddyProc$methods(sCalcPotRadiation = sEddyProc_sCalcPotRadiation)
 
@@ -609,9 +610,9 @@ sEddyProc_sRegrE0fromShortTerm <- function(
   ## Estimation of the temperature sensitivity E_0 from regression of
   ## \code{\link{fLloydTaylor}}
   ## for short periods by calling \code{fRegrE0fromShortTerm}
-  NightFlux   ##<< Variable with (original) nighttime ecosystem carbon flux,
+  NightFluxVar   ##<< Variable with (original) nighttime ecosystem carbon flux,
   ## i.e. respiration
-  , Temp   ##<< Variable with (original) air or soil temperature (degC)
+  , TempVar   ##<< Variable with (original) air or soil temperature (degC)
   , ...				  ##<< Parameters passed to \code{fRegrE0fromShortTerm}
   , CallFunction = ''    ##<< Name of function called from
   , debug = list(fixedE0 = NA) ##<< List with controls for debugging, see details
@@ -620,8 +621,9 @@ sEddyProc_sRegrE0fromShortTerm <- function(
   #
   # Check if specified columns are numeric
   SubCallFunc.s <- paste(CallFunction, 'sRegrE0fromShortTerm', sep = ':::')
-  fCheckColNames(cbind(.self$sDATA, .self$sTEMP), c(NightFlux, Temp), SubCallFunc.s)
-  fCheckColNum(cbind(.self$sDATA, .self$sTEMP), c(NightFlux, Temp), SubCallFunc.s)
+  sDT <- cbind(.self$sDATA, .self$sTEMP)
+  fCheckColNames(sDT, c(NightFluxVar, TempVar), SubCallFunc.s)
+  fCheckColNum(sDT, c(NightFluxVar, TempVar), SubCallFunc.s)
   #
   ##details<< \describe{ \item{Debugging control}{
   ## When supplying a finite scalar value \code{debug$fixedE0}, then this value
@@ -634,15 +636,15 @@ sEddyProc_sRegrE0fromShortTerm <- function(
       , format(E_0_trim.n, digits = 5), '.')
   }else{
     # Write into vectors since cbind of data frames is so slow (factor of ~20 (!))
-    NightFlux <- cbind(.self$sDATA, .self$sTEMP)[, NightFlux]
-    Temp <- cbind(.self$sDATA, .self$sTEMP)[, Temp]
+    NightFlux <- sDT[[NightFluxVar]]
+    Temp <- sDT[[TempVar]]
     DayCounter <- c(1:sINFO$DIMS) %/% sINFO$DTS
     #
     # Check for validity of E_0 regression results
-    if (grepl('Tair', Temp) ) {
+    if (grepl('Tair', TempVar) ) {
       #Limits in PV-Wave code for Tair
       MinE0 <- 30; MaxE0 <- 350
-    } else if (grepl('Tsoil', Temp) ) {
+    } else if (grepl('Tsoil', TempVar) ) {
       #Limits in PV-Wave code for Tsoil
       ## Higher values due to potentially high Q10 values
       MinE0 <- 30; MaxE0 <- 550
