@@ -65,9 +65,11 @@ To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}},
 set condition variable V1 to 'none'.
 
 \describe{\item{Different processing setups on the same dataset}{
-Attention: When processing the same site data set with different setups for the gap filling or flux partitioning
+Attention: When processing the same site data set with different setups for
+the gap filling or flux partitioning
 (e.g. due to different ustar filters),
-a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
+a string suffix is needed! This suffix is added to the result column names
+to distinguish the results of the different setups.
 }}}
 \value{Gap filling results in sTEMP data frame (with renamed columns).}
 \references{Reichstein, M. et al. (2005) On the separation of net ecosystem exchange

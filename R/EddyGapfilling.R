@@ -519,9 +519,11 @@ sEddyProc_sMDSGapFill <- function(
   sFillMDC(1, Verbose.b = isVerbose)
   sFillMDC(2, Verbose.b = isVerbose)
   # Step 6: Look-up table (method 1) with window size +-21, +-28, ..., +-70
-  if (Met.n == 3) for (WinDays.i in seq(21, 70, 7) ) sFillLUT(WinDays.i, V1, T1, V2, T2, V3, T3, Verbose.b = isVerbose)
+  if (Met.n == 3) for (WinDays.i in seq(21, 70, 7) ) sFillLUT(
+    WinDays.i, V1, T1, V2, T2, V3, T3, Verbose.b = isVerbose)
   # Step 7: Look-up table (method 2) with window size +-14, +-21, ..., +-70
-  if (Met.n == 3 || Met.n == 1) for (WinDays.i in seq(14, 70, 7) ) sFillLUT(WinDays.i, V1, T1, Verbose.b = isVerbose)
+  if (Met.n == 3 || Met.n == 1) for (WinDays.i in seq(14, 70, 7) ) sFillLUT(
+    WinDays.i, V1, T1, Verbose.b = isVerbose)
   # Step 8: Mean diurnal course (method 3) with window size +-7, +-14, ..., +-210 days
   for (WinDays.i in seq(7, 210, 7) ) sFillMDC(WinDays.i, Verbose.b = isVerbose)
 
@@ -530,22 +532,29 @@ sEddyProc_sMDSGapFill <- function(
 
   # Message on gap filling
   TimeDiff.p <- as.numeric(Sys.time()) - as.numeric(TimeStart.p)
-  message('Finished gap filling of \'', Var, '\' in ', floor(TimeDiff.p), ' seconds. Artificial gaps filled: ', length(sTEMP$VAR_fall) - sum(is.na(sTEMP$VAR_fall)),
-          ', real gaps filled: ', sum(is.na(sTEMP$VAR_orig)),
-          ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
+  message(
+    'Finished gap filling of \'', Var, '\' in ', floor(TimeDiff.p)
+    , ' seconds. Artificial gaps filled: '
+    , length(sTEMP$VAR_fall) - sum(is.na(sTEMP$VAR_fall))
+    , ', real gaps filled: ', sum(is.na(sTEMP$VAR_orig))
+    , ', unfilled (long) gaps: ', sum(is.na(sTEMP$VAR_fall)), '.')
 
   ##details<< \describe{\item{Different processing setups on the same dataset}{
-  ## Attention: When processing the same site data set with different setups for the gap filling or flux partitioning
+  ## Attention: When processing the same site data set with different setups for
+  ## the gap filling or flux partitioning
   ## (e.g. due to different ustar filters),
-  ## a string suffix is needed! This suffix is added to the result column names to distinguish the results of the different setups.
+  ## a string suffix is needed! This suffix is added to the result column names
+  ## to distinguish the results of the different setups.
   ## }}
   # Rename new columns generated during gap filling
-  colnames(sTEMP) <<- gsub('VAR_', paste(Var, (if (fCheckValString(suffix)) '_' else ''), suffix, '_', sep = ''), colnames(sTEMP))
-  # Check for duplicate columns (to detect if different processing setups were executed without different suffixes)
-  if (length(names(which(table(colnames(sTEMP)) > 1))) )  {
-    warning('sMDSGapFill::: Duplicated columns found! Please specify different suffix when processing different setups on the same dataset!')
-  }
-
+  colnames(sTEMP) <<- gsub('VAR_', paste(
+    Var, (if (fCheckValString(suffix)) '_' else '')
+    , suffix, '_', sep = ''), colnames(sTEMP))
+  # Check for duplicate columns (to detect if different processing
+  # setups were executed without different suffixes)
+  if (length(names(which(table(colnames(sTEMP)) > 1))) )  warning(
+    'sMDSGapFill::: Duplicated columns found! Please specify different suffix '
+    , 'when processing different setups on the same dataset!')
   return(invisible(NULL))
   ##value<<
   ## Gap filling results in sTEMP data frame (with renamed columns).
