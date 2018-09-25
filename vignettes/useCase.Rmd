@@ -227,7 +227,7 @@ Therefore it needs a specification of geographical coordinates and time zone
 to allow computing sunrise and sunset. Further, the missing values in the 
 used meteorological data need to be filled. 
 ```{r, message = FALSE}
-EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)  
+EddyProc.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
 EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)     
 EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)     
 ```

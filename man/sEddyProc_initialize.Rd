@@ -4,24 +4,40 @@
 \description{This function is called when writing \code{sEddyProc$new}.
 It creates the fields of the sEddyProc R5 reference class for processing
 of half-hourly eddy data}
-\usage{sEddyProc_initialize(ID.s, Data.F, ColNames.V.s, 
-    ColPOSIXTime.s = "DateTime", DTS.n = 48, 
-    ColNamesNonNumeric.V.s = character(0), 
-    Lat_deg.n = NA_real_, Long_deg.n = NA_real_, 
-    TimeZone_h.n = NA_integer_, ...)}
+\usage{sEddyProc_initialize(ID = ID.s, Data = Data.F, 
+    ColNames = ColNames.V.s, ColPOSIXTime = "DateTime", 
+    DTS = if (!missing(DTS.n)) DTS.n else 48, 
+    ColNamesNonNumeric = character(0), LatDeg = NA_real_, 
+    LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_, 
+    TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_, 
+    ID.s, Data.F, ColNames.V.s, ColPOSIXTime.s, 
+    DTS.n, ColNamesNonNumeric.V.s, Lat_deg.n, 
+    Long_deg.n, TimeZone_h.n, ...)}
 \arguments{
-  \item{ID.s}{String with site ID}
-  \item{Data.F}{Data frame with at least three month of half-hourly
+  \item{ID}{String with site ID}
+  \item{Data}{Data frame with at least three month of half-hourly
 site-level eddy data}
-  \item{ColNames.V.s}{Vector with selected column names, the less columns
+  \item{ColNames}{Vector with selected column names, the less columns
 the faster the processing}
-  \item{ColPOSIXTime.s}{Column name with POSIX time stamp}
-  \item{DTS.n}{Daily time steps}
-  \item{ColNamesNonNumeric.V.s}{Names of columns that should not
+  \item{ColPOSIXTime}{Column name with POSIX time stamp}
+  \item{DTS}{Daily time steps}
+  \item{ColNamesNonNumeric}{Names of columns that should not
 be checked for numeric type, e.g. season column}
-  \item{Lat_deg.n}{Latitude in (decimal) degrees (-90 to + 90)}
-  \item{Long_deg.n}{Longitude in (decimal) degrees (-180 to + 180)}
-  \item{TimeZone_h.n}{Time zone: hours shift to UTC, e.g. 1 for Berlin}
+  \item{LatDeg}{
+}
+  \item{LongDeg}{
+}
+  \item{TimeZoneHour}{
+}
+  \item{ID.s}{deprecated}
+  \item{Data.F}{deprecated}
+  \item{ColNames.V.s}{deprecated}
+  \item{ColPOSIXTime.s}{deprecated}
+  \item{DTS.n}{deprecated}
+  \item{ColNamesNonNumeric.V.s}{deprecated}
+  \item{Lat_deg.n}{deprecated}
+  \item{Long_deg.n}{deprecated}
+  \item{TimeZone_h.n}{deprecated}
   \item{\dots}{('...' required for initialization of class fields)}
 }
 \details{The time stamp must be provided in POSIX format, see also

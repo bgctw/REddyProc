@@ -12,13 +12,13 @@ EddyData.F <- Example_DETha98
 
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
-  EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
+  EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
 # construct multiyear dataset
 EddyData99.F <- EddyData.F
 EddyData99.F$Year <- 1999
 EddyDataWithPosix2yr.F <- suppressMessages(fConvertTimeToPosix(
   rbind(EddyData.F, EddyData99.F)
-  , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
+  , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
 rm( EddyData99.F )
 
 test_that("UStarProcessing",{
@@ -42,7 +42,7 @@ test_that("UStarProcessing",{
     c("NEE_U10_fqc","NEE_U50_fqc","NEE_U90_fqc") %in% colnames(dsFilled)))
   expect_true(!any(c("NEE_f","NEE_uStar_f") %in% colnames(dsFilled)))
   # MR flux partitioning
-  EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+  EddyProc.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
   EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
   #EddyProc.C$sApplyUStarScen( EddyProc.C$sMRFluxPartition )

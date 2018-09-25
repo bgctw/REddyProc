@@ -13,13 +13,13 @@ EddyData.F <- Example_DETha98
 
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
-  EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
+  EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
 # construct multiyear dataset
 EddyData99.F <- EddyData.F
 EddyData99.F$Year <- 1999
 EddyDataWithPosix2yr.F <- suppressMessages(
   fConvertTimeToPosix(rbind(EddyData.F, EddyData99.F)
-                      , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
+                      , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
 rm( EddyData99.F )
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -211,6 +211,11 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   skip_on_cran()
   EddySetups.C <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+  .tmp.debug <- function(){
+    EddySetups.C <- sEddyProc$new(
+      'DE-Tha', EddyDataWithPosix.F
+      , c('NEE','Rg','Tair','VPD','Ustar'))$import(EddySetups.C)
+  }
   # Note that for each period a distribution of estimates is obtained,
   # and quantiles are reported
   #EddySetups.C <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L )
@@ -232,7 +237,7 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   #
   EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
   EddySetups.C$sSetLocationInfo(
-    Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+    LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   # EddySetups.C <- sEddyProc$new(
   #   'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))$import(
   #     EddySetups.C

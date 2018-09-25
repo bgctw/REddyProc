@@ -358,74 +358,99 @@ sEddyProc_sMDSGapFill <- function(
   ## sEddyProc$sMDSGapFill - MDS gap filling algorithm
   ##description<<
   ## MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
-  Var.s                 ##<< Variable to be filled
-  , QFVar.s = 'none'       ##<< Quality flag of variable to be filled
-  , QFValue.n = NA_real_   ##<< Value of quality flag for _good_ (original) data, other data is set to missing
-  , V1.s = 'Rg'            ##<< Condition variable 1 (default: Global radiation 'Rg' in  W m-2)
-  , T1.n = 50              ##<< Tolerance interval 1 (default: 50 W m-2)
-  , V2.s = 'VPD'           ##<< Condition variable 2 (default: Vapour pressure deficit 'VPD' in hPa)
-  , T2.n = 5               ##<< Tolerance interval 2 (default: 5 hPa)
-  , V3.s = 'Tair'          ##<< Condition variable 3 (default: Air temperature 'Tair' in degC)
-  , T3.n = 2.5             ##<< Tolerance interval 3 (default: 2.5 degC)
-  , FillAll.b = TRUE       ##<< Fill all values to estimate uncertainties
-  , Verbose.b = TRUE       ##<< Print status information to screen
-  , suffix = ''	      ##<< String suffix needed for different processing setups on the same dataset (for explanations see below)
-  #! , QF.V.b = TRUE        ##<< boolean vector of length nRow(sData), to allow specifying bad data directly (those entries that are set to FALSE)
-)
-##author<<
-## AMM, TW
-##references<<
-## Reichstein, M. et al. (2005) On the separation of net ecosystem exchange
-## into assimilation and ecosystem respiration: review and improved algorithm. Global Change Biology, 11, 1424-1439.
-{
-  'MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.'
-
+  Var = Var.s                 ##<< Variable to be filled
+  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'       ##<<
+  ## Quality flag of variable to be filled
+  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_   ##<<
+  ## Value of quality flag for _good_ (original) data, other data is set to missing
+  , V1 = if (!missing(V1.s)) V1.s else 'Rg'            ##<< Condition variable 1
+  ## (default: Global radiation 'Rg' in  W m-2)
+  , T1 = if (!missing(T1.n)) T1.n else 50              ##<< Tolerance interval 1
+  ## (default: 50 W m-2)
+  , V2 = if (!missing(V2.s)) V2.s else 'VPD'           ##<< Condition variable 2
+  ## (default: Vapour pressure deficit 'VPD' in hPa)
+  , T2 = if (!missing(T2.n)) T2.n else 5               ##<< Tolerance interval 2
+  ## (default: 5 hPa)
+  , V3 = if (!missing(V3.s)) V3.s else 'Tair'          ##<< Condition variable 3
+  ## (default: Air temperature 'Tair' in degC)
+  , T3 = if (!missing(T3.n)) T3.n else 2.5             ##<< Tolerance interval 3
+  ## (default: 2.5 degC)
+  , FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE       ##<<
+  ## Fill all values to estimate uncertainties
+  , Verbose = if (!missing(Verbose.b)) Verbose.b else TRUE       ##<<
+  ## Print status information to screen
+  , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<<
+  ## String suffix needed for different processing setups on the same dataset
+  ## (for explanations see below)
+  , Var.s      ##<< deprecated
+  , QFVar.s    ##<< deprecated
+  , QFValue.n  ##<< deprecated
+  , V1.s ##<< deprecated
+  , T1.n ##<< deprecated
+  , V2.s ##<< deprecated
+  , T2.n ##<< deprecated
+  , V3.s ##<< deprecated
+  , T3.n ##<< deprecated
+  , FillAll.b ##<< deprecated
+  , Verbose.b ##<< deprecated
+  , Suffix.s ##<< deprecated
+  #! , QF.V.b = TRUE        ##<< boolean vector of length nRow(sData),
+  ## to allow specifying bad data directly (those entries that are set to FALSE)
+) {
+  ##author<< AMM, TW
+  ##references<<
+  ## Reichstein, M. et al. (2005) On the separation of net ecosystem exchange
+  ## into assimilation and ecosystem respiration: review and improved algorithm.
+  ## Global Change Biology, 11, 1424-1439.
   TimeStart.p <- Sys.time()
   ##details<<
-  ## Initialize temporal data frame sTEMP for newly generated gap filled data and qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
+  ## Initialize temporal data frame sTEMP for newly generated gap filled data and
+  ## qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
   # sTEMP <<- sTEMP[, 1L, drop = FALSE]
-  if (!is.null(sFillInit(Var.s, QFVar.s, QFValue.n, FillAll.b)) ) #! , QF.V.b = QF.V.b)) )
+  if (!is.null(sFillInit(Var.s, QFVar, QFValue, FillAll)) ) #! , QF.V.b = QF.V.b)) )
     return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
-
-  #+++ Handling of special cases of meteo condition variables V1.s, V2.s, V3.s
-  # If variables are at default values but do not exist as columns, set to 'none' (= disabled identifier).
+  #+++ Handling of special cases of meteo condition variables V1, V2, V3
+  # If variables are at default values but do not exist as columns, set to 'none'
+  # (= disabled identifier).
   # This allows running MDS with less variables than prescribed in the default setting.
   # If meteo condition variable are same as variable to fill, also set to 'none'.
-  # This prevents filling artificial gaps (for uncertainty estimates) with itself as meteo condition variable.
-  #! Attention: Non-congruent with MR PV-Wave. There artificial gaps in Rg, VPD, Tair are filled with itself.
-  if ( (V1.s ==   'Rg' && !(V1.s %in% c(colnames(sDATA)))) || (V1.s == Var.s) )   V1.s <- 'none'
-  if ( (V2.s ==  'VPD' && !(V2.s %in% c(colnames(sDATA)))) || (V2.s == Var.s) )   V2.s <- 'none'
-  if ( (V3.s == 'Tair' && !(V3.s %in% c(colnames(sDATA)))) || (V3.s == Var.s) )   V3.s <- 'none'
-
+  # This prevents filling artificial gaps (for uncertainty estimates) with itself
+  # as meteo condition variable.
+  #! Attention: Non-congruent with MR PV-Wave. There artificial gaps in
+  #Rg, VPD, Tair are filled with itself.
+  if ( (V1 ==   'Rg' && !(V1 %in% c(colnames(sDATA)))) || (V1 == Var.s) )   V1 <- 'none'
+  if ( (V2 ==  'VPD' && !(V2 %in% c(colnames(sDATA)))) || (V2 == Var.s) )   V2 <- 'none'
+  if ( (V3 == 'Tair' && !(V3 %in% c(colnames(sDATA)))) || (V3 == Var.s) )   V3 <- 'none'
   # Check column names (with 'none' as dummy)
   # (Numeric type and plausibility have been checked on initialization of sEddyProc)
-  fCheckColNames(cbind(sDATA, sTEMP), c(V1.s, V2.s, V3.s), 'sMDSGapFill')
-
+  fCheckColNames(cbind(sDATA, sTEMP), c(V1, V2, V3), 'sMDSGapFill')
   # Check tolerance entries (if condition variable is not 'none')
-  NoneCols.b <- c(V1.s, V2.s, V3.s) %in% 'none'
-  if (!fCheckValNum(T1.n) || !fCheckValNum(T2.n) || !fCheckValNum(T3.n) ) {
-    stop('sMDSGapFill::: T1.n, T2.n, T3.n, T4.n, T5.n must be numeric (if not specified, set to NA_real_)!')
-  }
-  if (sum(is.na(c(T1.n, T2.n, T3.n)[!NoneCols.b])) )
-    stop('sMDSGapFill::: If condition variable is specified (dummy name is \'none\'), the tolerance interval must be specified!')
-
+  NoneCols.b <- c(V1, V2, V3) %in% 'none'
+  if (!fCheckValNum(T1) || !fCheckValNum(T2) || !fCheckValNum(T3) ) stop(
+    'sMDSGapFill::: T1, T2, T3, T4.n, T5.n must be numeric '
+    , '(if not specified, set to NA_real_)!')
+  if (sum(is.na(c(T1, T2, T3)[!NoneCols.b])) ) stop(
+    'sMDSGapFill::: If condition variable is specified (dummy name is \'none\'), '
+    , 'the tolerance interval must be specified!')
   # Run gap filling scheme depending on auxiliary meteo data availability
   ##details<<
-  ## MDS gap filling algorithm calls the subroutines Look Up Table \code{\link{sEddyProc_sFillLUT}}
-  ## and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different window sizes as described in the reference.
+  ## MDS gap filling algorithm calls the subroutines Look Up Table
+  ## \code{\link{sEddyProc_sFillLUT}}
+  ## and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different
+  ## window sizes as described in the reference.
   ##details<<
-  ## To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}}, set condition variable V1.s to 'none'.
-
+  ## To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}},
+  ## set condition variable V1 to 'none'.
   # Check availablility of meteorological data for LUT
   Met.n <-
-    if (V1.s != 'none' && V2.s != 'none' && V3.s != 'none'
-        && sum(!is.na(sDATA[, V1.s])) != 0 && sum(!is.na(sDATA[, V2.s])) != 0 && sum(!is.na(sDATA[, V3.s])) != 0) {
+    if (V1 != 'none' && V2 != 'none' && V3 != 'none'
+        && sum(!is.na(sDATA[, V1])) != 0 && sum(!is.na(sDATA[, V2])) != 0 && sum(!is.na(sDATA[, V3])) != 0) {
       #All three meteo conditions are available and valid to use:
-      message('Full MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1.s, ', ', V2.s, ', ', V3.s, ') and MDC.')
+      message('Full MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1, ', ', V2, ', ', V3, ') and MDC.')
       3
-    } else if (V1.s != 'none' && sum(!is.na(sDATA[, V1.s])) != 0) {
+    } else if (V1 != 'none' && sum(!is.na(sDATA[, V1])) != 0) {
       #Only one meteo condition available for LUT
-      message('Limited MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1.s, ' only) and MDC.')
+      message('Limited MDS algorithm for gap filling of \'', attr(sTEMP$VAR_f, 'varnames'), '\' with LUT(', V1, ' only) and MDC.')
       1
     } else {
       #No meteo condition available (use MDC only)
@@ -436,22 +461,22 @@ sEddyProc_sMDSGapFill <- function(
 
   #+++ Full MDS algorithm
   # Step 1: Look-up table (method 1) with window size +-7 days
-  if (Met.n == 3) sFillLUT(7, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b = Verbose.b)
+  if (Met.n == 3) sFillLUT(7, V1, T1, V2, T2, V3, T3, Verbose.b = Verbose)
   # Step 2: Look-up table (method 1) with window size +-14 days
-  if (Met.n == 3) sFillLUT(14, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b = Verbose.b)
+  if (Met.n == 3) sFillLUT(14, V1, T1, V2, T2, V3, T3, Verbose.b = Verbose)
   # Step 3: Look-up table, Rg only (method 2) with window size +-7 days,
-  if (Met.n == 3 || Met.n == 1) sFillLUT(7, V1.s, T1.n, Verbose.b = Verbose.b)
+  if (Met.n == 3 || Met.n == 1) sFillLUT(7, V1, T1, Verbose.b = Verbose)
   # Step 4: Mean diurnal course (method 3) with window size 0 (same day)
-  sFillMDC(0, Verbose.b = Verbose.b)
+  sFillMDC(0, Verbose.b = Verbose)
   # Step 5: Mean diurnal course (method 3) with window size +-1, +-2 days
-  sFillMDC(1, Verbose.b = Verbose.b)
-  sFillMDC(2, Verbose.b = Verbose.b)
+  sFillMDC(1, Verbose.b = Verbose)
+  sFillMDC(2, Verbose.b = Verbose)
   # Step 6: Look-up table (method 1) with window size +-21, +-28, ..., +-70
-  if (Met.n == 3) for (WinDays.i in seq(21, 70, 7) ) sFillLUT(WinDays.i, V1.s, T1.n, V2.s, T2.n, V3.s, T3.n, Verbose.b = Verbose.b)
+  if (Met.n == 3) for (WinDays.i in seq(21, 70, 7) ) sFillLUT(WinDays.i, V1, T1, V2, T2, V3, T3, Verbose.b = Verbose)
   # Step 7: Look-up table (method 2) with window size +-14, +-21, ..., +-70
-  if (Met.n == 3 || Met.n == 1) for (WinDays.i in seq(14, 70, 7) ) sFillLUT(WinDays.i, V1.s, T1.n, Verbose.b = Verbose.b)
+  if (Met.n == 3 || Met.n == 1) for (WinDays.i in seq(14, 70, 7) ) sFillLUT(WinDays.i, V1, T1, Verbose.b = Verbose)
   # Step 8: Mean diurnal course (method 3) with window size +-7, +-14, ..., +-210 days
-  for (WinDays.i in seq(7, 210, 7) ) sFillMDC(WinDays.i, Verbose.b = Verbose.b)
+  for (WinDays.i in seq(7, 210, 7) ) sFillMDC(WinDays.i, Verbose.b = Verbose)
 
   # Set long gaps again to NA
   sTEMP$VAR_fall <<- suppressMessages(fConvertGapsToNA(sTEMP$VAR_fall))
@@ -606,7 +631,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
   }
   # Gap fill data after applying ustar filtering
   sMDSGapFill(
-    fluxVar, QFVar.s = attr(qfUStar, 'varnames'), QFValue.n = 0, ...
+    fluxVar, QFVar = attr(qfUStar, 'varnames'), QFValue = 0, ...
     , suffix = uStarSuffix)
   ##value<<
   ## Vector with quality flag from filtering (here 0: good data

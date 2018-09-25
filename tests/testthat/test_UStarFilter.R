@@ -17,7 +17,7 @@ EddyData.F <- Example_DETha98
 
 EddyDataWithPosix.F <- ds <- suppressMessages(
   fConvertTimeToPosix(
-    EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour'))
+    EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
 dss <- subset(EddyDataWithPosix.F, DoY >= 150 & DoY <= 250)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

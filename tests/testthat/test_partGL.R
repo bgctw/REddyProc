@@ -512,7 +512,7 @@ test_that("partitionNEEGL",{
 	resEx <- resLRCEx1
 	#DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
 	#Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
-	#dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n = 45.0, Long_deg.n = 1, TimeZone_h.n = 0 )
+	#dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, LatDeg = 45.0, LongDeg = 1, TimeZoneHour = 0 )
 	tmp <- partitionNEEGL( dsNEE1,RadVar = 'Rg_f')
 	#tmp <- partitionNEEGL( dsNEE1,RadVar = 'Rg_f', controlGLPart = partGLControl(nBootUncertainty = 0L, isAssociateParmsToMeanOfValids = FALSE))
 	expect_equal( nrow(dsNEE1), nrow(tmp) )

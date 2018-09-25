@@ -61,7 +61,7 @@ VPD was not given with the original dataset and is calculated from Tair and rH.
 ```{r}
 DEGebExample$VPD <- fCalcVPDfromRHandTair(DEGebExample$rH, DEGebExample$Tair)
 EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.1, Long_deg.n = 10.9, TimeZone_h.n = 1)  #Location of Gebesee
+EddyProc.C$sSetLocationInfo(LatDeg = 51.1, LongDeg = 10.9, TimeZoneHour = 1)  #Location of Gebesee
 ```
 
 Defining Seasons with different surface friction conditions 
@@ -146,7 +146,7 @@ different estimates of the uStar Threshold.
 
 ```{r DEGeb_estUStarBoot1, cache = TRUE, message = FALSE}
 EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.1, Long_deg.n = 10.9, TimeZone_h.n = 1)  #Location of Gebesee
+EddyProc.C$sSetLocationInfo(LatDeg = 51.1, LongDeg = 10.9, TimeZoneHour = 1)  #Location of Gebesee
 # here, because of processing time only 30 samples instead of 100, and 10% and 90% 
 # percentile instead of default 5%,50%, and 95% with 100 samples
 EddyProc.C$sEstimateUstarScenarios( 
