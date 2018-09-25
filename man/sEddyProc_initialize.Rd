@@ -1,9 +1,7 @@
 \name{sEddyProc_initialize}
 \alias{sEddyProc_initialize}
-\title{sEddyProc_initialize - Initialization of sEddyProc}
-\description{This function is called when writing \code{sEddyProc$new}.
-It creates the fields of the sEddyProc R5 reference class for processing
-of half-hourly eddy data}
+\title{sEddyProc initialize}
+\description{Initializing sEddyProc class during \code{sEddyProc$new}.}
 \usage{sEddyProc_initialize(ID = ID.s, Data = Data.F, 
     ColNames = ColNames.V.s, ColPOSIXTime = "DateTime", 
     DTS = if (!missing(DTS.n)) DTS.n else 48, 

@@ -38,7 +38,7 @@ partitionNEEGL <- function(
     missing(NEEVar.s),missing(TempVar.s),missing(VPDVar.s)
     ,missing(RadVar.s),missing(Suffix.s)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
@@ -537,7 +537,7 @@ partGLExtractStandardData <- function(
     ,missing(QFVPDValue.n),missing(QFRadVar.s),missing(QFRadValue.n)
     ,missing(PotRadVar.s)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
 
 	# Check if specified columns exist in sDATA or sTEMP and if numeric

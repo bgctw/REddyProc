@@ -1,18 +1,25 @@
 \name{sEddyProc_sPlotHHFluxesY}
 \alias{sEddyProc_sPlotHHFluxesY}
-\title{sEddyProc$sPlotHHFluxesY -  Plot half-hourly fluxes of specified year}
-\description{The half-hourly fluxes for a single year are plotted to the current device,
-scaled to all data.}
-\usage{sEddyProc_sPlotHHFluxesY(Var.s, QFVar.s = "none", 
-    QFValue.n = NA_real_, Year.i, data = cbind(sDATA, 
-        sTEMP), dts = sINFO$DTS)}
+\title{sEddyProc sPlotHHFluxesY}
+\description{Plot half-hourly fluxes for a single year scaled to all data.}
+\usage{sEddyProc_sPlotHHFluxesY(Var = Var.s, QFVar = if (!missing(QFVar.s)) QFVar.s else "none", 
+    QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_, 
+    Year = Year.i, data = cbind(sDATA, sTEMP), 
+    dts = sINFO$DTS, Var.s, QFVar.s, QFValue.n, 
+    Year.i)}
 \arguments{
-  \item{Var.s}{Variable to plot}
-  \item{QFVar.s}{Quality flag of variable to be filled}
-  \item{QFValue.n}{Value of quality flag for data to plot}
-  \item{Year.i}{Year to plot}
+  \item{Var}{Variable to plot}
+  \item{QFVar}{
+}
+  \item{QFValue}{
+}
+  \item{Year}{Year to plot}
   \item{data}{data.frame with variables to plot}
   \item{dts}{numeric integer}
+  \item{Var.s}{deprecated}
+  \item{QFVar.s}{deprecated}
+  \item{QFValue.n}{deprecated}
+  \item{Year.i}{deprecated}
 }
 
 

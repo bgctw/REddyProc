@@ -26,6 +26,7 @@ NULL
 
 
 # https://www.r-bloggers.com/re-exporting-the-magrittr-pipe-operator/
+
 #' re-export magrittr pipe operator
 #'
 #' @importFrom magrittr %>%

@@ -22,7 +22,7 @@ fLoadTXTIntoDataframe <- function(
   varNamesNew <- c("FileName","Dir")
   iDepr = which(!c(missing(FileName.s),missing(Dir.s)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
 
 	##details<<
@@ -33,12 +33,13 @@ fLoadTXTIntoDataframe <- function(
 	##details<<
 	## For using only part of the records, use \code{fFilterAttr} to keep
 	## units attributes.
-  InputFile.s <- fSetFile(FileName.s, Dir.s, T, 'fLoadTXTIntoDataframe')
+  InputFile.s <- fSetFile(FileName, Dir, T, 'fLoadTXTIntoDataframe')
   # Read in header
   Header.V.s <- as.character(read.csv(
     InputFile.s, header = F, sep = '', dec = '.', nrows = 1, stringsAsFactors = F))
   Units.V.s <- as.character(read.csv(
-    InputFile.s, header = F, sep = '', dec = '.', skip = 1, nrows = 1, stringsAsFactors = F))
+    InputFile.s, header = F, sep = '', dec = '.', skip = 1, nrows = 1
+    , stringsAsFactors = F))
   if (length(Header.V.s) != length(Units.V.s) ) stop(
     'fLoadTXTIntoDataframe::: Entries in header row and unit row are '
     , 'not the same length: \n'
@@ -53,7 +54,7 @@ fLoadTXTIntoDataframe <- function(
     attr(Data.F[, Header.V.s[Var.i]], 'varnames') <- Header.V.s[Var.i]
     attr(Data.F[, Header.V.s[Var.i]], 'units') <- Units.V.s[Var.i]
   }
-  message('Loaded file ', FileName.s, ' with the following variables (units):')
+  message('Loaded file ', FileName, ' with the following variables (units):')
   message(' *** ', paste(colnames(Data.F), '(', as.character(lapply(
     Data.F, attr, which = 'units')), ')', collapse = ' ', sep = ''))
   # Convert gap flags to NA

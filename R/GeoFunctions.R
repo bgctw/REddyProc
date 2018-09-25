@@ -106,7 +106,7 @@ fCalcVPDfromRHandTair <- function(
   varNamesNew <- c("rh","Tair")
   iDepr = which(!c(missing(RH.V.n),missing(Tair.V.n)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   fCheckOutsideRange(
     cbind(RelHumidity_Percent = rH), 'RelHumidity_Percent'
@@ -163,7 +163,7 @@ fCalcAVPfromVMFandPress <- function(
   varNamesNew <- c("VMF","Press")
   iDepr = which(!c(missing(VMF.V.n),missing(Press.V.n)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculation of actual vapor pressure, also called vapor partial pressure
   AVP <- (VMF.V.n) * Press.V.n
@@ -190,7 +190,7 @@ fCalcRHfromAVPandTair <- function(
   varNamesNew <- c("AVP","Tair")
   iDepr = which(!c(missing(AVP.V.n),missing(Tair.V.n)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Definition of relative humidity (ratio of AVP to SVP)
   SVP.V.n <- fCalcSVPfromTair(Tair)
@@ -221,7 +221,7 @@ fCalcETfromLE <- function(
   varNamesNew <- c("LE","Tair")
   iDepr = which(!c(missing(LE.V.n),missing(Tair.V.n)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculated from the water density and latent heat of vaporation,
   # see Moffat manuscript on WUE
@@ -322,7 +322,7 @@ fCalcSunPosition <- function(
     missing(DoY.V.n),missing(Hour.V.n),missing(Lat_deg.n),missing(Long_deg.n)
     ,missing(TimeZone_h.n),missing(useSolartime.b)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   #
   # Formulas taken from Alessandro Cescatti's C ++ code
@@ -474,7 +474,7 @@ fCalcPotRadiation <- function(
     missing(DoY.V.n),missing(Hour.V.n),missing(Lat_deg.n),missing(Long_deg.n)
     ,missing(TimeZone_h.n),missing(useSolartime.b)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculate potential radiation from solar elevation and extraterrestrial
   # solar radiation

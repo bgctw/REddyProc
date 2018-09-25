@@ -1,6 +1,6 @@
 \name{sEddyProc_sExportData}
 \alias{sEddyProc_sExportData}
-\title{sEddyProc$sExportData - Export internal sDATA data frame}
+\title{sEddyProc sExportData}
 \description{Export class internal sDATA data frame}
 \usage{sEddyProc_sExportData()}
 

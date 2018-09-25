@@ -1,6 +1,6 @@
 \name{sEddyProc_sFillMDC}
 \alias{sEddyProc_sFillMDC}
-\title{sEddyProc$sFillMDC - Gap filling with Mean Diurnal Course (MDC)}
+\title{sEddyProc sFillMDC}
 \description{Mean Diurnal Course (MDC) algorithm based on average values within +/- one hour of adjacent days}
 \usage{sEddyProc_sFillMDC(WinDays.i, Verbose.b = TRUE)}
 \arguments{

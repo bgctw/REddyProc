@@ -143,7 +143,7 @@ sEddyProc_sMRFluxPartition <- function(
     ,missing(TempVar.s),missing(QFTempVar.s),missing(QFTempValue.n)
     ,missing(RadVar.s),missing(T_ref.n),missing(Suffix.s),missing(debug.l)))
   if (length(iDepr)) warning(
-    "Arguments names ",paste(varNamesDepr[iDepr], collapse = ",")
+    "Argument names ",paste(varNamesDepr[iDepr], collapse = ",")
     ," have been deprecated."
     ," Please, use instead ", paste(varNamesNew[iDepr], collapse = ","))
   ##references<<

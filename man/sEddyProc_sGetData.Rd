@@ -1,6 +1,6 @@
 \name{sEddyProc_sGetData}
 \alias{sEddyProc_sGetData}
-\title{sEddyProc$sGetData - Get internal sDATA data frame}
+\title{sEddyProc sGetData}
 \description{Get class internal sDATA data frame}
 \usage{sEddyProc_sGetData()}
 

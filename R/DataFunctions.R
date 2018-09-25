@@ -37,7 +37,7 @@ fConvertTimeToPosix <- function(
     missing(TFormat.s),missing(Year.s),missing(Month.s),missing(Day.s)
     ,missing(Hour.s),missing(Min.s),missing(TName.s)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   ##author<< AMM
   #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year)
@@ -238,7 +238,7 @@ fCheckHHTimeSeries <- function(
   varNamesNew <- c("Time","DTS","CallFunction")
   iDepr = which(!c(missing(Time.V.p),missing(DTS.n),missing(CallFunction.s)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   ##author<< AMM
   ##details<<

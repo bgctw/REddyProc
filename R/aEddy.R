@@ -14,8 +14,7 @@
 #' @exportClass sEddyProc
 sEddyProc <- setRefClass('sEddyProc', fields = list(
   ## R5 reference class for processing of site-level half-hourly eddy data
-  ##author<<
-  ## AMM, after example code of TW
+  ##author<< AMM
   ##details<< with fields
   sID = 'character'       ##<< String with Site ID
   , sDATA = 'data.frame'   ##<< Data frame with (fixed) site data
@@ -33,12 +32,7 @@ sEddyProc <- setRefClass('sEddyProc', fields = list(
 
 #' @export
 sEddyProc_initialize <- function(
-  ##title<<
-  ## sEddyProc_initialize - Initialization of sEddyProc
-  ##description<<
-  ## This function is called when writing \code{sEddyProc$new}.
-  ## It creates the fields of the sEddyProc R5 reference class for processing
-  ## of half-hourly eddy data
+  ### Initializing sEddyProc class during \code{sEddyProc$new}.
   ID = ID.s                ##<< String with site ID
   , Data = Data.F             ##<< Data frame with at least three month of half-hourly
   ## site-level eddy data
@@ -80,7 +74,7 @@ sEddyProc_initialize <- function(
     ,missing(DTS.n),missing(ColNamesNonNumeric.V.s),missing(Lat_deg.n)
     ,missing(Long_deg.n),missing(TimeZone_h.n)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   ##detail<< A method of class \code{\link{sEddyProc-class}}.
   # Check entries
@@ -188,7 +182,7 @@ sEddyProc_sSetLocationInfo <- function(
   varNamesNew <- c("LatDeg","LongDeg","TimeZoneHour")
   iDepr = which(!c(missing(Lat_deg.n),missing(Long_deg.n),missing(TimeZone_h.n)))
   if (length(iDepr)) warning(
-    "Arguments names ",varNamesDepr[iDepr]," have been deprecated."
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   ##author<< TW
 	# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
@@ -303,15 +297,11 @@ sEddyProc_sGetUstarScenarios <- function(
 sEddyProc$methods(sGetUstarScenarios = sEddyProc_sGetUstarScenarios)
 
 #' @export
-sEddyProc_sGetData <- function()
-  ##title<<
-  ## sEddyProc$sGetData - Get internal sDATA data frame
-  ##description<<
-  ## Get class internal sDATA data frame
-  ##author<<
-  ## AMM
-{
-    'Get class internal sDATA data frame'
+sEddyProc_sGetData <- function(
+  ### Get class internal sDATA data frame
+) {
+  ##author<< AMM
+  'Get class internal sDATA data frame'
     sDATA
     ##value<<
     ## Return data frame sDATA.
@@ -323,14 +313,9 @@ sEddyProc$methods( sGetData = sEddyProc_sGetData)
 
 #' @export
 sEddyProc_sExportData <- function()
-    ##title<<
-    ## sEddyProc$sExportData - Export internal sDATA data frame
-    ##description<<
-    ## Export class internal sDATA data frame
-    ##author<<
-    ## AMM
+  ### Export class internal sDATA data frame
+  ##author<< AMM
 {
-    'Export class internal sDATA data frame'
 	lDATA <- sDATA
 	lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
 	colnames(lDATA) <- c('DateTime', colnames(lDATA)[-1])
@@ -344,17 +329,12 @@ sEddyProc$methods( sExportData = sEddyProc_sExportData)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #' @export
 sEddyProc_sExportResults <- function(
-	  isListColumnsExported = FALSE	##<< if TRUE export list columns in addition
+  ### Export class internal sTEMP data frame with result columns
+  isListColumnsExported = FALSE	##<< if TRUE export list columns in addition
 	  ## to numeric columns,
 		## such as the covariance matrices of the the day-time-partitioning LRC fits
-)
-    ##title<<
-    ## sEddyProc$sExportData - Export internal sTEMP data frame with result columns
-    ##description<<
-    ## Export class internal sTEMP data frame with result columns
-    ##author<<
-    ## AMM
-{
+) {
+    ##author<< AMM
     'Export class internal sTEMP data frame with result columns'
 	iListColumns <- which(sapply(sTEMP, is.list) )
 	iOmit <- if (isListColumnsExported) c(1L) else c(1L, iListColumns)
