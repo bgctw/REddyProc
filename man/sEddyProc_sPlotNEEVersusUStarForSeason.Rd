@@ -1,6 +1,6 @@
 \name{sEddyProc_sPlotNEEVersusUStarForSeason}
 \alias{sEddyProc_sPlotNEEVersusUStarForSeason}
-\title{sEddyProc$sPlotNEEVersusUStarForSeason - Image with NEE versus UStar for each Temperature class of given season}
+\title{sEddyProc sPlotNEEVersusUStarForSeason}
 \description{Generates image in specified format ('pdf' or 'png')}
 \usage{sEddyProc_sPlotNEEVersusUStarForSeason(season = levels(data$season)[1], 
     format = "pdf", dir = "plots", UstarColName = "Ustar", 
@@ -10,7 +10,7 @@
         sUSTAR_DETAILS$bins[, c("uStarBin", 
             "tempBin")]))}
 \arguments{
-  \item{season}{string of season, i.e. time period, to plot}
+  \item{season}{string of season, i.e. time period to plot}
   \item{format}{string of Graphics file format ('pdf' or 'png')}
   \item{dir}{string of Directory for plotting}
   \item{UstarColName}{column name for UStar}
@@ -18,9 +18,10 @@
   \item{TempColName}{column name for air temperature}
   \item{WInch}{width of the plot in inches, defaults to 16cm}
   \item{HInchSingle}{height of a subplot in inches, defaults to 6cm}
-  \item{\dots}{other arguments to \code{.plotNEEVersusUStarTempClass}, such as xlab and ylab axis label strings}
-  \item{data}{data.frame
-with variables to plot}
+  \item{\dots}{other arguments to \code{.plotNEEVersusUStarTempClass},
+such as xlab and ylab axis label strings}
+  \item{data}{
+}
 }
 
 

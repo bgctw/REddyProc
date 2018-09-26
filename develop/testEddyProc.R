@@ -34,11 +34,11 @@ if (Develop.b) {
   # Source settings for R environment and standard functions
   source('inst/develop/setREnvir.R')
   # Generate package from local path
-  ###   system('R CMD INSTALL --build --html --library=/Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
+  ###   system('R CMD INSTALL --build --html --library = /Library/Frameworks/R.framework/Versions/current/Resources/library ../REddyProc')
   ###   system('R CMD INSTALL --build --html ../REddyProc')
   # Test installation of package from various sources
   # Requires restart of R console afterwards!
-  ### R-Forge:  install.packages("REddyProc", repos="http://R-Forge.R-project.org", type="source")
+  ### R-Forge:  install.packages("REddyProc", repos = "http://R-Forge.R-project.org", type = "source")
   ### R-Forge after manual download:  install.packages('../_FromRForge/REddyProc_0.5.tar.gz',  repos = NULL)
   ### Self generated package:  install.packages('REddyProc_0.5.tgz',  repos = NULL)
   require('REddyProc')
@@ -47,13 +47,13 @@ if (Develop.b) {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #Load example data directly from package or (if not available) from txt file
 
-#data('Example_DETha98', package='REddyProc') # superseedeby by LazyData: true
-EddyData.F <- if( exists("Example_DETha98") ) {
+#data('Example_DETha98', package = 'REddyProc') # superseedeby by LazyData: true
+EddyData.F <- if (exists("Example_DETha98") ) {
 	# example is available only when the package is loaded
 	Example_DETha98
 } else {
   # if the package is not loaded, assume to be some directory relative to the example
-  if( file.exists('../examples/Example_DETha98.txt') ) {
+  if (file.exists('../examples/Example_DETha98.txt') ) {
 	  Example_DETha98 <- suppressMessages(fLoadTXTIntoDataframe('Example_DETha98.txt','../examples'))
   } else {
     message('Unit test directory: ', getwd())
@@ -65,12 +65,12 @@ EddyData.F <- if( exists("Example_DETha98") ) {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Run short test
 
-if( ShortTest.b ) {
+if (ShortTest.b ) {
   EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
   EPTha.C$sMDSGapFill('NEE')
-  EPTha.C$sMDSGapFill('Tair',FillAll.b=F)
-  EPTha.C$setLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1.0)
+  EPTha.C$sMDSGapFill('Tair',FillAll.b = F)
+  EPTha.C$setLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1.0)
   EPTha.C$sMRFluxPartition()
   View(EPTha.C$sTEMP)
   stop('No error but short test only.')
@@ -89,13 +89,13 @@ if (Develop.b) {
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Testing of ustar filtering
 
-if( FALSE ) { #Short example from above with ustar filtering
+if (FALSE ) { #Short example from above with ustar filtering
   EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
   EPTha.C$sUstarMM() # Apply filter
   EPTha.C$sMDSGapFill('NEE','UstarMM_fqc',0) #Use ustar flag
-  EPTha.C$sMDSGapFill('Tair',FillAll.b=F)
-  EPTha.C$setLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1.0)
+  EPTha.C$sMDSGapFill('Tair',FillAll.b = F)
+  EPTha.C$setLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1.0)
   EPTha.C$sMRFluxPartition()
   View(EPTha.C$sTEMP)
   stop('No error but short test only.')
@@ -105,7 +105,7 @@ if( FALSE ) { #Short example from above with ustar filtering
 # Data handling of standard example data
 
 # Add dummy quality flag for tests
-EddyData.F <- cbind(EddyData.F, QF=structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units='dummy_unit'))
+EddyData.F <- cbind(EddyData.F, QF = structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(EddyData.F)/10), units = 'dummy_unit'))
 # Test calculation of VPD
 EddyData.F$VPDnew <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
 # Add POSIX time stamp
@@ -121,11 +121,11 @@ if (LongTest.b) {
 }
 
 # Run loop over all (site) files in BGI Fluxnet data directory
-if (T==F) {
+if (T == F) {
   SiteFile.V.s <- fInitFilesDir(DirFluxnet.s, 'hourly.nc')
   SiteName.V.s <- fStripFileExtension(SiteFile.V.s)
   for (Site.i in 1:length(SiteName.V.s)) {
-    message(paste('Handling site file ', Site.i, ': \'', SiteName.V.s[Site.i],'\'', sep=''))
+    message(paste('Handling site file ', Site.i, ': \'', SiteName.V.s[Site.i],'\'', sep = ''))
     #...
   }
   #EddyBGINCData.F <- fLoadFluxNCIntoDataframe(lVar.V.s, 'DE-Tha.1996.2006.hourly.nc', DirFluxnet.s)
@@ -147,13 +147,13 @@ if (FALSE) {
   Example.F$Month <- as.numeric(format(Example.F$DateTime, '%m'))
   Example.F$DoY   <- as.numeric(format(Example.F$DateTime, '%j'))
   Example.F$Hour  <- as.numeric(format(Example.F$DateTime, '%H')) + as.numeric(format(Example.F$DateTime, '%M'))/60
-  colnames(Example.F)[colnames(Example.F)=='Tsoil_f']  <- 'Tsoil'
+  colnames(Example.F)[colnames(Example.F) == 'Tsoil_f']  <- 'Tsoil'
   fWriteDataframeToFile(Example.F, 'DE-Tha.1996.1998.txt','out')
 
   # Try to reload data file
   Eddy3Years.F <- fLoadTXTIntoDataframe('DE-Tha.1996.1998.txt','out')
-  Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s='Year', Day.s='DoY', Hour.s='Hour')
-  #fCheckHHTimeSeries(Eddy3Years.F$DateTime, DTS.n=48)
+  Eddy3Years.F <- fConvertTimeToPosix(Eddy3Years.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+  #fCheckHHTimeSeries(Eddy3Years.F$DateTime, DTS = 48)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -162,7 +162,7 @@ if (FALSE) {
 # Standard dataset
 EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
 # Dataset with pseudo hourly data
-EPThaH.C <- sEddyProc$new('DE-Tha-H', EddyDataWithPosix.F[c(F,T),], c('NEE', 'QF', 'Rg', 'Tair', 'VPD'), DTS.n=24)
+EPThaH.C <- sEddyProc$new('DE-Tha-H', EddyDataWithPosix.F[c(F,T),], c('NEE', 'QF', 'Rg', 'Tair', 'VPD'), DTS.n = 24)
 # Subset of dataset
 EPThaS.C <- sEddyProc$new('DE-Tha-S', EddyDataWithPosix.F[(4321:8640),], c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
 # Limited dataset with NEE only
@@ -184,26 +184,26 @@ if (LongTest.b) {
 # Fill gaps with MDS algorithm
 
 #system.time(...)
-EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
-EPTha.C$sMDSGapFill('NEE', V1.s='none', FillAll.b=T, Verbose.b=T)
-EPThaH.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
-EPThaS.C$sMDSGapFill('NEE','QF', 0, FillAll.b=T, Verbose.b=T)
-EPThaL1.C$sMDSGapFill('NEE', V1.s='none', T1.n=NA_real_, V2.s='none', T2.n=NA_real_, V3.s='none', T3.n=NA_real_, FillAll.b=T, Verbose.b=T)
-EPThaL1.C$sMDSGapFill('NEE', V1.s='none', FillAll.b=T, Verbose.b=T)
-EPThaL1.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
-EPThaL2.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
-EPThaL3.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
+EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll.b = T, Verbose.b = T)
+EPTha.C$sMDSGapFill('NEE', V1.s = 'none', FillAll.b = T, Verbose.b = T)
+EPThaH.C$sMDSGapFill('NEE','QF', 0, FillAll.b = T, Verbose.b = T)
+EPThaS.C$sMDSGapFill('NEE','QF', 0, FillAll.b = T, Verbose.b = T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s = 'none', T1.n = NA_real_, V2.s = 'none', T2.n = NA_real_, V3.s = 'none', T3.n = NA_real_, FillAll.b = T, Verbose.b = T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s = 'none', FillAll.b = T, Verbose.b = T)
+EPThaL1.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
+EPThaL2.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
+EPThaL3.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
 
 # Fill also other variables
-EPTha.C$sMDSGapFill('Rg', FillAll.b=T, Verbose.b=T)
-EPTha.C$sMDSGapFill('VPD', FillAll.b=T, Verbose.b=T)
-EPTha.C$sMDSGapFill('Tair', FillAll.b=T, Verbose.b=T)
+EPTha.C$sMDSGapFill('Rg', FillAll.b = T, Verbose.b = T)
+EPTha.C$sMDSGapFill('VPD', FillAll.b = T, Verbose.b = T)
+EPTha.C$sMDSGapFill('Tair', FillAll.b = T, Verbose.b = T)
 
 # Fill multiple years
 if (LongTest.b) {
-  EPThaNC.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
-  EPThaNC96.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
-  EPThaNCsub.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
+  EPThaNC.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
+  EPThaNC96.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
+  EPThaNCsub.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -236,35 +236,35 @@ if (LongTest.b) {
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++]
 # Plotting of single years/month
-fPlots <- function(ClassName.s, Var.s, QFVar.s='none', QFValue.n=NA, VarUnc.s='none', Month.i=NA, Year.i=NA) {
-  if( is.na(Year.i)) { #All years/months and save to file
-    eval(parse(text=paste(ClassName.s, '$sPlotFingerprint(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotHHFluxes(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotDailySums(\'', Var.s, '\', VarUnc.s=\'', VarUnc.s, '\')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotDiurnalCycle(\'', Var.s, '\', QFVar.s=\'', QFVar.s, '\', QFValue.n=', QFValue.n, ')', sep='')))
+fPlots <- function(ClassName.s, Var.s, QFVar.s = 'none', QFValue.n = NA, VarUnc.s = 'none', Month.i = NA, Year.i = NA) {
+  if (is.na(Year.i)) { #All years/months and save to file
+    eval(parse(text = paste(ClassName.s, '$sPlotFingerprint(\'', Var.s, '\', QFVar.s = \'', QFVar.s, '\', QFValue.n = ', QFValue.n, ')', sep = '')))
+    eval(parse(text = paste(ClassName.s, '$sPlotHHFluxes(\'', Var.s, '\', QFVar.s = \'', QFVar.s, '\', QFValue.n = ', QFValue.n, ')', sep = '')))
+    eval(parse(text = paste(ClassName.s, '$sPlotDailySums(\'', Var.s, '\', VarUnc.s = \'', VarUnc.s, '\')', sep = '')))
+    eval(parse(text = paste(ClassName.s, '$sPlotDiurnalCycle(\'', Var.s, '\', QFVar.s = \'', QFVar.s, '\', QFValue.n = ', QFValue.n, ')', sep = '')))
   } else {  #Individual years/months
-    eval(parse(text=paste(ClassName.s, '$sPlotFingerprintY(\'', Var.s, '\', QFVar.s=\'',
-                          QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotHHFluxesY(\'', Var.s, '\', QFVar.s=\'',
-                          QFVar.s, '\', QFValue.n=', QFValue.n, ', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$sPlotDailySumsY(\'', Var.s, '\', VarUnc.s=\'',
-                          VarUnc.s, '\', Year.i=', Year.i, ')', sep='')))
-    eval(parse(text=paste(ClassName.s, '$.sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s=\'',
-                          QFVar.s, '\', QFValue.n=', QFValue.n, ', Month.i=', Month.i, ')', sep='')))
+    eval(parse(text = paste(ClassName.s, '$sPlotFingerprintY(\'', Var.s, '\', QFVar.s = \'',
+                          QFVar.s, '\', QFValue.n = ', QFValue.n, ', Year.i = ', Year.i, ')', sep = '')))
+    eval(parse(text = paste(ClassName.s, '$sPlotHHFluxesY(\'', Var.s, '\', QFVar.s = \'',
+                          QFVar.s, '\', QFValue.n = ', QFValue.n, ', Year.i = ', Year.i, ')', sep = '')))
+    eval(parse(text = paste(ClassName.s, '$sPlotDailySumsY(\'', Var.s, '\', VarUnc.s = \'',
+                          VarUnc.s, '\', Year.i = ', Year.i, ')', sep = '')))
+    eval(parse(text = paste(ClassName.s, '$.sPlotDiurnalCycleM(\'', Var.s, '\', QFVar.s = \'',
+                          QFVar.s, '\', QFValue.n = ', QFValue.n, ', Month.i = ', Month.i, ')', sep = '')))
   }
 }
 
 if (LongTest.b) {
   #Before filling
-  fPlots('EPTha.C', 'NEE', Month.i=10, Year.i=1998)
-  fPlots('EPThaH.C', 'NEE', Month.i=10, Year.i=1998)
-  fPlots('EPThaS.C', 'NEE', Month.i=10, Year.i=1998)
-  fPlots('EPThaNCsub.C', 'NEE', Month.i=6, Year.i=1996)
-  fPlots('EPThaNCsub.C', 'NEE', Month.i=6, Year.i=1997)
+  fPlots('EPTha.C', 'NEE', Month.i = 10, Year.i = 1998)
+  fPlots('EPThaH.C', 'NEE', Month.i = 10, Year.i = 1998)
+  fPlots('EPThaS.C', 'NEE', Month.i = 10, Year.i = 1998)
+  fPlots('EPThaNCsub.C', 'NEE', Month.i = 6, Year.i = 1996)
+  fPlots('EPThaNCsub.C', 'NEE', Month.i = 6, Year.i = 1997)
   #After filling
-  fPlots('EPTha.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i=10, Year.i=1998)
-  fPlots('EPThaH.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i=10, Year.i=1998)
-  fPlots('EPThaS.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i=10, Year.i=1998)
+  fPlots('EPTha.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i = 10, Year.i = 1998)
+  fPlots('EPThaH.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i = 10, Year.i = 1998)
+  fPlots('EPThaS.C', 'NEE_f','NEE_fqc', 1, 'NEE_fsd', Month.i = 10, Year.i = 1998)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -296,17 +296,16 @@ if (LongTest.b) {
 # Compare data of old MDS filling with new filling
 
 if (LongTest.b) {
-
   # Standard filling - without ustar filtering
   EPTha98.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
-  EPTha98.C$sMDSGapFill('NEE', FillAll.b=T, Verbose.b=T)
+  EPTha98.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
 
   # Load MDS output data from old PV-Wave online tool - without ustar filtering
   MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_PVWave_DataSetafterGapfill.txt','inst/examples')
-  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s= 'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
+  MDSData.F <- fConvertTimeToPosix(MDSData.F, 'YMDHM', Year.s = 'Year', Month.s =  'Month', Day.s = 'Day', Hour.s = 'Hour', Min.s = 'Minute')
 
   # Plot difference between old and new MDS
-  plot(EPTha98.C$sTEMP$NEE_f ~ MDSData.F$NEE_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+  plot(EPTha98.C$sTEMP$NEE_f ~ MDSData.F$NEE_f, col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
 
 
   # Load MDS output data from LaThuile BGI fluxnet files with ustar filtering
@@ -314,13 +313,13 @@ if (LongTest.b) {
   # (though in different data frames: original data in sDATA and results in sTEMP)
   EddyNCData.F <- cbind(EddyNCData.F, NEEnew = EddyNCData.F$NEE)
   EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, c('NEEnew', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
-  # Fill gaps - with ustar through NEE_fqc=0
-  EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll.b=T, Verbose.b=T)
+  # Fill gaps - with ustar through NEE_fqc = 0
+  EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
 
   # Plot difference between old and new MDS
-  plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f, col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+  plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f, col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
 
   # Plot combination of the two BUT this is mixing with and without ustar filtering...
-  plot(EPTha98.C$sTEMP$NEE_f ~ EPThaNC.C$sTEMP$NEEnew_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
-  plot(MDSData.F$NEE_f ~ EPThaNC.C$sDATA$NEE_f[35089:52608], col=rgb(0.4,0.4,0.4,alpha=0.2), pch=20, cex=0.3)
+  plot(EPTha98.C$sTEMP$NEE_f ~ EPThaNC.C$sTEMP$NEEnew_f[35089:52608], col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
+  plot(MDSData.F$NEE_f ~ EPThaNC.C$sDATA$NEE_f[35089:52608], col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
 }

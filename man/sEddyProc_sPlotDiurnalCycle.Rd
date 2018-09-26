@@ -1,19 +1,31 @@
 \name{sEddyProc_sPlotDiurnalCycle}
 \alias{sEddyProc_sPlotDiurnalCycle}
-\title{sEddyProc$sPlotDiurnalCycle - Image with diurnal cycles of each month}
+\title{sEddyProc sPlotDiurnalCycle}
 \description{Generates image in specified format ('pdf' or 'png') with diurnal cycles.}
-\usage{sEddyProc_sPlotDiurnalCycle(Var.s, QFVar.s = "none", 
-    QFValue.n = NA_real_, Format.s = "pdf", 
-    Dir.s = "plots", data = cbind(sDATA, 
-        sTEMP), dts = sINFO$DTS)}
+\usage{sEddyProc_sPlotDiurnalCycle(Var = Var.s, 
+    QFVar = if (!missing(QFVar.s)) QFVar.s else "none", 
+    QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_, 
+    Format = if (!missing(Format.s)) Format.s else "pdf", 
+    Dir = if (!missing(Dir.s)) Dir.s else "plots", 
+    data = cbind(sDATA, sTEMP), dts = sINFO$DTS, 
+    Var.s, QFVar.s, QFValue.n, Format.s, 
+    Dir.s)}
 \arguments{
-  \item{Var.s}{Variable to plot}
-  \item{QFVar.s}{Quality flag of variable to be filled}
-  \item{QFValue.n}{Value of quality flag for data to plot}
-  \item{Format.s}{Graphics file format ('pdf' or 'png')}
-  \item{Dir.s}{Directory for plotting}
+  \item{Var}{Variable to plot}
+  \item{QFVar}{Quality
+flag of variable to be filled}
+  \item{QFValue}{Value
+of quality flag for data to plot}
+  \item{Format}{Graphics
+file format (e.g. 'pdf', 'png')}
+  \item{Dir}{Directory for plotting}
   \item{data}{data.frame with variables to plot}
   \item{dts}{numeric integer}
+  \item{Var.s}{deprecated}
+  \item{QFVar.s}{deprecated}
+  \item{QFValue.n}{deprecated}
+  \item{Format.s}{deprecated}
+  \item{Dir.s}{deprecated}
 }
 
 

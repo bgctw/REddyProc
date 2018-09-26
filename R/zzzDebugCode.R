@@ -27,3 +27,31 @@ if (getRversion() >= "2.15.1") {
 sID <- sDATA <- sINFO <- sLOCATION <- sTEMP <- sUSTAR_DETAILS <- sUSTAR <- sUSTAR_SCEN <-
   "globalsREddyProcDummyToSatisfyRCMDcheck"
 
+.genDeprecatedCheckCode <- function(
+  ### generate expanded working code for map_lgl(varNamesDepr, missing)
+  varNamesDepr
+){
+  #from twDev
+  copy2clip <- function(
+    x, col.names = NA, row.names = FALSE, quote = FALSE,
+    sep = "\t", ..., selection = c("clipboard", "primary", "secondary")
+  ) {
+    if (.Platform$OS.type == "unix") {
+      if (!isTRUE(file.exists(Sys.which("xclip")[1L])))
+        stop("Cannot find xclip")
+      selection <- match.arg(selection)[1L]
+      con <- pipe(paste0("xclip -i -selection ", selection),"w")
+      on.exit(close(con))
+      write.table(x, con, sep = sep, row.names = row.names,
+                  col.names = row.names, quote = quote, ...)
+    } else {
+      write.table(x, "clipboard", sep = sep, row.names = row.names,
+                  col.names = row.names, quote = quote, ...)
+    }
+    x
+  }
+  copy2clip(paste0(
+    "iDepr = which(!c("
+    , paste(paste0("missing(", varNamesDepr,")"), collapse = ",")
+    , "))"))
+}

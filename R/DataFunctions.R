@@ -1,44 +1,57 @@
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ R script with functions to convert and check data +++
 #+++ Dependencies: <none>
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Time format conversion to POSIX
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fConvertTimeToPosix <- function(
   ### Convert different time formats to POSIX
   Data.F                   ##<< Data frame with time columns to be converted
-  , TFormat.s              ##<< Abbreviation for implemented time formats,
+  , TFormat = TFormat.s    ##<< Abbreviation for implemented time formats,
   ## see details
-  , Year.s = 'none'        ##<< Column name of year
-  , Month.s = 'none'       ##<< Column name of month
-  , Day.s = 'none'         ##<< Column name of day
-  , Hour.s = 'none'        ##<< Column name of hour
-  , Min.s = 'none'         ##<< Column name of min
-  , TName.s = 'DateTime'   ##<< Column name of new column
+  , Year = if (!missing(Year.s)) Year.s else 'none'        ##<< Column name of year
+  , Month = if (!missing(Month.s)) Month.s else 'none'       ##<< Column name of month
+  , Day = if (!missing(Day.s)) Day.s else 'none'         ##<< Column name of day
+  , Hour = if (!missing(Hour.s)) Hour.s else 'none'        ##<< Column name of hour
+  , Min = if (!missing(Min.s)) Min.s else 'none'         ##<< Column name of min
+  , TName = if (!missing(TName.s)) TName.s else 'DateTime'   ##<< Column name of new column
+  , TFormat.s  ##<< deprecated
+  , Year.s ##<< deprecated
+  , Month.s ##<< deprecated
+  , Day.s ##<< deprecated
+  , Hour.s ##<< deprecated
+  , Min.s ##<< deprecated
+  , TName.s ##<< deprecated
   , tz = 'GMT'				     ##<< timezone used to store the data. Advised to keep
     ## GMT to avoid daytime shifting issues
-  )
-  ##author<<
-  ## AMM
-  # TEST: see unit tests in test_fConvertTimeToPosix
-  # TEST: Year.s = 'none'; Month.s = 'none'; Day.s = 'none'; Hour.s = 'none'; Min.s = 'none'
-  # TEST: Data.F <- Date.F.x; TFormat.s <- 'YDH'; Year.s = 'FluxnetYear.n'; Day.s = 'FluxnetDoY.n'; Hour.s = 'FluxnetHourDec.n'
-  #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year) is 366 but year is already the next year, use YMDHM instead!
-{
+){
+  varNamesDepr <- c(
+    "TFormat.s","Year.s","Month.s","Day.s","Hour.s","Min.s","TName.s")
+  varNamesNew <- c(
+    "TFormat","Year","Month","Day","Hour","Min","TName")
+  iDepr = which(!c(
+    missing(TFormat.s),missing(Year.s),missing(Month.s),missing(Day.s)
+    ,missing(Hour.s),missing(Min.s),missing(TName.s)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  ##author<< AMM
+  #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year)
+  # is 366 but year is already the next year, use YMDHM instead!
   ##details<<
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
   ## column is prefixed to the data frame
   #
   ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}
   #Check if specified columns exist and are in data frame, with 'none' as dummy
-  NoneCols.b <- c(Year.s, Month.s, Day.s, Hour.s, Min.s) %in% 'none'
-  fCheckColNames(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
+  NoneCols.b <- c(Year, Month, Day, Hour, Min) %in% 'none'
+  fCheckColNames(Data.F, c(Year, Month, Day, Hour, Min)[!NoneCols.b]
                  , 'fConvertTimeToPosix')
-  fCheckColNum(Data.F, c(Year.s, Month.s, Day.s, Hour.s, Min.s)[!NoneCols.b]
+  fCheckColNum(Data.F, c(Year, Month, Day, Hour, Min)[!NoneCols.b]
                , 'fConvertTimeToPosix')
   ##details<<
   ## Implemented time formats:
@@ -59,93 +72,129 @@ fConvertTimeToPosix <- function(
   ## The minute format is (0-59)
   ## }
   ## }
-  if (TFormat.s == 'YDH') {
-    if (any(c(Year.s, Day.s, Hour.s) == 'none') )
-      stop('With time format \'YDH\' year, day of year (DoY), and hour need to be specified!')
-    fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
-    fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
+  if (TFormat == 'YDH') {
+    if (any(c(Year, Day, Hour) == 'none') ) stop(
+      'With time format \'YDH\' year, day of year (DoY), and hour '
+      , 'need to be specified!')
+    fCheckOutsideRange(
+      Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Day, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Hour, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
     ## 366d-correction and 24h-correction to the first day in next year,
     ## see unit test in test_fConvertTimeToPosix.R for details.
-    lYear.V.n <- Data.F[, Year.s]
-    lDoY.V.n <- Data.F[, Day.s]
-    lHour.V.n <- Data.F[, Hour.s] %/% 1
-    lMin.V.n <- 60 * Data.F[, Hour.s] %% 1
+    lYear.V.n <- Data.F[, Year]
+    lDoY.V.n <- Data.F[, Day]
+    lHour.V.n <- Data.F[, Hour] %/% 1
+    lMin.V.n <- 60 * Data.F[, Hour] %% 1
     #Check time format
-    #Important to set time zone to GMT to avoid problems with daylight savings timeshifts
-    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%j-%H-%M', tz = tz)
-    #24h-correction: strptime will be NA for hour 24.0 (needs to be before 366d-correction since DoY changes!)
+    #Important to set time zone to GMT to avoid problems
+    # with daylight savings timeshifts
+    lTime.V.p <- strptime(
+      paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
+      , format = '%Y-%j-%H-%M', tz = tz)
+    #24h-correction: strptime will be NA for hour 24.0
+    #(needs to be before 366d-correction since DoY changes!)
     Hour24.b <- is.na(lTime.V.p) & (lHour.V.n == 24.0)
     lDoY.V.n[Hour24.b] <- 1 + lDoY.V.n[Hour24.b] #succeding day
     lHour.V.n[Hour24.b] <- 0.0
     #Recheck time format
-    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%j-%H-%M', tz = tz)
+    lTime.V.p <- strptime(
+      paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
+      , format = '%Y-%j-%H-%M', tz = tz)
     #366d-correction: strptime will be NA for day 366 (or 367 in leap years)
-    DoY366.b <- is.na(lTime.V.p) & (lDoY.V.n == 366 | lDoY.V.n == 367) & (lHour.V.n == 0.0)
+    DoY366.b <- is.na(lTime.V.p) &
+      (lDoY.V.n == 366 | lDoY.V.n == 367) & (lHour.V.n == 0.0)
     lYear.V.n[DoY366.b] <- 1 + lYear.V.n[DoY366.b] #succeding year
     lDoY.V.n[DoY366.b] <- 1 #first day
     #Set time format
-    lTime.V.p <- strptime(paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%j-%H-%M', tz = tz)
+    lTime.V.p <- strptime(
+      paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
+      , format = '%Y-%j-%H-%M', tz = tz)
     if (sum(is.na(lTime.V.p)) > 0)
       stop(
-        sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: '
+        sum(is.na(lTime.V.p))
+        , ' errors in convert YDH to timestamp in rows: '
         , which(is.na(lTime.V.p)))
-  } else if (TFormat.s == 'YMDH') {
-    if (any(c(Year.s, Month.s, Day.s, Hour.s) == 'none') )
-      stop('With time format \'YMDH\' year, month, day, and hour need to be specified!')
+  } else if (TFormat == 'YMDH') {
+    if (any(c(Year, Month, Day, Hour) == 'none') ) stop(
+      'With time format \'YMDH\' year, month, day, and hour need to be specified!')
     ## YMDH - year, month, day of month, hour in decimal (e.g. 1998, 1, 1, 10.5)
-    fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The month format is (1-12)
-    fCheckOutsideRange(Data.F, Month.s, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Month, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
     ## The day format is day of month (1-31).
-    fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Day, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
     ## The hour format is decimal time (0.0-23.5)
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0.0, '|', ' >= ', 24.0), 'fConvertTimeToPosix (For format \'YMDH\' no 24h correction in old R versions (2.13 and below))')
+    fCheckOutsideRange(
+      Data.F, Hour, c('<', 0.0, '|', ' >= ', 24.0)
+      , paste0('fConvertTimeToPosix (For format \'YMDH\' no 24h correction '
+               ,'in old R versions (2.13 and below))'))
     ## No extra corrections.
-    lYear.V.n <- Data.F[, Year.s]
-    lMonth.V.n <- Data.F[, Month.s]
-    lDay.V.n <- Data.F[, Day.s]
-    lHour.V.n <- Data.F[, Hour.s] %/% 1
-    lMin.V.n <- 60 * Data.F[, Hour.s] %% 1
-    #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
-    lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%m-%d-%H-%M', tz = tz)
-    if (sum(is.na(lTime.V.p)) > 0)
-      stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
+    lYear.V.n <- Data.F[, Year]
+    lMonth.V.n <- Data.F[, Month]
+    lDay.V.n <- Data.F[, Day]
+    lHour.V.n <- Data.F[, Hour] %/% 1
+    lMin.V.n <- 60 * Data.F[, Hour] %% 1
+    #Set time format, important to set time zone to GMT to avoid problems
+    #with daylight savings timeshifts
+    lTime.V.p <- strptime(
+      paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep = '-')
+      , format = '%Y-%m-%d-%H-%M', tz = tz)
+    if (sum(is.na(lTime.V.p)) > 0) stop(
+      sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: '
+      , which(is.na(lTime.V.p)))
 
-  } else if (TFormat.s == 'YMDHM') {
-    if (any(c(Year.s, Month.s, Day.s, Hour.s, Min.s) == 'none') )
-      stop('With time format \'YMDHM\' year, month, day, hour and min need to be specified!')
+  } else if (TFormat == 'YMDHM') {
+    if (any(c(Year, Month, Day, Hour, Min) == 'none') ) stop(
+      'With time format \'YMDHM\' year, month, day, hour and min '
+      , 'need to be specified!')
     ## YMDHM - year, month, day of month, integer hour, minute (e.g. 1998, 1, 1, 10, 30)
-    fCheckOutsideRange(Data.F, Year.s, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     ## The month format is (1-12)
-    fCheckOutsideRange(Data.F, Month.s, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Month, c('<', 1, '|', '>', 12), 'fConvertTimeToPosix')
     ## The day format is day of month (1-31).
-    fCheckOutsideRange(Data.F, Day.s, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
+    fCheckOutsideRange(
+      Data.F, Day, c('<', 1, '|', '>', 31), 'fConvertTimeToPosix')
     ## The hour format is (0-23)
-    fCheckOutsideRange(Data.F, Hour.s, c('<', 0, '|', '>', 23), 'fConvertTimeToPosix(YMDH no 24h correction)')
+    fCheckOutsideRange(
+      Data.F, Hour, c('<', 0, '|', '>', 23)
+      , 'fConvertTimeToPosix(YMDH no 24h correction)')
     ## The minute format is (0-59)
-    fCheckOutsideRange(Data.F, Min.s, c('<', 0, '|', '>', 59), 'fConvertTimeToPosix(YMDH no 24h correction)')
+    fCheckOutsideRange(
+      Data.F, Min, c('<', 0, '|', '>', 59)
+      , 'fConvertTimeToPosix(YMDH no 24h correction)')
     ## No extra corrections.
-    lYear.V.n <- Data.F[, Year.s]
-    lMonth.V.n <- Data.F[, Month.s]
-    lDay.V.n <- Data.F[, Day.s]
-    lHour.V.n <- Data.F[, Hour.s]
-    lMin.V.n <- Data.F[, Min.s]
-    #Set time format, important to set time zone to GMT to avoid problems with daylight savings timeshifts
-    lTime.V.p <- strptime(paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep = '-'), format = '%Y-%m-%d-%H-%M', tz = tz)
-    if (sum(is.na(lTime.V.p)) > 0)
-       stop(sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: ', which(is.na(lTime.V.p)))
-
+    lYear.V.n <- Data.F[, Year]
+    lMonth.V.n <- Data.F[, Month]
+    lDay.V.n <- Data.F[, Day]
+    lHour.V.n <- Data.F[, Hour]
+    lMin.V.n <- Data.F[, Min]
+    #Set time format, important to set time zone to GMT to avoid problems
+    # with daylight savings timeshifts
+    lTime.V.p <- strptime(
+      paste(lYear.V.n, lMonth.V.n, lDay.V.n, lHour.V.n, lMin.V.n, sep = '-')
+      , format = '%Y-%m-%d-%H-%M', tz = tz)
+    if (sum(is.na(lTime.V.p)) > 0) stop(
+      sum(is.na(lTime.V.p)), ' errors in convert YDH to timestamp in rows: '
+      , which(is.na(lTime.V.p)))
   } else {
-    stop('Unknown time format ', TFormat.s, '!')
+    stop('Unknown time format ', TFormat, '!')
   }
   #POSIXlt converted to POSIXct in data.frame... !
   Data.F <- cbind(lTime.V.p, Data.F)
-  names(Data.F)[1] <- TName.s
-  attr(Data.F[, TName.s], 'units') <- 'POSIXDate Time'
-  attr(Data.F[, TName.s], 'varnames') <- TName.s
-  message('Converted time format \'', TFormat.s, '\' to POSIX with column name \'', TName.s, '\'.')
-
+  names(Data.F)[1] <- TName
+  attr(Data.F[, TName], 'units') <- 'POSIXDate Time'
+  attr(Data.F[, TName], 'varnames') <- TName
+  message(
+    'Converted time format \'', TFormat, '\' to POSIX with column name \''
+    , TName, '\'.')
   Data.F
   ##value<<
   ## Data frame with prefixed POSIX time column.
@@ -171,66 +220,99 @@ attr(getTZone, "ex") <- function() {
 	getTZone(Sys.time())
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
 fCheckHHTimeSeries <- function(
   ##description<<
   ## Check half-hourly time series data
-  Time.V.p              ##<< Time vector in POSIX format
-  , DTS.n                ##<< Number of daily time steps (24 or 48)
-  , CallFunction.s = ''    ##<< Name of function called from
-  )
-  ##author<<
-  ## AMM
-  # TEST: Time.V.p <- Data.F[, 'DateTime']
-{
-  # Check time series properties
+  Time = Time.V.p              ##<< Time vector in POSIX format
+  , DTS = DTS.n                ##<< Number of daily time steps (24 or 48)
+  , CallFunction = if (!missing(CallFunction.s)) CallFunction.s else ''    ##<<
+  ## Name of function called from
+  , Time.V.p          ##<< deprecated
+  , DTS.n             ##<< deprecated
+  , CallFunction.s    ##<< deprecated
+) {
+  varNamesDepr <- c("Time.V.p","DTS.n","CallFunction.s")
+  varNamesNew <- c("Time","DTS","CallFunction")
+  iDepr = which(!c(missing(Time.V.p),missing(DTS.n),missing(CallFunction.s)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  ##author<< AMM
   ##details<<
   ## The number of steps per day can be 24 (hourly) or 48 (half-hourly).
-  if (DTS.n != 24 && DTS.n != 48)
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Daily time step need to be hourly (24) or half-hourly (48). The following value is not valid: ', DTS.n, '!')
+  if (DTS != 24 && DTS != 48) stop(
+    CallFunction, ':::fCheckHHTimeSeries::: Daily time step need to be '
+    , 'hourly (24) or half-hourly (48). The following value is not valid: '
+    , DTS, '!')
   ##details<<
   ## The time stamp needs to be provided in POSIX time format,
-  if (!inherits(Time.V.p, 'POSIXt') )
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Provided time stamp data not in POSIX time format!')
+  if (!inherits(Time, 'POSIXt') ) stop(
+    CallFunction, ':::fCheckHHTimeSeries::: Provided time stamp data not '
+    , 'in POSIX time format!')
   ##details<<
   ## equidistant half-hours,
-  NotDistHH.b <- as.numeric(Time.V.p[2:length(Time.V.p)])-as.numeric(Time.V.p[1:(length(Time.V.p)-1)]) != (24 / DTS.n * 60 * 60)
+  NotDistHH.b <- as.numeric(Time[2:length(Time)]) -
+    as.numeric(Time[1:(length(Time) - 1)]) != (24 / DTS * 60 * 60)
   NotDistHH.i <- sum(NotDistHH.b)
-  if (NotDistHH.i > 0)
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp is not equidistant (half-)hours in rows: ', paste(which(NotDistHH.b), collapse = ", "))
+  if (NotDistHH.i > 0) stop(
+    CallFunction, ':::fCheckHHTimeSeries::: Time stamp is not equidistant '
+    , '(half-)hours in rows: ', paste(which(NotDistHH.b), collapse = ", "))
   ##details<<
   ## and stamped on the half hour.
-  NotOnHH.i <- sum(as.numeric(Time.V.p) %% (24 / DTS.n * 60 * 60) != 0)
-  if (NotOnHH.i > 0)
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time step is not stamped at half-hours in rows: ', which(as.numeric(Time.V.p) %% (24 / DTS.n * 60 * 60) != 0))
+  NotOnHH.i <- sum(as.numeric(Time) %% (24 / DTS * 60 * 60) != 0)
+  if (NotOnHH.i > 0) stop(
+    CallFunction, ':::fCheckHHTimeSeries::: Time step is not stamped at '
+    , 'half-hours in rows: '
+    , which(as.numeric(Time) %% (24 / DTS * 60 * 60) != 0))
   ##details<<
   ## The sEddyProc procedures require at least three months of data.
-  if (length(Time.V.p) < (3 * 30 * DTS.n) )
-    stop(CallFunction.s, ':::fCheckHHTimeSeries::: Time series is shorter than 90 days (three months) of data: ', 3 * 30 - length(Time.V.p) / DTS.n, ' days missing!')
+  if (length(Time) < (3 * 30 * DTS) ) stop(
+    CallFunction, ':::fCheckHHTimeSeries::: Time series is shorter than '
+    , '90 days (three months) of data: '
+    , 3 * 30 - length(Time) / DTS, ' days missing!')
   ##details<<
-  ## Full days of data are preferred: the total amount of data rows should be a multiple of the daily time step, and
-  Residual.i <- length(Time.V.p) %% DTS.n
-  if (Residual.i != 0)
-    warning(CallFunction.s, ':::fCheckHHTimeSeries::: Data not provided in full days (multiple of daily time step). One day only has ', Residual.i , ' (half-)hours!')
+  ## Full days of data are preferred: the total amount of data rows should be
+  ## a multiple of the daily time step, and
+  Residual.i <- length(Time) %% DTS
+  if (Residual.i != 0) warning(
+    CallFunction, ':::fCheckHHTimeSeries::: Data not provided in full '
+    , 'days (multiple of daily time step). One day only has '
+    , Residual.i , ' (half-)hours!')
   ##details<<
-  ## in accordance with FLUXNET standards, the dataset is spanning from the end of the first (half-)hour (0:30 or 1:00, respectively) and to midnight (0:00).
-  if (DTS.n == 48 && !(as.POSIXlt(Time.V.p[1])$hour == 0 && as.POSIXlt(Time.V.p)$min == 30) )
-    warning(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp of first data row is not at the end of the first half-hour: ', format(Time.V.p[1], '%H:%M'), ' instead of 00:30!')
-  if (DTS.n == 24 && !(as.POSIXlt(Time.V.p[1])$hour == 1 && as.POSIXlt(Time.V.p)$min == 00) )
-    warning(CallFunction.s, ':::fCheckHHTimeSeries::: Time stamp of first data row is not at the end of the first hour: ', format(Time.V.p[1], '%H:%M'), ' instead of 01:00!')
-  if (!(as.POSIXlt(Time.V.p[length(Time.V.p)])$hour == 0 && as.POSIXlt(Time.V.p[length(Time.V.p)])$min == 0) )
-    warning(CallFunction.s, ':::fCheckHHTimeSeries::: The last time stamp is not midnight: 0:00!')
-
+  ## in accordance with FLUXNET standards, the dataset is spanning from the
+  ## end of the first (half-)hour (0:30 or 1:00, respectively) and
+  ## to midnight (0:00).
+  if (DTS == 48 &&
+      !(as.POSIXlt(Time[1])$hour == 0 &&
+        as.POSIXlt(Time)$min == 30) )
+    warning(
+      CallFunction, ':::fCheckHHTimeSeries::: Time stamp of first data row '
+      , 'is not at the end of the first half-hour: '
+      , format(Time[1], '%H:%M'), ' instead of 00:30!')
+  if (DTS == 24 &&
+      !(as.POSIXlt(Time[1])$hour == 1 &&
+        as.POSIXlt(Time)$min == 00) )
+    warning(
+      CallFunction, ':::fCheckHHTimeSeries::: Time stamp of first data '
+      , 'row is not at the end of the first hour: '
+      , format(Time[1], '%H:%M'), ' instead of 01:00!')
+  if (!(as.POSIXlt(Time[length(Time)])$hour == 0 &&
+        as.POSIXlt(Time[length(Time)])$min == 0) )
+    warning(
+      CallFunction, ':::fCheckHHTimeSeries::: The last time '
+      , 'stamp is not midnight: 0:00!')
   ##value<<
   ## Function stops on errors.
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 fFullYearTimeSteps <- function(
   ##description<<
-  ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
+  ## Generate vector with (half-)hourly time steps of full year, stamped in the
+  ## center of time unit
   Year.i                ##<< Data frame to be converted
   , DTS.n                ##<< Daily time steps
   , CallFunction.s = ''    ##<< Name of function called from
@@ -253,17 +335,17 @@ fFullYearTimeSteps <- function(
   #DateTime vector with (half-)hourly time stamps
   #Time.F.p <- data.frame(sDateTime = seq(TimeStart.n, TimeEnd.n, (24 / DTS.n * 60 * 60)))
   FullTime.V.p <- seq(TimeStart.n, TimeEnd.n, (24 / DTS.n * 60 * 60))
-
   FullTime.V.p
   ##value<<
   ## Vector with time steps of full year in POSIX format
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fExpandToFullYear <- function(
   ##description<<
-  ## Generate vector with (half-)hourly time steps of full year, stamped in the middle of time unit
+  ## Generate vector with (half-)hourly time steps of full year, stamped in
+  ## the middle of time unit
   Time.V.p                    ##<< Time stamp in POSIX time format
   , Data.V.n                   ##<< Data vector to be expanded
   , Year.i                     ##<< Year (e.g. to plot)
@@ -277,8 +359,8 @@ fExpandToFullYear <- function(
 {
   # Check if year within time span of data set
   if (sum(Year.i == as.numeric(format(Time.V.p, '%Y'))) == 0)
-    stop(CallFunction.s, ':::fExpandToFullYear::: Year ', Year.i, ' not within time span of this dataset!')
-
+    stop(CallFunction.s, ':::fExpandToFullYear::: Year ', Year.i
+         , ' not within time span of this dataset!')
   ##details<<
   ## Function to expand vectors to full year, e.g. to plot in correct time format
   SubCallFunc.s <- paste(CallFunction.s, 'fExpandToFullYear', sep = ':::')
@@ -286,8 +368,7 @@ fExpandToFullYear <- function(
   TimeYear.V.p <- Time.V.p[(Year.i == as.numeric(format(Time.V.p, '%Y')))]
   DataYear.V.n <- Data.V.n[(Year.i == as.numeric(format(Time.V.p, '%Y')))]
 
-  if (sum(!is.na(DataYear.V.n)) == 0)
-  {
+  if (sum(!is.na(DataYear.V.n)) == 0) {
     ExpData.F.n <- data.frame(cbind(DateTime = FullYear.V.p, Data = rep(NA_real_, length(FullYear.V.p))))
     warning(CallFunction.s, ':::fExpandToFullYear::: Variable \'', attr(Data.V.n, 'varnames'), '\' contains no data for year ', Year.i, '!')
   } else if (length(TimeYear.V.p != length(FullYear.V.p))) {
@@ -304,7 +385,7 @@ fExpandToFullYear <- function(
   ## Expanded time and data vector as data frame
 }
 
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fGetBeginOfEddyPeriod <- function(
 		##description<<

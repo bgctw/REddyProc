@@ -58,7 +58,7 @@ for (Result.i in 1 :length(ResultsName.V.s)) {
   # Automatically uses the NEE_f, NEE_fqc, Tair_f, Tair_fqc, and Rg from the pv-wave output files
   # This ensures that the algorithms are based on the SAME subset of (filtered) NEE data
   EPSite.C <- sEddyProc$new(ResultsName.V.s[Result.i], PVData.F, c('NEE_f', 'NEE_fqc', 'Tair_f', 'Tair_fqc', 'Rg'))
-  EPSite.C$setLocationInfo(Lat_deg.n = Info.L$LAT, Long_deg.n = Info.L$LON, TimeZone_h.n = Info.L$TZ)
+  EPSite.C$setLocationInfo(LatDeg = Info.L$LAT, LongDeg = Info.L$LON, TimeZoneHour = Info.L$TZ)
   EPSite.C$sMRFluxPartition()
   rm(NewFPResults.F)
   NewFPResults.F <- EPSite.C$sExportResults()

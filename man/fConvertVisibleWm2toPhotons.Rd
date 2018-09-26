@@ -2,9 +2,11 @@
 \alias{fConvertVisibleWm2toPhotons}
 \title{fConvertVisibleWm2toPhotons}
 \description{Convert units of visible radiation from irradiance to photons flux}
-\usage{fConvertVisibleWm2toPhotons(Wm2.V.n)}
+\usage{fConvertVisibleWm2toPhotons(Wm2 = Wm2.V.n, 
+    Wm2.V.n)}
 \arguments{
-  \item{Wm2.V.n}{Data vector in units of irradiance (W m-2)}
+  \item{Wm2}{Data vector in units of irradiance (W m-2)}
+  \item{Wm2.V.n}{deprecated}
 }
 
 \value{Data vector in units of photons flux (PPFD, umol photons m-2 s-1)}

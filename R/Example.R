@@ -92,12 +92,12 @@ getFilledExampleDETha98Data <- function(
     # Example_DETha98 is a lazyData object of REddyProc
     # nee to prefix package name here, to satisfy R CMD CHECK
     Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98
-                    , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+                    , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
     Example_DETha98_sDate <- cbind(
       sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
     EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate
                                 , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-    EProc$sSetLocationInfo(Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)
+    EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
     EProc$sCalcPotRadiation()
     EProc$sMDSGapFill('NEE', FillAll.b = TRUE)
     EProc$sMDSGapFill('Rg', FillAll.b = FALSE)

@@ -2,10 +2,13 @@
 \alias{fCalcVPDfromRHandTair}
 \title{fCalcVPDfromRHandTair}
 \description{Calculate VPD from rH and Tair}
-\usage{fCalcVPDfromRHandTair(RH.V.n, Tair.V.n)}
+\usage{fCalcVPDfromRHandTair(rH = RH.V.n, Tair = Tair.V.n, 
+    RH.V.n, Tair.V.n)}
 \arguments{
-  \item{RH.V.n}{Data vector of relative humidity (rH, \%)}
-  \item{Tair.V.n}{Data vector of air temperature (Tair, degC)}
+  \item{rH}{Data vector of relative humidity (rH, \%)}
+  \item{Tair}{Data vector of air temperature (Tair, degC)}
+  \item{RH.V.n}{deprecated}
+  \item{Tair.V.n}{deprecated}
 }
 
 \value{Data vector of vapour pressure deficit (VPD, hPa (mbar))}

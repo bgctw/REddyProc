@@ -14,8 +14,7 @@
 #' @exportClass sEddyProc
 sEddyProc <- setRefClass('sEddyProc', fields = list(
   ## R5 reference class for processing of site-level half-hourly eddy data
-  ##author<<
-  ## AMM, after example code of TW
+  ##author<< AMM
   ##details<< with fields
   sID = 'character'       ##<< String with Site ID
   , sDATA = 'data.frame'   ##<< Data frame with (fixed) site data
@@ -33,45 +32,67 @@ sEddyProc <- setRefClass('sEddyProc', fields = list(
 
 #' @export
 sEddyProc_initialize <- function(
-  ##title<<
-  ## sEddyProc_initialize - Initialization of sEddyProc
-  ##description<<
-  ## This function is called when writing \code{sEddyProc$new}.
-  ## It creates the fields of the sEddyProc R5 reference class for processing
-  ## of half-hourly eddy data
-  ID.s                ##<< String with site ID
-  , Data.F             ##<< Data frame with at least three month of half-hourly
+  ### Initializing sEddyProc class during \code{sEddyProc$new}.
+  ID = ID.s                ##<< String with site ID
+  , Data = Data.F             ##<< Data frame with at least three month of half-hourly
   ## site-level eddy data
-  , ColNames.V.s       ##<< Vector with selected column names, the less columns
+  , ColNames = ColNames.V.s      ##<< Vector with selected column names, the less columns
   ## the faster the processing
-  , ColPOSIXTime.s = 'DateTime' ##<< Column name with POSIX time stamp
-  , DTS.n = 48           ##<< Daily time steps
-  , ColNamesNonNumeric.V.s = character(0)	##<< Names of columns that should not
+  , ColPOSIXTime = 'DateTime'    ##<<  Column name with POSIX time stamp
+  , DTS = if (!missing(DTS.n)) DTS.n else 48           ##<< Daily time steps
+  , ColNamesNonNumeric = character(0)	 ##<< Names of columns that should not
   ## be checked for numeric type, e.g. season column
-  , Lat_deg.n = NA_real_    	##<< Latitude in (decimal) degrees (-90 to + 90)
-  , Long_deg.n = NA_real_   	##<< Longitude in (decimal) degrees (-180 to + 180)
-  , TimeZone_h.n = NA_integer_	##<< Time zone: hours shift to UTC, e.g. 1 for Berlin
+  , LatDeg = NA_real_    	##<<
+  ## Latitude in (decimal) degrees (-90 to + 90)
+  , LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_   	##<<
+  ## Longitude in (decimal) degrees (-180 to + 180)
+  , TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_	##<<
+  ## Time zone: hours shift to UTC, e.g. 1 for Berlin
+  , ID.s                  ##<< deprecated
+  , Data.F                ##<< deprecated
+  , ColNames.V.s          ##<< deprecated
+  , ColPOSIXTime.s        ##<< deprecated
+  , DTS.n                 ##<< deprecated
+  , ColNamesNonNumeric.V.s ##<< deprecated
+  , Lat_deg.n		  ##<< deprecated
+  , Long_deg.n		##<< deprecated
+  , TimeZone_h.n	##<< deprecated
   , ...                ##<< ('...' required for initialization of class fields)
   ##author<< AMM
 ) {
+  if (!missing(ColNamesNonNumeric.V.s)) ColNamesNonNumeric <- ColNamesNonNumeric.V.s
+  if (!missing(ColPOSIXTime.s)) ColPOSIXTime <- ColPOSIXTime.s
+  if (!missing(Lat_deg.n)) LatDet <- Lat_deg.n
+  varNamesDepr <- c(
+    "ID.s","Data.F","ColNames.V.s","ColPOSIXTime.s","DTS.n"
+    ,"ColNamesNonNumeric.V.s","Lat_deg.n","Long_deg.n","TimeZone_h.n")
+  varNamesNew <- c(
+    "ID","Data","ColNames","ColPOSIXTime","DTS"
+    ,"ColNamesNonNumeric","LatDeg","LongDeg","TimeZoneHour")
+  iDepr = which(!c(
+    missing(ID.s),missing(Data.F),missing(ColNames.V.s),missing(ColPOSIXTime.s)
+    ,missing(DTS.n),missing(ColNamesNonNumeric.V.s),missing(Lat_deg.n)
+    ,missing(Long_deg.n),missing(TimeZone_h.n)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
   ##detail<< A method of class \code{\link{sEddyProc-class}}.
-  'Creates the fields of the sEddyProc R5 reference class for processing of half-hourly eddy data'
   # Check entries
-  if (!fCheckValString(ID.s) || is.na(ID.s) )
+  if (!fCheckValString(ID) || is.na(ID) )
     stop('For ID, a character string must be provided!')
-  fCheckColNames(Data.F, c(ColPOSIXTime.s, ColNames.V.s), 'fNewSData')
+  fCheckColNames(Data, c(ColPOSIXTime, ColNames), 'fNewSData')
 
   ##details<<
   ## The time stamp must be provided in POSIX format, see also
   ## \code{\link{fConvertTimeToPosix}}.
   ## For required properties of the time series, see \code{\link{fCheckHHTimeSeries}}.
-  fCheckHHTimeSeries(Data.F[, ColPOSIXTime.s], DTS.n = DTS.n, 'sEddyProc.initialize')
+  fCheckHHTimeSeries(Data[, ColPOSIXTime], DTS = DTS, 'sEddyProc.initialize')
 
   ##details<<
   ## Internally the half-hour time stamp is shifted to the middle of the
   ## measurement period (minus 15 minutes or 30 minutes).
   #half-period time offset in seconds
-  Time.V.p <- Data.F[, ColPOSIXTime.s] - (0.5 * 24 / DTS.n * 60 * 60)
+  Time.V.p <- Data[, ColPOSIXTime] - (0.5 * 24 / DTS * 60 * 60)
 
   ##details<<
   ## All other columns may only contain numeric data.
@@ -79,15 +100,15 @@ sEddyProc_initialize <- function(
   ## be used in the processing.
   ## The columns are also checked for plausibility with warnings if outside range.
   fCheckColNum(
-    Data.F, setdiff(ColNames.V.s, ColNamesNonNumeric.V.s), 'sEddyProc.initialize')
-  fCheckColPlausibility(Data.F, ColNames.V.s, 'sEddyProc.initialize')
+    Data, setdiff(ColNames, ColNamesNonNumeric), 'sEddyProc.initialize')
+  fCheckColPlausibility(Data, ColNames, 'sEddyProc.initialize')
 
   ##details<<
   ## sID is a string for the site ID.
-  sID <<- ID.s
+  sID <<- ID
   ##details<<
   ## sDATA is a data frame with site data.
-  sDATA <<- cbind(sDateTime = Time.V.p, Data.F[, ColNames.V.s, drop = FALSE])
+  sDATA <<- cbind(sDateTime = Time.V.p, Data[, ColNames, drop = FALSE])
   ##details<<
   ## sTEMP is a temporal data frame with the processing results.
   sTEMP <<- data.frame(sDateTime = Time.V.p)
@@ -106,7 +127,7 @@ sEddyProc_initialize <- function(
   ##describe<<
   sINFO <<- list(
     DIMS = length(sDATA$sDateTime) ##<< Number of data rows
-    , DTS = DTS.n                   ##<< Number of daily time steps (24 or 48)
+    , DTS = DTS                   ##<< Number of daily time steps (24 or 48)
     , Y.START = YStart.n            ##<< Starting year
     , Y.END = YEnd.n                ##<< Ending year
     , Y.NUMS = YNums.n              ##<< Number of years
@@ -123,13 +144,13 @@ sEddyProc_initialize <- function(
   ##details<<
   ## sLOCATION is a list of information on site location and timezone
   ## (see \code{\link{sEddyProc_sSetLocationInfo}}).
-  .self$sSetLocationInfo( Lat_deg.n , Long_deg.n , TimeZone_h.n)
+  .self$sSetLocationInfo( LatDeg , LongDeg , TimeZoneHour)
 
   ##details<<
   ## sTEMP is a data frame used only temporally.
 
   #Initialize class fields
-  message('New sEddyProc class for site \'', ID.s, '\'')
+  message('New sEddyProc class for site \'', ID, '\'')
 
   # Required for initialization of class fields as last call of function
   callSuper(...)
@@ -147,25 +168,37 @@ sEddyProc$methods( initialize = sEddyProc_initialize)
 #' @export
 sEddyProc_sSetLocationInfo <- function(
 	### set Location and time Zone information to sLOCATION
-	Lat_deg.n		##<< Latitude in (decimal) degrees (-90 to + 90)
-	, Long_deg.n		##<< Longitude in (decimal) degrees (-180 to + 180)
-	, TimeZone_h.n	##<< Time zone (in hours) shift to UTC, e.g. + 1 for Berlin
+  LatDeg = if (!missing(Lat_deg.n)) Lat_deg.n else NA_real_    	##<<
+  ## Latitude in (decimal) degrees (-90 to + 90)
+  , LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_   	##<<
+  ## Longitude in (decimal) degrees (-180 to + 180)
+  , TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_	##<<
+  ## Time zone: hours shift to UTC, e.g. 1 for Berlin
+  , Lat_deg.n		  ##<< deprecated
+	, Long_deg.n		##<< deprecated
+	, TimeZone_h.n	##<< deprecated
 ) {
-	##author<< TW
+  varNamesDepr <- c("Lat_deg.n","Long_deg.n","TimeZone_h.n")
+  varNamesNew <- c("LatDeg","LongDeg","TimeZoneHour")
+  iDepr = which(!c(missing(Lat_deg.n),missing(Long_deg.n),missing(TimeZone_h.n)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+  ##author<< TW
 	# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
 	# and therefore should be stored with the class, instead of passed each time.
-	if (!is.na(Lat_deg.n) & (Lat_deg.n < -90 | Lat_deg.n > 90)) stop(
+	if (!is.na(LatDeg) & (LatDeg < -90 | LatDeg > 90)) stop(
 	  "Latitude must be in interval -90 to + 90")
-	if (!is.na(Long_deg.n) & (Long_deg.n < -180 | Long_deg.n > 180)) stop(
+	if (!is.na(LongDeg) & (LongDeg < -180 | LongDeg > 180)) stop(
 	  "Longitude must be in interval -180 to + 180")
-	if (!is.na(TimeZone_h.n) &
-	    (TimeZone_h.n < -12 | TimeZone_h.n > + 12 |
-	     TimeZone_h.n != as.integer(TimeZone_h.n))) stop(
+	if (!is.na(TimeZoneHour) &
+	    (TimeZoneHour < -12 | TimeZoneHour > +12 |
+	     TimeZoneHour != as.integer(TimeZoneHour))) stop(
 	       "Timezone must be an integer in interval -12 to 12")
 	sLOCATION <<- list(
-			Lat_deg.n = Lat_deg.n
-			, Long_deg.n = Long_deg.n
-			, TimeZone_h.n = TimeZone_h.n
+			LatDeg = LatDeg
+			, LongDeg = LongDeg
+			, TimeZoneHour = TimeZoneHour
 	)
 }
 sEddyProc$methods(sSetLocationInfo = sEddyProc_sSetLocationInfo)
@@ -264,15 +297,11 @@ sEddyProc_sGetUstarScenarios <- function(
 sEddyProc$methods(sGetUstarScenarios = sEddyProc_sGetUstarScenarios)
 
 #' @export
-sEddyProc_sGetData <- function()
-  ##title<<
-  ## sEddyProc$sGetData - Get internal sDATA data frame
-  ##description<<
-  ## Get class internal sDATA data frame
-  ##author<<
-  ## AMM
-{
-    'Get class internal sDATA data frame'
+sEddyProc_sGetData <- function(
+  ### Get class internal sDATA data frame
+) {
+  ##author<< AMM
+  'Get class internal sDATA data frame'
     sDATA
     ##value<<
     ## Return data frame sDATA.
@@ -284,14 +313,9 @@ sEddyProc$methods( sGetData = sEddyProc_sGetData)
 
 #' @export
 sEddyProc_sExportData <- function()
-    ##title<<
-    ## sEddyProc$sExportData - Export internal sDATA data frame
-    ##description<<
-    ## Export class internal sDATA data frame
-    ##author<<
-    ## AMM
+  ### Export class internal sDATA data frame
+  ##author<< AMM
 {
-    'Export class internal sDATA data frame'
 	lDATA <- sDATA
 	lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
 	colnames(lDATA) <- c('DateTime', colnames(lDATA)[-1])
@@ -305,17 +329,12 @@ sEddyProc$methods( sExportData = sEddyProc_sExportData)
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #' @export
 sEddyProc_sExportResults <- function(
-	  isListColumnsExported = FALSE	##<< if TRUE export list columns in addition
+  ### Export class internal sTEMP data frame with result columns
+  isListColumnsExported = FALSE	##<< if TRUE export list columns in addition
 	  ## to numeric columns,
 		## such as the covariance matrices of the the day-time-partitioning LRC fits
-)
-    ##title<<
-    ## sEddyProc$sExportData - Export internal sTEMP data frame with result columns
-    ##description<<
-    ## Export class internal sTEMP data frame with result columns
-    ##author<<
-    ## AMM
-{
+) {
+    ##author<< AMM
     'Export class internal sTEMP data frame with result columns'
 	iListColumns <- which(sapply(sTEMP, is.list) )
 	iOmit <- if (isListColumnsExported) c(1L) else c(1L, iListColumns)
@@ -333,15 +352,16 @@ sEddyProc_sPrintFrames <- function(
     ## sEddyProc$sPrintFrames - Print internal sDATA and sTEMP data frame
     ##description<<
     ## Print class internal sDATA and sTEMP data frame
-    NumRows.i = 100         ##<< Number of rows to print
+    nRows = if (!missing(NumRows.i)) NumRows.i else 100  ##<< Number of rows to print
+    , NumRows.i = 100         ##<< deprecated
 )
     ##author<<
     ## AMM
 {
     'Print class internal sDATA data frame'
-    NumRows.i <- min(nrow(sDATA), nrow(sTEMP), NumRows.i)
+    nRows <- min(nrow(sDATA), nrow(sTEMP), nRows)
 
-    print(cbind(sDATA, sTEMP[, -1])[1:NumRows.i, ])
+    print(cbind(sDATA, sTEMP[, -1])[1:nRows, ])
     ##value<<
     ## Print the first rows of class internal sDATA and sTEMP data frame.
 }

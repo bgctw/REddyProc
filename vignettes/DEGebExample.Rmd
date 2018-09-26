@@ -60,8 +60,8 @@ summary(DEGebExample)
 VPD was not given with the original dataset and is calculated from Tair and rH.
 ```{r}
 DEGebExample$VPD <- fCalcVPDfromRHandTair(DEGebExample$rH, DEGebExample$Tair)
-EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.1, Long_deg.n = 10.9, TimeZone_h.n = 1)  #Location of Gebesee
+EProc <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc$sSetLocationInfo(LatDeg = 51.1, LongDeg = 10.9, TimeZoneHour = 1)  #Location of Gebesee
 ```
 
 Defining Seasons with different surface friction conditions 
@@ -95,17 +95,17 @@ seasonFactor <- usCreateSeasonFactorYdayYear(
   DEGebExample$DateTime - 15*60, starts = seasonStarts)
 plot( NEE ~ DateTime, DEGebExample )
 seasonStartsDate <- fConvertTimeToPosix( data.frame(Year = seasonStarts[,2]
-	, DoY = seasonStarts[,1], Hour = 0.25),'YDH'
-	, Year.s = "Year", Day.s = "DoY",Hour.s = "Hour")
+	, DoY = seasonStarts[,1], Hour = 0.25), 'YDH'
+	, Year = "Year", Day = "DoY", Hour = "Hour")
 abline( v = seasonStartsDate$DateTime)
 ```
 
 The user-specific seasoning is provided to the gap-filling by the argument `seasonFactor`. 
 ```{r DEGeb_estUStar1b, cache = TRUE}
-(uStarTh <- EddyProc.C$sEstUstarThold(seasonFactor = seasonFactor))
+(uStarTh <- EProc$sEstUstarThold(seasonFactor = seasonFactor))
 # estimation can be inspected by plotting the saturation of NEE with UStar 
 # for the temperatures of one season
-#EddyProc.C$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
+#EProc$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
 ```
 
 Note that there is an estimate for each season. Further, an annual estimate is 
@@ -118,15 +118,15 @@ For the crop-site of this example, we will use a different threshold for each of
 the defined seasons.
 This is achieved by providing the seasonal estimates with argument `uStarTh`.
 The season factor has already been stored with the class when calling 
-`EddyProc.C$sEstUstarThold`. 
+`EProc$sEstUstarThold`. 
 
 ```{r DEGeb_estUStar1c}
 (uStarScens <- usGetSeasonalSeasonUStarMap(uStarTh))
 ```	
 
 ```{r DEGeb_gapFill1, cache = TRUE, eval = FALSE, output = 'hide', message = FALSE}
-EddyProc.C$sMDSGapFillAfterUstar(
-  'NEE', FillAll.b = FALSE, uStarTh = uStarScens, Verbose.b = FALSE)
+EProc$sMDSGapFillAfterUstar(
+  'NEE', FillAll = FALSE, uStarTh = uStarScens, isVerbose = FALSE)
 ```		
 
 
@@ -145,28 +145,28 @@ different estimates of the uStar Threshold.
 
 
 ```{r DEGeb_estUStarBoot1, cache = TRUE, message = FALSE}
-EddyProc.C <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sSetLocationInfo(Lat_deg.n = 51.1, Long_deg.n = 10.9, TimeZone_h.n = 1)  #Location of Gebesee
+EProc <- sEddyProc$new('DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc$sSetLocationInfo(LatDeg = 51.1, LongDeg = 10.9, TimeZoneHour = 1)  #Location of Gebesee
 # here, because of processing time only 30 samples instead of 100, and 10% and 90% 
 # percentile instead of default 5%,50%, and 95% with 100 samples
-EddyProc.C$sEstimateUstarScenarios( 
+EProc$sEstimateUstarScenarios( 
   seasonFactor = seasonFactor, nSample = 30L, probs = c(0.1,0.9))
 (uStarScens <- usGetSeasonalSeasonUStarMap(
-  EddyProc.C$sGetEstimatedUstarThresholdDistribution()
+  EProc$sGetEstimatedUstarThresholdDistribution()
 ))
-EddyProc.C$sSetUstarScenarios(uStarScens)
+EProc$sSetUstarScenarios(uStarScens)
 ```	
 
 After setting the uStar scenarios, they will be used by method 
 `sMDSGapFillUStarScens`.
 ```{r DEGeb_gapFillBoot1, cache = TRUE, message = FALSE, output = 'hide'}
-EddyProc.C$sMDSGapFillUStarScens('NEE', FillAll.b = FALSE)
+EProc$sMDSGapFillUStarScens('NEE', FillAll = FALSE)
 ```
 
 Additional output columns are produced for each uStar quantile. 
 
 ```{r}
-grep("^NEE.*_f$", colnames( EddyProc.C$sExportResults()), value = TRUE )
+grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE )
 ```		
 
 Several methods provide processing steps for all scenarios.
@@ -176,10 +176,10 @@ For example, the flux partitioning across all threshold scenarios can be
 invoked by the following code to produce several GPP estimates.
 
 ```{r DEGeb_fluxPart1, cache = TRUE, message = FALSE}
-EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
-EddyProc.C$sApplyUStarScen( EddyProc.C$sMRFluxPartition )
-#grep("U10", colnames(EddyProc.C$sExportResults()), value = TRUE) 	
-grep("^GPP.*_f$", colnames( EddyProc.C$sExportResults()), value = TRUE )
+EProc$sMDSGapFill('Tair', FillAll = FALSE)
+EProc$sApplyUStarScen( EProc$sMRFluxPartition )
+#grep("U10", colnames(EProc$sExportResults()), value = TRUE) 	
+grep("^GPP.*_f$", colnames( EProc$sExportResults()), value = TRUE )
 ```
 
 Using change point detection instead of moving point method for UStar Threshold estimation
@@ -197,9 +197,9 @@ to `EstUstarThold` or `sEstUstarThresholdDistribution`.
 The CPT method is usually yields higher thresholds and marks more data as Gap. 
   
 ```{r DEGeb_estUStarCPT, cache = TRUE}
-EddySetups.C <- sEddyProc$new(
+EProc <- sEddyProc$new(
   'DE-Geb', DEGebExample, c('NEE','Rg','Tair','VPD', 'Ustar'))
-resUStar <- EddySetups.C$sEstUstarThold(
+resUStar <- EProc$sEstUstarThold(
 					ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT = TRUE)
 					, seasonFactor = seasonFactor
 			)

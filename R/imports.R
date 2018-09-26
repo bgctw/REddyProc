@@ -3,7 +3,7 @@ NULL
 
 # #' @importFrom Rcpp sourceCpp evalCpp
 #' @import dplyr
-#' @importFrom purrr map map_df
+#' @importFrom purrr map map_df map_dbl map_lgl
 #' @importFrom tibble tibble as_tibble
 #' @importFrom mlegp mlegp predict.gp
 #' @importFrom rlang UQ sym syms
@@ -26,6 +26,7 @@ NULL
 
 
 # https://www.r-bloggers.com/re-exporting-the-magrittr-pipe-operator/
+
 #' re-export magrittr pipe operator
 #'
 #' @importFrom magrittr %>%

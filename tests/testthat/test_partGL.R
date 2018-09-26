@@ -258,7 +258,7 @@ test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 			expect_true( RRef >= 0)
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
-				lines( fLloydTaylor(RRef, resE0$E0, dss$Temp+273.15, T_ref.n = 273.15+15) ~
+				lines( fLloydTaylor(RRef, resE0$E0, dss$Temp+273.15, TRef = 273.15+15) ~
 				         dss$Temp)
 			}
 		})
@@ -290,7 +290,7 @@ test_that("estimating temperature sensitivity on record with some freezing tempe
 			.tmp.plot <- function(){
 				plot( NEE_f ~ Temp, dss)		# FP_VARnight negative?
 				points( NEE_f ~ Temp, dss[isValid,], col = "red")
-				lines( fLloydTaylor(RRef, resE0$E0, dss$Temp+273.15, T_ref.n = 273.15+15) ~
+				lines( fLloydTaylor(RRef, resE0$E0, dss$Temp+273.15, TRef = 273.15+15) ~
 				         dss$Temp)#
 			}
 		})
@@ -508,50 +508,50 @@ test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
 
 #resLRCEx1
 test_that("partitionNEEGL",{
-			dsNEE1 <- dsNEE
-			resEx <- resLRCEx1
-			#DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
-			#Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
-			#dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, Lat_deg.n = 45.0, Long_deg.n = 1, TimeZone_h.n = 0 )
-			tmp <- partitionNEEGL( dsNEE1,RadVar.s = 'Rg_f')
-			#tmp <- partitionNEEGL( dsNEE1,RadVar.s = 'Rg_f', controlGLPart = partGLControl(nBootUncertainty = 0L, isAssociateParmsToMeanOfValids = FALSE))
-			expect_equal( nrow(dsNEE1), nrow(tmp) )
-			#tmp[ is.finite(tmp$FP_beta), ]	# note FP_dRecPar is not zero, because iCentralRec != iMeanRec
-			#iPar <- which(is.finite(tmp$FP_E0))
-			#plot( tmp$FP_beta[iPar] ~ dsNEE1$sDateTime[iPar],type = "l", ylim = range(c(tmp$FP_beta[iPar],tmp$FP_GPP2000[iPar]))); lines( tmp$FP_GPP2000[iPar] ~ dsNEE1$sDateTime[iPar], col = "red")
-			#
-			# now test with different suffix: u50
-			dsNEE2 <- dsNEE
-			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <-
-			  c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
-			tmp <- partitionNEEGL(
-			  dsNEE2, RadVar.s = 'Rg_f', suffix = "u50"
-			  , controlGLPart = partGLControl(
-			    nBootUncertainty = 0L, isAssociateParmsToMeanOfValids = FALSE) )
-			expect_equal( nrow(dsNEE1), nrow(tmp) )
-			expect_true( all(is.finite(tmp$GPP_DT_u50)))
-			expect_true( all(tmp$GPP_DT_u50 >= 0))
-			expect_true( all(tmp$GPP_DT_u50 < 250))
-			expect_true( all(tmp$Reco_DT_u50 < 10))
-			expect_true( all(tmp$Reco_DT_u50 > 0))
-			expect_true( all(tmp$Reco_DT_u50_SD > 0))
-			expect_true( all(tmp$GPP_DT_u50_SD >= 0))
-			expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
-			# reporting good values at central records
-			# tmp[resEx$iCentralRec,]
-			iRowsOpt <- which(is.finite(tmp$FP_E0))
-			expect_true( length(iRowsOpt) == nrow(resEx) )
-			#expect_true( all((tmp$FP_alpha[resEx$iCentralRec] - resEx$alpha)[
-			#resEx$parms_out_range == 0L] < 1e-2) )
-			.tmp.plot <- function(){
-				tmp$time <- dsNEE1$sDateTime
-				plot( Reco_DT_u50 ~ time, tmp)
-				#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
-				plot( GPP_DT_u50 ~ time, tmp)
-				plot( FP_RRef_Night ~ time, tmp)
-				plot( FP_RRef ~ FP_RRef_Night, tmp)
-			}
-		})
+	dsNEE1 <- dsNEE
+	resEx <- resLRCEx1
+	#DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
+	#Hour.V.n <- as.POSIXlt(dsNEE1$sDateTime)$hour + as.POSIXlt(dsNEE1$sDateTime)$min/60
+	#dsNEE1$PotRad_NEW <- fCalcPotRadiation(DoY.V.n, Hour.V.n, LatDeg = 45.0, LongDeg = 1, TimeZoneHour = 0 )
+	tmp <- partitionNEEGL( dsNEE1,RadVar = 'Rg_f')
+	#tmp <- partitionNEEGL( dsNEE1,RadVar = 'Rg_f', controlGLPart = partGLControl(nBootUncertainty = 0L, isAssociateParmsToMeanOfValids = FALSE))
+	expect_equal( nrow(dsNEE1), nrow(tmp) )
+	#tmp[ is.finite(tmp$FP_beta), ]	# note FP_dRecPar is not zero, because iCentralRec != iMeanRec
+	#iPar <- which(is.finite(tmp$FP_E0))
+	#plot( tmp$FP_beta[iPar] ~ dsNEE1$sDateTime[iPar],type = "l", ylim = range(c(tmp$FP_beta[iPar],tmp$FP_GPP2000[iPar]))); lines( tmp$FP_GPP2000[iPar] ~ dsNEE1$sDateTime[iPar], col = "red")
+	#
+	# now test with different suffix: u50
+	dsNEE2 <- dsNEE
+	names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <-
+	  c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
+	tmp <- partitionNEEGL(
+	  dsNEE2, RadVar = 'Rg_f', suffix = "u50"
+	  , controlGLPart = partGLControl(
+	    nBootUncertainty = 0L, isAssociateParmsToMeanOfValids = FALSE) )
+	expect_equal( nrow(dsNEE1), nrow(tmp) )
+	expect_true( all(is.finite(tmp$GPP_DT_u50)))
+	expect_true( all(tmp$GPP_DT_u50 >= 0))
+	expect_true( all(tmp$GPP_DT_u50 < 250))
+	expect_true( all(tmp$Reco_DT_u50 < 10))
+	expect_true( all(tmp$Reco_DT_u50 > 0))
+	expect_true( all(tmp$Reco_DT_u50_SD > 0))
+	expect_true( all(tmp$GPP_DT_u50_SD >= 0))
+	expect_true( all(abs(diff(tmp$Reco_DT_u50)) < 0.6))	#smooth
+	# reporting good values at central records
+	# tmp[resEx$iCentralRec,]
+	iRowsOpt <- which(is.finite(tmp$FP_E0))
+	expect_true( length(iRowsOpt) == nrow(resEx) )
+	#expect_true( all((tmp$FP_alpha[resEx$iCentralRec] - resEx$alpha)[
+	#resEx$parms_out_range == 0L] < 1e-2) )
+	.tmp.plot <- function(){
+		tmp$time <- dsNEE1$sDateTime
+		plot( Reco_DT_u50 ~ time, tmp)
+		#plot( diff(Reco_DT_u50) ~ time[-1], tmp)
+		plot( GPP_DT_u50 ~ time, tmp)
+		plot( FP_RRef_Night ~ time, tmp)
+		plot( FP_RRef ~ FP_RRef_Night, tmp)
+	}
+})
 
 test_that("partitionNEEGL with Lasslop options",{
 			dsNEE1 <- dsNEE
@@ -562,7 +562,7 @@ test_that("partitionNEEGL with Lasslop options",{
 			names(dsNEE2)[ match(c("NEE_f", "NEE_fqc", "NEE_fsd"),names(dsNEE2))] <-
 			  c("NEE_u50_f", "NEE_u50_fqc", "NEE_u50_fsd")
 			dsNEE2$NEE_u50_fsd[24] <- NA
-			tmp <- partitionNEEGL( dsNEE2, RadVar.s = 'Rg_f', suffix = "u50"
+			tmp <- partitionNEEGL( dsNEE2, RadVar = 'Rg_f', suffix = "u50"
 				, controlGLPart = partGLControlLasslopCompatible() )
 			tmp$sDateTime <- dsNEE2$sDateTime
 			tmp$iRec <- 1:nrow(tmp)
@@ -838,7 +838,7 @@ test_that("partitionNEEGL fixed tempSens",{
 			startRecs <- REddyProc:::getStartRecsOfWindows( nrow(ds) )
 			fixedTempSens <- data.frame(E0 = 80, sdE0 = 10 )
 			tmp <- partitionNEEGL(
-			  dsNEE1, RadVar.s = "Rg_f", controlGLPart = partGLControl(
+			  dsNEE1, RadVar = "Rg_f", controlGLPart = partGLControl(
 			    fixedTempSens = fixedTempSens) )
 			expect_equal( nrow(dsNEE1), nrow(tmp) )
 			#
@@ -863,14 +863,14 @@ test_that("partitionNEEGL: missing sdNEE",{
 			dsNEE1$NEE_fsd <- NA_real_
 			#
 			tmp <- partitionNEEGL(
-			  dsNEE1, RadVar.s = "Rg_f", controlGLPart = partGLControl() )
+			  dsNEE1, RadVar = "Rg_f", controlGLPart = partGLControl() )
 			tmpWithPar <- tmp[ is.finite(tmp$FP_alpha),]
 			expect_equal( nrow(tmpWithPar), 4)	# fitted with missing fsd
 			#
 			rm(tmp)
 			expect_error(
 					tmp <- partitionNEEGL(
-					  dsNEE1, RadVar.s = "Rg_f"
+					  dsNEE1, RadVar = "Rg_f"
 					  , controlGLPart = partGLControl(replaceMissingSdNEEParms = c(NA,NA)) )
 			)
 		})

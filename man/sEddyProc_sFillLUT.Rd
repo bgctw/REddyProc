@@ -1,6 +1,6 @@
 \name{sEddyProc_sFillLUT}
 \alias{sEddyProc_sFillLUT}
-\title{sEddyProc$sFillLUT - Gap filling with Look-Up Table (LUT)}
+\title{sEddyProc sFillLUT}
 \description{Look-Up Table (LUT) algorithm of up to five conditions within prescribed window size}
 \usage{sEddyProc_sFillLUT(WinDays.i, V1.s = "none", 
     T1.n = NA_real_, V2.s = "none", T2.n = NA_real_, 

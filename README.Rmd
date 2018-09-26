@@ -82,7 +82,7 @@ EddyProc.C <- sEddyProc$new(
   'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
 #Location of DE-Tharandt
 EddyProc.C$sSetLocationInfo(
-  Lat_deg.n = 51.0, Long_deg.n = 13.6, TimeZone_h.n = 1)  
+  LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
 #
 #++ Fill NEE gaps with MDS gap filling algorithm (without prior ustar filtering)
 EddyProc.C$sMDSGapFill('NEE', FillAll.b = FALSE)

@@ -1,17 +1,31 @@
 \name{sEddyProc_sPlotDailySums}
 \alias{sEddyProc_sPlotDailySums}
 \title{sEddyProc$sPlotDailySums - Image with daily sums of each year}
-\description{Generates image in specified format ('pdf' or 'png') with daily sums, see also \code{\link{sEddyProc_sPlotDailySumsY}}.}
-\usage{sEddyProc_sPlotDailySums(Var.s, VarUnc.s = "none", 
-    Format.s = "pdf", Dir.s = "plots", unit.s = "gC/m2/day", 
-    ...)}
+\description{Generates image in specified format ('pdf' or 'png') with daily sums,
+see also \code{\link{sEddyProc_sPlotDailySumsY}}.}
+\usage{sEddyProc_sPlotDailySums(Var = Var.s, VarUnc = "none", 
+    Format = if (!missing(Format.s)) Format.s else "pdf", 
+    Dir = if (!missing(Dir.s)) Dir.s else "plots", 
+    unit = if (!missing(unit.s)) unit.s else "gC/m2/day", 
+    ..., Var.s, VarUnc.s, Format.s, Dir.s, 
+    unit.s)}
 \arguments{
-  \item{Var.s}{(Filled) variable to plot}
-  \item{VarUnc.s}{Uncertainty estimates for variable}
-  \item{Format.s}{Graphics file format ('pdf' or 'png')}
-  \item{Dir.s}{Directory for plotting}
-  \item{unit.s}{unit of the daily sums}
-  \item{\dots}{further arguments to \code{\link{sEddyProc_sPlotDailySumsY}}, such as \code{timeFactor.n} and \code{massFactor.n}.}
+  \item{Var}{(Filled) variable to plot}
+  \item{VarUnc}{Uncertainty
+estimates for variable}
+  \item{Format}{Graphics
+file format ('pdf' or 'png')}
+  \item{Dir}{Directory
+for plotting}
+  \item{unit}{unit
+of the daily sums}
+  \item{\dots}{further arguments to \code{\link{sEddyProc_sPlotDailySumsY}},
+such as \code{timeFactor} and \code{massFactor}.}
+  \item{Var.s}{deprecated}
+  \item{VarUnc.s}{deprecated}
+  \item{Format.s}{deprecated}
+  \item{Dir.s}{deprecated}
+  \item{unit.s}{deprecated}
 }
 
 

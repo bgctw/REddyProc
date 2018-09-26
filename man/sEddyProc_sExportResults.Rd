@@ -1,6 +1,6 @@
 \name{sEddyProc_sExportResults}
 \alias{sEddyProc_sExportResults}
-\title{sEddyProc$sExportData - Export internal sTEMP data frame with result columns}
+\title{sEddyProc sExportResults}
 \description{Export class internal sTEMP data frame with result columns}
 \usage{sEddyProc_sExportResults(isListColumnsExported = FALSE)}
 \arguments{

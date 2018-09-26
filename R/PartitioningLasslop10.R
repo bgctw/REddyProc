@@ -3,15 +3,22 @@ partitionNEEGL <- function(
 		### Partitioning NEE fluxes into GP and Reco after daytime method.
 		ds							##<< dataset with all the specified input columns
 		  ## and full days in equidistant times
-		, NEEVar.s = paste0('NEE', SuffixDash.s, '_f')		##<< Variable of NEE
-		, TempVar.s = 'Tair_f' 		##<< Filled air or soil temperature variable (degC)
-		, VPDVar.s = 'VPD_f'   		##<< Filled Vapor Pressure Deficit - VPD - (hPa)
-		, RadVar.s = 'Rg_f'         		##<< Filled radiation variable
-		, suffix = ""		   		##<< string inserted into column names before
+		, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0('NEE', suffixDash, '_f')		##<< Variable of NEE
+		, TempVar = if (!missing(TempVar.s)) TempVar.s else 'Tair_f' 		##<< Filled air or soil temperature variable (degC)
+		, VPDVar = if (!missing(VPDVar.s)) VPDVar.s else 'VPD_f'   		##<< Filled Vapor Pressure Deficit - VPD - (hPa)
+		, RadVar = if (!missing(RadVar.s)) RadVar.s else 'Rg_f'         		##<< Filled radiation variable
+		, suffix = if (!missing(Suffix.s)) Suffix.s else ""		   		##<< string inserted into column names before
+		## identifier for NEE column defaults
+		## (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
+		, NEEVar.s ##<< deprecated
+		, TempVar.s ##<< deprecated
+		, VPDVar.s ##<< deprecated
+		, RadVar.s ##<< deprecated
+		, Suffix.s  ##<< deprecated
 		  ## identifier for NEE column defaults
 		  ## (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
 		, ...						##<< further arguments to
-		  ## \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar.s}
+		  ## \code{\link{partGLExtractStandardData}}, such as \code{PotRadVar}
 		, controlGLPart = partGLControl()	##<< further default parameters,
 		  ## see \code{\link{partGLControl}}
 		, isVerbose = TRUE			 	##<< set to FALSE to suppress output messages
@@ -23,6 +30,16 @@ partitionNEEGL <- function(
 			## \code{NonrectangularLRCFitter()},
 			## and \code{LogisticSigmoidLRCFitter()}.
 ) {
+  varNamesDepr <- c(
+    "NEEVar.s","TempVar.s","VPDVar.s","RadVar.s","Suffix.s")
+  varNamesNew <- c(
+    "NEEVar","TempVar","VPDVar","RadVar","suffix")
+  iDepr = which(!c(
+    missing(NEEVar.s),missing(TempVar.s),missing(VPDVar.s)
+    ,missing(RadVar.s),missing(Suffix.s)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
@@ -40,12 +57,12 @@ partitionNEEGL <- function(
   ## net ecosystem exchange into assimilation and respiration using
   ## a light response curve approach: critical issues and global evaluation.
   ## Global Change Biology, Volume 16, Issue 1, Pages 187-208
-	SuffixDash.s <- paste( (if (fCheckValString(suffix)) "_" else "")
-	                 , suffix, sep = "") # used to compute default NEEVar.s
+	suffixDash <- paste( (if (fCheckValString(suffix)) "_" else "")
+	                 , suffix, sep = "") # used to compute default NEEVar
 	if (isVerbose) message('Start daytime flux partitioning for variable '
-	                       , NEEVar.s, ' with temperature ', TempVar.s, '.')
-	dsR <- partGLExtractStandardData(ds, NEEVar.s = NEEVar.s, TempVar.s = TempVar.s
-		, VPDVar.s = VPDVar.s, RadVar.s = RadVar.s , suffix = suffix
+	                       , NEEVar, ' with temperature ', TempVar, '.')
+	dsR <- partGLExtractStandardData(ds, NEEVar = NEEVar, TempVar = TempVar
+		, VPDVar = VPDVar, RadVar = RadVar , suffix = suffix
 		, ..., controlGLPart = controlGLPart)
 	##value<<
 	## \item{Reco_DT_<suffix>}{predicted ecosystem respiration: mumol CO2/m2/s}
@@ -173,10 +190,10 @@ partitionNEEGL <- function(
 	##seealso<< \code{partGLInterpolateFluxes}
 	dsAnsFluxes <- partGLInterpolateFluxes(
 					#dsR$Rg
-					ds[[RadVar.s]]
+					ds[[RadVar]]
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp
-					, ds[[VPDVar.s]]
-					, ds[[TempVar.s]]		# prediction using non-filtered, i.e. gap-filled
+					, ds[[VPDVar]]
+					, ds[[TempVar]]		# prediction using non-filtered, i.e. gap-filled
 					, resParms
 					, controlGLPart = controlGLPart
 					, lrcFitter = lrcFitter
@@ -192,7 +209,7 @@ partitionNEEGL <- function(
 		## Next, in the predictions (rows) with missing VPD are then replaced
 		## with predictions
 		## based on LRC-fits that neglected the VPD effect.
-		iNAVPD <- which(is.na(ds[[VPDVar.s]] & is.na(dsAnsFluxes$GPP)))
+		iNAVPD <- which(is.na(ds[[VPDVar]] & is.na(dsAnsFluxes$GPP)))
 		if (length(iNAVPD)) {
 			message("  could not predict GPP in ", length(iNAVPD)
 			        , " cases due to missing VPD.")
@@ -209,8 +226,8 @@ partitionNEEGL <- function(
 			  resParmsWithoutVPD$resOpt
 			dsAnsFluxes2 <- partGLInterpolateFluxes(dsR$Rg
 					#, dsAns$NEW_FP_VPD, dsAns$NEW_FP_Temp
-					, ds[[VPDVar.s]]
-					, ds[[TempVar.s]]		# do prediction also using gap-Filled values
+					, ds[[VPDVar]]
+					, ds[[TempVar]]		# do prediction also using gap-Filled values
 					, resParmsWithoutVPD
 					, controlGLPart = ctrlNeglectVPD
 					, lrcFitter = lrcFitter
@@ -233,8 +250,8 @@ partitionNEEGL <- function(
 	dsAns$FP_qc[abs(dsAns$FP_dRecPar) > (14 * nRecInDay)] <- 2L
 	#dsAns[is.finite(dsAns$FP_beta), ]
 	#
-	RecoDTVar.s <- paste0('Reco_DT', SuffixDash.s)
-	GPPDTVar.s <- paste0('GPP_DT', SuffixDash.s)
+	RecoDTVar.s <- paste0('Reco_DT', suffixDash)
+	GPPDTVar.s <- paste0('GPP_DT', suffixDash)
 	RecoDTSdVar.s <- paste0(RecoDTVar.s, "_SD")
 	GPPDTSdVar.s <- paste0(GPPDTVar.s, "_SD")
 	dsAns[[RecoDTVar.s]] <- dsAnsFluxes$Reco
@@ -458,59 +475,96 @@ partGLExtractStandardData <- function(
 		### Relevant columns from original input with defined names
 		ds								##<< dataset with all the specified input columns and
 		  ## full days in equidistant times
-		, NEEVar.s = paste0('NEE', SuffixDash.s, '_f')		##<< Variable of NEE
-		, QFNEEVar.s = paste0('NEE', SuffixDash.s, '_fqc')   ##<< Quality
+		, NEEVar =  paste0('NEE', suffixDash, '_f')		##<< Variable of NEE
+		, QFNEEVar = if (!missing(QFNEEVar.s)) QFNEEVar.s else paste0('NEE', suffixDash, '_fqc')   ##<< Quality
 		  ## flag of variable
-		, QFNEEValue.n = 0         						##<< Value of quality flag for
+		, QFNEEValue = if (!missing(QFNEEValue.n)) QFNEEValue.n else 0         						##<< Value of quality flag for
 		  ## _good_ (original) data
-		, NEESdVar.s = paste0('NEE', SuffixDash.s, '_fsd')	##<< Variable of
+		, NEESdVar = if (!missing(NEESdVar.s)) NEESdVar.s else paste0('NEE', suffixDash, '_fsd')	##<< Variable of
 		  ## standard deviation of net ecosystem fluxes
-		, TempVar.s = paste0('Tair_f')     ##<< Filled air or soil
+		, TempVar = paste0('Tair_f')     ##<< Filled air or soil
 		  ## temperature variable (degC)
-		, QFTempVar.s = paste0('Tair_fqc') ##<< Quality flag of
+		, QFTempVar = if (!missing(QFTempVar.s)) QFTempVar.s else paste0('Tair_fqc') ##<< Quality flag of
 		  ## filled temperature variable
-		, QFTempValue.n = 0       			##<< Value of temperature quality flag
+		, QFTempValue = if (!missing(QFTempValue.n)) QFTempValue.n else 0       			##<< Value of temperature quality flag
 		  ##for _good_ (original) data
-		, VPDVar.s = paste0('VPD_f')    ##<< Filled Vapor Pressure Deficit, VPD (hPa)
-		, QFVPDVar.s = paste0('VPD_fqc') 	##<< Quality flag of filled VPD variable
-		, QFVPDValue.n = 0        			##<< Value of VPD quality flag for
+		, VPDVar = if (!missing(VPDVar.s)) VPDVar.s else paste0('VPD_f')    ##<< Filled Vapor Pressure Deficit, VPD (hPa)
+		, QFVPDVar = if (!missing(QFVPDVar.s)) QFVPDVar.s else paste0('VPD_fqc') 	##<< Quality flag of filled VPD variable
+		, QFVPDValue = if (!missing(QFVPDValue.n)) QFVPDValue.n else 0        			##<< Value of VPD quality flag for
 		  ## _good_ (original) data
-		, RadVar.s = 'Rg_f'         		##<< Filled radiation variable
-		, QFRadVar.s = paste0('Rg_fqc') ##<< Quality flag of filled radiation variable
-		, QFRadValue.n = 0       			  ##<< Value of radiation quality flag for
+		, RadVar = if (!missing(RadVar.s)) RadVar.s else 'Rg_f'         		##<< Filled radiation variable
+		, QFRadVar = if (!missing(QFRadVar.s)) QFRadVar.s else paste0('Rg_fqc') ##<< Quality flag of filled radiation variable
+		, QFRadValue = if (!missing(QFRadValue.n)) QFRadValue.n else 0       			  ##<< Value of radiation quality flag for
 		  ## _good_ (original) data
-		, PotRadVar.s = "PotRad_NEW"		##<< Variable name of potential rad. (W / m2)
-		, suffix = ""		   			##<< string inserted into column names before
-		  ## identifier for NEE column defaults
-		  ## (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
+		, PotRadVar = if (!missing(PotRadVar.s)) PotRadVar.s  else "PotRad_NEW"		##<< Variable name of potential rad. (W / m2)
+		, suffix = if (!missing(Suffix.s)) Suffix.s else ""		   		##<< string inserted into column names before
+		## identifier for NEE column defaults
+		## (see \code{\link{sEddyProc_sMDSGapFillAfterUstar}}).
+		, NEEVar.s ##<< deprecated
+		, QFNEEVar.s ##<< deprecated
+		, QFNEEValue.n  ##<< deprecated
+		, NEESdVar.s  ##<< deprecated
+		, TempVar.s  ##<< deprecated
+		, QFTempVar.s  ##<< deprecated
+		, QFTempValue.n  ##<< deprecated
+		, VPDVar.s  ##<< deprecated
+		, QFVPDVar.s  ##<< deprecated
+		, QFVPDValue.n  ##<< deprecated
+		, RadVar.s  ##<< deprecated
+		, QFRadVar.s  ##<< deprecated
+		, QFRadValue.n  ##<< deprecated
+		, PotRadVar.s ##<< deprecated
+		, Suffix.s  ##<< deprecated
 		, controlGLPart = partGLControl()	##<< further default parameters,
 		  ## see \code{\link{partGLControl}}
 ) {
+  if (!missing(NEEVar.s)) NEEVar <- NEEVar.s   # in default, lines too wide
+  if (!missing(TempVar.s)) TempVar <- TempVar.s
+  varNamesDepr <- c(
+    "NEEVar.s","TempVar.s","VPDVar.s","RadVar.s","Suffix.s"
+    ,"QFNEEVar.s" ,"QFNEEValue.n" ,"QFTempVar.s" ,"QFTempValue.n"
+    ,"QFVPDVar.s" ,"QFVPDValue.n" ,"QFRadVar.s" ,"QFRadValue.n" ,"PotRadVar.s"
+    )
+  varNamesNew <- c(
+    "NEEVar","TempVar","VPDVar","RadVar","suffix"
+    ,"QFNEEVar" ,"QFNEEValue" ,"QFTempVar" ,"QFTempValue"
+    ,"QFVPDVar" ,"QFVPDValue" ,"QFRadVar" ,"QFRadValue" ,"PotRadVar"
+  )
+  iDepr = which(!c(
+    missing(NEEVar.s),missing(TempVar.s),missing(VPDVar.s),missing(RadVar.s)
+    ,missing(Suffix.s),missing(QFNEEVar.s),missing(QFNEEValue.n)
+    ,missing(QFTempVar.s),missing(QFTempValue.n),missing(QFVPDVar.s)
+    ,missing(QFVPDValue.n),missing(QFRadVar.s),missing(QFRadValue.n)
+    ,missing(PotRadVar.s)))
+  if (length(iDepr)) warning(
+    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+    ," Please, use instead ", varNamesNew[iDepr])
+
 	# Check if specified columns exist in sDATA or sTEMP and if numeric
 	# and plausible. Then apply quality flag
-	SuffixDash.s <- paste( (if (fCheckValString(suffix)) "_" else "")
+	suffixDash <- paste( (if (fCheckValString(suffix)) "_" else "")
 	                       , suffix, sep = "")
 	# Check if specified columns exist in sDATA or sTEMP and if numeric
 	# and plausible. Then apply quality flag
-	fCheckColNames(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s
-	                 , QFRadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
-	fCheckColNum(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s, RadVar.s
-	                 , QFRadVar.s, PotRadVar.s, NEESdVar.s), 'sGLFluxPartition')
-	fCheckColPlausibility(ds, c(NEEVar.s, QFNEEVar.s, TempVar.s, QFTempVar.s
-	                 , RadVar.s, QFRadVar.s, PotRadVar.s), 'sGLFluxPartition')
-	NEEFiltered <- fSetQF(ds, NEEVar.s, QFNEEVar.s, QFNEEValue.n, 'sGLFluxPartition')
+	fCheckColNames(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, RadVar
+	                 , QFRadVar, PotRadVar, NEESdVar), 'sGLFluxPartition')
+	fCheckColNum(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, RadVar
+	                 , QFRadVar, PotRadVar, NEESdVar), 'sGLFluxPartition')
+	fCheckColPlausibility(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar
+	                 , RadVar, QFRadVar, PotRadVar), 'sGLFluxPartition')
+	NEEFiltered <- fSetQF(ds, NEEVar, QFNEEVar, QFNEEValue, 'sGLFluxPartition')
 	#
 	# Apply quality flag for temperature and VPD
 	# TODO: docu meteo filter, standard FALSE
 	NEW_FP_Temp <- if (isTRUE(controlGLPart$isFilterMeteoQualityFlag) ) fSetQF(
-	  ds, TempVar.s, QFTempVar.s, QFTempValue.n, 'partGLExtractStandardData') else
-	    ds[[TempVar.s]]
+	  ds, TempVar, QFTempVar, QFTempValue, 'partGLExtractStandardData') else
+	    ds[[TempVar]]
 	NEW_FP_VPD <- if (isTRUE(controlGLPart$isFilterMeteoQualityFlag) )
-	  fSetQF(ds, VPDVar.s, QFVPDVar.s, QFVPDValue.n, 'partGLExtractStandardData') else
-	    ds[[VPDVar.s]]
+	  fSetQF(ds, VPDVar, QFVPDVar, QFVPDValue, 'partGLExtractStandardData') else
+	    ds[[VPDVar]]
 	NEW_FP_Rg <- if (isTRUE(controlGLPart$isFilterMeteoQualityFlag) )
-	  fSetQF(ds, RadVar.s, QFRadVar.s, QFRadValue.n, 'partGLExtractStandardData') else
-	    ds[[RadVar.s]]
+	  fSetQF(ds, RadVar, QFRadVar, QFRadValue, 'partGLExtractStandardData') else
+	    ds[[RadVar]]
 	#
 	# Filter night time values only
 	#! Note: Rg <= 4 congruent with Lasslop et al., 2010 to define Night
@@ -520,16 +574,16 @@ partGLExtractStandardData <- function(
 	#! New code: PotRad in sGLFluxPartition: Slightly different subset than
 	#PV-Wave due to time zone correction (avoids timezone offset between Rg and PotRad)
 	isPotRadZero <- if (isTRUE(controlGLPart$isNeglectPotRadForNight) )
-	  TRUE else (ds[[PotRadVar.s]] <= 0)
+	  TRUE else (ds[[PotRadVar]] <= 0)
 	isNotPotRadZero <- if (isTRUE(controlGLPart$isNeglectPotRadForNight) )
-	  TRUE else (ds[[PotRadVar.s]] > 0)
-	isNight <- (ds[[RadVar.s]] <= 4 & isPotRadZero)
+	  TRUE else (ds[[PotRadVar]] > 0)
+	isNight <- (ds[[RadVar]] <= 4 & isPotRadZero)
 	# Filter day time values only
 	#! Note: Rg > 4 congruent with Lasslop et al., 2010 to define Day for the
 	#calculation of paremeters of Light Response Curve
 	# Should be unfilled (original) radiation variable, therefore dataframe set
 	# to sDATA only, twutz does not understand this comment
-	isDay = (ds[[RadVar.s]] > 4 & isNotPotRadZero)
+	isDay = (ds[[RadVar]] > 4 & isNotPotRadZero)
 	#
 	##value<< a data.frame with columns
 	dsR <- data.frame(
@@ -538,7 +592,7 @@ partGLExtractStandardData <- function(
 			  ## not used, but usually first column is a dateTime is kept
 			  ## for aiding debug
 			, NEE = NEEFiltered			      ##<< NEE filtered for quality flay
-			, sdNEE = ds[[NEESdVar.s]]		##<< standard deviation of NEE
+			, sdNEE = ds[[NEESdVar]]		##<< standard deviation of NEE
 			  ## with missing values replaced
 			, Temp = NEW_FP_Temp			    ##<< Temperature, quality filtered
 			  ## if isTRUE(controlGLPart$isFilterMeteoQualityFlag)
@@ -551,7 +605,7 @@ partGLExtractStandardData <- function(
 	##details<<
 	## The LRC fit usually weights NEE records by its uncertainty. In order
 	## to also use
-	## records with missing \code{NEESdVar.s}, uncertainty of the missing values
+	## records with missing \code{NEESdVar}, uncertainty of the missing values
 	## is by default set
 	## to a conservatively high value, parameterized by
 	## \code{controlGLPart$replaceMissingSdNEEParms)}.
@@ -861,7 +915,7 @@ partGLInterpolateFluxes <- function(
 		#twutz170316: fLloydTaylor gives unreasonable values with very
 		# low temperatures, hence constrain lower temperature
 		tmp <- fLloydTaylor(dsi$RRef, dsi$E0, pmax(-40, Temp_Kelvin)
-		                    , T_ref.n = 273.15 + 15)
+		                    , TRef = 273.15 + 15)
 	})
 	#dsi <- dsBefore
 	GPP2 <- lapply(list(dsBefore, dsAfter), function(dsi) {
