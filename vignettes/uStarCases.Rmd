@@ -41,7 +41,7 @@ knit_hooks$set(spar = function(before, options, envir) {
 ```
 
 
-```{r, include = FALSE, warning = FALSE}
+```{r, include = FALSE}
 #themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
 ```
 
@@ -61,8 +61,8 @@ library(dplyr)
 outDir <- tempdir()  # CRAN policy dictates to write only to this dir in examples
 #outDir <- "out"     # to write to subdirectory of current users dir
 #+++ Add time stamp in POSIX time format to example data
-EddyDataWithPosix.F <- fConvertTimeToPosix(Example_DETha98, 'YDH',Year.s = 'Year' 
-    ,Day.s = 'DoY',Hour.s = 'Hour')
+EddyDataWithPosix <- fConvertTimeToPosix(
+  Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 ```
 
 ## Not applying uStar filtering
@@ -72,10 +72,10 @@ using `sEddyProc_sMDSGapFill`. Corresponding result columns then have
 no uStar specific suffix. 
 
 ```{r noUStar, message = FALSE}
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
-	c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sMDSGapFill('NEE')
-grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+EProc <- sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc$sMDSGapFill('NEE')
+grep("NEE.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
 
 ## User-specified uStar threshold
@@ -88,11 +88,11 @@ The friction velocity, uStar, needs to be in column named "Ustar" of the input
 dataset.
 
 ```{r userUStar, message = FALSE}
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
-	c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc <- sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
 uStar <- 0.46
-EddyProc.C$sMDSGapFillAfterUstar('NEE', uStarTh = uStar)
-grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+EProc$sMDSGapFillAfterUstar('NEE', uStarTh = uStar)
+grep("NEE.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
 
 ## Sinlge uStar threshold estimate
@@ -101,12 +101,12 @@ The uStar threshold can be estimated from the uStar-NEE relationship
 from the data without estimating its uncertainty by a bootstrap.
 
 ```{r singleUStar, message = FALSE}
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
-	c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc <- sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
 # estimating the thresholds based on the data (without bootstrap)
-(uStarTh <- EddyProc.C$sEstUstarThold())
+(uStarTh <- EProc$sEstUstarThold())
 # may plot saturation of NEE with UStar for a specified season to pdf
-EddyProc.C$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3], dir = outDir )
+EProc$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3], dir = outDir )
 ```
 
 Next, the annual estimate is used as the default in gap-filling.
@@ -114,10 +114,11 @@ Output columns use the suffix as specified by argument `uSstarSuffix`
 which defaults to "uStar".
 
 ```{r singleUStarGapfill, message = FALSE}
-#usGetAnnualSeasonUStarMap(EddyProc.C$sUSTAR_DETAILS$uStarTh)
-EddyProc.C$sMDSGapFillAfterUstar('NEE')
-grep("NEE.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+#usGetAnnualSeasonUStarMap(EProc$sUSTAR_DETAILS$uStarTh)
+EProc$sMDSGapFillAfterUstar('NEE')
+grep("NEE.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
+
 ## Scenarios across distribution of u* threshold estimate
 
 Chossing a different u* threshold effects filtering and the subsequent processing
@@ -128,26 +129,26 @@ be investigated.
 
 First, the quantiles of the threshodl distribution are estimated by bootstrap.
 
-```{r uStarScen}
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
-	c('NEE','Rg','Tair','VPD', 'Ustar'))
-EddyProc.C$sEstimateUstarScenarios(
+```{r uStarScen, results='hold'}
+EProc <- sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc$sEstimateUstarScenarios(
     nSample = 100L, probs = c(0.05, 0.5, 0.95))
 # inspect the thresholds to be used by default
-EddyProc.C$sGetUstarScenarios()
+EProc$sGetUstarScenarios()
 ```
 
 By default the annually aggregated threshold estimates are used for each season
 whithin one year as in the original method publication.
-Here, we tell to use the seasonal threshold estiamtes and to
+Here, we tell to use the seasonal threshold estimates and to
 omit the first threshold scenario based on the un-bootstrapped data in the second 
 column.
 
 ```{r uStarScenSetSeasonal}
-(uStarThAgg <- EddyProc.C$sGetEstimatedUstarThresholdDistribution())
-EddyProc.C$sSetUstarScenarios( usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
+(uStarThAgg <- EProc$sGetEstimatedUstarThresholdDistribution())
+EProc$sSetUstarScenarios( usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
 # inspect the changed thresholds to be used, default annual aggregate
-EddyProc.C$sGetUstarScenarios()
+EProc$sGetUstarScenarios()
 ```
 
 Several function whose name ends with 'UstarScens'
@@ -156,16 +157,16 @@ They operate and create columns that differ between threshold scenarios by
 a suffix.
 
 ```{r uStarScenGapfill, message=FALSE}
-EddyProc.C$sMDSGapFillUStarScens("NEE")
-grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+EProc$sMDSGapFillUStarScens("NEE")
+grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
 
 ```{r uStarScenMRPart, message=FALSE}
-EddyProc.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
-EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)
-EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)
-EddyProc.C$sMRFluxPartitionUStarScens()
-grep("GPP_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
+EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
+EProc$sMDSGapFill('Tair', FillAll = FALSE)
+EProc$sMDSGapFill('VPD', FillAll = FALSE)
+EProc$sMRFluxPartitionUStarScens()
+grep("GPP_.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
 
 ## See also

@@ -58,16 +58,16 @@ library(REddyProc)
 library(dplyr)
 #+++ Load data with 1 header and 1 unit row from (tab-delimited) text file
 fileName <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
-EddyData.F <- if (length(fileName)) fLoadTXTIntoDataframe(fileName) else
+EddyData <- if (length(fileName)) fLoadTXTIntoDataframe(fileName) else
   # or use example dataset in RData format provided with REddyProc
   Example_DETha98
 #+++ Add time stamp in POSIX time format
-EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH',Year.s = 'Year'
-    ,Day.s = 'DoY',Hour.s = 'Hour')
+EddyDataWithPosix <- fConvertTimeToPosix(
+  EddyData, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
 #+++ Initalize R5 reference class sEddyProc for post-processing of eddy data
 #+++ with the variables needed for post-processing later
-EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
-	c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc <- sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
 ```
 
 ```{r, include = FALSE}
@@ -94,11 +94,11 @@ EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
     (Year == 1999 & (DoY == 366 & Hour == 0)))
   #), Year == 1998)
   ds$DoY[ds$DoY == 366] <- 1
-  dss <- EddyDataWithPosix.F <- fConvertTimeToPosix(ds, 'YDH',Year.s = 'Year'
+  dss <- EddyDataWithPosix <- fConvertTimeToPosix(ds, 'YDH',Year.s = 'Year'
       ,Day.s = 'DoY',Hour.s = 'Hour')
-  #EddyDataWithPosix.F$VPD <- fCalcVPDfromRHandTair(
-  #EddyDataWithPosix.F$rH, EddyDataWithPosix.F$Tair)
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, 
+  #EddyDataWithPosix$VPD <- fCalcVPDfromRHandTair(
+  #EddyDataWithPosix$rH, EddyDataWithPosix$Tair)
+  EProc <- sEddyProc$new('DE-Tha', EddyDataWithPosix, 
   	c('NEE','Rg','Tair','VPD', 'Ustar'))
 }
 ```
@@ -107,7 +107,7 @@ A fingerprint-plot of the source half-hourly shows already several gaps.
 A fingerprint-plot is a color-coded image of the half-hourly fluxes by daytime 
 on the x and and day of the year on the y axis. 
 ```{r fpNEEOrig}
-EddyProc.C$sPlotFingerprintY('NEE', Year.i = 1998)
+EProc$sPlotFingerprintY('NEE', Year = 1998)
 ```
 
 For writing plots of data of several years to pdf see also
@@ -126,34 +126,34 @@ the uncertain uStar threshold are estimated by a bootstrap.
 The friction velocity, uStar, needs to be in column named "Ustar" of the input 
 dataset. 
 
-```{r, warn = FALSE, message = FALSE}
-EddyProc.C$sEstimateUstarScenarios(
+```{r, message = FALSE}
+EProc$sEstimateUstarScenarios(
     nSample = 100L, probs = c(0.05, 0.5, 0.95))
-EddyProc.C$sGetEstimatedUstarThresholdDistribution()
+EProc$sGetEstimatedUstarThresholdDistribution()
 ```
 
 ```{r fpNEEUStar, include = FALSE, eval = FALSE}
 str(uStarTh)
 signif(unlist(uStarTh[1,5:7]),2)
-EddyProc.C$sDATA$NEE_low <- EddyProc.C$sDATA$NEE_median <- EddyProc.C$sDATA$NEE_orig <- 
-  EddyProc.C$sDATA$NEE_upper  <- EddyProc.C$sDATA$NEE
-EddyProc.C$sDATA$NEE_orig[ EddyProc.C$sDATA$Ustar < unlist(uStarTh[1,4])] <- NA
-EddyProc.C$sDATA$NEE_low[ EddyProc.C$sDATA$Ustar < unlist(uStarTh[1,5])] <- NA
-EddyProc.C$sDATA$NEE_median[ EddyProc.C$sDATA$Ustar < unlist(uStarTh[1,6])] <- NA
-EddyProc.C$sDATA$NEE_upper[ EddyProc.C$sDATA$Ustar < unlist(uStarTh[1,7])] <- NA
+EProc$sDATA$NEE_low <- EProc$sDATA$NEE_median <- EProc$sDATA$NEE_orig <- 
+  EProc$sDATA$NEE_upper  <- EProc$sDATA$NEE
+EProc$sDATA$NEE_orig[ EProc$sDATA$Ustar < unlist(uStarTh[1,4])] <- NA
+EProc$sDATA$NEE_low[ EProc$sDATA$Ustar < unlist(uStarTh[1,5])] <- NA
+EProc$sDATA$NEE_median[ EProc$sDATA$Ustar < unlist(uStarTh[1,6])] <- NA
+EProc$sDATA$NEE_upper[ EProc$sDATA$Ustar < unlist(uStarTh[1,7])] <- NA
 # need to produce fingerprints by hand in console - if exeucted from chunk it does not safe a pdf
-EddyProc.C$sPlotFingerprint('NEE_orig', Dir.s = "plots_fingerprint", Format.s = "png")
-EddyProc.C$sPlotFingerprint('NEE_low', Dir.s = "plots_fingerprint", Format.s = "png")
-EddyProc.C$sPlotFingerprint('NEE_median', Dir.s = "plots_fingerprint", Format.s = "png")
-EddyProc.C$sPlotFingerprint('NEE_upper', Dir.s = "plots_fingerprint", Format.s = "png")
-EddyProc.C$sDATA$NEE_median <- EddyProc.C$sDATA$NEE_orig <- 
-  EddyProc.C$sDATA$NEE_low <- EddyProc.C$sDATA$NEE_upper <- NULL
+EProc$sPlotFingerprint('NEE_orig', Dir.s = "plots_fingerprint", Format.s = "png")
+EProc$sPlotFingerprint('NEE_low', Dir.s = "plots_fingerprint", Format.s = "png")
+EProc$sPlotFingerprint('NEE_median', Dir.s = "plots_fingerprint", Format.s = "png")
+EProc$sPlotFingerprint('NEE_upper', Dir.s = "plots_fingerprint", Format.s = "png")
+EProc$sDATA$NEE_median <- EProc$sDATA$NEE_orig <- 
+  EProc$sDATA$NEE_low <- EProc$sDATA$NEE_upper <- NULL
 ```
 
 The output reports annually aggregated uStar estimates of 
-`r if (!is_check) signif(unlist(EddyProc.C$sGetUstarScenarios()[1,2]),2)` for 
+`r if (!is_check) signif(unlist(EProc$sGetUstarScenarios()[1,2]),2)` for 
 the orignal data and 
-`r if (!is_check) signif(unlist(EddyProc.C$sGetUstarScenarios()[1,3:5]),2)` 
+`r if (!is_check) signif(unlist(EProc$sGetUstarScenarios()[1,3:5]),2)` 
 for lower, median, 
 and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
@@ -167,8 +167,8 @@ season and a suffix to distinguish the outputs related to different thresholds.
 By default the annually aggregated estimates are used for each season
 within the year.
 
-```{r, warn = FALSE, message = FALSE}
-EddyProc.C$sGetUstarScenarios()
+```{r, message = FALSE}
+EProc$sGetUstarScenarios()
 ```
 
 ## Gap-filling
@@ -178,7 +178,7 @@ in each season, as obtained above, and decide to compute uncertainty also
 for valid records (FillAll). 
 
 ```{r gapfill, message = FALSE}
-EddyProc.C$sMDSGapFillUStarScens('NEE')
+EProc$sMDSGapFillUStarScens('NEE')
 ```
 
 The screen output (not shown here) already shows that the $u_*$-filtering and
@@ -197,23 +197,23 @@ uncertainty is generated, distinguished by the suffixes given with
 estimated standard devation of its uncertainty.
 
 ```{r, results = 'hold' }
-grep("NEE_.*_f$",names(EddyProc.C$sExportResults()), value = TRUE)
-grep("NEE_.*_fsd$",names(EddyProc.C$sExportResults()), value = TRUE)
+grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE)
+grep("NEE_.*_fsd$",names(EProc$sExportResults()), value = TRUE)
 ```
 
 A fingerprint-plot of one of the new variables shows that gaps have been filled.
 ```{r fpNEEFilled}
-EddyProc.C$sPlotFingerprintY('NEE_U50_f', Year.i = 1998)
+EProc$sPlotFingerprintY('NEE_U50_f', Year = 1998)
 ```
 
 ```{r fpNEEFilled2, include = FALSE, eval = FALSE}
 #```{r fpNEEFilled, results = 'hide', echo = FALSE, warn = FALSE, message = FALSE, fig.show = 'hide'}
 # plot fingerprint of filled NEE for the median
-EddyProc.C$sPlotFingerprint('NEE_U50_f', Dir.s = "plots_fingerprint", Format.s = "png")
-#EddyProc.C$sPlotFingerprintY('NEE_U50_f', Year.i = 1998)
+EProc$sPlotFingerprint('NEE_U50_f', Dir.s = "plots_fingerprint", Format.s = "png")
+#EProc$sPlotFingerprintY('NEE_U50_f', Year.i = 1998)
 #
 # Check that although using FillAll.b = TRUE still the original NEE is in NEE_f for valid records
-dss <- cbind(EddyData.F, EddyProc.C$sExportResults())
+dss <- cbind(EddyData, EProc$sExportResults())
 head(dss$Ustar_U50_fqc)
 plot( NEE_U50_f ~ NEE, subset(dss, Ustar_U50_fqc == 0) )
 ```
@@ -227,23 +227,23 @@ Therefore it needs a specification of geographical coordinates and time zone
 to allow computing sunrise and sunset. Further, the missing values in the 
 used meteorological data need to be filled. 
 ```{r, message = FALSE}
-EddyProc.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
-EddyProc.C$sMDSGapFill('Tair', FillAll.b = FALSE)     
-EddyProc.C$sMDSGapFill('VPD', FillAll.b = FALSE)     
+EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
+EProc$sMDSGapFill('Tair', FillAll = FALSE)     
+EProc$sMDSGapFill('VPD', FillAll = FALSE)     
 ```
 
 Now we are ready to invoke the partitioning, here by the night-time approach, 
 for each of the several filled NEE columns.
 ```{r partNight, message = FALSE}
-EddyProc.C$sMRFluxPartitionUStarScens()
+EProc$sMRFluxPartitionUStarScens()
 ```
 
 ```{r fpGPPReco, include = FALSE, eval = FALSE}
 # plot fingerprint of filled NEE for the median
-EddyProc.C$sPlotFingerprint('GPP_U50_f', Dir.s = "plots_fingerprint", Format.s = "png")
-EddyProc.C$sPlotFingerprint('Reco_U50', Dir.s = "plots_fingerprint", Format.s = "png")
-#EddyProc.C$sPlotFingerprintY('GPP_U50_f', Year.i = 1998)
-dss <- EddyProc.C$sExportResults()
+EProc$sPlotFingerprint('GPP_U50_f', Dir = "plots_fingerprint", Format = "png")
+EProc$sPlotFingerprint('Reco_U50', Dir = "plots_fingerprint", Format = "png")
+#EProc$sPlotFingerprintY('GPP_U50_f', Year.i = 1998)
+dss <- EProc$sExportResults()
 grep("GPP",names(dss), value = TRUE)
 summary(dss$GPP_U05_fqc)
 plot( dss$GPP_U05_fqc ~ dss$NEE_U50_fqc )
@@ -252,12 +252,12 @@ plot( dss$GPP_U05_fqc ~ dss$NEE_U50_fqc )
 The results are stored in columns `Reco` and `GPP_f` modified by the respective 
 $u_*$ threshold suffix. 
 ```{r}
-grep("GPP.*_f$|Reco",names(EddyProc.C$sExportResults()), value = TRUE)
+grep("GPP.*_f$|Reco",names(EProc$sExportResults()), value = TRUE)
 ```
 
 Visualizations of the results by a fingerprint plot gives a compact overview. 
 ```{r fingerPrintGPP}
-EddyProc.C$sPlotFingerprintY('GPP_U50_f', Year.i = 1998)
+EProc$sPlotFingerprintY('GPP_U50_f', Year = 1998)
 ```
 
 For using daytime-based flux partitioning see [`sEddyProc_sGLFluxPartition`](../html/sEddyProc_sGLFluxPartition.html) 
@@ -273,8 +273,8 @@ $u_*$-scenario and converted from ${\mu mol\, CO_2\,
 m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
 
 ```{r aggregateGPP}
-FilledEddyData.F <- EddyProc.C$sExportResults()
-uStarSuffixes <- colnames(EddyProc.C$sGetUstarScenarios())[-1]
+FilledEddyData.F <- EProc$sExportResults()
+uStarSuffixes <- colnames(EProc$sGetUstarScenarios())[-1]
 #suffix <- uStarSuffixes[2]
 GPPAggCO2 <- sapply( uStarSuffixes, function(suffix) {
 	GPPHalfHour <- FilledEddyData.F[[paste0("GPP_",suffix,"_f")]]
@@ -298,9 +298,9 @@ For a better but more time consuming uncertainty estimate, specify a larger
 sample of $u_*$ threshold values, for each repeat the post-processing, and 
 compute statistics from the larger sample of resulting GPP columns. This can be
 achieved by specifying a larger sequence of quantiles when calling 
-`sEstimateUstarScenarios`.
+`sEstimateUstarScenarios` in place of the command shown above.
 ```{r, eval = FALSE}
-sEstimateUstarScenarios( 
+EProc$sEstimateUstarScenarios( 
   nSample = 200, probs = seq(0.025,0.975,length.out = 39) )
 ```
 
@@ -309,10 +309,10 @@ sEstimateUstarScenarios(
 The results still reside inside the `sEddyProc` class. 
 We first export them to an R Data.frame, append the columns to the original 
 input data, and write this data.frame to text file in a temporary directory.
-```{r, results = 'hide', message = FALSE, warning = FALSE}
-FilledEddyData.F <- EddyProc.C$sExportResults()
-CombinedData.F <- cbind(EddyData.F, FilledEddyData.F)
-fWriteDataframeToFile(CombinedData.F, 'DE-Tha-Results.txt', Dir.s = tempdir())
+```{r, results = 'hide', message = FALSE}
+FilledEddyData <- EProc$sExportResults()
+CombinedData <- cbind(EddyData, FilledEddyData)
+fWriteDataframeToFile(CombinedData, 'DE-Tha-Results.txt', Dir = tempdir())
 ```
 
 
