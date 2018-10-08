@@ -34,20 +34,20 @@ sEddyProc <- setRefClass('sEddyProc', fields = list(
 sEddyProc_initialize <- function(
   ### Initializing sEddyProc class during \code{sEddyProc$new}.
   ID = ID.s                ##<< String with site ID
-  , Data = Data.F             ##<< Data frame with at least three month of half-hourly
-  ## site-level eddy data
-  , ColNames = ColNames.V.s      ##<< Vector with selected column names, the less columns
-  ## the faster the processing
+  , Data = Data.F             ##<< Data frame with at least three month
+  ## of (half-)hourly site-level eddy data
+  , ColNames = ColNames.V.s      ##<< Vector with selected column names,
+  ## the fewer columns the faster the processing
   , ColPOSIXTime = 'DateTime'    ##<<  Column name with POSIX time stamp
   , DTS = if (!missing(DTS.n)) DTS.n else 48           ##<< Daily time steps
   , ColNamesNonNumeric = character(0)	 ##<< Names of columns that should not
   ## be checked for numeric type, e.g. season column
-  , LatDeg = NA_real_    	##<<
-  ## Latitude in (decimal) degrees (-90 to + 90)
-  , LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_   	##<<
-  ## Longitude in (decimal) degrees (-180 to + 180)
-  , TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_	##<<
-  ## Time zone: hours shift to UTC, e.g. 1 for Berlin
+  , LatDeg = NA_real_    	##<< Latitude
+  ##  in (decimal) degrees (-90 to + 90)
+  , LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_  ##<< Longitude
+  ##  in (decimal) degrees (-180 to + 180)
+  , TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_	##<< Time
+  ## zone: hours shift to UTC, e.g. 1 for Berlin
   , ID.s                  ##<< deprecated
   , Data.F                ##<< deprecated
   , ColNames.V.s          ##<< deprecated
@@ -103,14 +103,12 @@ sEddyProc_initialize <- function(
     Data, setdiff(ColNames, ColNamesNonNumeric), 'sEddyProc.initialize')
   fCheckColPlausibility(Data, ColNames, 'sEddyProc.initialize')
 
-  ##details<<
-  ## sID is a string for the site ID.
+  ##details<< There are several fields initialized within the class.
+  ##details<< sID is a string for the site ID.
   sID <<- ID
-  ##details<<
-  ## sDATA is a data frame with site data.
+  ##details<< sDATA is a data frame with site data.
   sDATA <<- cbind(sDateTime = Time.V.p, Data[, ColNames, drop = FALSE])
-  ##details<<
-  ## sTEMP is a temporal data frame with the processing results.
+  ##details<< sTEMP is a temporal data frame with the processing results.
   sTEMP <<- data.frame(sDateTime = Time.V.p)
   #Initialization of site data information from POSIX time stamp.
   YStart.n <- as.numeric(format(sDATA$sDateTime[1], '%Y'))
@@ -123,7 +121,7 @@ sEddyProc_initialize <- function(
   }
 
   ##details<<
-  ## sINFO is a list containing the time series information.
+  ## sINFO is a list containing the time series information:
   ##describe<<
   sINFO <<- list(
     DIMS = length(sDATA$sDateTime) ##<< Number of data rows
@@ -168,12 +166,12 @@ sEddyProc$methods( initialize = sEddyProc_initialize)
 #' @export
 sEddyProc_sSetLocationInfo <- function(
 	### set Location and time Zone information to sLOCATION
-  LatDeg = if (!missing(Lat_deg.n)) Lat_deg.n else NA_real_    	##<<
-  ## Latitude in (decimal) degrees (-90 to + 90)
-  , LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_   	##<<
-  ## Longitude in (decimal) degrees (-180 to + 180)
-  , TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_	##<<
-  ## Time zone: hours shift to UTC, e.g. 1 for Berlin
+  LatDeg = if (!missing(Lat_deg.n)) Lat_deg.n else NA_real_    	##<< Latitude
+  ##  in (decimal) degrees (-90 to + 90)
+  , LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_   	##<< Longitude
+  ##  in (decimal) degrees (-180 to + 180)
+  , TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_	##<< Time
+  ## zone: hours shift to UTC, e.g. 1 for Berlin
   , Lat_deg.n		  ##<< deprecated
 	, Long_deg.n		##<< deprecated
 	, TimeZone_h.n	##<< deprecated

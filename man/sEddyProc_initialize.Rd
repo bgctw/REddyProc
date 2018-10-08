@@ -13,20 +13,20 @@
     Long_deg.n, TimeZone_h.n, ...)}
 \arguments{
   \item{ID}{String with site ID}
-  \item{Data}{Data frame with at least three month of half-hourly
-site-level eddy data}
-  \item{ColNames}{Vector with selected column names, the less columns
-the faster the processing}
+  \item{Data}{Data frame with at least three month
+of (half-)hourly site-level eddy data}
+  \item{ColNames}{Vector with selected column names,
+the fewer columns the faster the processing}
   \item{ColPOSIXTime}{Column name with POSIX time stamp}
   \item{DTS}{Daily time steps}
   \item{ColNamesNonNumeric}{Names of columns that should not
 be checked for numeric type, e.g. season column}
-  \item{LatDeg}{
-}
-  \item{LongDeg}{
-}
-  \item{TimeZoneHour}{
-}
+  \item{LatDeg}{Latitude
+in (decimal) degrees (-90 to + 90)}
+  \item{LongDeg}{Longitude
+in (decimal) degrees (-180 to + 180)}
+  \item{TimeZoneHour}{Time
+zone: hours shift to UTC, e.g. 1 for Berlin}
   \item{ID.s}{deprecated}
   \item{Data.F}{deprecated}
   \item{ColNames.V.s}{deprecated}
@@ -50,13 +50,15 @@ Please use NA as a gap flag for missing data or low quality data not to
 be used in the processing.
 The columns are also checked for plausibility with warnings if outside range.
 
+There are several fields initialized within the class.
+
 sID is a string for the site ID.
 
 sDATA is a data frame with site data.
 
 sTEMP is a temporal data frame with the processing results.
 
-sINFO is a list containing the time series information.\describe{
+sINFO is a list containing the time series information:\describe{
 \item{DIMS}{Number of data rows}
 \item{DTS}{Number of daily time steps (24 or 48)}
 \item{Y.START}{Starting year}

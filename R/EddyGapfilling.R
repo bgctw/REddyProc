@@ -397,12 +397,12 @@ sEddyProc_sMDSGapFill <- function(
   ## (default: Air temperature 'Tair' in degC)
   , T3 = if (!missing(T3.n)) T3.n else 2.5             ##<< Tolerance interval 3
   ## (default: 2.5 degC)
-  , FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE       ##<<
-  ## Fill all values to estimate uncertainties
-  , isVerbose = if (!missing(Verbose.b)) Verbose.b else TRUE       ##<<
-  ## Print status information to screen
-  , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<<
-  ## String suffix needed for different processing setups on the same dataset
+  , FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE       ##<< Fill
+  ##  all values to estimate uncertainties
+  , isVerbose = if (!missing(Verbose.b)) Verbose.b else TRUE       ##<< Print
+  ##  status information to screen
+  , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<< String
+  ##  suffix needed for different processing setups on the same dataset
   ## (for explanations see below)
   , Var.s      ##<< deprecated
   , QFVar.s    ##<< deprecated
@@ -571,10 +571,10 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
   , uStarVar = 'Ustar'   ##<< Column name of friction velocity u * (ms-1),
   ## default 'Ustar'
   , uStarTh =        ##<< data.frame with
+    ##  first column, season names, and second column estimates of uStar Threshold.
+    ## Alternatively, a single value to be used as threshold for all records
+    ## If only one value is given, it is used for all records.
     usGetAnnualSeasonUStarMap(sUSTAR_DETAILS$uStarTh)
-  ##  first column, season names, and second column estimates of uStar Threshold.
-  ## Alternatively, a single value to be used as threshold for all records
-  ## If only one value is given, it is used for all records.
   , uStarSuffix = 'uStar'   ##<< Different suffixes required are for
   ## different u * scenarios
   , isFlagEntryAfterLowTurbulence = FALSE  ##<< Set to TRUE for flagging the
