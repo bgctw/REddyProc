@@ -1,0 +1,174 @@
+---
+output: 
+  rmarkdown::html_vignette:
+    keep_md: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown_notangle}
+  %\VignetteIndexEntry{typical use case}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r, include = FALSE}
+# do not execute on CRAN: 
+# https://stackoverflow.com/questions/28961431/computationally-heavy-r-vignettes
+is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
+             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
+knitr::opts_chunk$set(eval = !is_check)
+```
+
+```{r setup, include = FALSE}
+#rmarkdown::render("vignettes/aggUncertainty.Rmd")
+knitr::opts_knit$set(root.dir = '..')
+knitr::opts_chunk$set(
+    #, fig.align = "center"
+    #, fig.width = 3.27, fig.height = 2.5, dev.args = list(pointsize = 10)
+    #,cache = TRUE
+    #, fig.width = 4.3, fig.height = 3.2, dev.args = list(pointsize = 10)
+    #, fig.width = 6.3, fig.height = 6.2, dev.args = list(pointsize = 10)
+    # works with html but causes problems with latex
+    #,out.extra = 'style = "display:block; margin: auto"' 
+    )
+knitr::knit_hooks$set(spar = function(before, options, envir) {
+    if (before) {
+        par(las = 1 )                   #also y axis labels horizontal
+        par(mar = c(2.0,3.3,0,0) + 0.3 )  #margins
+        par(tck = 0.02 )                          #axe-tick length inside plots             
+        par(mgp = c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
+     }
+})
+```
+
+
+```{r, include = FALSE, warning = FALSE}
+library(ggplot2)
+themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
+#bgiDir <- "~/bgi"
+```
+
+# Aggregating uncertainty to daily and annual values
+
+## Example setup
+We start with half-hourly $u_*$-filtered and gap-filled NEE_f values. 
+For simplicity this example uses data provided with the package and omits
+$u_*$ threshold detection but rather applies a user-specified threshold.
+
+With option `FillAll = TRUE`, an uncertainty, specifically the standard deviation,
+of the flux is estimated for each 
+record during gapfilling and stored in variable `NEE_uStar_fsd`. 
+
+```{r inputData, spar = TRUE, message = FALSE}
+library(REddyProc)
+library(dplyr)
+EddyDataWithPosix <- fConvertTimeToPosix(
+  Example_DETha98, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
+EProc <- sEddyProc$new(
+  'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
+EProc$sMDSGapFillAfterUstar('NEE', uStarTh = 0.3, FillAll = TRUE)
+results <- EProc$sExportResults() 
+summary(results$NEE_uStar_fsd)
+```
+We can inspect, how the uncertainty scales with the flux magnitude.
+```{r}
+plot( NEE_uStar_fsd ~ NEE_uStar_fall, slice(results, sample.int(nrow(results),400)))
+```
+
+## Wrong aggregation without correlations
+With neglecting correlations among records, the uncertainty of the mean annual
+flux is computed by adding the variances. 
+The mean is computed by $m = \sum{x_i}/n$. 
+And hence its standard deviation by $sd(m) = \sqrt{Var(m)}= \sqrt{\sum{Var(x_i)}/n^2}$. 
+This results in an aprroximate reduction of the standard deviation by $\sqrt{n}$.
+
+```{r}
+results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
+  nRec = sum(is.finite(NEE_uStar_f))
+  , varSum = sum(NEE_uStar_fsd^2, na.rm = TRUE)
+  , seMean = sqrt(varSum) / nRec
+  , seMeanApprox = mean(NEE_uStar_fsd, na.rma = TRUE) / sqrt(nRec)
+  ) %>% select(nRec, seMean, seMeanApprox)
+```
+Due to the large number of records, the estimated uncertainty very low.
+
+## Considering correlations
+
+When observations are not independent of each other, 
+the formulas now become $Var(m) = Var(\sum{x_i})/n_{eff}$ and
+$\operatorname{Var}(\sum{x_i}) = \frac{n_{eff}}{n(n_{eff}-1)} \sum_{i=1}^n \sigma_i^2$,
+with the number of effective observations $n_{eff}$ decreasing with the
+autocorrelation among records (Bayley 1946, Zieba 2011).
+
+The standard deviation now approximately decreases only by $\sqrt{n_{eff}}$.
+
+First we need to quantify the correlations and inspect their autocorrelation.
+```{r}
+results <- EProc$sExportResults() %>% 
+  mutate(
+    resid = ifelse(NEE_uStar_fqc == 0, NEE_uStar_orig - NEE_uStar_fall, NA )
+  )
+acf(results$resid, na.action = na.pass, main = "")
+```
+
+The empricical autocorrelation function shows strong positive autocorrelation 
+in residuals up to a lag of 10 records.
+
+Computation of effective number of observations is provided by function 
+`computeEffectiveNumObs` from package `lognorm` based on the emprical 
+autocorrelation function.
+
+```{r}
+library(lognorm)
+autoCorr <- computeEffectiveAutoCorr(results$resid)
+nEff <- computeEffectiveNumObs(results$resid, na.rm = TRUE)
+c( nEff = nEff, nObs = sum(is.finite(results$resid)))
+```
+
+```{r}
+results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
+  nRec = sum(is.finite(NEE_uStar_fsd))
+  , varMean = sum(NEE_uStar_fsd^2, na.rm = TRUE) / nRec / (!!nEff - 1)
+  , seMean = sqrt(varMean) 
+  , seMeanApprox = sqrt(mean(NEE_uStar_fsd^2, na.rm = TRUE)) / sqrt(!!nEff - 1)
+  ) %>% select(seMean, seMeanApprox)
+```
+
+## Daily aggregation
+
+When aggregating daily respiration, the same principles hold.
+
+However, when computing the number of effective observations, 
+we recommend using the empirical autocorrelation function
+estimated on longer time series of residuals instead of 
+estimating them each day.
+
+```{r}
+results <- results %>% mutate(
+  DateTime = EddyDataWithPosix$DateTime
+  , DoY = EddyDataWithPosix$DoY
+)
+```
+```{r}
+aggDay <- results %>% group_by(DoY) %>% 
+  summarise(
+    DateTime = first(DateTime)
+    , nRec = sum( NEE_uStar_fqc == 0, na.rm = TRUE)
+    , nEff = computeEffectiveNumObs(
+       resid, effAcf = !!autoCorr, na.rm = TRUE)
+    , NEE = mean(NEE_uStar_f, na.rm = TRUE)
+    , sdNEE = if (nEff == 0) NA_real_ else sqrt(
+      mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nEff - 1)) 
+    , sdNEEuncorr = if (nRec == 0) NA_real_ else sqrt(
+       mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nRec - 1))
+  )
+aggDay
+```
+```{r uncBand, echo=FALSE}
+aggDay %>% filter(between(DoY, 150, 200)) %>% 
+  ggplot(aes(DateTime, NEE)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = NEE - 1.96*sdNEEuncorr, ymax = NEE + 1.96*sdNEEuncorr), fill = "blue", alpha = 0.2) +
+geom_ribbon(aes(ymin = NEE - 1.96*sdNEE, ymax = NEE + 1.96*sdNEE), fill = "orange", alpha = 0.2) +
+  themeTw
+```
+
+The confidence bounds computed with accounting for correlations in this 
+case are about the twice the ones computed with neglecting correlations.
