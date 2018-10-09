@@ -404,8 +404,9 @@ sEddyProc_sMDSGapFill <- function(
   , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<<
   ## String suffix needed for different processing setups on the same dataset
   ## (for explanations see below)
-  , minNWarnRunLength = 5 ##<< scalar integer: warn if nubmer of subsequent
-  ## numerically equal values exeeds this number
+  , minNWarnRunLength = 24 ##<< scalar integer: warn if nubmer of subsequent
+  ## numerically equal values exeeds this number,
+  ## defaults to records of half a day.
   , Var.s      ##<< deprecated
   , QFVar.s    ##<< deprecated
   , QFValue.n  ##<< deprecated
@@ -450,12 +451,12 @@ sEddyProc_sMDSGapFill <- function(
   ##details<<
   ## Runs of numerically equal numbes hint to problems of the data and cause
   ## unreasonable estimates of uncertainty. This routine warns the user.
-  if (nrow(sTEMP) >= minNWarnRunLength) {
+  if (is.finite(minNWarnRunLength) & (nrow(sTEMP) >= minNWarnRunLength)) {
     rl <- .runLength(as.vector(sTEMP$VAR_orig), minNRunLength = minNWarnRunLength)
     if (length(rl$index)) {
       rlSorted <- rl[rev(order(rl$nRep)),,drop = FALSE]
       warning(
-        "Variable ", Var, " contains long series of numerically equal numbers."
+        "Variable ", Var, " contains long runs of numerically equal numbers."
         , " Longest of ", rlSorted$nRep[1], " repeats of value "
         , sTEMP$VAR_orig[ rlSorted$index[1] ]
         , " starts at index ", rlSorted$index[1]
@@ -498,9 +499,9 @@ sEddyProc_sMDSGapFill <- function(
   Met.n <-
     if (
       V1 != 'none' && V2 != 'none' && V3 != 'none'
-        && sum(!is.na(sDATA[, V1])) != 0 && sum(!is.na(sDATA[, V2])) != 0 &&
-        sum(!is.na(sDATA[, V3])) != 0
-        ) {
+      && sum(!is.na(sDATA[, V1])) != 0 && sum(!is.na(sDATA[, V2])) != 0 &&
+      sum(!is.na(sDATA[, V3])) != 0
+    ) {
       #All three meteo conditions are available and valid to use:
       message(
         'Full MDS algorithm for gap filling of \''
@@ -577,22 +578,6 @@ sEddyProc_sMDSGapFill <- function(
   ## Gap filling results in sTEMP data frame (with renamed columns).
 }
 sEddyProc$methods(sMDSGapFill = sEddyProc_sMDSGapFill)
-
-.runLength <- function(
-  ### detect runs of equal values
-  x  ##<< vector to check for runs
-  , minNRunLength = 2 ##<< minimum run length to report
-){
-  rl <- rle(x)$lengths
-  rlc <- cumsum(rl) + 1 - rl
-  iiRun <- which(rl >= minNRunLength)
-  iRun <- rlc[iiRun]
-  ##value<< data.frame with columns
-  data.frame(
-    index = iRun        ##<< starting index of runs
-    , nRep = rl[iiRun]  ##<< length of the run
-  )
-}
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

@@ -60,9 +60,11 @@ library(dplyr)
 #+++ define directory for outputs
 outDir <- tempdir()  # CRAN policy dictates to write only to this dir in examples
 #outDir <- "out"     # to write to subdirectory of current users dir
-#+++ Add time stamp in POSIX time format to example data
+#+++ Add time stamp in POSIX time format to example data 
+# and filter long runs of equal NEE values
 EddyDataWithPosix <- fConvertTimeToPosix(
-  Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+  filterLongRuns(Example_DETha98, "NEE")
+  , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 ```
 
 ## Not applying uStar filtering
@@ -127,7 +129,7 @@ due to not exactly knowing the u* threshold, these processing steps should be
 repeated for different threshold scenarios, and the spread across the results should
 be investigated.
 
-First, the quantiles of the threshodl distribution are estimated by bootstrap.
+First, the quantiles of the threshold distribution are estimated by bootstrap.
 
 ```{r uStarScen, results='hold'}
 EProc <- sEddyProc$new(

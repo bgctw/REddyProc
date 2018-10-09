@@ -91,18 +91,19 @@ getFilledExampleDETha98Data <- function(
   if (!length(examplePath) ) {
     # Example_DETha98 is a lazyData object of REddyProc
     # nee to prefix package name here, to satisfy R CMD CHECK
-    Example_DETha98_Date <- fConvertTimeToPosix(REddyProc::Example_DETha98
-                    , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+    Example_DETha98_Date <- REddyProc::Example_DETha98 %>%
+      filterLongRuns(c("NEE","H","LE")) %>%
+      fConvertTimeToPosix('YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
     Example_DETha98_sDate <- cbind(
       sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
     EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate
                                 , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
     EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
     EProc$sCalcPotRadiation()
-    EProc$sMDSGapFill('NEE', FillAll.b = TRUE)
-    EProc$sMDSGapFill('Rg', FillAll.b = FALSE)
-    EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
-    EProc$sMDSGapFill('VPD', FillAll.b = FALSE)
+    EProc$sMDSGapFill('NEE', FillAll = TRUE)
+    EProc$sMDSGapFill('Rg', FillAll = FALSE)
+    EProc$sMDSGapFill('Tair', FillAll = FALSE)
+    EProc$sMDSGapFill('VPD', FillAll = FALSE)
     Example_DETha98_Filled <- cbind(Example_DETha98_sDate, EProc$sExportResults() )
     save(Example_DETha98_Filled, file = file.path(exampleDir, exampleBaseName))
     examplePath <- getExamplePath(exampleBaseName)

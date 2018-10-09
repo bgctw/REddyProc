@@ -13,9 +13,9 @@
     FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE, 
     isVerbose = if (!missing(Verbose.b)) Verbose.b else TRUE, 
     suffix = if (!missing(Suffix.s)) Suffix.s else "", 
-    Var.s, QFVar.s, QFValue.n, V1.s, T1.n, 
-    V2.s, T2.n, V3.s, T3.n, FillAll.b, Verbose.b, 
-    Suffix.s)}
+    minNWarnRunLength = 24, Var.s, QFVar.s, 
+    QFValue.n, V1.s, T1.n, V2.s, T2.n, V3.s, 
+    T3.n, FillAll.b, Verbose.b, Suffix.s)}
 \arguments{
   \item{Var}{Variable to be filled}
   \item{QFVar}{
@@ -40,6 +40,9 @@
 }
   \item{suffix}{
 }
+  \item{minNWarnRunLength}{scalar integer: warn if nubmer of subsequent
+numerically equal values exeeds this number,
+defaults to records of half a day.}
   \item{Var.s}{deprecated}
   \item{QFVar.s}{deprecated}
   \item{QFValue.n}{deprecated}
@@ -55,6 +58,9 @@
 }
 \details{Initialize temporal data frame sTEMP for newly generated gap filled data and
 qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
+
+Runs of numerically equal numbes hint to problems of the data and cause
+unreasonable estimates of uncertainty. This routine warns the user.
 
 MDS gap filling algorithm calls the subroutines Look Up Table
 \code{\link{sEddyProc_sFillLUT}}
