@@ -386,76 +386,80 @@ LightResponseCurveFitter_optimLRCOnAdjustedPrior = function(
 		### Lower bound flux uncertainty and adjust prior uncertainty before calling optimLRC
 		theta  					##<< numeric vector of starting values
 		, iOpt					##<< integer vector: positions of subset of parameters
-		  ## that are optimized
+		## that are optimized
 		, dsDay					##<< dataframe of NEE, sdNEE and predictors Rg, VPD and Temp
 		, parameterPrior		##<< numeric vector of prior parameter estimates
-		  ## (corresponding to theta) # TODO rename to thetaPrior
+		## (corresponding to theta) # TODO rename to thetaPrior
 		, ctrl					##<< list of further controls
 		, ...					##<< further arguments to
-		  ## \code{\link{LightResponseCurveFitter_optimLRC}}
-		  ## (passed to \code{\link{LightResponseCurveFitter_computeCost}})
+		## \code{\link{LightResponseCurveFitter_optimLRC}}
+		## (passed to \code{\link{LightResponseCurveFitter_computeCost}})
 ) {
-	if (!all(is.finite(theta))) stop("need to provide finite starting values.")
-	##details<<
-	## Only those records are used for optimization where both NEE
-	## and sdNEE are finite.
-	## In larger settings, already filtered at
-	dsDayFinite <- dsDay[is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
-	if (nrow(dsDayFinite) < ctrl$minNRecInDayWindow) {
-		stop("inspect too few records, should be already filtered "
-		     ,"in partGLFitLRCOneWindow")
-	 	return(list(
-				theta = {theta[] <- NA; theta}
-				, iOpt = integer(0)
-				, convergence = 1003L
-		))
-	}
-	##details<< Optimization of LRC parameters takes into account the uncertainty
-	##of the flux values. In order to avoid very strong leverage, values with a
-	##very low uncertainty (< a lower quantile) are assigned the lower quantile is
-	##assigned. This procedure downweighs records with a high uncertainty, but does
-	##not apply a large leverage for records with a very low uncertainty. Avoid
-	##this correction by setting \code{ctrl$isBoundLowerNEEUncertainty =
-	##FALSE}
-	Fc_unc <- if (isTRUE(ctrl$isBoundLowerNEEUncertainty) ) {
-	    #twutz: avoid excessive weights by small uncertainties (of 1 / unc^2)
-				pmax(dsDayFinite$sdNEE, quantile(dsDayFinite$sdNEE, 0.3) )
-			} else {
-				dsDayFinite$sdNEE
-			}
-	#plot(Fc_unc ~ dsDayFinite$sdNEE)
-	medianRelFluxUncertainty <- abs(median(Fc_unc / dsDayFinite$NEE))
-	##details<<
-	## The uncertainty of the prior, that maybe derived from fluxes)  is allowed to
-	## adapt to the uncertainty of the fluxes.
-	## This is done in \code{link{LightResponseCurveFitter_getPriorScale}}
-	sdParameterPrior <- .self$getPriorScale(parameterPrior, medianRelFluxUncertainty
-	                                        , nrow(dsDayFinite), ctrl = ctrl)
-	sdParameterPrior[-iOpt] <- NA
-	isUsingHessian <- (ctrl$nBootUncertainty == 0L)
-	.self$optimLRC(theta
-			, iOpt = iOpt
-			, flux = -dsDayFinite$NEE
-			, sdFlux = Fc_unc
-			, sdParameterPrior = sdParameterPrior
-			, parameterPrior = parameterPrior
-			, Rg = dsDayFinite$Rg
-			, VPD = dsDayFinite$VPD
-			, Temp = dsDayFinite$Temp
-			, isUsingHessian = isUsingHessian
-			, ctrl = ctrl
-	)
-	##value<< result of \code{\link{LightResponseCurveFitter_optimLRC}} with
-	## items theta, iOpt and convergence
+  if (!all(is.finite(theta))) stop("need to provide finite starting values.")
+  ##details<<
+  ## Only those records are used for optimization where both NEE
+  ## and sdNEE are finite.
+  ## In larger settings, already filtered at
+  dsDayFinite <- dsDay[is.finite(dsDay$NEE) & is.finite(dsDay$sdNEE), ]
+  if (nrow(dsDayFinite) < ctrl$minNRecInDayWindow) {
+    stop("inspect too few records, should be already filtered "
+         ,"in partGLFitLRCOneWindow")
+    return(list(
+      theta = {theta[] <- NA; theta}
+      , iOpt = integer(0)
+      , convergence = 1003L
+    ))
+  }
+  ##details<< Optimization of LRC parameters takes into account the uncertainty
+  ##of the flux values. In order to avoid very strong leverage, values with a
+  ##very low uncertainty (< a lower quantile) are assigned the lower quantile is
+  ##assigned. This procedure downweighs records with a high uncertainty, but does
+  ##not apply a large leverage for records with a very low uncertainty. Avoid
+  ##this correction by setting \code{ctrl$isBoundLowerNEEUncertainty =
+  ##FALSE}
+  minUnc <- quantile(dsDayFinite$sdNEE, 0.3)
+  if (minUnc == 0) stop(
+    "Too many zeros in uncertainty of NEE.",
+    " This cannot be handled in daytime partitioning.")
+  Fc_unc <- if (isTRUE(ctrl$isBoundLowerNEEUncertainty) ) {
+    #twutz: avoid excessive weights by small uncertainties (of 1 / unc^2)
+    pmax(dsDayFinite$sdNEE, minUnc )
+  } else {
+    dsDayFinite$sdNEE
+  }
+  #plot(Fc_unc ~ dsDayFinite$sdNEE)
+  medianRelFluxUncertainty <- abs(median(Fc_unc / dsDayFinite$NEE))
+  ##details<<
+  ## The uncertainty of the prior, that maybe derived from fluxes)  is allowed to
+  ## adapt to the uncertainty of the fluxes.
+  ## This is done in \code{link{LightResponseCurveFitter_getPriorScale}}
+  sdParameterPrior <- .self$getPriorScale(parameterPrior, medianRelFluxUncertainty
+                                          , nrow(dsDayFinite), ctrl = ctrl)
+  sdParameterPrior[-iOpt] <- NA
+  isUsingHessian <- (ctrl$nBootUncertainty == 0L)
+  .self$optimLRC(theta
+                 , iOpt = iOpt
+                 , flux = -dsDayFinite$NEE
+                 , sdFlux = Fc_unc
+                 , sdParameterPrior = sdParameterPrior
+                 , parameterPrior = parameterPrior
+                 , Rg = dsDayFinite$Rg
+                 , VPD = dsDayFinite$VPD
+                 , Temp = dsDayFinite$Temp
+                 , isUsingHessian = isUsingHessian
+                 , ctrl = ctrl
+  )
+  ##value<< result of \code{\link{LightResponseCurveFitter_optimLRC}} with
+  ## items theta, iOpt and convergence
 }
 LightResponseCurveFitter$methods(optimLRCOnAdjustedPrior =
-                          LightResponseCurveFitter_optimLRCOnAdjustedPrior)
+                                   LightResponseCurveFitter_optimLRCOnAdjustedPrior)
 
 
 #' @export
 LightResponseCurveFitter_isParameterInBounds <- function(
-		### Check if estimated parameter vector is within reasonable bounds
-		theta					##<< estimate of parameter
+  ### Check if estimated parameter vector is within reasonable bounds
+  theta					##<< estimate of parameter
 		, sdTheta			##<< estimate of uncertainty of the parameter
 		, RRefNight		##<< numeric scalar: night-time based estimate of
 		  ## basal respiration

@@ -96,8 +96,9 @@ getFilledExampleDETha98Data <- function(
       fConvertTimeToPosix('YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
     Example_DETha98_sDate <- cbind(
       sDateTime = Example_DETha98_Date$DateTime - 15 * 60,  Example_DETha98_Date)
-    EProc <- sEddyProc$new('DE-Tha', Example_DETha98_sDate
-                                , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+    EProc <- sEddyProc$new(
+      'DE-Tha', Example_DETha98_sDate
+      , c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
     EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
     EProc$sCalcPotRadiation()
     EProc$sMDSGapFill('NEE', FillAll = TRUE)
