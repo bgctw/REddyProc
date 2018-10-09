@@ -48,12 +48,15 @@ test_that("runLength",{
 test_that("filterLongRunsInVector",{
   x <- rnorm(10)
   x[5:9] <- 7/8
-  ans <- filterLongRunsInVector(x)
+  ans <- filterLongRunsInVector(x,2)
   expect_true(all(is.na(ans[5:9])))
   expect_equal(ans[-(5:9)], x[-(5:9)])
+  # no long runs:
+  ans <- filterLongRunsInVector(x, minNRunLength = 80)
+  expect_equal(ans, x)
   #
   x <- rep(6:10, 1:5)
-  ans <- filterLongRunsInVector(x)
+  ans <- filterLongRunsInVector(x,2)
   expect_equal( ans[1], x[1])
   expect_true(all(is.na(ans[-1])))
   #
@@ -61,11 +64,11 @@ test_that("filterLongRunsInVector",{
   x[2] <- NA # two NAs is not a run
   x[13] <- NA # two NAs is not a run
   x[15] <- 11
-  ans <- filterLongRunsInVector(x, na.rm = FALSE)
+  ans <- filterLongRunsInVector(x, 2, na.rm = FALSE)
   expect_equal(length(x), length(ans))
   expect_equal( ans[c(1,3,14,15)], x[c(1,3,14,15)])
   expect_true(all(is.na(ans[-c(1,3,14,15)])))
-  ans <- filterLongRunsInVector(x, na.rm = TRUE)
+  ans <- filterLongRunsInVector(x, 2, na.rm = TRUE)
   # now the 10 at index 14 is within the run containing NA
   expect_equal(length(x), length(ans))
   expect_equal( ans[c(1,3,15)], x[c(1,3,15)])
@@ -78,7 +81,7 @@ test_that("filterLongRuns",{
   x[5:9] <- 7/8
   data <- data.frame(x,y)
   colNames <- c("x","y")
-  ans <- filterLongRuns(data, colNames)
+  ans <- filterLongRuns(data, colNames, minNRunLength = 2)
   expect_true(all(is.na(ans$x[5:9])))
   expect_equal(ans$x[-(5:9)], x[-(5:9)])
   expect_equal( ans$y[1], y[1])

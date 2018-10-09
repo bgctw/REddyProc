@@ -623,13 +623,15 @@ fFilterAttr <- function(
 filterLongRunsInVector <- function(
   ### replace runs of numerically equal values by NA
   x  ##<< vector in which to replace long runs
-  , minNRunLength = 2 ##<< minimum run length to report
-  , replacement = NA  ##<< value replacing values in runs
+  , minNRunLength = 8 ##<< minimum length of a run to replace.
+  ## Defaults to 4 hours in half-hourly spaced data.
+  , replacement = NA  ##<< value replacing the original values in long run
   , na.rm = TRUE      ##<< set to FALSE if NA values interrupt runs
 ){
   y <- if (isTRUE(na.rm)) x[!is.na(x)] else x
   if (!length(y)) return(x)
   rl <- .runLength(y, minNRunLength = minNRunLength)
+  if (!nrow(rl)) return(x)
   for (iRow in 1:nrow(rl)) {
     ind <- rl$index[iRow] - 1 + (1:rl$nRep[iRow])
     y[ind] <- replacement
@@ -645,11 +647,18 @@ filterLongRunsInVector <- function(
 
 #' @export
 filterLongRuns <- function(
-  ### replace runs of numerically equal values by NA
+  ### replace runs, i.e sequences of numerically equal values, by NA
   data  ##<< data.frame with columns to filter
-  , colNames  ##<< string vector of columns to filter
+  , colNames  ##<< string vector of names indicating which columns to filter
   , ...       ##<< further arguments to \code{\link{filterLongRunsInVector}}
+  ## such as \code{minNRunLength}.
 ){
+  ##details<<
+  ## Longer runs, i.e. sequences of numerically identical values,
+  ## in a series of measurments hint to
+  ## problems during a noisy measurement, e.g. by sensor malfunction due to
+  ## freezing.
+  ## This function, replaces such values in such runs to indicate missing values.
   ans <- data %>% mutate_at( colNames, filterLongRunsInVector, ...)
   ##value<< data.frame \code{ans} with long runs in specified columns replaced by NA
   ans

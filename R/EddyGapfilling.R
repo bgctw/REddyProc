@@ -404,9 +404,10 @@ sEddyProc_sMDSGapFill <- function(
   , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<<
   ## String suffix needed for different processing setups on the same dataset
   ## (for explanations see below)
-  , minNWarnRunLength = 24 ##<< scalar integer: warn if nubmer of subsequent
+  , minNWarnRunLength = 4 * .self$sINFO$DTS/24 ##<< scalar integer:
+  ## warn if nubmer of subsequent
   ## numerically equal values exeeds this number,
-  ## defaults to records of half a day.
+  ## defaults records across 4 hours.
   , Var.s      ##<< deprecated
   , QFVar.s    ##<< deprecated
   , QFValue.n  ##<< deprecated

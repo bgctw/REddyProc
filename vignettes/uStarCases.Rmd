@@ -165,8 +165,8 @@ grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE)
 
 ```{r uStarScenMRPart, message=FALSE}
 EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
-EProc$sMDSGapFill('Tair', FillAll = FALSE)
-EProc$sMDSGapFill('VPD', FillAll = FALSE)
+EProc$sMDSGapFill('Tair', FillAll = FALSE, minNWarnRunLength = NA)
+EProc$sMDSGapFill('VPD', FillAll = FALSE, minNWarnRunLength = NA)
 EProc$sMRFluxPartitionUStarScens()
 grep("GPP_.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```

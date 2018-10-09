@@ -2,12 +2,13 @@
 \alias{filterLongRunsInVector}
 \title{filterLongRunsInVector}
 \description{replace runs of numerically equal values by NA}
-\usage{filterLongRunsInVector(x, minNRunLength = 2, 
+\usage{filterLongRunsInVector(x, minNRunLength = 8, 
     replacement = NA, na.rm = TRUE)}
 \arguments{
   \item{x}{vector in which to replace long runs}
-  \item{minNRunLength}{minimum run length to report}
-  \item{replacement}{value replacing values in runs}
+  \item{minNRunLength}{minimum length of a run to replace.
+Defaults to 4 hours in half-hourly spaced data.}
+  \item{replacement}{value replacing the original values in long run}
   \item{na.rm}{set to FALSE if NA values interrupt runs}
 }
 
