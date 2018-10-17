@@ -15,21 +15,17 @@ and stored in variable `NEE_uStar_fsd`.
 
     library(REddyProc)
     library(dplyr)
-    EddyDataWithPosix <- fConvertTimeToPosix(
-      Example_DETha98, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
+    EddyDataWithPosix <- Example_DETha98 %>% 
+      filterLongRuns("NEE") %>% 
+      fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
     EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
     EProc$sMDSGapFillAfterUstar('NEE', uStarTh = 0.3, FillAll = TRUE)
-
-    ## Warning in sMDSGapFill(fluxVar, QFVar = attr(qfUStar, "varnames"), QFValue
-    ## = 0, : Variable NEE contains long runs of numerically equal numbers.
-    ## Longest of 10 repeats of value 0.695 starts at index 1397
-
     results <- EProc$sExportResults() 
     summary(results$NEE_uStar_fsd)
 
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ##  0.03535  1.69960  2.32796  2.74052  3.44417 24.55782
+    ##  0.03535  1.69960  2.32796  2.74246  3.44417 24.55782
 
 We can inspect, how the uncertainty scales with the flux magnitude.
 
@@ -54,9 +50,10 @@ an aprroximate reduction of the standard deviation by $\\sqrt{n}$.
       ) %>% select(nRec, seMean, seMeanApprox)
 
     ##    nRec     seMean seMeanApprox
-    ## 1 10935 0.02979564   0.02639231
+    ## 1 10901 0.02988839   0.02650074
 
-Due to the large number of records, the estimated uncertainty very low.
+Due to the large number of records, the estimated uncertainty is very
+low.
 
 Considering correlations
 ------------------------
@@ -72,23 +69,28 @@ decreasing with the autocorrelation among records (Bayley 1946, Zieba
 The standard deviation now approximately decreases only by
 $\\sqrt{n\_{eff}}$.
 
-First we need to quantify the correlations and inspect their
-autocorrelation.
+First we need to quantify the error terms, i.e. model-data residuals.
+For all the records of good quality, we have an original measured value
+`NEE_uStar_orig` and modelled value from MDS gapfilling,
+`NEE_uStar_fall`. The residual of bad-quality data is set to missing.
 
     results <- EProc$sExportResults() %>% 
       mutate(
         resid = ifelse(NEE_uStar_fqc == 0, NEE_uStar_orig - NEE_uStar_fall, NA )
       )
+
+Now we can inspect the the autocorrelation of the errors.
+
     acf(results$resid, na.action = na.pass, main = "")
 
-![](aggUncertainty_files/figure-markdown_strict/unnamed-chunk-5-1.png)
+![](aggUncertainty_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
 The empricical autocorrelation function shows strong positive
 autocorrelation in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function
 `computeEffectiveNumObs` from package `lognorm` based on the emprical
-autocorrelation function.
+autocorrelation function for given model-data residuals.
 
     library(lognorm)
     autoCorr <- computeEffectiveAutoCorr(results$resid)
@@ -96,17 +98,24 @@ autocorrelation function.
     c( nEff = nEff, nObs = sum(is.finite(results$resid)))
 
     ##      nEff      nObs 
-    ##  3884.196 10935.000
+    ##  3870.283 10901.000
+
+We see that the effective number of observations is only about a third
+of the number of observations.
+
+Now we can use the formulas for the sum and the mean of correlated
+normally distributed variables to compute the uncertainty of the mean.
 
     results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
       nRec = sum(is.finite(NEE_uStar_fsd))
       , varMean = sum(NEE_uStar_fsd^2, na.rm = TRUE) / nRec / (!!nEff - 1)
       , seMean = sqrt(varMean) 
-      , seMeanApprox = sqrt(mean(NEE_uStar_fsd^2, na.rm = TRUE)) / sqrt(!!nEff - 1)
+      #, seMean2 = sqrt(mean(NEE_uStar_fsd^2, na.rm = TRUE)) / sqrt(!!nEff - 1)
+      , seMeanApprox = mean(NEE_uStar_fsd, na.rm = TRUE) / sqrt(!!nEff - 1)
       ) %>% select(seMean, seMeanApprox)
 
     ##       seMean seMeanApprox
-    ## 1 0.04999971   0.04999971
+    ## 1 0.05016727   0.04448115
 
 Daily aggregation
 -----------------
@@ -115,11 +124,12 @@ When aggregating daily respiration, the same principles hold.
 
 However, when computing the number of effective observations, we
 recommend using the empirical autocorrelation function estimated on
-longer time series of residuals instead of estimating them each day.
+longer time series of residuals instead of estimating them each day
+(`autoCorr` computed above).
 
     results <- results %>% mutate(
       DateTime = EddyDataWithPosix$DateTime
-      , DoY = EddyDataWithPosix$DoY
+      , DoY = as.POSIXlt(DateTime - 15*60)$yday # midnight belongs to the previous
     )
 
     aggDay <- results %>% group_by(DoY) %>% 
@@ -136,22 +146,23 @@ longer time series of residuals instead of estimating them each day.
       )
     aggDay
 
-    ## # A tibble: 366 x 7
+    ## # A tibble: 365 x 7
     ##      DoY DateTime             nRec  nEff      NEE  sdNEE sdNEEuncorr
     ##    <int> <dttm>              <int> <dbl>    <dbl>  <dbl>       <dbl>
-    ##  1     1 1998-01-01 00:30:00    21  7.87  0.102    0.987       0.578
-    ##  2     2 1998-01-02 00:00:00     7  3.66  0.00269  1.58        1.05 
-    ##  3     3 1998-01-03 00:00:00     0  0.    0.0484  NA          NA    
-    ##  4     4 1998-01-04 00:00:00     0  0.    0.306   NA          NA    
-    ##  5     5 1998-01-05 00:00:00    27 10.5   0.0958   0.867       0.525
-    ##  6     6 1998-01-06 00:00:00    48 18.0   1.04     0.617       0.370
-    ##  7     7 1998-01-07 00:00:00    48 18.0  -0.354    0.563       0.339
-    ##  8     8 1998-01-08 00:00:00    46 17.2  -0.160    0.545       0.327
-    ##  9     9 1998-01-09 00:00:00    45 16.8   0.615    0.482       0.289
-    ## 10    10 1998-01-10 00:00:00    37 13.9   0.268    0.637       0.381
-    ## # ... with 356 more rows
+    ##  1     0 1998-01-01 00:30:00    21  7.87  0.124    0.988       0.579
+    ##  2     1 1998-01-02 00:30:00     7  3.66  0.00610  1.57        1.05 
+    ##  3     2 1998-01-03 00:30:00     0  0.    0.0484  NA          NA    
+    ##  4     3 1998-01-04 00:30:00     0  0.    0.303   NA          NA    
+    ##  5     4 1998-01-05 00:30:00    28 10.9   0.195    0.851       0.515
+    ##  6     5 1998-01-06 00:30:00    48 18.0   0.926    0.615       0.370
+    ##  7     6 1998-01-07 00:30:00    48 18.0  -0.337    0.566       0.340
+    ##  8     7 1998-01-08 00:30:00    46 17.2  -0.139    0.541       0.325
+    ##  9     8 1998-01-09 00:30:00    45 16.8   0.614    0.482       0.289
+    ## 10     9 1998-01-10 00:30:00    36 13.5   0.242    0.646       0.386
+    ## # ... with 355 more rows
 
 ![](aggUncertainty_files/figure-markdown_strict/uncBand-1.png)
 
-The confidence bounds computed with accounting for correlations in this
-case are about the twice the ones computed with neglecting correlations.
+The confidence bounds (+-1.96 stdDev) computed with accounting for
+correlations in this case are about twice the ones computed with
+neglecting correlations.

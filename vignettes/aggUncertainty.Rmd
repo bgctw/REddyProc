@@ -17,7 +17,7 @@ knitr::opts_chunk$set(eval = !is_check)
 ```
 
 ```{r setup, include = FALSE}
-#rmarkdown::render("vignettes/aggUncertainty.Rmd")
+#rmarkdown::render("vignettes/aggUncertainty.Rmd","md_document")
 knitr::opts_knit$set(root.dir = '..')
 knitr::opts_chunk$set(
     #, fig.align = "center"
@@ -41,6 +41,7 @@ knitr::knit_hooks$set(spar = function(before, options, envir) {
 
 ```{r, include = FALSE, warning = FALSE}
 library(ggplot2)
+library(tidyr)
 themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
 #bgiDir <- "~/bgi"
 ```
@@ -59,8 +60,9 @@ record during gapfilling and stored in variable `NEE_uStar_fsd`.
 ```{r inputData, spar = TRUE, message = FALSE}
 library(REddyProc)
 library(dplyr)
-EddyDataWithPosix <- fConvertTimeToPosix(
-  Example_DETha98, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
+EddyDataWithPosix <- Example_DETha98 %>% 
+  filterLongRuns("NEE") %>% 
+  fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
 EProc <- sEddyProc$new(
   'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
 EProc$sMDSGapFillAfterUstar('NEE', uStarTh = 0.3, FillAll = TRUE)
@@ -87,7 +89,7 @@ results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
   , seMeanApprox = mean(NEE_uStar_fsd, na.rma = TRUE) / sqrt(nRec)
   ) %>% select(nRec, seMean, seMeanApprox)
 ```
-Due to the large number of records, the estimated uncertainty very low.
+Due to the large number of records, the estimated uncertainty is very low.
 
 ## Considering correlations
 
@@ -99,12 +101,20 @@ autocorrelation among records (Bayley 1946, Zieba 2011).
 
 The standard deviation now approximately decreases only by $\sqrt{n_{eff}}$.
 
-First we need to quantify the correlations and inspect their autocorrelation.
+First we need to quantify the error terms, i.e. model-data residuals. 
+For all the records of good quality, we have an original
+measured value `NEE_uStar_orig` and modelled value from MDS gapfilling, 
+`NEE_uStar_fall`. The residual of bad-quality data is set to missing.
+
 ```{r}
 results <- EProc$sExportResults() %>% 
   mutate(
     resid = ifelse(NEE_uStar_fqc == 0, NEE_uStar_orig - NEE_uStar_fall, NA )
   )
+```
+
+Now we can inspect the the autocorrelation of the errors.
+```{r}
 acf(results$resid, na.action = na.pass, main = "")
 ```
 
@@ -113,7 +123,7 @@ in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function 
 `computeEffectiveNumObs` from package `lognorm` based on the emprical 
-autocorrelation function.
+autocorrelation function for given model-data residuals.
 
 ```{r}
 library(lognorm)
@@ -122,12 +132,19 @@ nEff <- computeEffectiveNumObs(results$resid, na.rm = TRUE)
 c( nEff = nEff, nObs = sum(is.finite(results$resid)))
 ```
 
+We see that the effective number of observations is only about a third of the 
+number of observations.
+
+Now we can use the formulas for the sum and the mean of correlated normally 
+distributed variables to compute the uncertainty of the mean.
+
 ```{r}
 results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
   nRec = sum(is.finite(NEE_uStar_fsd))
   , varMean = sum(NEE_uStar_fsd^2, na.rm = TRUE) / nRec / (!!nEff - 1)
   , seMean = sqrt(varMean) 
-  , seMeanApprox = sqrt(mean(NEE_uStar_fsd^2, na.rm = TRUE)) / sqrt(!!nEff - 1)
+  #, seMean2 = sqrt(mean(NEE_uStar_fsd^2, na.rm = TRUE)) / sqrt(!!nEff - 1)
+  , seMeanApprox = mean(NEE_uStar_fsd, na.rm = TRUE) / sqrt(!!nEff - 1)
   ) %>% select(seMean, seMeanApprox)
 ```
 
@@ -138,12 +155,12 @@ When aggregating daily respiration, the same principles hold.
 However, when computing the number of effective observations, 
 we recommend using the empirical autocorrelation function
 estimated on longer time series of residuals instead of 
-estimating them each day.
+estimating them each day (`autoCorr` computed above).
 
 ```{r}
 results <- results %>% mutate(
   DateTime = EddyDataWithPosix$DateTime
-  , DoY = EddyDataWithPosix$DoY
+  , DoY = as.POSIXlt(DateTime - 15*60)$yday # midnight belongs to the previous
 )
 ```
 ```{r}
@@ -162,13 +179,20 @@ aggDay <- results %>% group_by(DoY) %>%
 aggDay
 ```
 ```{r uncBand, echo=FALSE}
-aggDay %>% filter(between(DoY, 150, 200)) %>% 
+aggDay %>% 
+  filter(between(DoY, 150, 200)) %>% 
+  select(DateTime, NEE, sdNEE, sdNEEuncorr) %>% 
+  gather("scenario","sdValue", sdNEE, sdNEEuncorr) %>% 
   ggplot(aes(DateTime, NEE)) +
   geom_line() +
-  geom_ribbon(aes(ymin = NEE - 1.96*sdNEEuncorr, ymax = NEE + 1.96*sdNEEuncorr), fill = "blue", alpha = 0.2) +
-geom_ribbon(aes(ymin = NEE - 1.96*sdNEE, ymax = NEE + 1.96*sdNEE), fill = "orange", alpha = 0.2) +
-  themeTw
+  geom_ribbon(aes(
+    ymin = NEE - 1.96*sdValue, ymax = NEE + 1.96*sdValue, fill = scenario)
+    , alpha = 0.2) +
+  scale_fill_discrete(labels = c(
+    'accounting for correlations','neglecting correlations')) +
+  themeTw +
+  theme(legend.position = c(0.95,0.95), legend.justification = c(1,1))
 ```
 
-The confidence bounds computed with accounting for correlations in this 
-case are about the twice the ones computed with neglecting correlations.
+The confidence bounds (+-1.96 stdDev) computed with accounting for correlations 
+in this case are about twice the ones computed with neglecting correlations.
