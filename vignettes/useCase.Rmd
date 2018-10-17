@@ -61,6 +61,8 @@ fileName <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
 EddyData <- if (length(fileName)) fLoadTXTIntoDataframe(fileName) else
   # or use example dataset in RData format provided with REddyProc
   Example_DETha98
+#+++ Replace long runs of equal NEE values by NA
+EddyData <- filterLongRuns(EddyData, "NEE")
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix <- fConvertTimeToPosix(
   EddyData, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
@@ -228,8 +230,8 @@ to allow computing sunrise and sunset. Further, the missing values in the
 used meteorological data need to be filled. 
 ```{r, message = FALSE}
 EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
-EProc$sMDSGapFill('Tair', FillAll = FALSE)     
-EProc$sMDSGapFill('VPD', FillAll = FALSE)     
+EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)     
+EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)     
 ```
 
 Now we are ready to invoke the partitioning, here by the night-time approach, 
