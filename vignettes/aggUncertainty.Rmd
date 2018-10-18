@@ -154,8 +154,9 @@ When aggregating daily respiration, the same principles hold.
 
 However, when computing the number of effective observations, 
 we recommend using the empirical autocorrelation function
-estimated on longer time series of residuals instead of 
-estimating them each day (`autoCorr` computed above).
+estimated on longer time series of residuals (`autoCorr` computed above) 
+in `computeEffectiveNumObs` instead of estimating them 
+from the residuals of each day.
 
 ```{r}
 results <- results %>% mutate(
