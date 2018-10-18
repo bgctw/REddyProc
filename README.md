@@ -67,17 +67,13 @@ EProc <- sEddyProc$new(
 EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
 #
 #++ Fill NEE gaps with MDS gap filling algorithm (without prior ustar filtering)
-EProc$sMDSGapFill('NEE', FillAll.b = FALSE)
-#> Warning in EProc$sMDSGapFill("NEE", FillAll.b = FALSE): Arguments names
-#> FillAll.b have been deprecated. Please, use instead FillAll
+EProc$sMDSGapFill('NEE', FillAll = FALSE)
 #
 #++ Export gap filled and partitioned data to standard data frame
-FilledEddyData.F <- EProc$sExportResults()
+FilledEddyData <- EProc$sExportResults()
 #
 #++ Example plots of filled data to screen or to directory \plots
-EProc$sPlotFingerprintY('NEE_f', Year.i = 1998)
-#> Warning in EProc$sPlotFingerprintY("NEE_f", Year.i = 1998): Argument names
-#> Year.i have been deprecated. Please, use instead Year
+EProc$sPlotFingerprintY('NEE_f', Year = 1998)
 ```
 
 ![](README-example-1.png)

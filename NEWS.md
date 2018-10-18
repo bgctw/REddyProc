@@ -13,8 +13,6 @@
 - Changed default column suffix in sEddyProc_sMDSGapFillAfterUstar from 
   'withUstar' to 'uStar' for consistency with 
   'sEddyProc_sMDSGapFillAfterUStarDistr'
-- Changed removed suffixes from argument names in 
-  sEddyProc_sEstUstarThresholdDistribution
 
 ## improve fingerprint plots
 
