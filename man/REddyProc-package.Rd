@@ -3,8 +3,9 @@
 \alias{REddyProc}
 \title{Post Processing of (Half-)Hourly Eddy-Covariance Measurements}
 \description{
-Standard and extensible Eddy-Covariance data post-processing includes
-  uStar-filtering, gap-filling, and flux-partitioning.
+  Standard and extensible Eddy-Covariance data post-processing including
+  uStar-filtering, gap-filling, and flux-partitioning
+  (Wutzler et al. (2018) <doi:10.5194/bg-15-5015-2018>).
 
   The Eddy-Covariance (EC)  micrometeorological technique quantifies continuous
   exchange fluxes of gases, energy, and momentum between an ecosystem and the atmosphere.

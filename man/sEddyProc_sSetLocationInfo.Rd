@@ -7,12 +7,12 @@
     TimeZoneHour = if (!missing(TimeZone_h.n)) TimeZone_h.n else NA_integer_, 
     Lat_deg.n, Long_deg.n, TimeZone_h.n)}
 \arguments{
-  \item{LatDeg}{
-}
-  \item{LongDeg}{
-}
-  \item{TimeZoneHour}{
-}
+  \item{LatDeg}{Latitude
+in (decimal) degrees (-90 to + 90)}
+  \item{LongDeg}{Longitude
+in (decimal) degrees (-180 to + 180)}
+  \item{TimeZoneHour}{Time
+zone: hours shift to UTC, e.g. 1 for Berlin}
   \item{Lat_deg.n}{deprecated}
   \item{Long_deg.n}{deprecated}
   \item{TimeZone_h.n}{deprecated}

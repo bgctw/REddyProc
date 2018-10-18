@@ -40,7 +40,7 @@ VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
 Imports: dplyr, purrr, rlang, mlegp, tibble, magrittr
-Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown
+Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown, lognorm, ggplot2, tidyr
 Collate: 
     'CheckVal.R'
     'DataFunctions.R'

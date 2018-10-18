@@ -6,10 +6,13 @@
 
 ## simplify argument naming and defaults
 
+- Changed argument names to exlude the type specifier suffix
+  , e.g. 'FluxVar.s' to 'FluxVar'. 
+  Provding the old argument names still works, but gives a warning. However,
+  at some future version, the old argument names will be removed.
 - Changed default column suffix in sEddyProc_sMDSGapFillAfterUstar from 
   'withUstar' to 'uStar' for consistency with 
   'sEddyProc_sMDSGapFillAfterUStarDistr'
-- Changed argument name 'Suffix.s' to 'suffix'
 - Changed removed suffixes from argument names in 
   sEddyProc_sEstUstarThresholdDistribution
 
