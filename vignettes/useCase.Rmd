@@ -275,11 +275,11 @@ $u_*$-scenario and converted from ${\mu mol\, CO_2\,
 m^{-2} s^{-1}}$ to ${gC\,m^{-2} yr^{-1}}$.
 
 ```{r aggregateGPP}
-FilledEddyData.F <- EProc$sExportResults()
+FilledEddyData <- EProc$sExportResults()
 uStarSuffixes <- colnames(EProc$sGetUstarScenarios())[-1]
 #suffix <- uStarSuffixes[2]
 GPPAggCO2 <- sapply( uStarSuffixes, function(suffix) {
-	GPPHalfHour <- FilledEddyData.F[[paste0("GPP_",suffix,"_f")]]
+	GPPHalfHour <- FilledEddyData[[paste0("GPP_",suffix,"_f")]]
 	mean(GPPHalfHour, na.rm = TRUE)
 })
 molarMass <- 12.011
