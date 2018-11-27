@@ -181,7 +181,7 @@ sEddyProc_sSetLocationInfo <- function(
   iDepr = which(!c(missing(Lat_deg.n),missing(Long_deg.n),missing(TimeZone_h.n)))
   if (length(iDepr)) warning(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
-    ," Please, use instead ", varNamesNew[iDepr])
+    ," Please, use instead ", paste(varNamesNew[iDepr], collapse = ","))
   ##author<< TW
 	# The information is used at several places (e.g. MRPartitioning, GLPartitioning)
 	# and therefore should be stored with the class, instead of passed each time.

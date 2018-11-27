@@ -1,3 +1,5 @@
+# REddyProc 1.1.6
+
 ## support consistent processing across u* threshold scenarios 
 
 - also subsequent gapfilling and partitioning
@@ -48,7 +50,8 @@ Moving profiling code and associated dependencies out of the distributed code.
 Reworking dependencies
 
 - implementing logit and invlogit from logtinorm directly in REddyProc
-- moving NetCDF related functions and dependencies to separate package REddyProcNCDF
+- moving NetCDF related functions and dependencies to separate package 
+  REddyProcNCDF
 
 # REddyProc 1.1.3
 
@@ -78,13 +81,18 @@ CRAN policy related adjustments, not affecting the usage:
 
 # REddyProc 1.0.0.9000 
 
-There have been major code restructurings for implementing alternative light response curves in the day-time flux partitioning. 
-A few non-backward compatible changes have been introduced, e.g. by shortening function names. Hence this version is meant to be tested before changing version number to 1.1.0. 
+There have been major code restructurings for implementing alternative light 
+response curves in the day-time flux partitioning. 
+A few non-backward compatible changes have been introduced, e.g. by shortening 
+function names. Hence this version is meant to be tested before changing version 
+number to 1.1.0. 
 
 Interface changes
 
-- renamed usGetAnnualSeasonUStarMappingFromDistributionResult to usGetAnnualSeasonUStarMap
-- renamed usGetSeasonalSeasonUStarMappingFromDistributionResult to usGetSeasonalSeasonUStarMap
+- renamed usGetAnnualSeasonUStarMappingFromDistributionResult to 
+  usGetAnnualSeasonUStarMap
+- renamed usGetSeasonalSeasonUStarMappingFromDistributionResult to 
+  usGetSeasonalSeasonUStarMap
 - removed position arguments from sMRFluxPartition
   consistently use sSetLocationInfo before
   
@@ -97,7 +105,8 @@ Changes in Day-Time partitioning
 
 # REddyProc 0.8.6.9000
 
-This is a development version put to github so that all contributers can test and contribute for preparing version 1.0.
+This is a development version put to github so that all contributers can test 
+and contribute for preparing version 1.0.
 
 Gapfilling
 - now marking half-hours for which uStar is missing as a gap
@@ -112,7 +121,10 @@ Daytime-Flux partitioning
 
 ### Migration to github
 
-The hosting of the development moved (maybe temporarily) from mercurial to github. Releases will still be put to r-forge, because of its good package-checking setup for several platforms, and the help for submission to CRAN, but versioning and development of the code will be done on github. 
+The hosting of the development moved (maybe temporarily) from mercurial to 
+github. Releases will still be put to r-forge, because of its good 
+package-checking setup for several platforms, and the help for submission to 
+CRAN, but versioning and development of the code will be done on github. 
 
 ### Documentation
 
