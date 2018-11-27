@@ -35,12 +35,13 @@
 (default: Air temperature 'Tair' in degC)}
   \item{T3}{Tolerance interval 3
 (default: 2.5 degC)}
-  \item{FillAll}{
-}
-  \item{isVerbose}{
-}
-  \item{suffix}{
-}
+  \item{FillAll}{Fill
+all values to estimate uncertainties}
+  \item{isVerbose}{Print
+status information to screen}
+  \item{suffix}{String
+suffix needed for different processing setups on the same dataset
+(for explanations see below)}
   \item{minNWarnRunLength}{scalar integer:
 warn if nubmer of subsequent
 numerically equal values exeeds this number,

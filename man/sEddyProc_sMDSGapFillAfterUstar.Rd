@@ -11,7 +11,10 @@
   \item{fluxVar}{Flux variable to gap fill after ustar filtering}
   \item{uStarVar}{Column name of friction velocity u * (ms-1),
 default 'Ustar'}
-  \item{uStarTh}{data.frame with}
+  \item{uStarTh}{data.frame with
+first column, season names, and second column estimates of uStar Threshold.
+Alternatively, a single value to be used as threshold for all records
+If only one value is given, it is used for all records.}
   \item{uStarSuffix}{Different suffixes required are for
 different u * scenarios}
   \item{isFlagEntryAfterLowTurbulence}{Set to TRUE for flagging the

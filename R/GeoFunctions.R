@@ -288,122 +288,122 @@ attr(fLloydTaylor, "ex") <- function() {
 #+++ Solar radiation properties
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#' @export
-fCalcSunPosition <- function(
-  ##description<<
-  ## Calculate the position of the sun
-  DoY = DoY.V.n             ##<<
-  ## Data vector with day of year (DoY), same length as Hour or length 1
-  , Hour = Hour.V.n           ##<<
-  ## Data vector with time as decimal hour of local time zone
-  , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
-  , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
-  , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
-  , useSolartime = TRUE	##<<
-  ## by default corrects hour (given in local winter time) for latitude
-  ## to solar time (where noon is exactly at 12:00). Set this to FALSE
-  ## to directly use local winter time
-  , DoY.V.n            ##<< deprecated
-  , Hour.V.n           ##<< deprecated
-  , Lat_deg.n          ##<< deprecated
-  , Long_deg.n         ##<< deprecated
-  , TimeZone_h.n       ##<< deprecated
-  , useSolartime.b = TRUE	##<< deprecated
-  ##author<<  ## AMM
-) {
-  if (!missing(useSolartime.b)) useSolartime <- useSolartime.b
-  varNamesDepr <- c(
-    "DoY.V.n","Hour.V.n","Lat_deg.n","Long_deg.n","TimeZone_h.n"
-    ,"useSolartime.b")
-  varNamesNew <- c(
-    "DoY","Hour","LatDeg","LongDeg","TimeZone"
-    ,"useSolartime")
-  iDepr = which(!c(
-    missing(DoY.V.n),missing(Hour.V.n),missing(Lat_deg.n),missing(Long_deg.n)
-    ,missing(TimeZone_h.n),missing(useSolartime.b)))
-  if (length(iDepr)) warning(
-    "Argument names ",varNamesDepr[iDepr]," have been deprecated."
-    ," Please, use instead ", varNamesNew[iDepr])
-  #
-  # Formulas taken from Alessandro Cescatti's C ++ code
-  # Fractional year in radians
-  FracYearRad <- 2 * pi * (DoY - 1) / 365.24
-
-  # Equation of time in hours, accounting for changes in the time of solar noon
-  EqTimeHour <- (0.0072 * cos(FracYearRad) - 0.0528 * cos(2 * FracYearRad)
-                 - 0.0012 * cos(3 * FracYearRad) - 0.1229 * sin(FracYearRad)
-                    - 0.1565 * sin(2 * FracYearRad) - 0.0041 * sin(3 * FracYearRad) )
-
-  # Local time in hours
-  LocTimeHour <- (LongDeg / 15 - TimeZone)
-
-  ##details<<
-  ## This code assumes that Hour is given in local winter time zone, and
-  ## corrects it by longitude to
-  ## solar time (where noon is exactly at 12:00).
-  ## Note: This is different form reference PVWave-code,
-  ## that does not account for solar time and uses winter time zone.
-  ## Set argument \code{useSolartime.b} to FALSE to use the
-  ## local winter time instead.
-
-  # Solar time
-  # Correction for local time and equation of time
-  SolTimeHour <- if (useSolartime) {
-    # Correction for local time and equation of time
-    Hour + LocTimeHour + EqTimeHour
-  } else {
-    #! Note: For reproducing values close to Fluxnet Rg_pot which is without
-    #local time and eq of time correction
-    #! (CEIP is even different)
-    warning('Solar position calculated without correction for local time '
-            , 'and equation of time.')
-    Hour
-  }
-  # Conversion to radians
-  SolTimeRad <- (SolTimeHour - 12) * pi / 12.0
-  # Correction for solar time < -pi to positive, important for SolAzim_rad.V.n below
-  SolTimeRad <- ifelse(SolTimeRad < -pi, SolTimeRad + 2 * pi, SolTimeRad)
-  attr(SolTimeHour, 'varnames') <- 'SolTime'
-  attr(SolTimeHour, 'units') <- 'hour'
-
-  #Solar declination in radians, accounting for the earth axis tilt
-  SolDeclRad <- ((0.33281 - 22.984 * cos(FracYearRad) - 0.34990 * cos(2 * FracYearRad)
-                   - 0.13980 * cos(3 * FracYearRad) + 3.7872 * sin(FracYearRad)
-                  + 0.03205 * sin(2 * FracYearRad)
-                   + 0.07187 * sin(3 * FracYearRad)) / 180 * pi)
-  attr(SolDeclRad, 'varnames') <- 'SolDecl'
-  attr(SolDeclRad, 'units') <- 'rad'
-
-  # Solar elevation (vertical, zenithal angle) in radians with zero for horizon
-  SolElevRad <-  asin(sin(SolDeclRad) * sin(LatDeg / 180 * pi)
-                           + cos(SolDeclRad)*cos(LatDeg/180*pi)*cos(SolTimeRad))
-  attr(SolElevRad, 'varnames') <- 'SolElev'
-  attr(SolElevRad, 'units') <- 'rad'
-
-  # Solar azimuth (horizontal angle) with zero for North
-  SolAzimCos <- ((cos(SolDeclRad) * cos(SolTimeRad)
-                   - sin(SolElevRad) * cos(LatDeg / 180 * pi) )
-                       / (sin(LatDeg / 180 * pi) * cos(SolElevRad) ) )
-  # Correction if off edge values
-  SolAzimCos[SolAzimCos > +1] <- 1
-  SolAzimCos[SolAzimCos < -1] <- 1
-  # Conversion to radians
-  SolAzim_rad.V.n <- acos(SolAzimCos)
-  # Determine if solar azimuth is East or West depending on solar time
-  SolAzim_rad.V.n <- ifelse(
-    SolTimeRad < 0, pi - SolAzim_rad.V.n, pi + SolAzim_rad.V.n)
-  attr(SolAzimCos, 'varnames') <- 'SolAzim'
-  attr(SolAzimCos, 'units') <- 'rad'
-
-  ##value<<
-  ## Data list with the following items:
-  SolPosition.L <- list(
-    SolTime = SolTimeHour     ##<< Solar time (SolTime, hours)
-    , SolDecl = SolDeclRad  ##<< Solar declination (SolDecl, rad)
-    , SolElev = SolElevRad  ##<< Solar elevation with 0 at horizon (SolElev, rad)
-    , SolAzim = SolAzim_rad.V.n  ##<< Solar azimuth with 0 at North (SolAzim, rad)
-  )
-}
+# #' @export
+# fCalcSunPosition <- function(
+#   ##description<<
+#   ## Calculate the position of the sun
+#   DoY = DoY.V.n             ##<<
+#   ## Data vector with day of year (DoY), same length as Hour or length 1
+#   , Hour = Hour.V.n           ##<<
+#   ## Data vector with time as decimal hour of local time zone
+#   , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
+#   , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
+#   , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
+#   , useSolartime = TRUE	##<<
+#   ## by default corrects hour (given in local winter time) for latitude
+#   ## to solar time (where noon is exactly at 12:00). Set this to FALSE
+#   ## to directly use local winter time
+#   , DoY.V.n            ##<< deprecated
+#   , Hour.V.n           ##<< deprecated
+#   , Lat_deg.n          ##<< deprecated
+#   , Long_deg.n         ##<< deprecated
+#   , TimeZone_h.n       ##<< deprecated
+#   , useSolartime.b = TRUE	##<< deprecated
+#   ##author<<  ## AMM
+# ) {
+#   if (!missing(useSolartime.b)) useSolartime <- useSolartime.b
+#   varNamesDepr <- c(
+#     "DoY.V.n","Hour.V.n","Lat_deg.n","Long_deg.n","TimeZone_h.n"
+#     ,"useSolartime.b")
+#   varNamesNew <- c(
+#     "DoY","Hour","LatDeg","LongDeg","TimeZone"
+#     ,"useSolartime")
+#   iDepr = which(!c(
+#     missing(DoY.V.n),missing(Hour.V.n),missing(Lat_deg.n),missing(Long_deg.n)
+#     ,missing(TimeZone_h.n),missing(useSolartime.b)))
+#   if (length(iDepr)) warning(
+#     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
+#     ," Please, use instead ", varNamesNew[iDepr])
+#   #
+#   # Formulas taken from Alessandro Cescatti's C ++ code
+#   # Fractional year in radians
+#   FracYearRad <- 2 * pi * (DoY - 1) / 365.24
+#
+#   # Equation of time in hours, accounting for changes in the time of solar noon
+#   EqTimeHour <- (0.0072 * cos(FracYearRad) - 0.0528 * cos(2 * FracYearRad)
+#                  - 0.0012 * cos(3 * FracYearRad) - 0.1229 * sin(FracYearRad)
+#                     - 0.1565 * sin(2 * FracYearRad) - 0.0041 * sin(3 * FracYearRad) )
+#
+#   # Local time in hours
+#   LocTimeHour <- (LongDeg / 15 - TimeZone)
+#
+#   ##details<<
+#   ## This code assumes that Hour is given in local winter time zone, and
+#   ## corrects it by longitude to
+#   ## solar time (where noon is exactly at 12:00).
+#   ## Note: This is different form reference PVWave-code,
+#   ## that does not account for solar time and uses winter time zone.
+#   ## Set argument \code{useSolartime.b} to FALSE to use the
+#   ## local winter time instead.
+#
+#   # Solar time
+#   # Correction for local time and equation of time
+#   SolTimeHour <- if (useSolartime) {
+#     # Correction for local time and equation of time
+#     Hour + LocTimeHour + EqTimeHour
+#   } else {
+#     #! Note: For reproducing values close to Fluxnet Rg_pot which is without
+#     #local time and eq of time correction
+#     #! (CEIP is even different)
+#     warning('Solar position calculated without correction for local time '
+#             , 'and equation of time.')
+#     Hour
+#   }
+#   # Conversion to radians
+#   SolTimeRad <- (SolTimeHour - 12) * pi / 12.0
+#   # Correction for solar time < -pi to positive, important for SolAzim_rad.V.n below
+#   SolTimeRad <- ifelse(SolTimeRad < -pi, SolTimeRad + 2 * pi, SolTimeRad)
+#   attr(SolTimeHour, 'varnames') <- 'SolTime'
+#   attr(SolTimeHour, 'units') <- 'hour'
+#
+#   #Solar declination in radians, accounting for the earth axis tilt
+#   SolDeclRad <- ((0.33281 - 22.984 * cos(FracYearRad) - 0.34990 * cos(2 * FracYearRad)
+#                    - 0.13980 * cos(3 * FracYearRad) + 3.7872 * sin(FracYearRad)
+#                   + 0.03205 * sin(2 * FracYearRad)
+#                    + 0.07187 * sin(3 * FracYearRad)) / 180 * pi)
+#   attr(SolDeclRad, 'varnames') <- 'SolDecl'
+#   attr(SolDeclRad, 'units') <- 'rad'
+#
+#   # Solar elevation (vertical, zenithal angle) in radians with zero for horizon
+#   SolElevRad <-  asin(sin(SolDeclRad) * sin(LatDeg / 180 * pi)
+#                            + cos(SolDeclRad)*cos(LatDeg/180*pi)*cos(SolTimeRad))
+#   attr(SolElevRad, 'varnames') <- 'SolElev'
+#   attr(SolElevRad, 'units') <- 'rad'
+#
+#   # Solar azimuth (horizontal angle) with zero for North
+#   SolAzimCos <- ((cos(SolDeclRad) * cos(SolTimeRad)
+#                    - sin(SolElevRad) * cos(LatDeg / 180 * pi) )
+#                        / (sin(LatDeg / 180 * pi) * cos(SolElevRad) ) )
+#   # Correction if off edge values
+#   SolAzimCos[SolAzimCos > +1] <- 1
+#   SolAzimCos[SolAzimCos < -1] <- 1
+#   # Conversion to radians
+#   SolAzim_rad.V.n <- acos(SolAzimCos)
+#   # Determine if solar azimuth is East or West depending on solar time
+#   SolAzim_rad.V.n <- ifelse(
+#     SolTimeRad < 0, pi - SolAzim_rad.V.n, pi + SolAzim_rad.V.n)
+#   attr(SolAzimCos, 'varnames') <- 'SolAzim'
+#   attr(SolAzimCos, 'units') <- 'rad'
+#
+#   ##value<<
+#   ## Data list with the following items:
+#   SolPosition.L <- list(
+#     SolTime = SolTimeHour     ##<< Solar time (SolTime, hours)
+#     , SolDecl = SolDeclRad  ##<< Solar declination (SolDecl, rad)
+#     , SolElev = SolElevRad  ##<< Solar elevation with 0 at horizon (SolElev, rad)
+#     , SolAzim = SolAzim_rad.V.n  ##<< Solar azimuth with 0 at North (SolAzim, rad)
+#   )
+# }
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -442,6 +442,7 @@ fCalcExtRadiation <- function(
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
+#' @importFrom solartime computeSunPositionDoyHour
 fCalcPotRadiation <- function(
   ##description<<
   ## Calculate the potential radiation
@@ -478,9 +479,9 @@ fCalcPotRadiation <- function(
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculate potential radiation from solar elevation and extraterrestrial
   # solar radiation
-  SolElevRad <- fCalcSunPosition(
+  SolElevRad <- computeSunPositionDoyHour(
     DoY, Hour, LatDeg, LongDeg, TimeZone
-    , useSolartime = useSolartime)$SolElev
+    , isCorrectSolartime = useSolartime)[,"elevation"]
   ExtRadiation <- fCalcExtRadiation(DoY)
   PotRadiation <- ifelse(
     SolElevRad <= 0, 0, ExtRadiation * sin(SolElevRad) )
