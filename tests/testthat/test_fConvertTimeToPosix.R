@@ -60,8 +60,8 @@ Date.F.x <- data.frame(
 
 test_that("Time Format YDH",{
 	expect_warning(ResYDH.F <- fConvertTimeToPosix(
-	  Date.F.x, "YDH", Year.s = "FluxnetYear.n", Day.s = "FluxnetDoY.n"
-	  , Hour.s = "FluxnetHourDec.n" ))
+	  Date.F.x, "YDH", Year = "FluxnetYear.n", Day = "FluxnetDoY.n"
+	  , Hour = "FluxnetHourDec.n" ))
 	TimeYDH.p <- as.POSIXlt( ResYDH.F$DateTime ) #see DateTimeClass
 	expect_that( 1900 + TimeYDH.p$year, equals(Date.F.x$Year.n) )
 	expect_that( 1 + TimeYDH.p$yday, equals(Date.F.x$DoY.n) )
@@ -73,8 +73,8 @@ test_that("Time Format YDH",{
 
 test_that("Time Format YMDH",{
   ResYMDH.F  <- fConvertTimeToPosix(
-    Date.F.x, "YMDH", Year.s = "Year.n", Day.s = "Day.n", Month.s = "Month.n"
-    , Hour.s = "HourDec.n" )
+    Date.F.x, "YMDH", Year = "Year.n", Day = "Day.n", Month = "Month.n"
+    , Hour = "HourDec.n" )
   TimeYMDH.p <- as.POSIXlt( ResYMDH.F$DateTime )
   expect_that( 1900 + TimeYMDH.p$year, equals(Date.F.x$Year.n) )
   expect_that( 1 + TimeYMDH.p$yday, equals(Date.F.x$DoY.n) )
@@ -86,8 +86,8 @@ test_that("Time Format YMDH",{
 
 test_that("Time Format YMDHM",{
   ResYMDHM.F  <- fConvertTimeToPosix(
-    Date.F.x, "YMDHM", Year.s = "Year.n", Day.s = "Day.n", Month.s = "Month.n"
-    , Hour.s = "Hour.n", Min.s = "Min.n" )
+    Date.F.x, "YMDHM", Year = "Year.n", Day = "Day.n", Month = "Month.n"
+    , Hour = "Hour.n", Min = "Min.n" )
   TimeYMDHM.p <- as.POSIXlt( ResYMDHM.F$DateTime )
   expect_that( 1900 + TimeYMDHM.p$year, equals(Date.F.x$Year.n) )
   expect_that( 1 + TimeYMDHM.p$yday, equals(Date.F.x$DoY.n) )
@@ -100,8 +100,8 @@ test_that("Time Format YMDHM",{
 test_that("Time format name unvalid",{
   expect_error(
     res <- fConvertTimeToPosix(
-      Date.F.x, "XXX", Year.s = "FluxnetYear.n", Day.s = "FluxnetDoY.n"
-      , Hour.s = "FluxnetHourDec.n" )
+      Date.F.x, "XXX", Year = "FluxnetYear.n", Day = "FluxnetDoY.n"
+      , Hour = "FluxnetHourDec.n" )
   )
 })
 
@@ -110,8 +110,8 @@ test_that("Time format name unvalid",{
 test_that("Time format values unvalid (fCheckOutsideRange)",{
   expect_warning(
     res <- fConvertTimeToPosix(
-      Date.F.x, "YMDH", Year.s = "Year.n", Month.s = "Month.n", Day.s = "Day.n"
-      , Hour.s = "FluxnetHourDec.n" )
+      Date.F.x, "YMDH", Year = "Year.n", Month = "Month.n", Day = "Day.n"
+      , Hour = "FluxnetHourDec.n" )
     )
 })
 
@@ -120,7 +120,7 @@ test_that("Time format values unvalid (fCheckOutsideRange)",{
 test_that("Time format missing cols (fCheckColNames)",{
 	expect_error(
 			res <- fConvertTimeToPosix(
-			  Date.F.x, "YDH", Year.s = "FluxnetYear.n", Day.s = "FluxnetDoY.n", Hour.s = "hr" )
+			  Date.F.x, "YDH", Year = "FluxnetYear.n", Day = "FluxnetDoY.n", Hour = "hr" )
 	)
 })
 
@@ -129,15 +129,15 @@ test_that("Time format missing cols (fCheckColNames)",{
 test_that("Time Format non-numeric cols (fCheckColNumeric)",{
 			expect_error(
 					res <- fConvertTimeToPosix(
-					  Date.F.x, "YDH", Year.s = "FluxnetYear.n", Day.s = "FluxnetDoY.n"
-					  , Hour.s = "Description.s" )
+					  Date.F.x, "YDH", Year = "FluxnetYear.n", Day = "FluxnetDoY.n"
+					  , Hour = "Description.s" )
 			)
 		})
 
 test_that("reading Berkeley",{
   res  <- fConvertTimeToPosix(
-    Date.F.x, "YMDH", Year.s = "Year.n", Day.s = "Day.n", Month.s = "Month.n"
-    , Hour.s = "HourDec.n" )
+    Date.F.x, "YMDH", Year = "Year.n", Day = "Day.n", Month = "Month.n"
+    , Hour = "HourDec.n" )
   TimeYMDH.p <- as.POSIXlt( res$DateTime )
   res$berkeleyDate <- POSIXctToBerkeleyJulianDate(res$DateTime)
   time2 <- BerkeleyJulianDateToPOSIXct(res$berkeleyDate)

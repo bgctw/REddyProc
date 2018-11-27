@@ -36,7 +36,8 @@ fLoadEuroFlux16 <- function(
 						tmp$Year[nRow] <- year + 1L
 					tmp
 				}))
-	dsTime <- fConvertTimeToPosix(ds, 'YMDH', Year.s = 'Year', Month.s = 'Month', Day.s = 'Day', Hour.s = 'Hour')
+	dsTime <- fConvertTimeToPosix(
+	  ds, 'YMDH', Year = 'Year', Month = 'Month', Day = 'Day', Hour = 'Hour')
 	colnames(dsTime)[match(c("NEE_st", "ustar", "Ta", "Rh"), colnames(dsTime))] <-  c("NEE", "Ustar", "Tair", "rH")
 	dsTime$NEE[(dsTime$qf_NEE_st != 0)] <- NA
 	ans <- dsTime[, c("DateTime", "NEE", "Ustar", "Tair", "rH", "Rg", "qf_NEE_st", additionalColumnNames)]

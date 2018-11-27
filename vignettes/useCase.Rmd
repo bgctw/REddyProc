@@ -96,8 +96,8 @@ EProc <- sEddyProc$new(
     (Year == 1999 & (DoY == 366 & Hour == 0)))
   #), Year == 1998)
   ds$DoY[ds$DoY == 366] <- 1
-  dss <- EddyDataWithPosix <- fConvertTimeToPosix(ds, 'YDH',Year.s = 'Year'
-      ,Day.s = 'DoY',Hour.s = 'Hour')
+  dss <- EddyDataWithPosix <- fConvertTimeToPosix(
+    ds, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
   #EddyDataWithPosix$VPD <- fCalcVPDfromRHandTair(
   #EddyDataWithPosix$rH, EddyDataWithPosix$Tair)
   EProc <- sEddyProc$new('DE-Tha', EddyDataWithPosix, 

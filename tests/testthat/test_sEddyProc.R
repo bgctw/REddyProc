@@ -13,7 +13,8 @@ EddyData.F <- Example_DETha98
 
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
-  EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
+  EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')) %>%
+  filterLongRuns("NEE")
 # construct multiyear dataset
 EddyData99.F <- EddyData.F
 EddyData99.F$Year <- 1999
@@ -181,7 +182,7 @@ test_that("Test sMDSGapFillAfterUStar error on na-values",{
 
 test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitioning",{
   skip_on_cran()
-  EddySetups.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
   .tmp.debug <- function(){
     EddySetups.C <- sEddyProc$new(
@@ -192,32 +193,32 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   # and quantiles are reported
   #EddySetups.C <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L )
   #(uStarRes <- EddySetups.C$sGetEstimatedUstarThresholdDistribution())
-  (uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L ))
+  (uStarRes <- EProc$sEstUstarThresholdDistribution( nSample = 3L ))
   (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes))
   #expUStarScen <- usGetAnnualSeasonUStarMap(uStarRes)
   #expect_equal( EddySetups.C$sUSTAR_SCEN, expUStarScen)
-  EddySetups.C$sMDSGapFillAfterUStarDistr(
+  EProc$sMDSGapFillAfterUStarDistr(
     'NEE', uStarTh = uStarTh, FillAll.b = FALSE )
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
-  cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
+  cNames <- grep("U50", colnames(EProc$sExportResults()), value = TRUE)
   expect_true( all(c(
     "Ustar_U50_Thres", "Ustar_U50_fqc", "NEE_U50_orig", "NEE_U50_f",
     "NEE_U50_fqc", "NEE_U50_fall", "NEE_U50_fall_qc", "NEE_U50_fnum",
     "NEE_U50_fsd", "NEE_U50_fmeth", "NEE_U50_fwin")
     %in% cNames) )
   #
-  EddySetups.C$sMDSGapFill('Tair', FillAll.b = FALSE)
-  EddySetups.C$sSetLocationInfo(
+  EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
+  EProc$sSetLocationInfo(
     LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   # EddySetups.C <- sEddyProc$new(
   #   'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))$import(
   #     EddySetups.C
   #   )
   for (suffix in c('U05', 'U50')) {
-    EddySetups.C$sMRFluxPartition(suffix = suffix)
+    EProc$sMRFluxPartition(suffix = suffix)
   }
-  cNames2 <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
+  cNames2 <- grep("U50", colnames(EProc$sExportResults()), value = TRUE)
   expect_true( all(			c("PotRad_U50",	"FP_NEEnight_U50", "FP_Temp_U50"
                         , "E_0_U50", "R_ref_U50", "Reco_U50",
                         "GPP_U50_f", "GPP_U50_fqc")
@@ -239,19 +240,19 @@ test_that("Test sMDSGapFillAfterUStarDistr single quantile",{
 
 test_that("Test sMDSGapFillAfterUStarDistr single row",{
   skip_on_cran()
-  EddySetups.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
   # Note that for each period a distribution of estimates is obtained,
   # and quantiles are reported
-  (uStarRes <- EddySetups.C$sEstUstarThresholdDistribution( nSample = 3L ))
+  (uStarRes <- EProc$sEstUstarThresholdDistribution( nSample = 3L ))
   # take only the first row, would throw an error in test on season mismatch,
   # but with one row applied for all
   (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes)[1, c(1,3,4),drop = FALSE])
-  EddySetups.C$sMDSGapFillAfterUStarDistr(
-    'NEE', uStarTh = uStarTh, FillAll.b = FALSE)
+  EProc$sMDSGapFillAfterUStarDistr(
+    'NEE', uStarTh = uStarTh, FillAll = FALSE)
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
-  cNames <- grep("U50", colnames(EddySetups.C$sExportResults()), value = TRUE)
+  cNames <- grep("U50", colnames(EProc$sExportResults()), value = TRUE)
   expect_true( all(c(
     "Ustar_U50_Thres", "Ustar_U50_fqc", "NEE_U50_orig", "NEE_U50_f",
     "NEE_U50_fqc", "NEE_U50_fall", "NEE_U50_fall_qc", "NEE_U50_fnum",

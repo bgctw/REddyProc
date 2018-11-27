@@ -13,7 +13,8 @@
     FillAll = if (!missing(FillAll.b)) FillAll.b else TRUE, 
     isVerbose = if (!missing(Verbose.b)) Verbose.b else TRUE, 
     suffix = if (!missing(Suffix.s)) Suffix.s else "", 
-    minNWarnRunLength = 4 * .self$sINFO$DTS/24, 
+    minNWarnRunLength = if (Var == "NEE") 4 * 
+        .self$sINFO$DTS/24 else NA_integer_, 
     Var.s, QFVar.s, QFValue.n, V1.s, T1.n, 
     V2.s, T2.n, V3.s, T3.n, FillAll.b, Verbose.b, 
     Suffix.s)}
@@ -35,16 +36,18 @@
 (default: Air temperature 'Tair' in degC)}
   \item{T3}{Tolerance interval 3
 (default: 2.5 degC)}
-  \item{FillAll}{
-}
-  \item{isVerbose}{
-}
-  \item{suffix}{
-}
+  \item{FillAll}{Fill
+all values to estimate uncertainties}
+  \item{isVerbose}{Print
+status information to screen}
+  \item{suffix}{String
+suffix needed for different processing setups on the same dataset
+(for explanations see below)}
   \item{minNWarnRunLength}{scalar integer:
 warn if nubmer of subsequent
-numerically equal values exeeds this number,
-defaults records across 4 hours.}
+numerically equal values exeeds this number.
+Set to Inf or NA for no warnings.
+defaults for "NEE" to records across 4 hours and no warning for others.}
   \item{Var.s}{deprecated}
   \item{QFVar.s}{deprecated}
   \item{QFValue.n}{deprecated}

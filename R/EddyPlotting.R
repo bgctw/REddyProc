@@ -876,18 +876,18 @@ sEddyProc$methods(
 
 .tmp.f <- function() {
   if (!exists("Example_DETha98")) load("data / Example_DETha98.RData")
-  EddyData.F <- Example_DETha98
-  EddyData.F <- cbind(EddyData.F, VPD =
-                        fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair))
+  EddyData <- Example_DETha98
+  EddyData <- cbind(
+    EddyData, VPD = fCalcVPDfromRHandTair(EddyData$rH, EddyData$Tair))
   #+++ Add time stamp in POSIX time format
-  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year'
-                                             , Day.s = 'DoY', Hour.s = 'Hour')
+  EddyDataWithPosix <- fConvertTimeToPosix(
+    EddyData, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
   #+++ Initalize R5 reference class sEddyProc for processing of eddy data
   #+++ with the variables needed for processing later
-  EddyProc.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F,
-                              c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThreshold()$uStarTh
+  EProc <- sEddyProc$new(
+    'DE-Tha', EddyDataWithPosix, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+  uStarTh <- EProc$sEstUstarThreshold()$uStarTh
   # plot saturation of NEE with UStar for one season -> in directory plots
-  EddyProc.C$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3] )
+  EProc$sPlotNEEVersusUStarForSeason(levels(uStarTh$season)[3] )
 }
 

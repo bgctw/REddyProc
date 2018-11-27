@@ -125,7 +125,7 @@ test_that("sEstUstarThold: multi-year and One-big-season",{
 			EddyData.F99 <- EddyData.F
 			EddyData.F99$Year <- EddyData.F$Year + 1
 			EddyDataWithPosix.F99 <- fConvertTimeToPosix(
-			  EddyData.F99, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+			  EddyData.F99, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 			dsAll <- EddyDataWithPosix.F # rbind(EddyDataWithPosix.F, EddyDataWithPosix.F99)
 			# construct in a way so that that in each seasons there are not enough
 			# valid values in 98

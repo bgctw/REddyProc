@@ -723,8 +723,8 @@ usCreateSeasonFactorMonth <- function(
 }
 
 .tmp.f <- function() {
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98, 'YDH'
-	                       , Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(
+	  Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 	(res <- usCreateSeasonFactorMonth(ds$DateTime))
 	plot.default(res ~ ds$DateTime, type = "p")
 }
@@ -776,8 +776,8 @@ usCreateSeasonFactorMonthWithinYear <- function(
 }
 
 .tmp.f <- function() {
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98
-	           , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(
+	  Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 	table(res <- usCreateSeasonFactorMonthWithinYear(ds$DateTime - 1))
 	  #-1 to move last record of newYear to 1998
 }
@@ -813,8 +813,8 @@ usCreateSeasonFactorYday <- function(
 }
 
 .tmp.f  <- function() {
-	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(Example_DETha98
-	             , 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+	EddyDataWithPosix.F <- ds <- fConvertTimeToPosix(
+	  Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 	table(res <- usCreateSeasonFactorYday(ds$DateTime))
 	plot.default(res ~ ds$DateTime)
 }

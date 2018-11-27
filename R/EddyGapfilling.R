@@ -404,10 +404,12 @@ sEddyProc_sMDSGapFill <- function(
   , suffix = if (!missing(Suffix.s)) Suffix.s else ''	      ##<< String
   ##  suffix needed for different processing setups on the same dataset
   ## (for explanations see below)
-  , minNWarnRunLength = 4 * .self$sINFO$DTS/24 ##<< scalar integer:
-  ## warn if nubmer of subsequent
-  ## numerically equal values exeeds this number,
-  ## defaults records across 4 hours.
+  , minNWarnRunLength = ##<< scalar integer:
+    ## warn if nubmer of subsequent
+    ## numerically equal values exeeds this number.
+    ## Set to Inf or NA for no warnings.
+    ## defaults for "NEE" to records across 4 hours and no warning for others.
+    if (Var == "NEE") 4 * .self$sINFO$DTS/24 else NA_integer_
   , Var.s      ##<< deprecated
   , QFVar.s    ##<< deprecated
   , QFValue.n  ##<< deprecated
@@ -738,10 +740,15 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
   ##details<< This method is superseedec by
   ##\code{\link{sEddyProc_sMDSGapFillUStarScens}} and only there
   ## for backward portability.
+  if (missing(uStarTh)) stop(
+    "Need to provide argument uStarTh. Maybe you need to adapt passing"
+    , " argument UstarThres.df from older REddyProc versions?"
+    , " see ?sEddyProc_sMDSGapFillAfterUStarDistr")
   .self$sSetUstarScenarios(uStarTh, uStarSuffixes)
   .self$sMDSGapFillUStarScens(...)
 }
-sEddyProc$methods(sMDSGapFillAfterUStarDistr = sEddyProc_sMDSGapFillAfterUStarDistr)
+sEddyProc$methods(
+  sMDSGapFillAfterUStarDistr = sEddyProc_sMDSGapFillAfterUStarDistr)
 
 #' @export
 sEddyProc_sMDSGapFillUStarScens <- function(
