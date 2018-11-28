@@ -166,7 +166,7 @@ fCalcAVPfromVMFandPress <- function(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculation of actual vapor pressure, also called vapor partial pressure
-  AVP <- (VMF.V.n) * Press.V.n
+  AVP <- (VMF) * Press
   attr(AVP, 'varnames') <- 'AVP'
   attr(AVP, 'units') <- 'hPa'
   return(AVP)
@@ -225,7 +225,7 @@ fCalcETfromLE <- function(
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculated from the water density and latent heat of vaporation,
   # see Moffat manuscript on WUE
-  ET.V.n <- LE.V.n / ((2.501 - 0.00236 * Tair) * 18.016)
+  ET.V.n <- LE / ((2.501 - 0.00236 * Tair) * 18.016)
   attr(ET.V.n, 'varnames') <- 'ET'
   attr(ET.V.n, 'units') <- 'mmol_m-2_s-1'
   return(ET.V.n)
