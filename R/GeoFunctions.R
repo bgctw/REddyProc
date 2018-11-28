@@ -60,9 +60,9 @@ fConvertVisibleWm2toPhotons <- function(
     "fConvertVisibleWm2toPhotons: argument name Wm2.V.n is deprecated, use instead Wm2.")
   # With Planck's equation at 550 nm wavelength (see also FormelBackup.doc and
   # NormanWeiss1985 paper)
-  Photons.V.n <- 4.6 * Wm2.V.n
-  attr(Vis.V.n, 'varnames') <- 'PPFD'
-  attr(Vis.V.n, 'units') <- 'umol_m-2_s-1'
+  Photons.V.n <- 4.6 * Wm2
+  attr(Photons.V.n, 'varnames') <- 'PPFD'
+  attr(Photons.V.n, 'units') <- 'umol_m-2_s-1'
   return(Photons.V.n)
   ##value<<
   ## Data vector in units of photons flux (PPFD, umol photons m-2 s-1)
@@ -94,8 +94,7 @@ fConvertGlobalToVisible <- function(
 
 #' @export
 fCalcVPDfromRHandTair <- function(
-  ##description<<
-  ## Calculate VPD from rH and Tair
+  ### Calculate VPD from rH and Tair
   rH = RH.V.n         ##<< Data vector of relative humidity (rH, %)
   , Tair = Tair.V.n   ##<< Data vector of air temperature (Tair, degC)
   , RH.V.n                ##<< deprecated
