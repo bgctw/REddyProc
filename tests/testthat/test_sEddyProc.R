@@ -49,7 +49,7 @@ test_that("POSIX time stamp: wrong column type",{
 test_that("Invalid number of daily time steps",{
   expect_error(
     EddyProc.C <- sEddyProc$new(
-      'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 12)
+      'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'), DTS = 12)
   )
 })
 test_that("Time series not in equidistant steps",{
@@ -60,7 +60,7 @@ test_that("Time series not in equidistant steps",{
   expect_error( #Pseudo hourly by [c(F,T),]
     EddyProcH.C <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[c(F,T),][c(-50,-60),]
-      , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24)
+      , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
 })
 test_that("Time series not stamped on the (half-)hour",{
@@ -74,7 +74,7 @@ test_that("Time series not stamped on the (half-)hour",{
   expect_error(
     EddyProc.C <- sEddyProc$new(
       'DE-Tha', EddyDataShiftedPosix.F[c(F,T),]
-      , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24)
+      , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
 })
 test_that("Time series not in full days and starting at end of first (half-)hour",{
@@ -88,7 +88,7 @@ test_that("Time series not in full days and starting at end of first (half-)hour
     EddyProc.C <- sEddyProc$new(
       'DE-Tha'
       , EddyDataWithPosix.F[c(F,T),][1:(nrow(EddyDataWithPosix.F[c(F,T),]) - 1),]
-      , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24)
+      , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
   expect_warning(
     EddyProc.C <- sEddyProc$new(
@@ -99,7 +99,7 @@ test_that("Time series not in full days and starting at end of first (half-)hour
     EddyProc.C <- sEddyProc$new(
       'DE-Tha'
       , EddyDataWithPosix.F[c(F,T),][2:(nrow(EddyDataWithPosix.F[c(F,T),]) - 23),]
-      , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24)
+      , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
 })
 test_that("Time series less than three month of data",{
@@ -111,7 +111,7 @@ test_that("Time series less than three month of data",{
   expect_error(
     EddyProc.C <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*(3*30 - 1)),]
-      , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24)
+      , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
 })
 
