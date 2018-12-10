@@ -48,9 +48,9 @@ test_that("fCalcETfromLE",{
   , varnames = "ET", units = "mmol_m-2_s-1")
   expect_equal(ans, ans0)
   if (requireNamespace("bigleaf")) {
-    ans2 <- bigleaf::LE.to.ET(LE, Tair)
-    ansMol <- bigleaf::g.to.umol(
-      ans2*1000, molarMass = bigleaf::bigleaf.constants()$H2Omol)*1000
+    # ans2 <- bigleaf::LE.to.ET(LE, Tair)
+    # ansMol <- bigleaf::g.to.umol(
+    #   ans2*1000, molarMass = bigleaf::bigleaf.constants()$H2Omol)*1000
     #XXTODO
     #expect_equal(ans2, as.numeric(ans0), tolerance = 1e-4)
   }

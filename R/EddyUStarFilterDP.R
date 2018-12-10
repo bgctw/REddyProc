@@ -1279,7 +1279,9 @@ sEddyProc_sEstimateUstarScenarios <- function(
   ## increased (argument \code{probs}).
 
   ##seealso<< \code{\link{sEddyProc_sEstUstarThold}}
-  ##, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}
+  ##, \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+  ##, \code{\link{sEddyProc_sSetUstarScenarios}}
+  ##, \code{\link{sEddyProc_sMDSGapFillUStarScens}}
   .self$sSetUStarSeasons(seasonFactor)
   ds <- sDATA[, c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)]
   colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")

@@ -740,10 +740,17 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
   ##details<< This method is superseedec by
   ##\code{\link{sEddyProc_sMDSGapFillUStarScens}} and only there
   ## for backward portability.
+  warning(
+    "Method sEddyProc_sMDSGapFillAfterUStarDistr has been deprecated. "
+    , "Please, replace it by calls to 'sEddyProc_sMDSGapFillUStarScens' "
+    , "and if applicable calling before 'sEddyProc_sSetUstarScenarios'."
+    , "see ?sEddyProc_sMDSGapFillUStarScens and vignette('uStarCases')"
+    )
   if (missing(uStarTh)) stop(
-    "Need to provide argument uStarTh. Maybe you need to adapt passing"
-    , " argument UstarThres.df from older REddyProc versions?"
-    , " see ?sEddyProc_sMDSGapFillAfterUStarDistr")
+    "Need to provide argument uStarTh. Since version 1.1.6 "
+    , " Please, use new methods sEddyProc_sSetUstarScenarios and"
+    , " sEddyProc_sMDSGapFillUStarScens instead of this method."
+    , " see ?sEddyProc_sMDSGapFillUStarScens and ?")
   .self$sSetUstarScenarios(uStarTh, uStarSuffixes)
   .self$sMDSGapFillUStarScens(...)
 }

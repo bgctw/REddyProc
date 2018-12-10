@@ -20,7 +20,7 @@ EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
 
 EddyHour.C <- suppressMessages(sEddyProc$new(
   'DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),]
-  , c('NEE','Rg', 'Tair', 'VPD'), DTS.n = 24))
+  , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24))
 suppressMessages(EddyHour.C$sMDSGapFill('Tair', isVerbose = F))
 suppressMessages(EddyHour.C$sMDSGapFill('NEE', isVerbose = F))
 

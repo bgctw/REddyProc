@@ -205,7 +205,8 @@ sEddyProc$methods(sSetLocationInfo = sEddyProc_sSetLocationInfo)
 sEddyProc_sSetUstarScenarios <- function(
   ### set uStar processing scenarios
   uStarTh              ##<< data.frame as returned by
-  ## \code{\link{usGetAnnualSeasonUStarMap}}:
+  ## \code{\link{usGetAnnualSeasonUStarMap}} or
+  ## \code{\link{usGetSeasonalSeasonUStarMap}}:
   ## First column, season names, and remaining columns different estimates of
   ## uStar Threshold.
   ## If \code{uStarTh} has only one row, then each uStar threshold estimate is

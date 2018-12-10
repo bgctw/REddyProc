@@ -56,5 +56,7 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 
 \seealso{\code{\link{sEddyProc_sEstUstarThold}}
-, \code{\link{sEddyProc_sMDSGapFillAfterUStarDistr}}}
+, \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+, \code{\link{sEddyProc_sSetUstarScenarios}}
+, \code{\link{sEddyProc_sMDSGapFillUStarScens}}}
 

@@ -65,7 +65,8 @@ EddyData <- if (length(fileName)) fLoadTXTIntoDataframe(fileName) else
 EddyData <- filterLongRuns(EddyData, "NEE")
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix <- fConvertTimeToPosix(
-  EddyData, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
+  EddyData, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') %>% 
+  filterLongRuns("NEE")
 #+++ Initalize R5 reference class sEddyProc for post-processing of eddy data
 #+++ with the variables needed for post-processing later
 EProc <- sEddyProc$new(
