@@ -129,7 +129,14 @@ Tair <- 25
 ```{r, eval=FALSE}
 ET0 <- fCalcETfromLE(LE, Tair)
 ```
-This is replace by XXTODO.
+
+The corresponding bigleaf function `LE.to.ET` returns a value in kg/m2/s.
+This needs to be converted to mmol/m2/s as returned by the former `fCalcETfromLE`.
+```{r}
+ETkg <- LE.to.ET(LE, Tair)
+(ETmmol <- kg.to.mol(ETkg)*1000)
+```
+
 
 ## Converting visible radiation from irradiance to photons flux
 Photon flux density (PPFD) of visible light can be computed from energy
@@ -174,7 +181,7 @@ Formerly, REddyProc provided:
 
 This is replaced by bigleaf:
 ```{r}
-(potRad <- computePotentialRadiation(doy, hour, latDeg, longDeg, timezone))
+head(potRad <- potential.radiation(doy, hour, latDeg, longDeg, timezone))
 ```
 
 Extraterrestrial solar radiation was formerly computed by REddyProc by:
@@ -184,7 +191,7 @@ Extraterrestrial solar radiation was formerly computed by REddyProc by:
 
 This is replaced by bigleaf:
 ```{r}
-(extRad <- computeExtRadiation(doy))
+(extRad <- extraterrestrial.radiation(doy))
 ```
 
 Required computation of sun position (`computeSunPosition`) and difference 
