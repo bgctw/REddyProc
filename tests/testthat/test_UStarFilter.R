@@ -84,6 +84,14 @@ test_that("sEstUstarThold: standard case",{
 			#subset(eddyC$sDATA, season == "1998001" & tempBin == 5 & is.finite(NEE)), uStarTh = 0.65)
 		})
 
+test_that("sEstUstarThold: missing Ustar column",{
+  eddyC <- sEddyProc$new(
+    'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','VPD'))
+  expect_error(
+    res <- eddyC$sEstUstarThold()
+    ,"Ustar"
+  )
+})
 
 test_that("sEstUstarThold: changing to FW1",{
 			eddyC <- sEddyProc$new(

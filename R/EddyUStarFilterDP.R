@@ -29,8 +29,11 @@ sEddyProc_sEstUstarThold <- function(
   if (is.null(.self$sTEMP$season)) stop(
     "uStar seasons need to be set by argument 'seasonFactor' or before",
     " calling sEddyProc_sEstUstarThold by method sEddyProc_sSetUStarSeasons")
-  ds <- .self$sDATA[, c("sDateTime", UstarColName, NEEColName
-                        , TempColName, RgColName)]
+  reqCols <- c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)
+  iMissing <- which(!(reqCols %in% names(.self$sDATA)))
+  if (length(iMissing)) stop(
+    "Missing columns in dataset: ",paste(reqCols[iMissing], collapse = ","))
+  ds <- .self$sDATA[,reqCols, drop = FALSE]
   colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
   resEst <- usEstUstarThreshold(ds, seasonFactor = .self$sTEMP$season, ...)
   sUSTAR_DETAILS <<- resEst
@@ -76,8 +79,11 @@ sEddyProc_sEstUstarThreshold <- function(
     , " sEddyProc_sEstUstarThold, which returns only component 'uStarTh' of"
     , " the current result. The other components are still available"
     , " with class variable sUSTAR_DETAILS.")
-  ds <- .self$sDATA[, c("sDateTime", UstarColName, NEEColName
-                        , TempColName, RgColName)]
+  reqCols <- c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)
+  iMissing <- which(!(reqCols %in% names(.self$sDATA)))
+  if (length(iMissing)) stop(
+    "Missing columns in dataset: ",paste(reqCols[iMissing], collapse = ","))
+  ds <- .self$sDATA[,reqCols, drop = FALSE]
   colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
   resEst <- usEstUstarThreshold(ds, ...)
   sUSTAR_DETAILS <<-
