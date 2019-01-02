@@ -17,24 +17,28 @@
     debug = if (!missing(debug.l)) debug.l else list(useLocaltime = FALSE), 
     parsE0Regression = list())}
 \arguments{
-  \item{FluxVar}{
-}
-  \item{QFFluxVar}{
-}
-  \item{QFFluxValue}{
-}
-  \item{TempVar}{
-}
-  \item{QFTempVar}{
-}
-  \item{QFTempValue}{
-}
-  \item{RadVar}{
-}
-  \item{TRef}{
-}
-  \item{suffix}{
-}
+  \item{FluxVar}{Variable
+name of column with original and
+filled net ecosystem fluxes (NEE)}
+  \item{QFFluxVar}{Quality
+flag of NEE variable}
+  \item{QFFluxValue}{Value
+of quality flag for _good_ (original) data}
+  \item{TempVar}{Filled
+air- or soil temperature variable (degC)}
+  \item{QFTempVar}{Quality
+flag of filled temperature variable}
+  \item{QFTempValue}{Value
+of temperature quality flag for _good_
+(original) data}
+  \item{RadVar}{Unfilled
+(original) radiation variable}
+  \item{TRef}{Reference
+temperature in Kelvin (degK)
+used in \code{fLloydTaylor} for regressing Flux and Temperature}
+  \item{suffix}{String
+suffix needed for different processing
+setups on the same dataset (for explanations see below)}
   \item{FluxVar.s}{deprecated}
   \item{QFFluxVar.s}{deprecated}
   \item{QFFluxValue.n}{deprecated}
@@ -47,10 +51,12 @@
   \item{debug.l}{deprecated}
   \item{debug}{List
 with debugging control
-(passed also to \code{sEddyProc_sRegrE0fromShortTerm}).\describe{
+(passed also to \code{sEddyProc_sRegrE0fromShortTerm}
+for providing \code{fixedE0 = myE0}).\describe{
 \item{useLocaltime}{see details on solar vs local time}
 }}
-  \item{parsE0Regression}{list with further parameters passed down to
+  \item{parsE0Regression}{list
+with further parameters passed down to
 \code{sEddyProc_sRegrE0fromShortTerm} and \code{fRegrE0fromShortTerm},
 such as \code{TempRange}}
 }

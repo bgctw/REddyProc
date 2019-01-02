@@ -89,27 +89,27 @@ sEddyProc$methods(
 #' @export
 sEddyProc_sMRFluxPartition <- function(
   ### Nighttime-based partitioning of net ecosystem fluxes into gross fluxes GPP and REco
-  FluxVar = if (missing(FluxVar.s)) 'NEE_f' else FluxVar.s     ##<<
-  ## Variable name of column with original and
+  FluxVar = if (missing(FluxVar.s)) 'NEE_f' else FluxVar.s     ##<< Variable
+  ##  name of column with original and
   ## filled net ecosystem fluxes (NEE)
-  , QFFluxVar = if (missing(QFFluxVar.s)) 'NEE_fqc' else QFFluxVar.s ##<<
-  ## Quality flag of NEE variable
-  , QFFluxValue = if (missing(QFFluxValue.n)) 0L else QFFluxValue.n  ##<<
-  ## Value of quality flag for _good_ (original) data
-  , TempVar = if (missing(TempVar.s)) 'Tair_f' else TempVar.s    ##<<
-  ## Filled air- or soil temperature variable (degC)
-  , QFTempVar = if (missing(QFTempVar.s)) 'Tair_fqc' else QFTempVar.s ##<<
-  ## Quality flag of filled temperature variable
-  , QFTempValue = if (missing(QFTempValue.n)) 0 else QFTempValue.n ##<<
-  ## Value of temperature quality flag for _good_
+  , QFFluxVar = if (missing(QFFluxVar.s)) 'NEE_fqc' else QFFluxVar.s ##<< Quality
+  ##  flag of NEE variable
+  , QFFluxValue = if (missing(QFFluxValue.n)) 0L else QFFluxValue.n  ##<< Value
+  ##  of quality flag for _good_ (original) data
+  , TempVar = if (missing(TempVar.s)) 'Tair_f' else TempVar.s    ##<< Filled
+  ##  air- or soil temperature variable (degC)
+  , QFTempVar = if (missing(QFTempVar.s)) 'Tair_fqc' else QFTempVar.s ##<< Quality
+  ##  flag of filled temperature variable
+  , QFTempValue = if (missing(QFTempValue.n)) 0 else QFTempValue.n ##<< Value
+  ##  of temperature quality flag for _good_
   ## (original) data
-  , RadVar = if (missing(RadVar.s)) 'Rg' else RadVar.s     ##<<
-  ## Unfilled (original) radiation variable
-  , TRef = if (missing(T_ref.n)) 273.15 + 15 else T_ref.n     ##<<
-  ## Reference temperature in Kelvin (degK)
+  , RadVar = if (missing(RadVar.s)) 'Rg' else RadVar.s     ##<< Unfilled
+  ##  (original) radiation variable
+  , TRef = if (missing(T_ref.n)) 273.15 + 15 else T_ref.n     ##<< Reference
+  ##  temperature in Kelvin (degK)
   ## used in \code{fLloydTaylor} for regressing Flux and Temperature
-  , suffix = if (missing(Suffix.s)) '' else Suffix.s		     ##<<
-  ## String suffix needed for different processing
+  , suffix = if (missing(Suffix.s)) '' else Suffix.s		     ##<< String
+  ##  suffix needed for different processing
   ## setups on the same dataset (for explanations see below)
   , FluxVar.s ##<< deprecated
   , QFFluxVar.s ##<< deprecated
@@ -121,14 +121,16 @@ sEddyProc_sMRFluxPartition <- function(
   , T_ref.n ##<< deprecated
   , Suffix.s ##<< deprecated
   , debug.l ##<< deprecated
-  , debug = if (!missing(debug.l)) debug.l else list(		     ##<< List
+  , debug = if (!missing(debug.l)) debug.l else list( ##<< List
     ## with debugging control
-    ## (passed also to \code{sEddyProc_sRegrE0fromShortTerm}).
+    ## (passed also to \code{sEddyProc_sRegrE0fromShortTerm}
+    ## for providing \code{fixedE0 = myE0}).
     ##describe<<
     useLocaltime = FALSE	##<< see details on solar vs local time
     ##end<<
   )
-  , parsE0Regression = list() ##<< list with further parameters passed down to
+  , parsE0Regression = list() ##<<list
+  ## with further parameters passed down to
   ## \code{sEddyProc_sRegrE0fromShortTerm} and \code{fRegrE0fromShortTerm},
   ## such as \code{TempRange}
 ) {
@@ -510,8 +512,9 @@ fRegrE0fromShortTerm = function(
   , DayCounter 	  ##<< Integer specifying the day of each record
   , WinDays = 7     ##<< Window size for \code{\link{fLloydTaylor}} regression in days
   , DayStep = 5     ##<< Window step for \code{\link{fLloydTaylor}} regression in days
-  , TempRange.n = 5   ##<< Threshold temperature range to start regression
-  ## (#! Could be larger for Tair)
+  , TempRange = TempRange.n ##<< Threshold temperature range-width in Kelvin
+  ## to start regression
+  , TempRange.n = 5   ##<< deprecated, use TempRange
   , percTrim = 5        ##<< Percentile to trim residual (%)
   , NumE0 = 3      ##<< Number of best E_0's to average over
   , MinE0 = 30  		##<< Minimum E0 for validity check
@@ -523,11 +526,13 @@ fRegrE0fromShortTerm = function(
   ## (see \code{\link{nls}}) or 'LM' for Levenberg-Marquard
   ## (see nlsLM from package minpack.lm)
 ) {
+  if (!missing(TempRange.n)) warning(
+    "Argument TempRange.n has been deprecated. Use TempRange instead.")
   ##details<<
   ##The coefficient E0 is estimated for windows with a length of
   ##\code{WinDays} days, for successive periods in steps of \code{DayStep}
   ##days. Only those windows with a sufficient number or records and with a
-  ##sufficient temperature range \code{TempRange.n} are used for the
+  ##sufficient temperature range \code{TempRange} are used for the
   ##\code{\link{fLloydTaylor}} regression of E0 using the optimization
   ##\code{\link{fOptimSingleE0}}. Unreasonable estimates are discarded (95%
   ##confidence interval inside \code{MinE0} and \code{MaxE0}) and the
@@ -562,7 +567,7 @@ fRegrE0fromShortTerm = function(
     Temp.V.n <- subset(Temp, Subset.b)
     TempKelvin <- fConvertCtoK(Temp.V.n)
     #
-    if (length(NEEnight) > MinData.n && diff(range(TempKelvin)) >= TempRange.n) {
+    if (length(NEEnight) > MinData.n && diff(range(TempKelvin)) >= TempRange) {
       #CountRegr.i <- CountRegr.i + 1
       resOptim <- fOptim(
         NEEnight, TempKelvin, algorithm = optimAlgorithm, TRef = TRef)
@@ -593,7 +598,7 @@ fRegrE0fromShortTerm = function(
             , ' valid values for E_0 after regressing ',
             nrow(NLSRes.F), ' periods! Aborting partitioning.\n'
             ,'You may try relaxing the temperature range constraint by '
-            , 'setting TempRange.n = 3 (instead of default 5C). '
+            , 'setting TempRange = 3 (instead of default 5C). '
             , 'See argument parsE0Regression in sMRFluxPartitioning.')
     return(-111)
   }
