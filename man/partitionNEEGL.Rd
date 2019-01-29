@@ -59,8 +59,6 @@ with predictions
 based on LRC-fits that neglected the VPD effect.}
 \value{\item{Reco_DT_<suffix>}{predicted ecosystem respiration: mumol CO2/m2/s}
 \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
-\item{GPP2000}{predicted gross primary production
-mumol CO2 / m2 / s for VPD = 0 at Rg = 2000}
 \item{<LRC>}{Further light response curve (LRC) parameters and
 their standard deviation depend on the used LRC
 (e.g. for the non-rectangular LRCC
