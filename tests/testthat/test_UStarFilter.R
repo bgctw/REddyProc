@@ -120,13 +120,18 @@ test_that("sEstUstarThold: different seasons",{
 test_that("sEstUstarThold: using ChangePointDetection",{
 			eddyC <- sEddyProc$new(
 			  'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
-			resUStar <- eddyC$sEstUstarThold(
+			resUStar <- try(eddyC$sEstUstarThold(
 								#ctrlUstarEst = usControlUstarEst(isUsingCPT = TRUE)
 								ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT  = TRUE)
-			)
-			# CPT does no binning uStar
-			expect_equal( c(0L), as.vector(na.omit(unique(eddyC$sUSTAR_DETAILS$bins$uStarBin))))
-			expect_true( all(is.finite(resUStar$uStar)))
+			), silent = TRUE)
+			if (!requireNamespace("segmented", quietly = TRUE)) {
+        expect_true(inherits(resUStar,"try-error"))
+			} else {
+			  # CPT does no binning uStar
+			  details <- eddyC$sUSTAR_DETAILS
+			  expect_equal( c(0L), as.vector(na.omit(unique(details$bins$uStarBin))))
+			  expect_true( all(is.finite(resUStar$uStar)))
+			}
 		})
 
 test_that("sEstUstarThold: multi-year and One-big-season",{

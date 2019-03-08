@@ -230,8 +230,9 @@ test_that("Test sMDSGapFillAfterUStarDistr single quantile",{
   eddyC <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
   uStarRes <- eddyC$sEstUstarThresholdDistribution(
-    nSample = 2L, probs = 0.5,
-    ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT = TRUE))
+    nSample = 2L, probs = 0.5
+    #,ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT = TRUE)
+    )
   expect_true( all(c("uStar","50%") %in% names(uStarRes)))
   expect_true( all(is.finite(uStarRes$uStar)))
   expect_true( all(is.finite(uStarRes$"50%")))

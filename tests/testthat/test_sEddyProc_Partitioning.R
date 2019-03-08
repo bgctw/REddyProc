@@ -64,7 +64,7 @@ test_that("fOptimSingleE0",{
 			expect_true( length(res) > 1 )
 			expect_true( all(is.finite(res) ))
       #
-			if (require("minpack.lm")) {
+			if (requireNamespace("minpack.lm", quietly = TRUE)) {
 				resL <- REddyProc:::fOptimSingleE0_Lev(
 				  NEEnight.V.n, Temp_degK.V.n, TRef = 273.15 + 15, recoverOnError = TRUE)
 			}

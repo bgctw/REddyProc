@@ -4,6 +4,9 @@
 		, y
 		, n = length(x)
 ) {
+  # check upstream once instead of in each loop
+  # if (!requireNamespace("segmented")) stop(
+  #   "functionality is only supported if segmented package is installed.")
 	xr <- -x
 	lm1 <- lm(y~1)
 	seg1 <- segmented::segmented(lm1, seg.Z =~xr, psi = xr[n%/%2]
@@ -78,6 +81,9 @@ attr(.fitSeg2, "ex") <- function() {
 		, ctrlUstarEst
 		, fEstimateUStarBinned
 ) {
+  if (!requireNamespace("segmented", quietly = TRUE)) stop(
+    "uStar threshold change point detection is only supported "
+    ,"if segmented package is installed.")
 	nTaClasses <- 3L * ctrlUstarSub$taClasses - 3L	# number of temperature classes expanded
 	resNA <- 	list(
 			UstarTh.v = rep(NA_real_, nTaClasses)	##<< vector of uStar for temperature classes
