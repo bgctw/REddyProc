@@ -408,32 +408,47 @@ partGLSmoothTempSens <- function(
     E0WinYr <- E0Win[E0Win$year == yr, , drop = FALSE]
     isFiniteE0 <- is.finite(E0WinYr$E0)
     E0WinFinite <- E0WinYr[isFiniteE0, ]
-    if (!length(E0WinFinite) ) stop("No temperature sensitivities to smooth")
-    output <- capture.output(
-      gpFit <- mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
-                     , nugget = E0WinFinite$sdE0^2)
-      #gpFit <- mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
-      #              , nugget = (E0WinFinite$sdE0 * 2)^2, nugget.known = 1L)
-    )
-    pred1 <- predict(gpFit, matrix(E0WinYr$iCentralRec, ncol = 1)
-                     , se.fit = TRUE)
-    nuggetNewObs <- quantile(gpFit$nugget, 0.9)
-    nugget <- rep(nuggetNewObs, nrow(E0WinYr))
-    nugget[isFiniteE0] <- gpFit$nugget
-    E0WinYr$E0 <- pred1$fit
-    E0WinYr$sdE0 <- pred1$se.fit + sqrt(nugget)
+    if (!nrow(E0WinFinite)) {
+      warning(
+        "No respiration-temperature relationship for any period of the ",yr,"th year. "
+        , "Using mean temperature sensitivity of other years for this year.")
+    } else {
+      output <- capture.output(
+        gpFit <- mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
+                       , nugget = E0WinFinite$sdE0^2)
+        #gpFit <- mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
+        #              , nugget = (E0WinFinite$sdE0 * 2)^2, nugget.known = 1L)
+      )
+      pred1 <- predict(gpFit, matrix(E0WinYr$iCentralRec, ncol = 1)
+                       , se.fit = TRUE)
+      nuggetNewObs <- quantile(gpFit$nugget, 0.9)
+      nugget <- rep(nuggetNewObs, nrow(E0WinYr))
+      nugget[isFiniteE0] <- gpFit$nugget
+      E0WinYr$E0 <- as.vector(pred1$fit)
+      E0WinYr$sdE0 <- as.vector(pred1$se.fit) + unname(sqrt(nugget))
+    }
     E0WinYr
   })
   ##value<< dataframe E0Win with updated columns E0 and sdE0
-  ans <- do.call(rbind, resWin)
+  E0WinYrs <- do.call(rbind, resWin)
+  iNoFiniteE0 <- which(!is.finite(E0WinYrs$E0))
+  if (length(iNoFiniteE0)) {
+    if (length(iNoFiniteE0) == nrow(E0WinYrs)) stop(
+      "Could not estimate respiration~temperature relationship.")
+    E0WinYrs$E0[iNoFiniteE0] <- mean(E0WinYrs$E0[-iNoFiniteE0])
+    E0WinYrs$sdE0[iNoFiniteE0] <- quantile(E0WinYrs$sdE0[-iNoFiniteE0], 0.9)*1.5
+  }
+  E0WinYrs
 }
 .tmp.f <- function() {
-  plot(E0WinFinite$E0 ~ E0WinFinite$iCentralRec)
-  arrows(E0WinFinite$iCentralRec, E0WinFinite$E0-E0WinFinite$sdE0
+  plot(E0 ~ iCentralRec, E0Win, type = "l")
+  arrows(E0WinFinite$iCentralRec, E0WinFinite$E0 - E0WinFinite$sdE0
          , y1 = E0WinFinite$E0 + E0WinFinite$sdE0, length = 0, col = "grey")
+  plot(E0 ~ iCentralRec, E0WinYrs, type = "l")
+  plot(sdE0 ~ iCentralRec, E0WinYrs, type = "l")
   #
-  E0Win$day <- (E0Win$iCentralRec-1) / 48 + 1
-  E0WinFinite$day <- (E0WinFinite$iCentralRec-1) / 48 + 1
+  E0Win$day <- (E0Win$iCentralRec - 1) / 48 + 1
+  E0WinFinite$day <- (E0WinFinite$iCentralRec - 1) / 48 + 1
   plot(E0WinFinite$E0 ~ E0WinFinite$day)
   plot(E0Win$E0Fit ~ E0Win$day)
   points(E0Win$E0 ~ E0Win$day, col = "blue", type = "b", lty = "dotted")
