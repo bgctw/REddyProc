@@ -282,6 +282,30 @@ sEddyProc_sSetUstarScenarios <- function(
 sEddyProc$methods(sSetUstarScenarios = sEddyProc_sSetUstarScenarios)
 
 #' @export
+sEddyProc_useSeaonsalUStarThresholds <- function(
+  ### use seasonal estimates of uStar trhesholds
+) {
+  ##seealso<< \code{\link{sEddyProc_sSetUstarScenarios}},
+  ## \code{\link{sEddyProc_useSeaonsalUStarThresholds}}
+  uStarThAgg <- .self$sGetEstimatedUstarThresholdDistribution()
+  uStarMap <- usGetSeasonalSeasonUStarMap(uStarThAgg)
+  .self$sSetUstarScenarios(uStarMap)
+}
+sEddyProc$methods(useSeaonsalUStarThresholds = sEddyProc_useSeaonsalUStarThresholds)
+
+#' @export
+sEddyProc_useAnnualUStarThresholds <- function(
+  ### use seasonal estimates of uStar trhesholds
+) {
+  ##seealso<< \code{\link{sEddyProc_sSetUstarScenarios}},
+  ## \code{\link{sEddyProc_useSeaonsalUStarThresholds}}
+  uStarThAgg <- .self$sGetEstimatedUstarThresholdDistribution()
+  uStarMap <- usGetAnnualSeasonUStarMap(uStarThAgg)
+  .self$sSetUstarScenarios(uStarMap)
+}
+sEddyProc$methods(useAnnualUStarThresholds = sEddyProc_useAnnualUStarThresholds)
+
+#' @export
 sEddyProc_sGetUstarScenarios <- function(
   ### get the current uStar processing scenarios
 ) {
@@ -291,6 +315,10 @@ sEddyProc_sGetUstarScenarios <- function(
   ## \code{colnames(myClass$sGetUstarScenarios())[-1]}
   ##value<< a data.frame with first column listing each season and
   ## other column a scneario of uStar thresholds.
+  if (!nrow(.self$sUSTAR_SCEN)) {
+    warning("uStar scenarios not set yet. Setting to annual mapping.")
+    .self$useAnnualUStarThresholds()
+  }
   .self$sUSTAR_SCEN
 }
 sEddyProc$methods(sGetUstarScenarios = sEddyProc_sGetUstarScenarios)

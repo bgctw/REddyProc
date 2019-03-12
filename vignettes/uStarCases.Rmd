@@ -142,14 +142,23 @@ EProc$sGetUstarScenarios()
 
 By default the annually aggregated threshold estimates are used for each season
 whithin one year as in the original method publication.
-Here, we tell to use the seasonal threshold estimates and to
-omit the first threshold scenario based on the un-bootstrapped data in the second 
-column.
+To see the estimates for differen aggregation levels,
+use method `sEddyProc_sGetEstimatedUstarThresholdDistribution`:
+```{r}
+(uStarThAgg <- EProc$sGetEstimatedUstarThresholdDistribution())
+```
+
+In conjuction with method `usGetSeasonalSeasonUStarMap` and 
+`sEddyProc_sSetUstarScenarios` this can be used
+to set seasonally different u* thresold. 
+However, this common case supported by method 
+`sEddyProc_useSeaonsalUStarThresholds`. 
 
 ```{r uStarScenSetSeasonal}
-(uStarThAgg <- EProc$sGetEstimatedUstarThresholdDistribution())
-EProc$sSetUstarScenarios( usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
-# inspect the changed thresholds to be used, default annual aggregate
+#EProc$sSetUstarScenarios(
+#  usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
+EProc$useSeaonsalUStarThresholds()
+# inspect the changed thresholds to be used
 EProc$sGetUstarScenarios()
 ```
 

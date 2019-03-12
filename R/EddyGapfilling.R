@@ -594,7 +594,8 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
     ##  first column, season names, and second column estimates of uStar Threshold.
     ## Alternatively, a single value to be used as threshold for all records
     ## If only one value is given, it is used for all records.
-    usGetAnnualSeasonUStarMap(sUSTAR_DETAILS$uStarTh)
+    #usGetAnnualSeasonUStarMap(sUSTAR_DETAILS$uStarTh)
+    .self$sGetUstarScenarios()[,c("season",uStarSuffix), drop = FALSE]
   , uStarSuffix = 'uStar'   ##<< Different suffixes required are for
   ## different u * scenarios
   , isFlagEntryAfterLowTurbulence = FALSE  ##<< Set to TRUE for flagging the

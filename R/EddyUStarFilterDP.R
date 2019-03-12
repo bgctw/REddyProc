@@ -1386,7 +1386,15 @@ sEddyProc_sGetEstimatedUstarThresholdDistribution <- function(
   ## The other columns correspond to the quantiles of Ustar estimate
   ## for given probabilities (argument \code{probs}) based on the distribution
   ## of estimates using resampled the data.
-  .self$sUSTAR
+  if (nrow(.self$sUSTAR)) {
+    .self$sUSTAR
+  } else {
+    # distribution has no been estimated, return uStarDetails
+    # from single call to sEstUstarThold
+    if (is.null(.self$sUSTAR_DETAILS$uStarTh)) warning(
+      "uStar threshold has not been estiamted. Returning null")
+    .self$sUSTAR_DETAILS$uStarTh
+  }
 }
 sEddyProc$methods(sGetEstimatedUstarThresholdDistribution =
                     sEddyProc_sGetEstimatedUstarThresholdDistribution)

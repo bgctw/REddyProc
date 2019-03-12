@@ -3,7 +3,8 @@
 \title{sEddyProc sMDSGapFillAfterUstar}
 \description{sEddyProc$sMDSGapFillAfterUstar - MDS gap filling algorithm after u* filtering}
 \usage{sEddyProc_sMDSGapFillAfterUstar(fluxVar, 
-    uStarVar = "Ustar", uStarTh = usGetAnnualSeasonUStarMap(sUSTAR_DETAILS$uStarTh), 
+    uStarVar = "Ustar", uStarTh = .self$sGetUstarScenarios()[, 
+        c("season", uStarSuffix), drop = FALSE], 
     uStarSuffix = "uStar", isFlagEntryAfterLowTurbulence = FALSE, 
     isFilterDayTime = FALSE, swThr = 10, 
     RgColName = "Rg", ...)}
