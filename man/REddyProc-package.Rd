@@ -70,10 +70,12 @@ Processing across different scenarios of u* threshold estimate is supported by
 }} %itemize and %item
 \item{ Gap-Filling:
 \code{\link{sEddyProc_sMDSGapFillUStarScens}} }
-\item{ Flux partitioning based on Night-Time:
+\item{ Flux partitioning based on Night-Time (Reichstein 2005):
 \code{\link{sEddyProc_sMRFluxPartitionUStarScens}} }
-\item{ Flux partitioning based on Day-Time:
+\item{ Flux partitioning based on Day-Time (Lasslop 2010):
 \code{\link{sEddyProc_sGLFluxPartitionUStarScens}} }
+\item{ Flux partitioning based on modified Day-Time (Keenan 2019):
+\code{\link{sEddyProc_sTKFluxPartitionUStarScens}} }
 }%itemize
 
 Before or after processing, the data can be plotted:

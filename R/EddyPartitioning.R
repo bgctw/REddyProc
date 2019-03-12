@@ -1,7 +1,7 @@
 
 #' @export
 sEddyProc_sGLFluxPartitionUStarScens <- function(
-  ### Flux partitioning after Reichstein et al. (2005)
+  ### Flux partitioning after Lasslop et al. (2010)
   ...  ##<< arguments to \code{\link{sEddyProc_sGLFluxPartition}}
 ) {
   ##details<<
@@ -62,6 +62,36 @@ sEddyProc_sGLFluxPartition <- function(
   ## Flux partitioning results are in sTEMP data frame of the class.
 }
 sEddyProc$methods(sGLFluxPartition = sEddyProc_sGLFluxPartition)
+
+#' @export
+sEddyProc_sTKFluxPartitionUStarScens <- function(
+  ### Flux partitioning after Lasslop 2015
+  ...  ##<< arguments to \code{\link{sEddyProc_sTKFluxPartition}}
+) {
+  ##details<<
+  ## Daytime-based partitioning of measured net ecosystem fluxes into
+  ## gross primary production (GPP) and ecosystem respiration (Reco)
+  ## for all u* trheshold scenarios.
+  tmp <- sApplyUStarScen( .self$sTKFluxPartition, ... )
+  NULL
+}
+sEddyProc$methods(
+  sTKFluxPartitionUStarScens = sEddyProc_sTKFluxPartitionUStarScens)
+
+#' @export
+sEddyProc_sTKFluxPartition <- function(
+  ### Modified daytime-based Flux partitioning after Keenan et al. (2019)
+  ...		##<< arguments to \code{\link{sEddyProc_sGLFluxPartition}}
+  ## in addition to the dataset
+  , controlGLPart = partGLControl()	##<< further default parameters,
+  ## such as \code{suffix}
+) {
+  controlGLPart$useNightimeBasalRespiration <- TRUE
+  .self$sGLFluxPartition(..., controlGLPart = controlGLPart)
+  ##value<<
+  ## Flux partitioning results are in sTEMP data frame of the class.
+}
+sEddyProc$methods(sTKFluxPartition = sEddyProc_sTKFluxPartition)
 
 #' @export
 sEddyProc_sMRFluxPartitionUStarScens <- function(

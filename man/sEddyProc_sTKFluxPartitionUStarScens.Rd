@@ -1,10 +1,10 @@
-\name{sEddyProc_sGLFluxPartitionUStarScens}
-\alias{sEddyProc_sGLFluxPartitionUStarScens}
-\title{sEddyProc sGLFluxPartitionUStarScens}
-\description{Flux partitioning after Lasslop et al. (2010)}
-\usage{sEddyProc_sGLFluxPartitionUStarScens(...)}
+\name{sEddyProc_sTKFluxPartitionUStarScens}
+\alias{sEddyProc_sTKFluxPartitionUStarScens}
+\title{sEddyProc sTKFluxPartitionUStarScens}
+\description{Flux partitioning after Lasslop 2015}
+\usage{sEddyProc_sTKFluxPartitionUStarScens(...)}
 \arguments{
-  \item{\dots}{arguments to \code{\link{sEddyProc_sGLFluxPartition}}}
+  \item{\dots}{arguments to \code{\link{sEddyProc_sTKFluxPartition}}}
 }
 \details{Daytime-based partitioning of measured net ecosystem fluxes into
 gross primary production (GPP) and ecosystem respiration (Reco)

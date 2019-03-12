@@ -233,6 +233,8 @@ partitionNEEGL <- function(
 			dsAnsFluxes[iNAVPD, ] <- dsAnsFluxes2[iNAVPD, ]
 		}
 	}
+	if (isTRUE(controlGLPart$useNightimeBasalRespiration))
+	  dsAnsFluxes <- .computeRecoNight(dsAnsFluxes, dsR, dsTempSens)
 	nNAGPP <- sum(is.na(dsAnsFluxes$GPP))
 	if (nNAGPP) warning("could not predict GPP in ", nNAGPP, " cases.")
 	#
@@ -358,6 +360,11 @@ partGLControl <- function(
 		  ## minPropSaturation * (GPP at light-saturation, i.e. beta)
 			## this indicates that PAR is not sufficiently high to constrain the
 			## shape of the LRC
+		, useNightimeBasalRespiration = FALSE ##<< set to TRUE to estimate
+		  ## nighttime respiration based on basal respiration estimated on
+		  ## nighttime data instead of basal respiration estimated from daytime
+		  ## data. This implements the modified daytime method from
+		  ## Keenan 2019 (doi:10.1038/s41559-019-0809-2)
 ) {
 	##author<< TW
 	##seealso<< \code{\link{partitionNEEGL}}
@@ -391,6 +398,7 @@ partGLControl <- function(
 			, replaceMissingSdNEEParms = replaceMissingSdNEEParms
 			, neglectNEEUncertaintyOnMissing  =  neglectNEEUncertaintyOnMissing
 			, minPropSaturation = minPropSaturation
+			, useNightimeBasalRespiration = useNightimeBasalRespiration
 	)
 	##value<< list with entries of given arguments.
 	ctrl
@@ -1113,23 +1121,23 @@ computeAggregatedCovariance <- function(
 	for (iS in 1:nRecS) {
 		currRec <- iRowsSpecial[iS]
 		# before and after last special row will be treated afterwards
-		prevRec <- if (iS == 1L) currRec else iRowsSpecial[iS-1L]
+		prevRec <- if (iS == 1L) currRec else iRowsSpecial[iS - 1L]
 		nextRec <- if (iS == nRecS) currRec else iRowsSpecial[iS + 1L]
 		#c(prevRec, currRec, nextRec)
 		##details<<
 		## The weight is inversely proportional to the distance in rows
 		## The two weights wBefore and wAfter always sum to 1
-		distPrev <- currRec-prevRec
+		distPrev <- currRec - prevRec
 		if (distPrev > 1L) {
-			ans[(prevRec + 1L):(currRec-1L), "iSpecialAfter"] <- iS
-			ans[(prevRec + 1L):(currRec-1L), "iAfter"] <- currRec
-			ans[(prevRec + 1L):(currRec-1L), "wAfter"] <- (1:(distPrev-1)) / distPrev
+			ans[(prevRec + 1L):(currRec - 1L), "iSpecialAfter"] <- iS
+			ans[(prevRec + 1L):(currRec - 1L), "iAfter"] <- currRec
+			ans[(prevRec + 1L):(currRec - 1L), "wAfter"] <-  (1:(distPrev - 1)) / distPrev
 		}
-		distNext <- nextRec-currRec
+		distNext <- nextRec - currRec
 		if (distNext > 1L) {
-			ans[(currRec + 1L):(nextRec-1L), "iSpecialBefore"] <- iS
-			ans[(currRec + 1L):(nextRec-1L), "iBefore"] <- currRec
-			ans[(currRec + 1L):(nextRec-1L), "wBefore"] <- ((distNext-1):1) / distNext
+			ans[(currRec + 1L):(nextRec - 1L), "iSpecialBefore"] <- iS
+			ans[(currRec + 1L):(nextRec - 1L), "iBefore"] <- currRec
+			ans[(currRec + 1L):(nextRec - 1L), "wBefore"] <- ((distNext - 1):1) / distNext
 		}
 	}
 	##details<<
@@ -1162,4 +1170,39 @@ replaceMissingSdByPercentage <- function(
 	##value<< sdX with non-finite values replaced.
 	sdX
 }
+
+.computeRecoNight <- function(
+  ### recompute ecosystem respiration at nighttime with nighttime reference
+  dsAnsFluxes   ##<< data.frame with columsn Reco and sdReco
+  , dsR         ##<< data.frame with columsn isNight, and Temp
+  , dsTempSens  ##<< data.frame with column iCentralRec and E0
+) {
+  ##details<< if \code{partGLControl$useNightimeBasalRespiration == TRUE}
+  ## then nighttime respiration is recomputed based on basal respiration
+  ## inferred from nighttime data.
+  # Calculate the ecosystem respiration Reco by LlyodAndTaler
+  TRefK = 273.15 + 15; T0 = 227.13
+  RRef <- approx(
+    dsTempSens$iCentralRec, dsTempSens$RRef, 1:nrow(dsR), rule = 2)$y
+  E0 <- approx(dsTempSens$iCentralRec, dsTempSens$E0, 1:nrow(dsR), rule = 2)$y
+  dsAnsFluxes$Reco[dsR$isNight] <- respNight <- fLloydTaylor(
+    RRef[dsR$isNight], E0[dsR$isNight] , fConvertCtoK(dsR$Temp[dsR$isNight])
+    , TRef = TRefK)
+  ##details<< With given uncertainty of temperature sensitivity E0, the
+  ## logarithm of respraiton R is normally distributed, i.e. R is lognormally
+  ## distributed. With low uncertainty (sigma*) < 1.2 this is well
+  ## approximated by a normal distribution. Hence the sqrt(second momemt)
+  ## of the lognormal is reported as sdReco
+  # log(R) = log(RRef) + tempFac*E0
+  sdE0 <- sqrt(approx(
+    dsTempSens$iCentralRec, dsTempSens$sdE0^2, 1:nrow(dsR), rule = 2)$y)
+  tempFacLloydTaylor <- 1/(TRefK - T0) - 1/(fConvertCtoK(dsR$Temp) - T0)
+  sigmaLogR = (abs(tempFacLloydTaylor)*sdE0)[dsR$isNight]
+  # formula of variance of lognormal with mu replaced by mean
+  # see lognrom/inst/docu/varianceBySigmaAndExpected.Rmd
+  dsAnsFluxes$sdReco[dsR$isNight] <- sqrt(exp(sigmaLogR^2) - 1)*respNight
+  ##value<< \code{dsAnsfluxes} with updated night-time Reco and sdReco
+  dsAnsFluxes
+}
+
 

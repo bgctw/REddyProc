@@ -269,7 +269,7 @@ fLloydTaylor <- function(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Fitting temperature T_0 from  paper
-  R <- RRef * exp(E0 * (1 / (TRef - T0) - 1 / (TSoil - T0) ) )
+  R <- RRef * exp(E0 * (1/(TRef - T0) - 1/(TSoil - T0) ) )
   attr(R, 'varnames') <- 'R'
   attr(R, 'units') <- 'umol_m-2_s-1'
   return(R)

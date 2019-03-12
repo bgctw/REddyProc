@@ -33,7 +33,7 @@ partGLFitNightTimeTRespSens = function(
 	## This behaviour of repeated attempts can be avoid by setting
 	## \code{controlGLPart$isExtendTRefWindow = FALSE}.
 	if (!isTRUE(controlGLPart$isExtendTRefWindow) ) { winExtendSizes <- numeric(0) }
-	while(length(iNoSummary) && (iExtend <= length(winExtendSizes)) ) {
+	while (length(iNoSummary) && (iExtend <= length(winExtendSizes)) ) {
 		if (isVerbose) message(
 		  "    increase window size to ", winExtendSizes[iExtend], appendLF = FALSE)
 		resNightExtend <- simplifyApplyWindows(applyWindows(ds
@@ -77,14 +77,15 @@ partGLFitNightTimeTRespSens = function(
 	if (isVerbose) message(
 	  "  Estimating respiration at reference temperature for smoothed temperature"
 	  ," sensitivity from night time NEE ", appendLF = FALSE)
-	resRef15 <- simplifyApplyWindows(tmp <- applyWindows(ds
-	                                                     , partGLFitNightRespRefOneWindow
-	                                                     , winSizeRefInDays = winSizeRefInDays
-	                                                     , winSizeInDays = winSizeNight
-	                                                     , nRecInDay = nRecInDay
-	                                                     #
-	                                                     , E0Win = E0Smooth
-	                                                     , controlGLPart = controlGLPart
+	resRef15 <- simplifyApplyWindows(tmp <- applyWindows(
+	  ds
+	  , partGLFitNightRespRefOneWindow
+	  , winSizeRefInDays = winSizeRefInDays
+	  , winSizeInDays = winSizeNight
+	  , nRecInDay = nRecInDay
+	  #
+	  , E0Win = E0Smooth
+	  , controlGLPart = controlGLPart
 	))
 	# fill those NA caused by not enough night-time records
 	E0Smooth$RRef <- fillNAForward(resRef15$RRef, firstValue =
@@ -298,11 +299,13 @@ partGLFitNightTempSensOneWindow = function(
   } else{
     median(dssNight$Temp, na.rm = TRUE)
   }
-  resNightFit <- partGLEstimateTempSensInBoundsE0Only(dssNight$NEE
-                                                      , fConvertCtoK(dssNight$Temp)
-                                                      , prevE0 = prevRes$E0, TRefFit = fConvertCtoK(TRefFitCelsius))
-  ans <- data.frame(E0 = resNightFit$E0, sdE0 = resNightFit$sdE0
-                    , TRefFit = resNightFit$TRefFit, RRefFit = resNightFit$RRefFit)
+  resNightFit <- partGLEstimateTempSensInBoundsE0Only(
+    dssNight$NEE
+    , fConvertCtoK(dssNight$Temp)
+    , prevE0 = prevRes$E0, TRefFit = fConvertCtoK(TRefFitCelsius))
+  ans <- data.frame(
+    E0 = resNightFit$E0, sdE0 = resNightFit$sdE0
+    , TRefFit = resNightFit$TRefFit, RRefFit = resNightFit$RRefFit)
   ans
 }
 

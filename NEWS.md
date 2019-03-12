@@ -1,3 +1,9 @@
+# REddyProc X
+
+- implemented modified daytime partitioning after Keenan et al. 2019
+    where nighttime ecosystem respiration is estiamted based on nighttime
+    estiamte of respiration at reference temperature.
+
 # REddyProc 1.1.6
 
 ## support consistent processing across u* threshold scenarios 

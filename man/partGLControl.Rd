@@ -19,7 +19,7 @@ see function \code{\link{partGLControlLasslopCompatible}}.}
         sdE0 = NA_real_, RRef = NA_real_), 
     replaceMissingSdNEEParms = c(perc = 0.2, 
         minSd = 0.7), neglectNEEUncertaintyOnMissing = FALSE, 
-    minPropSaturation = NA)}
+    minPropSaturation = NA, useNightimeBasalRespiration = FALSE)}
 \arguments{
   \item{LRCFitConvergenceTolerance}{convergence criterion for rectangular
 light response curve fit.
@@ -97,6 +97,11 @@ in window. If GPP prediction of highest PAR of window is less than
 minPropSaturation * (GPP at light-saturation, i.e. beta)
 this indicates that PAR is not sufficiently high to constrain the
 shape of the LRC}
+  \item{useNightimeBasalRespiration}{set to TRUE to estimate
+nighttime respiration based on basal respiration estimated on
+nighttime data instead of basal respiration estimated from daytime
+data. This implements the modified daytime method from
+Keenan 2019 (doi:10.1038/s41559-019-0809-2)}
 }
 
 \value{list with entries of given arguments.}
