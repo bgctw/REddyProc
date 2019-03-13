@@ -78,8 +78,10 @@ plot( NEE_uStar_fsd ~ NEE_uStar_fall, slice(results, sample.int(nrow(results),40
 With neglecting correlations among records, the uncertainty of the mean annual
 flux is computed by adding the variances. 
 The mean is computed by $m = \sum{x_i}/n$. 
-And hence its standard deviation by $sd(m) = \sqrt{Var(m)}= \sqrt{\sum{Var(x_i)}/n^2}$. 
-This results in an aprroximate reduction of the standard deviation by $\sqrt{n}$.
+And hence its standard deviation by 
+$sd(m) = \sqrt{Var(m)}= \sqrt{\sum{Var(x_i)}/n^2} = \sqrt{n \bar{\sigma^2}/n^2} = \bar{\sigma^2}/\sqrt{n}$. 
+This results in an aprroximate reduction of the average standard deviation 
+$\bar{\sigma^2}$ by $\sqrt{n}$.
 
 ```{r}
 results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
@@ -94,12 +96,21 @@ Due to the large number of records, the estimated uncertainty is very low.
 ## Considering correlations
 
 When observations are not independent of each other, 
-the formulas now become $Var(m) = Var(\sum{x_i})/n_{eff}$ and
-$\operatorname{Var}(\sum{x_i}) = \frac{n_{eff}}{n(n_{eff}-1)} \sum_{i=1}^n \sigma_i^2$,
-with the number of effective observations $n_{eff}$ decreasing with the
+the formulas now become $Var(m) = s^2/n_{eff}$ where
+$s^2 = \frac{n_{eff}}{n(n_{eff}-1)} \sum_{i=1}^n \sigma_i^2$,
+and with the number of effective observations $n_{eff}$ decreasing with the
 autocorrelation among records (Bayley 1946, Zieba 2011).
 
-The standard deviation now approximately decreases only by $\sqrt{n_{eff}}$.
+The average standard deviation $\sqrt{\bar{\sigma^2_i}}$ 
+now approximately decreases only by about 
+$\sqrt{n_{eff}}$:
+
+$$
+Var(m) = \frac{s^2}{n_{eff}} 
+= \frac{\frac{n_{eff}}{n(n_{eff}-1)} \sum_{i=1}^n \sigma_i^2}{n_{eff}}
+= \frac{1}{n(n_{eff}-1)} \sum_{i=1}^n \sigma_i^2 \\
+= \frac{1}{n(n_{eff}-1)} n \bar{\sigma^2_i} = \frac{\bar{\sigma^2_i}}{(n_{eff}-1)} 
+$$
 
 First we need to quantify the error terms, i.e. model-data residuals. 
 For all the records of good quality, we have an original
