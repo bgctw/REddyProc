@@ -165,7 +165,7 @@ fCalcAVPfromVMFandPress <- function(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   # Calculation of actual vapor pressure, also called vapor partial pressure
-  AVP <- (VMF.V.n) * Press.V.n
+  AVP <- (VMF) * Press
   attr(AVP, 'varnames') <- 'AVP'
   attr(AVP, 'units') <- 'hPa'
   return(AVP)

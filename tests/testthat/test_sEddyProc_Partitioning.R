@@ -16,7 +16,8 @@ EddyData.F <- Example_DETha98
 
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
-  EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
+  EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')) %>%
+  filterLongRuns(("NEE"))
 
 EddyHour.C <- suppressMessages(sEddyProc$new(
   'DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*3*30),]
@@ -116,9 +117,24 @@ test_that("Using fixed E0",{
   EddyHour.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   # warning on duplicted columns with former test
   #suppressWarnings(
-    EddyHour.C$sMRFluxPartition( debug.l = list(fixedE0 = E0) )
+    EddyHour.C$sMRFluxPartition( debug = list(fixedE0 = E0) )
     #)   # calling sRegrE0fromShortTerm
   expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance = 1e-6)
+  #colnames(EddyHour.C$sTEMP)
+})
+
+test_that("Tuning the temperature range",{
+  #EddyHour.C$trace("sMRFluxPartition", recover ) # EddyHour.C$untrace("sMRFluxPartition")
+  EddyHour.C$sTEMP$E_0 <- NULL
+  EddyHour.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
+  # warning on duplicted columns with former test
+  #suppressWarnings(
+  EddyHour.C$sMRFluxPartition(
+    parsE0Regression = list(TempRange = 3))
+  #)   # calling sRegrE0fromShortTerm
+  # regression test
+  E0 <- 138
+  expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance = 1e-2)
   #colnames(EddyHour.C$sTEMP)
 })
 

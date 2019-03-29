@@ -1,0 +1,200 @@
+---
+output: 
+  rmarkdown::html_vignette:
+    keep_md: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown_notangle}
+  %\VignetteIndexEntry{typical use case}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r, include = FALSE}
+# do not execute on CRAN: 
+# https://stackoverflow.com/questions/28961431/computationally-heavy-r-vignettes
+is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
+             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
+knitr::opts_chunk$set(eval = !is_check)
+```
+
+```{r setup, include = FALSE}
+#rmarkdown::render("vignettes/bigleaf.Rmd")
+knitr::opts_knit$set(root.dir = '..')
+knitr::opts_chunk$set(
+    #, fig.align = "center"
+    #, fig.width = 3.27, fig.height = 2.5, dev.args = list(pointsize = 10)
+    #,cache = TRUE
+    #, fig.width = 4.3, fig.height = 3.2, dev.args = list(pointsize = 10)
+    #, fig.width = 6.3, fig.height = 6.2, dev.args = list(pointsize = 10)
+    # works with html but causes problems with latex
+    #,out.extra = 'style = "display:block; margin: auto"' 
+    )
+knitr::knit_hooks$set(spar = function(before, options, envir) {
+    if (before) {
+        par(las = 1 )                   #also y axis labels horizontal
+        par(mar = c(2.0,3.3,0,0) + 0.3 )  #margins
+        par(tck = 0.02 )                          #axe-tick length inside plots             
+        par(mgp = c(1.1,0.2,0) )  #positioning of axis title, axis labels, axis
+     }
+})
+```
+
+
+```{r, include = FALSE, warning = FALSE}
+#themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
+#bgiDir <- "~/bgi"
+```
+
+# bigleaf package replacing GeoFunctions of REddyProc
+
+`REddyProc` package included several utility functions that were somewhat 
+out of the package scope. These functions are removed from package.
+
+This vignette shows how to replace them by functions from the `bigleaf` package.
+
+```{r}
+if (!require("bigleaf", quietly = TRUE)) stop(
+  "bigleaf package must be installed to create this vignette.")
+library(REddyProc)
+```
+
+## Vapour pressure deficit (VPD)
+**Vapour pressure deficit (VPD)** was computed with REddyProc in $hPa$ from 
+relative humidity in $\%$ and 
+air temperature in $^{\circ}C$.
+```{r, eval=FALSE}
+VPD0 <- fCalcVPDfromRHandTair(DEGebExample$rH, DEGebExample$Tair)
+```
+
+`bigleaf` package computes VPD in $kPa$ and requires relative humidity as fraction .
+```{r}
+VPD.hPa <- rH.to.VPD(DEGebExample$rH/100, DEGebExample$Tair)*10
+```
+
+**Saturation vapor pressure (SVP)** or eSat in $hPa$ was computed from 
+air temperature.
+```{r}
+Tair <- seq(10,25,by = 5)
+```
+
+```{r, eval=FALSE}
+eSat0 <- fCalcSVPfromTair(Tair)
+```
+
+is replaced by `Esat.slope` which uses $kPa$ as pressure unit:
+```{r}
+(eSat <- Esat.slope(Tair)$Esat * 10)
+```
+
+**Actual vapor pressure (AVP)** or e in $hPa$ was also computed from 
+Vapor mole fraction (VMF) in $mol/mol$ and pressure in $hPa$.
+```{r}
+VMF <- seq(0.01,0.03,by = 0.005)
+press.in.hPa <- 1000 
+```
+
+```{r, eval=FALSE}
+e0 <- fCalcAVPfromVMFandPress(VMF, press.in.hPa)
+```
+
+There is no replacement function, as this is just the multiplication of
+the two arguments.
+```{r}
+(e <- VMF * press.in.hPa)
+```
+
+**Relative humitity (rH)** in $\%$  was computed from AVP in $hPa$ 
+and temperature.
+
+```{r}
+e.in.hPa <- seq(0,30,by = 5)
+Tair <- 25           
+```
+
+```{r, eval=FALSE}
+(rH0 <- fCalcRHfromAVPandTair(e.in.hPa, Tair))
+```
+
+Again this is replaced by a function using pressure units $kPa$ and 
+relative humitidy as fraction.
+```{r}
+(rH <- e.to.rH(e.in.hPa/10, Tair)*100)
+```
+
+## Evapotranspiration from latent heat and air temperature
+```{r}
+LE <- seq(300,500,by = 50)
+Tair <- 25
+```
+
+```{r, eval=FALSE}
+ET0 <- fCalcETfromLE(LE, Tair)
+```
+
+The corresponding bigleaf function `LE.to.ET` returns a value in kg/m2/s.
+This needs to be converted to mmol/m2/s as returned by the former `fCalcETfromLE`.
+```{r}
+ETkg <- LE.to.ET(LE, Tair)
+(ETmmol <- kg.to.mol(ETkg)*1000)
+```
+
+
+## Converting visible radiation from irradiance to photons flux
+Photon flux density (PPFD) of visible light can be computed from energy
+in incoming radiation
+```{r}
+Rg <- 200
+```
+
+`bigleaf` function `Rg.to.PPFD` combines the two former REddyProc functions
+`fConvertVisibleWm2toPhotons` and `fConvertGlobalToVisible`.
+
+```{r, eval=FALSE}
+PPFDVis0 <- fConvertGlobalToVisible(fConvertVisibleWm2toPhotons(Rg))
+```
+
+```{r}
+(PPFDVis <- Rg.to.PPFD(Rg))
+```
+
+The PPFD of light including non-visible parts, i.e. former 
+`fConvertVisibleWm2toPhotons`, 
+is obtained by setting argument `frac_PAR` to 1.
+
+```{r}
+(PPFDAll <- Rg.to.PPFD(Rg, frac_PAR = 1))
+```
+
+## Potential and Extraterrestrial solar radiation
+Potential radiation ($W m^{-2}$) depends on time and geo-location.
+```{r}
+doy <- 160
+hour <- seq(6,18,by = 0.2)
+latDeg <- 39.94
+longDeg <- -5.77
+timezone <- +1
+```
+
+Formerly, REddyProc provided:
+```{r, eval=FALSE}
+(potRad0 <- fCalcPotRadiation(doy, hour, latDeg, longDeg, timezone))
+```
+
+This is replaced by bigleaf:
+```{r}
+head(potRad <- potential.radiation(doy, hour, latDeg, longDeg, timezone))
+```
+
+Extraterrestrial solar radiation was formerly computed by REddyProc by:
+```{r, eval=FALSE}
+(extRad0 <- fCalcExtRadiation(doy))
+```
+
+This is replaced by bigleaf:
+```{r}
+(extRad <- extraterrestrial.radiation(doy))
+```
+
+Required computation of sun position (`computeSunPosition`) and difference 
+between apparent
+local time time and time zone time (`computeSolarToLocalTimeDifference`) 
+have been moved to package `solartime`.
