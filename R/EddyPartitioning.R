@@ -86,6 +86,7 @@ sEddyProc_sTKFluxPartition <- function(
   , controlGLPart = partGLControl()	##<< further default parameters,
   ## such as \code{suffix}
 ) {
+  warning("Modified daytime partioning (Keenan 2019) is experimental. Use with caution.")
   controlGLPart$useNightimeBasalRespiration <- TRUE
   .self$sGLFluxPartition(..., controlGLPart = controlGLPart)
   ##value<<

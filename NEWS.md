@@ -1,6 +1,8 @@
-# REddyProc X
+# REddyProc 1.2
 
-- implemented modified daytime partitioning after Keenan et al. 2019
+- move geofunctions functionality to packages solartime and bigleaf
+
+- implemented experimental modified daytime partitioning after Keenan et al. 2019
     where nighttime ecosystem respiration is estimated based on nighttime
     estiamte of respiration at reference temperature.
 
