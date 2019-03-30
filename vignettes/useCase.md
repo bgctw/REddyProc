@@ -17,9 +17,12 @@ timestamp column. Next, it initializes the `sEddyProc` class.
     EddyData <- if (length(fileName)) fLoadTXTIntoDataframe(fileName) else
       # or use example dataset in RData format provided with REddyProc
       Example_DETha98
+    #+++ Replace long runs of equal NEE values by NA
+    EddyData <- filterLongRuns(EddyData, "NEE")
     #+++ Add time stamp in POSIX time format
     EddyDataWithPosix <- fConvertTimeToPosix(
-      EddyData, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
+      EddyData, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') %>% 
+      filterLongRuns("NEE")
     #+++ Initalize R5 reference class sEddyProc for post-processing of eddy data
     #+++ with the variables needed for post-processing later
     EProc <- sEddyProc$new(
@@ -112,14 +115,6 @@ and decide to compute uncertainty also for valid records (FillAll).
 
     EProc$sMDSGapFillUStarScens('NEE')
 
-    ## Warning in sMDSGapFill(fluxVar, QFVar = attr(qfUStar, "varnames"), QFValue
-    ## = 0, : Variable NEE contains long runs of numerically equal numbers.
-    ## Longest of 10 repeats of value 0.695 starts at index 1397
-
-    ## Warning in sMDSGapFill(fluxVar, QFVar = attr(qfUStar, "varnames"), QFValue
-    ## = 0, : Variable NEE contains long runs of numerically equal numbers.
-    ## Longest of 10 repeats of value 0.695 starts at index 1397
-
 The screen output (not shown here) already shows that the
 *u*<sub>\*</sub>-filtering and gap-filling was repeated for each given
 estimate of the *u*<sub>\*</sub> threshold , i.e. column in
@@ -159,17 +154,8 @@ computing sunrise and sunset. Further, the missing values in the used
 meteorological data need to be filled.
 
     EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
-    EProc$sMDSGapFill('Tair', FillAll = FALSE)     
-
-    ## Warning in EProc$sMDSGapFill("Tair", FillAll = FALSE): Variable Tair
-    ## contains long runs of numerically equal numbers. Longest of 9 repeats of
-    ## value -6.2 starts at index 16357
-
-    EProc$sMDSGapFill('VPD', FillAll = FALSE)     
-
-    ## Warning in EProc$sMDSGapFill("VPD", FillAll = FALSE): Variable VPD contains
-    ## long runs of numerically equal numbers. Longest of 84 repeats of value 0.3
-    ## starts at index 16352
+    EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)     
+    EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)     
 
 Now we are ready to invoke the partitioning, here by the night-time
 approach, for each of the several filled NEE columns.
@@ -206,11 +192,11 @@ First, the mean of the GPP across all the year is computed for each
 *μ**m**o**l* *C**O*<sub>2</sub> *m*<sup>−2</sup>*s*<sup>−1</sup> to
 *g**C* *m*<sup>−2</sup>*y**r*<sup>−1</sup>.
 
-    FilledEddyData.F <- EProc$sExportResults()
+    FilledEddyData <- EProc$sExportResults()
     uStarSuffixes <- colnames(EProc$sGetUstarScenarios())[-1]
     #suffix <- uStarSuffixes[2]
     GPPAggCO2 <- sapply( uStarSuffixes, function(suffix) {
-        GPPHalfHour <- FilledEddyData.F[[paste0("GPP_",suffix,"_f")]]
+        GPPHalfHour <- FilledEddyData[[paste0("GPP_",suffix,"_f")]]
         mean(GPPHalfHour, na.rm = TRUE)
     })
     molarMass <- 12.011
@@ -218,7 +204,7 @@ First, the mean of the GPP across all the year is computed for each
     print(GPPAgg)
 
     ##    uStar      U05      U50      U95 
-    ## 1919.152 1904.197 1956.090 1923.919
+    ## 1919.176 1903.914 1958.870 1923.839
 
 The difference between those aggregated values is a first estimate of
 uncertainty range in GPP due to uncertainty of the *u*<sub>\*</sub>
@@ -226,7 +212,7 @@ threshold.
 
     (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 
-In this run of the example a relative error of about 2.7% is inferred.
+In this run of the example a relative error of about 2.9% is inferred.
 
 For a better but more time consuming uncertainty estimate, specify a
 larger sample of *u*<sub>\*</sub> threshold values, for each repeat the

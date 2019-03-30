@@ -106,6 +106,8 @@ The user-specific seasoning is provided to the gap-filling by the argument `seas
 # estimation can be inspected by plotting the saturation of NEE with UStar 
 # for the temperatures of one season
 #EProc$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
+# season has been recoreded in EProc:
+if (!("season" %in% names(EProc$sTEMP))) stop("stop1")
 ```
 
 Note that there is an estimate for each season. Further, an annual estimate is 
@@ -120,6 +122,7 @@ before gapfilling.
 
 ```{r DEGeb_estUStar1c}
 #(uStarScens <- usGetSeasonalSeasonUStarMap(uStarTh))
+#if (!("season" %in% names(EProc$sTEMP))) stop("stop2")
 EProc$useSeaonsalUStarThresholds()
 EProc$sGetUstarScenarios()
 ```	

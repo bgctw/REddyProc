@@ -4,9 +4,10 @@ Extended usage of the gap filling algorithm
     #+++ load libraries used in this vignette
     library(REddyProc)
     library(dplyr)
-    #+++ Add time stamp in POSIX time format
+    #+++ Add time stamp in POSIX time format and filter long runs of equal values 
     EddyDataWithPosix <- fConvertTimeToPosix(
-      Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+      filterLongRuns(Example_DETha98, "NEE")
+      , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour') 
 
     #+++ Add some (non-sense) example vectors:
     #+++ Quality flag vector (e.g. from applying ustar filter)
