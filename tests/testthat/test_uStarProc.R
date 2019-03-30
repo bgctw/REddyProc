@@ -33,7 +33,7 @@ test_that("UStarProcessing",{
   EddyProc.C$sSetUstarScenarios(uStarScen[-2])
   uStarScen <- EddyProc.C$sGetUstarScenarios()
   expect_equal( colnames(uStarScen), c("season", "U10", "U50", "U90"))
-  # go on with processing without the need to specify sceanrios again
+  # go on with processing without the need to specify scenarios again
   EddyProc.C$sMDSGapFillUStarScens("NEE")
   dsFilled <- EddyProc.C$sExportResults()
   expect_true(all(

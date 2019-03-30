@@ -405,8 +405,8 @@ sEddyProc_sMDSGapFill <- function(
   ##  suffix needed for different processing setups on the same dataset
   ## (for explanations see below)
   , minNWarnRunLength = ##<< scalar integer:
-    ## warn if nubmer of subsequent
-    ## numerically equal values exeeds this number.
+    ## warn if number of subsequent
+    ## numerically equal values exceeds this number.
     ## Set to Inf or NA for no warnings.
     ## defaults for "NEE" to records across 4 hours and no warning for others.
     if (Var == "NEE") 4 * .self$sINFO$DTS/24 else NA_integer_
@@ -452,7 +452,7 @@ sEddyProc_sMDSGapFill <- function(
   if (!is.null(sFillInit(Var, QFVar, QFValue, FillAll)) ) #! , QF.V.b = QF.V.b)) )
     return(invisible(-111)) # Abort gap filling if initialization of sTEMP failed
   ##details<<
-  ## Runs of numerically equal numbes hint to problems of the data and cause
+  ## Runs of numerically equal numbers hint to problems of the data and cause
   ## unreasonable estimates of uncertainty. This routine warns the user.
   if (is.finite(minNWarnRunLength) & (nrow(sTEMP) >= minNWarnRunLength)) {
     rl <- .runLength(as.vector(sTEMP$VAR_orig), minNRunLength = minNWarnRunLength)
@@ -669,7 +669,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
     ## conservative, in addition
     ## to the data acquired when uStar is below the threshold,
     ## the first half hour measured with good turbulence conditions
-    ## after a period with low turbulence is also removed (Papaple et al. 2006).
+    ## after a period with low turbulence is also removed (Papale et al. 2006).
     qfUStar[which(diff(qfUStar) == 1) + 1] <- 2L
   }
   # mark those conditions as bad, when no threshold is defined

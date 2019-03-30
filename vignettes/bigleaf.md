@@ -55,7 +55,7 @@ the two arguments.
 
     ## [1] 10 15 20 25 30
 
-**Relative humitity (rH)** in % was computed from AVP in *h**P**a* and
+**Relative humidity (rH)** in % was computed from AVP in *h**P**a* and
 temperature.
 
     e.in.hPa <- seq(0,30,by = 5)
@@ -64,7 +64,7 @@ temperature.
     (rH0 <- fCalcRHfromAVPandTair(e.in.hPa, Tair))
 
 Again this is replaced by a function using pressure units *k**P**a* and
-relative humitidy as fraction.
+relative humidity as fraction.
 
     (rH <- e.to.rH(e.in.hPa/10, Tair)*100)
 

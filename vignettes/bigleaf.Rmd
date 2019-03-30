@@ -4,7 +4,7 @@ output:
     keep_md: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown_notangle}
-  %\VignetteIndexEntry{typical use case}
+  %\VignetteIndexEntry{Using bigleaf functions}
   %\usepackage[UTF-8]{inputenc}
 ---
 
@@ -102,7 +102,7 @@ the two arguments.
 (e <- VMF * press.in.hPa)
 ```
 
-**Relative humitity (rH)** in $\%$  was computed from AVP in $hPa$ 
+**Relative humidity (rH)** in $\%$  was computed from AVP in $hPa$ 
 and temperature.
 
 ```{r}
@@ -115,7 +115,7 @@ Tair <- 25
 ```
 
 Again this is replaced by a function using pressure units $kPa$ and 
-relative humitidy as fraction.
+relative humidity as fraction.
 ```{r}
 (rH <- e.to.rH(e.in.hPa/10, Tair)*100)
 ```

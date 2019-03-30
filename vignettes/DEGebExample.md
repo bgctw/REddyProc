@@ -95,11 +95,10 @@ argument `seasonFactor`.
     ## 12          season       2006 2006120 0.06966667
     ## 13          season       2006 2006305 0.25094444
 
+    #EProc$useSeaonsalUStarThresholds()
     # estimation can be inspected by plotting the saturation of NEE with UStar 
     # for the temperatures of one season
     #EProc$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
-    # season has been recoreded in EProc:
-    if (!("season" %in% names(EProc$sTEMP))) stop("stop1")
 
 Note that there is an estimate for each season. Further, an annual
 estimate is obtained by taking the maximum across the seasons, and the
@@ -111,14 +110,7 @@ cover. For the crop-site of this example, we will use a different
 threshold for each of the defined seasons, by calling
 `sEddyProc_useSeaonsalUStarThresholds` before gapfilling.
 
-    #(uStarScens <- usGetSeasonalSeasonUStarMap(uStarTh))
-    #if (!("season" %in% names(EProc$sTEMP))) stop("stop2")
     EProc$useSeaonsalUStarThresholds()
-
-    ## 'data.frame':    52608 obs. of  2 variables:
-    ##  $ sDateTime: POSIXct, format: "2004-01-01 00:15:00" "2004-01-01 00:45:00" ...
-    ##  $ season   : Factor w/ 9 levels "2004001","2004070",..: 1 1 1 1 1 1 1 1 1 1 ...
-
     EProc$sGetUstarScenarios()
 
     ##     season      uStar
@@ -214,7 +206,7 @@ Additional output columns are produced for each uStar quantile.
 
 Several methods provide processing steps for all scenarios. In addition,
 method `sApplyUStarScen` calls a user-specified function repeatedly with
-a mofified argument `suffix`. For example, the flux partitioning across
+a modified argument `suffix`. For example, the flux partitioning across
 all threshold scenarios can be invoked by the following code to produce
 several GPP estimates.
 

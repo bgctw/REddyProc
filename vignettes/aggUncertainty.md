@@ -40,7 +40,7 @@ With neglecting correlations among records, the uncertainty of the mean
 annual flux is computed by adding the variances. The mean is computed by
 *m* = ∑*x*<sub>*i*</sub>/*n*. And hence its standard deviation by
 $sd(m) = \\sqrt{Var(m)}= \\sqrt{\\sum{Var(x\_i)}/n^2} = \\sqrt{n \\bar{\\sigma^2}/n^2} = \\bar{\\sigma^2}/\\sqrt{n}$.
-This results in an aprroximate reduction of the average standard
+This results in an approximate reduction of the average standard
 deviation $\\bar{\\sigma^2}$ by $\\sqrt{n}$.
 
     results %>% filter(NEE_uStar_fqc == 0) %>% summarise(
@@ -92,11 +92,11 @@ Now we can inspect the the autocorrelation of the errors.
 
 ![](aggUncertainty_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
-The empricical autocorrelation function shows strong positive
+The empiricical autocorrelation function shows strong positive
 autocorrelation in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function
-`computeEffectiveNumObs` from package `lognorm` based on the emprical
+`computeEffectiveNumObs` from package `lognorm` based on the empirical
 autocorrelation function for given model-data residuals.
 
     library(lognorm)

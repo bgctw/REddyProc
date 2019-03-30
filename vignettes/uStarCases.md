@@ -53,7 +53,7 @@ input dataset.
 
     ## [1] "NEE_uStar_f"
 
-Sinlge uStar threshold estimate
+Single uStar threshold estimate
 -------------------------------
 
 The uStar threshold can be estimated from the uStar-NEE relationship
@@ -93,7 +93,7 @@ defaults to "uStar".
 Scenarios across distribution of u\* threshold estimate
 -------------------------------------------------------
 
-Chossing a different u\* threshold effects filtering and the subsequent
+Choosing a different u\* threshold effects filtering and the subsequent
 processing steps of gap-filling, and flux-partitioning. In order to
 quantify the uncertainty due to not exactly knowing the u\* threshold,
 these processing steps should be repeated for different threshold
@@ -136,8 +136,8 @@ bootstrap.
     ## 5 1998012 0.41625 0.3882803 0.4496154 0.6242549
 
 By default the annually aggregated threshold estimates are used for each
-season whithin one year as in the original method publication. To see
-the estimates for differen aggregation levels, use method
+season within one year as in the original method publication. To see the
+estimates for different aggregation levels, use method
 `sEddyProc_sGetEstimatedUstarThresholdDistribution`:
 
     (uStarThAgg <- EProc$sGetEstimatedUstarThresholdDistribution())
@@ -159,19 +159,14 @@ the estimates for differen aggregation levels, use method
     ## 6 0.5224006
     ## 7 0.5778408
 
-In conjuction with method `usGetSeasonalSeasonUStarMap` and
+In conjunction with method `usGetSeasonalSeasonUStarMap` and
 `sEddyProc_sSetUstarScenarios` this can be used to set seasonally
-different u\* thresold. However, this common case supported by method
+different u\* threshold. However, this common case supported by method
 `sEddyProc_useSeaonsalUStarThresholds`.
 
     #EProc$sSetUstarScenarios(
     #  usGetSeasonalSeasonUStarMap(uStarThAgg)[,-2])
     EProc$useSeaonsalUStarThresholds()
-
-    ## 'data.frame':    17520 obs. of  2 variables:
-    ##  $ sDateTime: POSIXct, format: "1998-01-01 00:15:00" "1998-01-01 00:45:00" ...
-    ##  $ season   : Factor w/ 5 levels "1998001","1998003",..: 1 1 1 1 1 1 1 1 1 1 ...
-
     # inspect the changed thresholds to be used
     EProc$sGetUstarScenarios()
 

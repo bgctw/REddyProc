@@ -7,7 +7,7 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
-  ## for all u* trheshold scenarios.
+  ## for all u* threshold scenarios.
   tmp <- sApplyUStarScen( .self$sGLFluxPartition, ... )
   NULL
 }
@@ -71,7 +71,7 @@ sEddyProc_sTKFluxPartitionUStarScens <- function(
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
-  ## for all u* trheshold scenarios.
+  ## for all u* threshold scenarios.
   tmp <- sApplyUStarScen( .self$sTKFluxPartition, ... )
   NULL
 }

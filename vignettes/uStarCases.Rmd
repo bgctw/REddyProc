@@ -97,7 +97,7 @@ EProc$sMDSGapFillAfterUstar('NEE', uStarTh = uStar)
 grep("NEE.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
 
-## Sinlge uStar threshold estimate
+## Single uStar threshold estimate
 
 The uStar threshold can be estimated from the uStar-NEE relationship 
 from the data without estimating its uncertainty by a bootstrap.
@@ -123,7 +123,7 @@ grep("NEE.*_f$",names(EProc$sExportResults()), value = TRUE)
 
 ## Scenarios across distribution of u* threshold estimate
 
-Chossing a different u* threshold effects filtering and the subsequent processing
+Choosing a different u* threshold effects filtering and the subsequent processing
 steps of gap-filling, and flux-partitioning. In order to quantify the uncertainty
 due to not exactly knowing the u* threshold, these processing steps should be
 repeated for different threshold scenarios, and the spread across the results should
@@ -141,16 +141,16 @@ EProc$sGetUstarScenarios()
 ```
 
 By default the annually aggregated threshold estimates are used for each season
-whithin one year as in the original method publication.
-To see the estimates for differen aggregation levels,
+within one year as in the original method publication.
+To see the estimates for different aggregation levels,
 use method `sEddyProc_sGetEstimatedUstarThresholdDistribution`:
 ```{r}
 (uStarThAgg <- EProc$sGetEstimatedUstarThresholdDistribution())
 ```
 
-In conjuction with method `usGetSeasonalSeasonUStarMap` and 
+In conjunction with method `usGetSeasonalSeasonUStarMap` and 
 `sEddyProc_sSetUstarScenarios` this can be used
-to set seasonally different u* thresold. 
+to set seasonally different u* threshold. 
 However, this common case supported by method 
 `sEddyProc_useSeaonsalUStarThresholds`. 
 

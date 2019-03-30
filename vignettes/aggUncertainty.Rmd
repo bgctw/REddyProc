@@ -4,7 +4,7 @@ output:
     keep_md: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown_notangle}
-  %\VignetteIndexEntry{typical use case}
+  %\VignetteIndexEntry{Uncertainty aggregation}
   %\usepackage[UTF-8]{inputenc}
 ---
 
@@ -80,7 +80,7 @@ flux is computed by adding the variances.
 The mean is computed by $m = \sum{x_i}/n$. 
 And hence its standard deviation by 
 $sd(m) = \sqrt{Var(m)}= \sqrt{\sum{Var(x_i)}/n^2} = \sqrt{n \bar{\sigma^2}/n^2} = \bar{\sigma^2}/\sqrt{n}$. 
-This results in an aprroximate reduction of the average standard deviation 
+This results in an approximate reduction of the average standard deviation 
 $\bar{\sigma^2}$ by $\sqrt{n}$.
 
 ```{r}
@@ -129,11 +129,11 @@ Now we can inspect the the autocorrelation of the errors.
 acf(results$resid, na.action = na.pass, main = "")
 ```
 
-The empricical autocorrelation function shows strong positive autocorrelation 
+The empiricical autocorrelation function shows strong positive autocorrelation 
 in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function 
-`computeEffectiveNumObs` from package `lognorm` based on the emprical 
+`computeEffectiveNumObs` from package `lognorm` based on the empirical 
 autocorrelation function for given model-data residuals.
 
 ```{r}

@@ -287,14 +287,14 @@ fCheckHHTimeSeries <- function(
   ## to midnight (0:00).
   if (DTS == 48 &&
       !(as.POSIXlt(Time[1])$hour == 0 &&
-        as.POSIXlt(Time)$min == 30) )
+        as.POSIXlt(Time[1])$min == 30) )
     warning(
       CallFunction, ':::fCheckHHTimeSeries::: Time stamp of first data row '
       , 'is not at the end of the first half-hour: '
       , format(Time[1], '%H:%M'), ' instead of 00:30!')
   if (DTS == 24 &&
       !(as.POSIXlt(Time[1])$hour == 1 &&
-        as.POSIXlt(Time)$min == 00) )
+        as.POSIXlt(Time[1])$min == 00) )
     warning(
       CallFunction, ':::fCheckHHTimeSeries::: Time stamp of first data '
       , 'row is not at the end of the first hour: '
@@ -655,7 +655,7 @@ filterLongRuns <- function(
 ){
   ##details<<
   ## Longer runs, i.e. sequences of numerically identical values,
-  ## in a series of measurments hint to
+  ## in a series of measurements hint to
   ## problems during a noisy measurement, e.g. by sensor malfunction due to
   ## freezing.
   ## This function, replaces such values in such runs to indicate missing values.

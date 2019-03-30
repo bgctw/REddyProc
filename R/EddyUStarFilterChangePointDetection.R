@@ -139,7 +139,7 @@ attr(.fitSeg2, "ex") <- function() {
 	invisible(list(
 			UstarTh.v = do.call(c, thresholdsTList) 	##<< vector of uStar for temperature classes
 			, bins.F = data.frame(tempBin = TIdUnsorted, uStarBin = 0L) ##<< data.frame with columns tempBin, uStarBin for each row in dsi.
-				## Temperatue bins are reported for binning according to ctrlUstarSub$taClasses.
+				## Temperature bins are reported for binning according to ctrlUstarSub$taClasses.
 				## There is only a single uStar bin with value 0L.
 	))
 }

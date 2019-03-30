@@ -1233,11 +1233,11 @@ sEddyProc_sEstUstarThresholdDistribution <- function(
 		...  ##<< further parameters to
 		## \code{\link{sEddyProc_sEstimateUstarScenarios}}
 ) {
-  ##details<< This method returns the results directly, whithou modifying
-  ## the class. It is there for portability reasons. Recommended is the
-  ## usage of method \code{\link{sEddyProc_sEstimateUstarScenarios}} to
+  ##details<< This method returns the results directly, withhout modifying
+  ## the class. It is there for portability reasons. Recommended is
+  ## using method \code{\link{sEddyProc_sEstimateUstarScenarios}} to
   ## update the class and then getting the results from the class by
-  ## \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
+  ## \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}.
   updatedClass <- .self$sEstimateUstarScenarios(...)
   ##value<< result of
   ## \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}
@@ -1392,7 +1392,7 @@ sEddyProc_sGetEstimatedUstarThresholdDistribution <- function(
     # distribution has no been estimated, return uStarDetails
     # from single call to sEstUstarThold
     if (is.null(.self$sUSTAR_DETAILS$uStarTh)) warning(
-      "uStar threshold has not been estiamted. Returning null")
+      "uStar threshold has not been estimated. Returning null")
     .self$sUSTAR_DETAILS$uStarTh
   }
 }
@@ -1403,7 +1403,7 @@ sEddyProc$methods(sGetEstimatedUstarThresholdDistribution =
 sEddyProc_sApplyUStarScen <- function(
   ### apply a function with changing the suffix argument
   FUN  ##<< function to be applied
-  , ...  ##<< rufther arguements to FUN
+  , ...  ##<< further arguments to FUN
 ) {
   uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
   resScen <- lapply(uStarSuffixes, function(suffix){

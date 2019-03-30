@@ -11,7 +11,7 @@ LightResponseCurveFitter <- setRefClass('LightResponseCurveFitter'
 
 #' @export
 LightResponseCurveFitter_getParameterNames <- function(
-	### return the parameter names used by this Light Response Curve Funciton
+	### return the parameter names used by this Light Response Curve Function
 ) {
 	# if this method is adjusted in subclass
 	# , then also adjust getPriorLocation, getPriorScale
@@ -228,7 +228,7 @@ LightResponseCurveFitter_getParameterInitials <- function(
 		### return the prior distribution of parameters
 		thetaPrior 	##<< numeric vector prior estimate of parameters
 ) {
-	# only beta (second parameter)  is varied between different intial guesses
+	# only beta (second parameter)  is varied between different initial guesses
 	##value<< a numeric matrix (3, nPar) of initial values for fitting parameters
 	thetaInitials <- matrix(rep(thetaPrior, each = 3), 3, length(thetaPrior)
 	                        , dimnames = list(NULL, names(thetaPrior)))
@@ -257,7 +257,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 	isUsingFixedVPD <- isNeglectVPDEffect
 	isUsingFixedAlpha <- FALSE
 	getIOpt <- .self$getOptimizedParameterPositions
-	theta0Adj <- theta0	# intial estimate with some parameters adjusted to bounds
+	theta0Adj <- theta0	# initial estimate with some parameters adjusted to bounds
 	if (isNeglectVPDEffect) theta0Adj[1] <- 0
 	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt =
         getIOpt(isUsingFixedVPD, isUsingFixedAlpha)
@@ -643,7 +643,7 @@ LightResponseCurveFitter_computeLRCGradient <- function(
 		  ## [umol / m2 / s] or Global Radiation
 		, VPD 	##<< VPD [numeric] -> Vapor Pressure Deficit [hPa]
 		, Temp 	##<< Temp [degC] -> Temperature [degC]
-		, VPD0 = 10 			##<< VPDQ0 [hPa] -> Parameters VPD0 fixed to 10
+		, VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10
 		  ## hPa according to Lasslop et al 2010
 		, fixVPD = (k == 0)   	##<< boolean scalar or vector of nrow(theta):
 		  ## fixVPD if TRUE the VPD effect is not considered and VPD is not part

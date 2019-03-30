@@ -83,14 +83,14 @@ input dataset.
     ## 7 0.6231564
 
 The output reports annually aggregated uStar estimates of 0.42 for the
-orignal data and 0.38, 0.45, 0.62 for lower, median, and upper quantile
+original data and 0.38, 0.45, 0.62 for lower, median, and upper quantile
 of the estimated distribution. The threshold can vary between periods of
 different surface roughness, e.g. before and after harvest. Therefore,
 there are estimates for different time periods, called seasons. These
 season-estimates are by default aggregated to entire years.
 
 The subsequent post processing steps will be repeated using the four
-*u*<sub>\*</sub> threshold sceanrios (non-resampled and tree quantiles
+*u*<sub>\*</sub> threshold scenarios (non-resampled and tree quantiles
 of the bootstrapped distribution). They require to specify a
 *u*<sub>\*</sub>-threshold for each season and a suffix to distinguish
 the outputs related to different thresholds. By default the annually
@@ -128,7 +128,7 @@ For each of the different *u*<sub>\*</sub> threshold estimates a
 separate set of output columns of filled NEE and its uncertainty is
 generated, distinguished by the suffixes given with `uStarSuffixes`.
 <Suffix>"\_f" denotes the filled value and "\_fsd" the estimated
-standard devation of its uncertainty.
+standard deviation of its uncertainty.
 
     grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE)
     grep("NEE_.*_fsd$",names(EProc$sExportResults()), value = TRUE)

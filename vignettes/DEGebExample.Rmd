@@ -103,11 +103,10 @@ abline( v = seasonStartsDate$DateTime)
 The user-specific seasoning is provided to the gap-filling by the argument `seasonFactor`. 
 ```{r DEGeb_estUStar1b, cache = TRUE}
 (uStarTh <- EProc$sEstUstarThold(seasonFactor = seasonFactor))
+#EProc$useSeaonsalUStarThresholds()
 # estimation can be inspected by plotting the saturation of NEE with UStar 
 # for the temperatures of one season
 #EProc$sPlotNEEVersusUStarForSeason( levels(uStarTh$season)[2] )
-# season has been recoreded in EProc:
-if (!("season" %in% names(EProc$sTEMP))) stop("stop1")
 ```
 
 Note that there is an estimate for each season. Further, an annual estimate is 
@@ -121,8 +120,6 @@ the defined seasons, by calling `sEddyProc_useSeaonsalUStarThresholds`
 before gapfilling.
 
 ```{r DEGeb_estUStar1c}
-#(uStarScens <- usGetSeasonalSeasonUStarMap(uStarTh))
-#if (!("season" %in% names(EProc$sTEMP))) stop("stop2")
 EProc$useSeaonsalUStarThresholds()
 EProc$sGetUstarScenarios()
 ```	
@@ -175,7 +172,7 @@ grep("^NEE.*_f$", colnames( EProc$sExportResults()), value = TRUE )
 
 Several methods provide processing steps for all scenarios.
 In addition, method `sApplyUStarScen` calls a user-specified function repeatedly
-with a mofified argument `suffix`. 
+with a modified argument `suffix`. 
 For example, the flux partitioning across all threshold scenarios can be
 invoked by the following code to produce several GPP estimates.
 

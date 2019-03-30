@@ -1,7 +1,7 @@
 # REddyProc X
 
 - implemented modified daytime partitioning after Keenan et al. 2019
-    where nighttime ecosystem respiration is estiamted based on nighttime
+    where nighttime ecosystem respiration is estimated based on nighttime
     estiamte of respiration at reference temperature.
 
 # REddyProc 1.1.6
@@ -14,7 +14,7 @@
 
 ## simplify argument naming and defaults
 
-- Changed argument names to exlude the type specifier suffix
+- Changed argument names to exclude the type specifier suffix
   , e.g. 'FluxVar.s' to 'FluxVar'. 
   Provding the old argument names still works, but gives a warning. However,
   at some future version, the old argument names will be removed.
@@ -35,7 +35,7 @@ Use cases relying on the other return value components can still get them
 from class variable 'sUSTAR_DETAILS'.
 
 Currently, the method gives only a warning, but will be removed 
-in future in version 2.x of REddyproc.
+in future in version 2.x of REddyProc.
 
 ## further changes
 
@@ -55,7 +55,7 @@ Moving profiling code and associated dependencies out of the distributed code.
 
 Reworking dependencies
 
-- implementing logit and invlogit from logtinorm directly in REddyProc
+- implementing logit and invlogit from logitnorm directly in REddyProc
 - moving NetCDF related functions and dependencies to separate package 
   REddyProcNCDF
 
@@ -104,8 +104,8 @@ Interface changes
   
 Changes in Day-Time partitioning
 
-- adpted Lasslop prior information on LRC-fit parameters as default
-- more options to control daytim-fitting with partGLControl
+- adopted Lasslop prior information on LRC-fit parameters as default
+- more options to control daytime-fitting with partGLControl
 - quickly maximise compatibility with Lasslop-pvWave processing by function
   partGLControlLasslopCompatible
 
