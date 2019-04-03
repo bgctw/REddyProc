@@ -39,7 +39,7 @@ With \code{isFlagEntryAfterLowTurbulence set to TRUE}, to be more
 conservative, in addition
 to the data acquired when uStar is below the threshold,
 the first half hour measured with good turbulence conditions
-after a period with low turbulence is also removed (Papaple et al. 2006).}
+after a period with low turbulence is also removed (Papale et al. 2006).}
 \value{Vector with quality flag from filtering (here 0: good data
 , 1: low turbulence, 2: first half hour after low turbulence
 , 3: no threshold available, 4: missing uStar value)
