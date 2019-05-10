@@ -1406,9 +1406,9 @@ sEddyProc_sApplyUStarScen <- function(
   , ...  ##<< further arguments to FUN
 ) {
   uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
-  resScen <- lapply(uStarSuffixes, function(suffix){
+  resScen <- setNames(lapply(uStarSuffixes, function(suffix){
     FUN(..., suffix = suffix)
-  })
+  }), uStarSuffixes)
 }
 sEddyProc$methods(sApplyUStarScen =
                     sEddyProc_sApplyUStarScen)
