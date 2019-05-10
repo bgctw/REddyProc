@@ -1404,11 +1404,25 @@ sEddyProc_sApplyUStarScen <- function(
   ### apply a function with changing the suffix argument
   FUN  ##<< function to be applied
   , ...  ##<< further arguments to FUN
+  , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
+  ## for which to keep parameters. If not specified defaults to the first
+  ## entry in \code{uStarSuffixes}.
 ) {
+  ##details<<
+  ## When repeating computations, some of the
+  ## output variables maybe replaced. Argument \code{uStarKeep}
+  ## allows to select the scenario which is computed last,
+  ## and hence to which ouptut columns refer to.
   uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
-  resScen <- setNames(lapply(uStarSuffixes, function(suffix){
+  if (length(uStarScenKeep) != 1) uStarScenKeep = uStarSuffixes[1]
+  iKeep = match(uStarScenKeep, uStarSuffixes)
+  if (is.na(iKeep)) stop(
+    "Provided uStarScenKeep=",uStarScenKeep," was not among Scenarios: "
+    ,paste(uStarSuffixes,collapse = ","))
+  uStarSuffixesOrdered = c(uStarSuffixes[iKeep], uStarSuffixes[-iKeep])
+  resScen <- setNames(rev(lapply(rev(uStarSuffixesOrdered), function(suffix){
     FUN(..., suffix = suffix)
-  }), uStarSuffixes)
+  })), uStarSuffixesOrdered)
 }
 sEddyProc$methods(sApplyUStarScen =
                     sEddyProc_sApplyUStarScen)

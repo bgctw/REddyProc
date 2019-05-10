@@ -14,7 +14,7 @@ NULL
 #' @importFrom graphics abline axis box close.screen curve image legend lines
 #'        mtext par plot points polygon screen split.screen
 #' @importFrom stats aggregate anova approx coef cor cov lm median na.omit
-#'        nls nls.control optim predict quantile resid rnorm sd
+#'        nls nls.control optim predict quantile resid rnorm sd setNames
 #' @importFrom utils capture.output download.file read.csv recover write.table
 #' @importFrom stats plogis qlogis
 NULL
