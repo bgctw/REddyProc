@@ -147,7 +147,7 @@ of each day.
         , nEff = computeEffectiveNumObs(
            resid, effAcf = !!autoCorr, na.rm = TRUE)
         , NEE = mean(NEE_uStar_f, na.rm = TRUE)
-        , sdNEE = if (nEff == 0) NA_real_ else sqrt(
+        , sdNEE = if (nEff <= 1) NA_real_ else sqrt(
           mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nEff - 1)) 
         , sdNEEuncorr = if (nRec == 0) NA_real_ else sqrt(
            mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nRec - 1))
