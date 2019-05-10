@@ -553,11 +553,11 @@ partGLExtractStandardData <- function(
 	                       , suffix, sep = "")
 	# Check if specified columns exist in sDATA or sTEMP and if numeric
 	# and plausible. Then apply quality flag
-	fCheckColNames(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, RadVar
+	fCheckColNames(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, RadVar, VPDVar
 	                 , QFRadVar, PotRadVar, NEESdVar), 'sGLFluxPartition')
-	fCheckColNum(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, RadVar
+	fCheckColNum(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, RadVar, VPDVar
 	                 , QFRadVar, PotRadVar, NEESdVar), 'sGLFluxPartition')
-	fCheckColPlausibility(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar
+	fCheckColPlausibility(ds, c(NEEVar, QFNEEVar, TempVar, QFTempVar, VPDVar
 	                 , RadVar, QFRadVar, PotRadVar), 'sGLFluxPartition')
 	NEEFiltered <- fSetQF(ds, NEEVar, QFNEEVar, QFNEEValue, 'sGLFluxPartition')
 	#

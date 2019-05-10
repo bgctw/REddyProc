@@ -1017,3 +1017,21 @@ test_that("partitionNEETK",{
   }
 })
 
+test_that("report missing VPD_f column in error",{
+  skip("only interactively test issue #34")
+  DETha98 <- fConvertTimeToPosix(Example_DETha98, 'YDH', Year = 'Year',
+                                 Day = 'DoY', Hour = 'Hour')[-(2:4)]
+  EProc <- sEddyProc$new('DE-Tha', DETha98,
+                         c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
+  EProc$sMDSGapFillAfterUstar('NEE', uStarTh = 0.3, FillAll = TRUE)
+  # missing 'VPD'...
+  for (i in c('Tair', 'Rg')) EProc$sMDSGapFill(i, FillAll = TRUE)
+  EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
+  # ...produces Error here
+  # Error should report missing column VPD_f
+  expect_error(
+    EProc$sGLFluxPartition(suffix = "uStar")
+    ,"VPD_f"
+  )
+})
+
