@@ -19,7 +19,7 @@ knitr::opts_chunk$set(eval = !is_check)
 
 ```{r setup, include = FALSE}
 library(knitr)
-#rmarkdown::render("vignettes/uStarCases.Rmd")
+#rmarkdown::render("vignettes/uStarCases.Rmd","md_document")
 opts_knit$set(root.dir = '..')
 opts_chunk$set(
     #, fig.align = "center"
@@ -116,7 +116,7 @@ Output columns use the suffix as specified by argument `uSstarSuffix`
 which defaults to "uStar".
 
 ```{r singleUStarGapfill, message = FALSE}
-#usGetAnnualSeasonUStarMap(EProc$sUSTAR_DETAILS$uStarTh)
+#EProc$useAnnualUStarThresholds()
 EProc$sMDSGapFillAfterUstar('NEE')
 grep("NEE.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```
@@ -175,10 +175,20 @@ grep("NEE_.*_f$",names(EProc$sExportResults()), value = TRUE)
 ```{r uStarScenMRPart, message=FALSE}
 EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
 EProc$sMDSGapFill('Tair', FillAll = FALSE, minNWarnRunLength = NA)
+EProc$sMDSGapFill('Rg', FillAll = FALSE, minNWarnRunLength = NA)
 EProc$sMDSGapFill('VPD', FillAll = FALSE, minNWarnRunLength = NA)
 EProc$sMRFluxPartitionUStarScens()
 grep("GPP_.*_f$",names(EProc$sExportResults()), value = TRUE)
+if (FALSE) {
+  # run only interactively, because it takes long
+  EProc$sGLFluxPartitionUStarScens(uStarScenKeep = "U50")
+  grep("GPP_DT_.*_f$",names(EProc$sExportResults()), value = TRUE)
+}
 ```
+
+The argument `uStarScenKeep = "U50"` specifies that the outputs that
+are not distinguished by the suffix, e.g. `FP_GPP2000`, should be reported for the
+median u* threshold scenario with suffix `U50`, instead of the default first scenario.
 
 ## See also
 A more advanced case of user-specified seasons for
