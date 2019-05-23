@@ -10,7 +10,7 @@
 such as \code{minNRunLength}.}
 }
 \details{Longer runs, i.e. sequences of numerically identical values,
-in a series of measurments hint to
+in a series of measurements hint to
 problems during a noisy measurement, e.g. by sensor malfunction due to
 freezing.
 This function, replaces such values in such runs to indicate missing values.}

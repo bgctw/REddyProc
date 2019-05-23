@@ -61,7 +61,7 @@ based on LRC-fits that neglected the VPD effect.}
 \item{GPP_DT_<suffix>}{predicted gross primary production mumol CO2/m2/s}
 \item{<LRC>}{Further light response curve (LRC) parameters and
 their standard deviation depend on the used LRC
-(e.g. for the non-rectangular LRCC
+(e.g. for the non-rectangular LRC
 see \code{\link{NonrectangularLRCFitter_getParameterNames}}).
 They are estimated for windows and are reported with the first record
 of the window}

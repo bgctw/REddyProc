@@ -31,8 +31,14 @@ getExamplePath <- function(
     if (file.access(exampleDir, mode = 2) != 0) stop(
       "target example directory ", exampleDir, " is not writeable.")
     url <- file.path(remoteDir, filename)
-    retCode <- suppressWarnings(try(download.file(url, fullname, quiet = TRUE)
-                                    , silent = TRUE))
+    retCode <- suppressWarnings(try(
+      download.file(url, fullname, quiet = TRUE)
+      , silent = TRUE))
+    # on Windows may fail because of root certificates, retry with curl
+    if (inherits(retCode, "try-error"))
+        retCode <- suppressWarnings(try(
+          download.file(url, fullname, quiet = TRUE, method = "curl")
+          , silent = TRUE))
     if (!inherits(retCode, "try-error") && retCode == 0) return(fullname)
   }
   ##value<< the full path name to the example data or if not available

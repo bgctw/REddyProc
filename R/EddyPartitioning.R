@@ -3,12 +3,16 @@
 sEddyProc_sGLFluxPartitionUStarScens <- function(
   ### Flux partitioning after Lasslop et al. (2010)
   ...  ##<< arguments to \code{\link{sEddyProc_sGLFluxPartition}}
+  , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
+  ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+  ## Defaults to the first scenario.
 ) {
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  tmp <- sApplyUStarScen( .self$sGLFluxPartition, ... )
+  tmp <- sApplyUStarScen(
+    .self$sGLFluxPartition, ..., uStarScenKeep = uStarScenKeep)
   NULL
 }
 sEddyProc$methods(
@@ -67,12 +71,16 @@ sEddyProc$methods(sGLFluxPartition = sEddyProc_sGLFluxPartition)
 sEddyProc_sTKFluxPartitionUStarScens <- function(
   ### Flux partitioning after Lasslop 2015
   ...  ##<< arguments to \code{\link{sEddyProc_sTKFluxPartition}}
+  , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
+  ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+  ## Defaults to the first scenario.
 ) {
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  tmp <- sApplyUStarScen( .self$sTKFluxPartition, ... )
+  tmp <- sApplyUStarScen(
+    .self$sTKFluxPartition, ..., uStarScenKeep = uStarScenKeep )
   NULL
 }
 sEddyProc$methods(
@@ -98,12 +106,16 @@ sEddyProc$methods(sTKFluxPartition = sEddyProc_sTKFluxPartition)
 sEddyProc_sMRFluxPartitionUStarScens <- function(
   ### Flux partitioning after Reichstein et al. (2005)
   ...  ##<< arguments to \code{\link{sEddyProc_sMRFluxPartition}}
+  , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
+  ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+  ## Defaults to the first scenario.
 ) {
   ##details<<
   ## Nighttime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  tmp <- sApplyUStarScen( .self$sMRFluxPartition, ... )
+  tmp <- sApplyUStarScen(
+    .self$sMRFluxPartition, ..., uStarScenKeep = uStarScenKeep)
   ##value<< NULL, it adds output columns in the class
   invisible(tmp)
 }

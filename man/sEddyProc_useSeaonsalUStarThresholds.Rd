@@ -1,7 +1,7 @@
 \name{sEddyProc_useSeaonsalUStarThresholds}
 \alias{sEddyProc_useSeaonsalUStarThresholds}
 \title{sEddyProc useSeaonsalUStarThresholds}
-\description{use seasonal estimates of uStar trhesholds}
+\description{use seasonal estimates of uStar thresholds}
 \usage{sEddyProc_useSeaonsalUStarThresholds()}
 
 
@@ -11,5 +11,5 @@
 
 
 \seealso{\code{\link{sEddyProc_sSetUstarScenarios}},
-\code{\link{sEddyProc_useSeaonsalUStarThresholds}}}
+\code{\link{sEddyProc_useAnnualUStarThresholds}}}
 

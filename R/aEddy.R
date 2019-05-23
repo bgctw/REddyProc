@@ -286,7 +286,7 @@ sEddyProc_useSeaonsalUStarThresholds <- function(
   ### use seasonal estimates of uStar thresholds
 ) {
   ##seealso<< \code{\link{sEddyProc_sSetUstarScenarios}},
-  ## \code{\link{sEddyProc_useSeaonsalUStarThresholds}}
+  ## \code{\link{sEddyProc_useAnnualUStarThresholds}}
   uStarThAgg <- .self$sGetEstimatedUstarThresholdDistribution()
   uStarMap <- usGetSeasonalSeasonUStarMap(uStarThAgg)
   .self$sSetUstarScenarios(uStarMap)

@@ -2,9 +2,13 @@
 \alias{sEddyProc_sMRFluxPartitionUStarScens}
 \title{sEddyProc sMRFluxPartitionUStarScens}
 \description{Flux partitioning after Reichstein et al. (2005)}
-\usage{sEddyProc_sMRFluxPartitionUStarScens(...)}
+\usage{sEddyProc_sMRFluxPartitionUStarScens(..., 
+    uStarScenKeep = character(0))}
 \arguments{
   \item{\dots}{arguments to \code{\link{sEddyProc_sMRFluxPartition}}}
+  \item{uStarScenKeep}{Scalar string specifying the scenario
+for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+Defaults to the first scenario.}
 }
 \details{Nighttime-based partitioning of measured net ecosystem fluxes into
 gross primary production (GPP) and ecosystem respiration (Reco)
