@@ -2,9 +2,13 @@
 \alias{sEddyProc_sGLFluxPartitionUStarScens}
 \title{sEddyProc sGLFluxPartitionUStarScens}
 \description{Flux partitioning after Lasslop et al. (2010)}
-\usage{sEddyProc_sGLFluxPartitionUStarScens(...)}
+\usage{sEddyProc_sGLFluxPartitionUStarScens(..., 
+    uStarScenKeep = character(0))}
 \arguments{
   \item{\dots}{arguments to \code{\link{sEddyProc_sGLFluxPartition}}}
+  \item{uStarScenKeep}{Scalar string specifying the scenario
+for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+Defaults to the first scenario.}
 }
 \details{Daytime-based partitioning of measured net ecosystem fluxes into
 gross primary production (GPP) and ecosystem respiration (Reco)

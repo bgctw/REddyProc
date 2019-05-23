@@ -80,7 +80,7 @@ Next, the annual estimate is used as the default in gap-filling. Output
 columns use the suffix as specified by argument `uSstarSuffix` which
 defaults to "uStar".
 
-    #usGetAnnualSeasonUStarMap(EProc$sUSTAR_DETAILS$uStarTh)
+    #EProc$useAnnualUStarThresholds()
     EProc$sMDSGapFillAfterUstar('NEE')
 
     ## Warning in .self$sGetUstarScenarios(): uStar scenarios not set yet. Setting
@@ -113,8 +113,8 @@ bootstrap.
     ## 
 
     ## Estimated UStar distribution of:
-    ##      uStar        5%       50%       95%
-    ## 1 0.41625 0.3882803 0.4496154 0.6242549 
+    ##      uStar       5%       50%       95%
+    ## 1 0.41625 0.378475 0.4524588 0.6209465 
     ## by using  100 bootstrap samples and controls:
     ##                        taClasses                    UstarClasses 
     ##                               7                              20 
@@ -128,12 +128,12 @@ bootstrap.
     # inspect the thresholds to be used by default
     EProc$sGetUstarScenarios()
 
-    ##    season   uStar       U05       U50       U95
-    ## 1 1998001 0.41625 0.3882803 0.4496154 0.6242549
-    ## 2 1998003 0.41625 0.3882803 0.4496154 0.6242549
-    ## 3 1998006 0.41625 0.3882803 0.4496154 0.6242549
-    ## 4 1998009 0.41625 0.3882803 0.4496154 0.6242549
-    ## 5 1998012 0.41625 0.3882803 0.4496154 0.6242549
+    ##    season   uStar      U05       U50       U95
+    ## 1 1998001 0.41625 0.378475 0.4524588 0.6209465
+    ## 2 1998003 0.41625 0.378475 0.4524588 0.6209465
+    ## 3 1998006 0.41625 0.378475 0.4524588 0.6209465
+    ## 4 1998009 0.41625 0.378475 0.4524588 0.6209465
+    ## 5 1998012 0.41625 0.378475 0.4524588 0.6209465
 
 By default the annually aggregated threshold estimates are used for each
 season within one year as in the original method publication. To see the
@@ -143,21 +143,21 @@ estimates for different aggregation levels, use method
     (uStarThAgg <- EProc$sGetEstimatedUstarThresholdDistribution())
 
     ##   aggregationMode seasonYear  season     uStar        5%       50%
-    ## 1          single         NA    <NA> 0.4162500 0.3882803 0.4496154
-    ## 2            year       1998    <NA> 0.4162500 0.3882803 0.4496154
-    ## 3          season       1998 1998001 0.4162500 0.3882803 0.4496154
-    ## 4          season       1998 1998003 0.4162500 0.3240417 0.4009091
-    ## 5          season       1998 1998006 0.3520000 0.3256167 0.3959167
-    ## 6          season       1998 1998009 0.3369231 0.2464792 0.3900000
-    ## 7          season       1998 1998012 0.1740000 0.1746333 0.4206250
+    ## 1          single         NA    <NA> 0.4162500 0.3784750 0.4524588
+    ## 2            year       1998    <NA> 0.4162500 0.3784750 0.4524588
+    ## 3          season       1998 1998001 0.4162500 0.3784750 0.4524588
+    ## 4          season       1998 1998003 0.4162500 0.3289559 0.4000000
+    ## 5          season       1998 1998006 0.3520000 0.3318286 0.3864683
+    ## 6          season       1998 1998009 0.3369231 0.2297673 0.4044653
+    ## 7          season       1998 1998012 0.1740000 0.1849500 0.4325682
     ##         95%
-    ## 1 0.6242549
-    ## 2 0.6242549
-    ## 3 0.6242549
-    ## 4 0.5619931
-    ## 5 0.4500000
-    ## 6 0.5224006
-    ## 7 0.5778408
+    ## 1 0.6209465
+    ## 2 0.6209465
+    ## 3 0.6209465
+    ## 4 0.5890722
+    ## 5 0.4483500
+    ## 6 0.5360426
+    ## 7 0.5890722
 
 In conjunction with method `usGetSeasonalSeasonUStarMap` and
 `sEddyProc_sSetUstarScenarios` this can be used to set seasonally
@@ -171,11 +171,11 @@ different u\* threshold. However, this common case supported by method
     EProc$sGetUstarScenarios()
 
     ##    season     uStar       U05       U50       U95
-    ## 3 1998001 0.4162500 0.3882803 0.4496154 0.6242549
-    ## 4 1998003 0.4162500 0.3240417 0.4009091 0.5619931
-    ## 5 1998006 0.3520000 0.3256167 0.3959167 0.4500000
-    ## 6 1998009 0.3369231 0.2464792 0.3900000 0.5224006
-    ## 7 1998012 0.1740000 0.1746333 0.4206250 0.5778408
+    ## 3 1998001 0.4162500 0.3784750 0.4524588 0.6209465
+    ## 4 1998003 0.4162500 0.3289559 0.4000000 0.5890722
+    ## 5 1998006 0.3520000 0.3318286 0.3864683 0.4483500
+    ## 6 1998009 0.3369231 0.2297673 0.4044653 0.5360426
+    ## 7 1998012 0.1740000 0.1849500 0.4325682 0.5890722
 
 Several function whose name ends with 'UstarScens' perform the
 subsequent processing steps for all uStar scenarios. They operate and
@@ -188,11 +188,23 @@ create columns that differ between threshold scenarios by a suffix.
 
     EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
     EProc$sMDSGapFill('Tair', FillAll = FALSE, minNWarnRunLength = NA)
+    EProc$sMDSGapFill('Rg', FillAll = FALSE, minNWarnRunLength = NA)
     EProc$sMDSGapFill('VPD', FillAll = FALSE, minNWarnRunLength = NA)
     EProc$sMRFluxPartitionUStarScens()
     grep("GPP_.*_f$",names(EProc$sExportResults()), value = TRUE)
 
-    ## [1] "GPP_uStar_f" "GPP_U05_f"   "GPP_U50_f"   "GPP_U95_f"
+    ## [1] "GPP_U95_f"   "GPP_U50_f"   "GPP_U05_f"   "GPP_uStar_f"
+
+    if (FALSE) {
+      # run only interactively, because it takes long
+      EProc$sGLFluxPartitionUStarScens(uStarScenKeep = "U50")
+      grep("GPP_DT_.*_f$",names(EProc$sExportResults()), value = TRUE)
+    }
+
+The argument `uStarScenKeep = "U50"` specifies that the outputs that are
+not distinguished by the suffix, e.g. `FP_GPP2000`, should be reported
+for the median u\* threshold scenario with suffix `U50`, instead of the
+default first scenario.
 
 See also
 --------

@@ -11,5 +11,5 @@
 
 
 \seealso{\code{\link{sEddyProc_sSetUstarScenarios}},
-\code{\link{sEddyProc_useSeaonsalUStarThresholds}}}
+\code{\link{sEddyProc_useAnnualUStarThresholds}}}
 
