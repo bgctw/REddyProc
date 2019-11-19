@@ -1035,3 +1035,20 @@ test_that("report missing VPD_f column in error",{
   )
 })
 
+test_that("no nighttime data",{
+  skip_on_cran()
+  cols <- c('NEE','Rg','Tair','VPD', 'Ustar'
+            ,"Tair_f","VPD_f","Rg_f","NEE_f"
+            ,"NEE_fqc", "Tair_fqc", "Rg_fqc", "NEE_fsd")
+  #ds <- Example_DETha98_Filled[,c('DateTime',cols)]
+  ds <- subset(Example_DETha98_Filled
+                  , sDateTime >= as.POSIXct("1998-05-01 00:15:00",tz = tzEx) &
+                    sDateTime <= as.POSIXct("1998-09-01 21:45:00",tz = tzEx))
+  ds <- ds[,c('DateTime',cols)]
+  ds$NEE_f[ds$Rg_f <= 10] <- NA  # simulate having no night-time records
+  EProc <- sEddyProc$new('DE-ThaSummer', ds, cols)
+  EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
+  EProc$sGLFluxPartition(controlGLPart = partGLControl(fixedTempSens = data.frame(
+    E0 = 150, sdE0 = 50, RRef = 20)))
+})
+

@@ -740,7 +740,8 @@ partGLFitLRCOneWindow <- function(
 	# if no temperature-respiration relationship could be found,
 	# indicate no-fit, but report Window properties
 	E0 <- E0Win$E0[winInfo$iWindow]
-	sdE0 <- E0Win$sdE0[winInfo$iWindow]
+	# when provided fixed E0 the column sdEO does not exist
+	sdE0 <- if (length(E0Win$sdE0)) E0Win$sdE0[winInfo$iWindow] else NA
 	RRefNight <- E0Win$RRef[winInfo$iWindow]
 	getNAResult <- function(convergenceCode) {
 			list(

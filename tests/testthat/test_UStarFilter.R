@@ -155,7 +155,7 @@ test_that("sEstUstarThold: multi-year and One-big-season",{
 				dss
 			})
 			dsFew$seasonFactor <- NULL
-			dsFew <- dplyr:::arrange_(dsFew, ~DateTime)
+			dsFew <- dplyr:::arrange(dsFew, DateTime)
 			dsComb <- rbind(dsFew,EddyDataWithPosix.F99)
 			eddyC <- sEddyProc$new(
 			  'DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
@@ -179,7 +179,12 @@ test_that("sEstUstarThold: multi-year and One-big-season",{
 			  res99$uStarAggr[1], res99$uStarMaxSeason, tolerance = 0.01, scale = 1 )
 			expect_equal(eddyC$sDATA$tempBin, res$bins$tempBin)
 			#
-			#eddyC$sPlotNEEVersusUStarForSeason(res$season$season[5])
+		  .tmp.f <- function(){
+		    eddyC$sGetUstarScenarios()
+		    eddyC$sPlotNEEVersusUStarForSeason("1998003")
+		    str(eddyC$sUSTAR_DETAILS)
+		  }
+			#
 		})
 
 
