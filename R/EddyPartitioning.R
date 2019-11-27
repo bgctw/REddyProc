@@ -428,6 +428,7 @@ fOptimSingleE0 <- function(
       , algorithm = algorithm
     )
     # Remove points with residuals outside percTrim quantiles
+    # plot(NEEnight ~ TempKelvin)
     Residuals.V.n <- resid(NLS.L)
     #Residuals.V.n <- fLloydTaylor(R_ref = coef(summary(NLS.L))['R_ref', 1]
     #, E_0 = coef(summary(NLS.L))['E_0', 1],
@@ -600,7 +601,6 @@ fRegrE0fromShortTerm = function(
     #! Window size of 7 days corresponds to full window length of 15 days as
     # in paper, non-congruent with PV-Wave code of 14 days
     #! New code: Last window has minimum width of WinDays
-    #
     Subset.b <-
       DayCounter >= DayStart.i &
       DayCounter <= DayEnd.i &
@@ -609,6 +609,8 @@ fRegrE0fromShortTerm = function(
     NEEnight <- subset(NightFlux, Subset.b)
     Temp.V.n <- subset(Temp, Subset.b)
     TempKelvin <- fConvertCtoK(Temp.V.n)
+    #if (DayMiddle.i > 220) recover()
+    #plot(NEEnight ~ TempKelvin)
     #
     if (length(NEEnight) > MinData.n && diff(range(TempKelvin)) >= TempRange) {
       #CountRegr.i <- CountRegr.i + 1
