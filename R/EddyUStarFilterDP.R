@@ -289,7 +289,14 @@ usEstUstarThreshold = function(
 				resultsSeasonYearPooled <- data.frame(seasonYear = NA_character_
 				        , nRec = NA_integer_ , uStarPooled = NA_real_)[FALSE, ]
 			} else {
-				dscPooled <- dsc %>% filter(UQ(sym("seasonYear")) %in% !!seasonYearsPooled)
+				#dscPooled <- dsc %>% filter(UQ(sym("seasonYear")) %in% !!seasonYearsPooled)
+				dscPooled <- dsc %>% filter(.data$seasonYear %in% !!seasonYearsPooled)
+				if (!nrow(dscPooled)) {
+				  stop("Expected valid uStar records for year ", seasonYearsPooled,
+				       ", but got no records.\n",
+				       "Does the analyzed dataset include single records of",
+				       " adjacent years?")
+				}
 				UstarYearsTempL <- tmp <- dscPooled %>%
 				  split(.$seasonYear) %>%
 				  map(fEstimateUStarSeason
