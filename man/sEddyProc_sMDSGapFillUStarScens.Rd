@@ -36,5 +36,5 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 
 
-\seealso{\href{useCase vignette}{../doc/useCase.html}}
+\seealso{\href{../doc/useCase.html}{useCase vignette}}
 
