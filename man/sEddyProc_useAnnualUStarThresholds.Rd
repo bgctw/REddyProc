@@ -1,7 +1,7 @@
 \name{sEddyProc_useAnnualUStarThresholds}
 \alias{sEddyProc_useAnnualUStarThresholds}
 \title{sEddyProc useAnnualUStarThresholds}
-\description{use seasonal estimates of uStar trhesholds}
+\description{use seasonal estimates of uStar thresholds}
 \usage{sEddyProc_useAnnualUStarThresholds()}
 
 

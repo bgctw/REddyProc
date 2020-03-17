@@ -5,7 +5,7 @@
 \usage{sEddyProc_sApplyUStarScen(FUN, ...)}
 \arguments{
   \item{FUN}{function to be applied}
-  \item{\dots}{rufther arguements to FUN}
+  \item{\dots}{further arguments to FUN}
 }
 
 

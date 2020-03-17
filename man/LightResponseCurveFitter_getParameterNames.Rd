@@ -1,7 +1,7 @@
 \name{LightResponseCurveFitter_getParameterNames}
 \alias{LightResponseCurveFitter_getParameterNames}
 \title{LightResponseCurveFitter getParameterNames}
-\description{return the parameter names used by this Light Response Curve Funciton}
+\description{return the parameter names used by this Light Response Curve Function}
 \usage{LightResponseCurveFitter_getParameterNames()}
 
 \value{string vector of parameter names. Positions are important.

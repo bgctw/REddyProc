@@ -44,8 +44,8 @@ status information to screen}
 suffix needed for different processing setups on the same dataset
 (for explanations see below)}
   \item{minNWarnRunLength}{scalar integer:
-warn if nubmer of subsequent
-numerically equal values exeeds this number.
+warn if number of subsequent
+numerically equal values exceeds this number.
 Set to Inf or NA for no warnings.
 defaults for "NEE" to records across 4 hours and no warning for others.}
   \item{Var.s}{deprecated}
@@ -64,7 +64,7 @@ defaults for "NEE" to records across 4 hours and no warning for others.}
 \details{Initialize temporal data frame sTEMP for newly generated gap filled data and
 qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
 
-Runs of numerically equal numbes hint to problems of the data and cause
+Runs of numerically equal numbers hint to problems of the data and cause
 unreasonable estimates of uncertainty. This routine warns the user.
 
 MDS gap filling algorithm calls the subroutines Look Up Table

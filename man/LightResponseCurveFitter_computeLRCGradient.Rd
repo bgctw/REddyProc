@@ -13,7 +13,7 @@ theta[4] = RRef (rb), theta[4] = E0)}
 [umol / m2 / s] or Global Radiation}
   \item{VPD}{VPD [numeric] -> Vapor Pressure Deficit [hPa]}
   \item{Temp}{Temp [degC] -> Temperature [degC]}
-  \item{VPD0}{VPDQ0 [hPa] -> Parameters VPD0 fixed to 10
+  \item{VPD0}{VPD0 [hPa] -> Parameters VPD0 fixed to 10
 hPa according to Lasslop et al 2010}
   \item{fixVPD}{boolean scalar or vector of nrow(theta):
 fixVPD if TRUE the VPD effect is not considered and VPD is not part

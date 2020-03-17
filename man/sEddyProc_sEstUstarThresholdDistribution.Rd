@@ -7,11 +7,11 @@
   \item{\dots}{further parameters to
 \code{\link{sEddyProc_sEstimateUstarScenarios}}}
 }
-\details{This method returns the results directly, whithou modifying
-the class. It is there for portability reasons. Recommended is the
-usage of method \code{\link{sEddyProc_sEstimateUstarScenarios}} to
+\details{This method returns the results directly, withhout modifying
+the class. It is there for portability reasons. Recommended is
+using method \code{\link{sEddyProc_sEstimateUstarScenarios}} to
 update the class and then getting the results from the class by
-\code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}}
+\code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}.}
 \value{result of
 \code{\link{sEddyProc_sGetEstimatedUstarThresholdDistribution}}}
 

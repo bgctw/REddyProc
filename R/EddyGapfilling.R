@@ -781,7 +781,7 @@ sEddyProc_sMDSGapFillUStarScens <- function(
   ## introduced by the uncertain estimate of the u* threshold.
   #
   ##seealso<<
-  ## \href{useCase vignette}{../doc/useCase.html}
+  ## \href{../doc/useCase.html}{useCase vignette}
   uStarTh <- .self$sUSTAR_SCEN
   uStarSuffixes <- colnames(.self$sUSTAR_SCEN)[-1]
   nEstimates <- ncol(uStarTh) - 1L
