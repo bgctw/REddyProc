@@ -21,10 +21,10 @@ and u * data}
 larger than this value, the temperature class is skipped.}
   \item{isOmitNoThresholdBins}{if TRUE, bins where no threshold was found
 are ignored. Set to FALSE to report highest uStar bin for these cases}
-  \item{isUsingCPTSeveralT}{set to TRUE to use changePointDetection
+  \item{isUsingCPTSeveralT}{set to TRUE to use change point detection
 without binning uStar but with additionally changed aggregation scheme for
 several temperature classifications}
-  \item{isUsingCPT}{set to TRUE to use changePointDetection without
+  \item{isUsingCPT}{set to TRUE to use change point detection without
 binning uStar before in usual aggregation method (good for comparing methods,
 but not recommended, overruled by isUsingCPTSeveralT = TRUE)}
   \item{minValidUStarTempClassesProp}{seasons, in which only less than this

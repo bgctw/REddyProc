@@ -1,7 +1,7 @@
 \name{sEddyProc_sMDSGapFillUStarScens}
 \alias{sEddyProc_sMDSGapFillUStarScens}
 \title{sEddyProc sMDSGapFillUStarScens}
-\description{GapFilling for several filters of estimated friction velocity Ustar thresholds.}
+\description{gapfilling for several filters of estimated friction velocity Ustar thresholds.}
 \usage{sEddyProc_sMDSGapFillUStarScens(...)}
 \arguments{
   \item{\dots}{other arguments to

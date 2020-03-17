@@ -16,11 +16,11 @@
 
 # REddyProc 1.2
 
-- move geofunctions functionality to packages solartime and bigleaf
+- move GeoFunctions functionality to packages solartime and bigleaf
 
 - implemented experimental modified daytime partitioning after Keenan et al. 2019
     where nighttime ecosystem respiration is estimated based on nighttime
-    estiamte of respiration at reference temperature.
+    estimate of respiration at reference temperature.
 
 # REddyProc 1.1.6
 
@@ -137,9 +137,9 @@ Gapfilling
 - not filtering day-time for low uStar (but kept option to do so)
 
 Daytime-Flux partitioning
-- estimating temperature E0 with Reference Temperatue at median of the data
+- estimating temperature E0 with reference temperature at median of the data
 - smoothing E0 estimates across time 
-- re-estimating prior and intial value of RRef for smoothed E0
+- re-estimating prior and initial value of RRef for smoothed E0
 
 ## Further changes
 

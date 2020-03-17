@@ -5,17 +5,21 @@ README.md is generated from README.Rmd. Please edit that file
 rmarkdown::render("README.Rmd") 
 maybe clear cache before
 -->
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc) [![Travis-CI Build Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
 
-Overview
---------
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
+[![Travis-CI Build
+Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
 
-`REddyProc` package supports processing (half)hourly data from Eddy-Covariance sensors.
+## Overview
 
-There is an online-formular to use the functionality of the package including description at <https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
+`REddyProc` package supports processing (half)hourly data from
+Eddy-Covariance sensors.
 
-Installation
-------------
+There is an online-formular to use the functionality of the package
+including description at
+<https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
+
+## Installation
 
 ``` r
 # Release stable version from CRAN
@@ -26,17 +30,20 @@ install.packages("REddyProc")
 devtools::install_github("bgctw/REddyProc")
 ```
 
-The REddyProc~package requires a quite recent versions of the tidyverse packages. On encountering problems on installations with older versions should run the following code before installing REddyProc.
+The REddyProc~package requires a quite recent versions of the tidyverse
+packages. On encountering problems on installations with older versions
+should run the following code before installing REddyProc.
 
 ``` r
 install.packages("tidyverse")
 update.packages(oldPkgs="dplyr")
 ```
 
-Usage
------
+## Usage
 
-A simple example performs Lookuptable-based gapFilling of Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled values.
+A simple example performs Lookuptable-based gapfilling of
+Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the
+filled values.
 
 ``` r
 library(REddyProc)
@@ -76,29 +83,41 @@ FilledEddyData <- EProc$sExportResults()
 EProc$sPlotFingerprintY('NEE_f', Year = 1998)
 ```
 
-![](README-example-1.png)
+![](README-example-1.png)<!-- -->
 
-Further examples are in [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md) and [vignette(DEGebExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md) and further md-files of the [vignettes directory](https://github.com/bgctw/REddyProc/blob/master/vignettes).
+Further examples are in
+[vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md)
+and
+[vignette(DEGebExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
+and further md-files of the [vignettes
+directory](https://github.com/bgctw/REddyProc/blob/master/vignettes).
 
-Docker images
--------------
+## Docker images
 
-Docker images are provided that comprise rstudio, rocker/tidyverse, and REddyProc. There are different version for the latest push to github, for the version on CRAN and for specific tags starting from 1.1.4.
+Docker images are provided that comprise rstudio, rocker/tidyverse, and
+REddyProc. There are different version for the latest push to github,
+for the version on CRAN and for specific tags starting from 1.1.4.
 
--   bgctw/reddyproc:latest
--   bgctw/reddyproc\_cran
--   bgctw/reddyproc:`tag`
+  - bgctw/reddyproc:latest  
+  - bgctw/reddyproc\_cran
+  - bgctw/reddyproc:`tag`
 
 They are usually run with installed docker by typing at a shell:
 
     docker run --rm -p 8787:8787 <imagename>
 
-Then the loading url `localhost:8787` in a browser window should bring up RStudio
-(default username and password are both rstudio), where you can type the above usage example.
+Then the loading url `localhost:8787` in a browser window should bring
+up RStudio  
+(default username and password are both rstudio), where you can type the
+above usage example.
 
-Reference
----------
+## Reference
 
-The methodology and benchmark of `REddyProc` 1.1.3 is described in the following paper:
+The methodology and benchmark of `REddyProc` 1.1.3 is described in the
+following paper:
 
-Wutzler, T., Lucas-Moffat, A., Migliavacca, M., Knauer, J., Sickel, K., Šigut, L., Menzer, O., and Reichstein, M. (2018): Basic and extensible post-processing of eddy covariance flux data with REddyProc, Biogeosciences, 15, 5015-5030, <https://doi.org/10.5194/bg-15-5015-2018>.
+Wutzler, T., Lucas-Moffat, A., Migliavacca, M., Knauer, J., Sickel, K.,
+Šigut, L., Menzer, O., and Reichstein, M. (2018): Basic and extensible
+post-processing of eddy covariance flux data with REddyProc,
+Biogeosciences, 15, 5015-5030,
+<https://doi.org/10.5194/bg-15-5015-2018>.

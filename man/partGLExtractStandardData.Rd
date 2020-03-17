@@ -80,7 +80,7 @@ by argument \code{neglectNEEUncertaintyOnMissing}.}
 \value{a data.frame with columns
 \item{sDateTime}{first column of \code{ds},
 usually the time stamp
-not used, but usually first column is a dateTime is kept
+not used, but usually first column is a DateTime is kept
 for aiding debug}
 \item{NEE}{NEE filtered for quality flay}
 \item{sdNEE}{standard deviation of NEE

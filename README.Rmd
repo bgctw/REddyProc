@@ -52,7 +52,7 @@ update.packages(oldPkgs="dplyr")
 
 ## Usage
 
-A simple example performs Lookuptable-based gapFilling of
+A simple example performs Lookuptable-based gapfilling of
 Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled
 values.
 

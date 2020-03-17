@@ -1,7 +1,7 @@
 \name{sEddyProc_sMDSGapFillAfterUStarDistr}
 \alias{sEddyProc_sMDSGapFillAfterUStarDistr}
 \title{sEddyProc sMDSGapFillAfterUStarDistr}
-\description{GapFilling for several filters of estimated friction velocity Ustar thresholds.}
+\description{gapfilling for several filters of estimated friction velocity Ustar thresholds.}
 \usage{sEddyProc_sMDSGapFillAfterUStarDistr(..., 
     uStarTh, uStarSuffixes = colnames(uStarTh)[-1])}
 \arguments{
@@ -17,7 +17,7 @@ Entries in first column must match levels in argument \code{seasonFactor}}
 to distinguish result columns for different ustar values.
 Its length must correspond to column numbers in \code{UstarThres.m.n}.}
 }
-\details{This method is superseedec by
+\details{This method is superseded by
 \code{\link{sEddyProc_sMDSGapFillUStarScens}} and only there
 for backward portability.}
 

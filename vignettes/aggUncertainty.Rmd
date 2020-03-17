@@ -49,7 +49,7 @@ themeTw <- theme_bw(base_size = 10) + theme(axis.title = element_text(size = 9))
 # Aggregating uncertainty to daily and annual values
 
 ## Example setup
-We start with half-hourly $u_*$-filtered and gap-filled NEE_f values. 
+We start with half-hourly $u_*$-filtered and gapfilled NEE_f values. 
 For simplicity this example uses data provided with the package and omits
 $u_*$ threshold detection but rather applies a user-specified threshold.
 
@@ -129,7 +129,7 @@ Now we can inspect the the autocorrelation of the errors.
 acf(results$resid, na.action = na.pass, main = "")
 ```
 
-The empiricical autocorrelation function shows strong positive autocorrelation 
+The empirical autocorrelation function shows strong positive autocorrelation 
 in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function 

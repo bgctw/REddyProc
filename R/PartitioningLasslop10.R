@@ -596,7 +596,7 @@ partGLExtractStandardData <- function(
 	dsR <- data.frame(
 			sDateTime = ds[[1]]			##<< first column of \code{ds},
 			  ## usually the time stamp
-			  ## not used, but usually first column is a dateTime is kept
+			  ## not used, but usually first column is a DateTime is kept
 			  ## for aiding debug
 			, NEE = NEEFiltered			      ##<< NEE filtered for quality flay
 			, sdNEE = ds[[NEESdVar]]		##<< standard deviation of NEE

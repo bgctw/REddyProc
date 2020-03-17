@@ -6,7 +6,7 @@
 \arguments{
   \item{sDateTime}{POSIXct vector}
 }
-\details{In the Berkeley-Release of the fluxnet data, the time is stored as an number
+\details{In the Berkeley-Release of the Fluxnet data, the time is stored as an number
 with base10-digits representing YYYYMMddhhmm}
 
 

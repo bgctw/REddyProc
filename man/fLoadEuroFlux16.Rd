@@ -1,7 +1,7 @@
 \name{fLoadEuroFlux16}
 \alias{fLoadEuroFlux16}
 \title{fLoadEuroFlux16}
-\description{reads a sequence of annual files in the format of europe-fluxdata 2016}
+\description{reads a sequence of annual files in the format of Europe-fluxdata 2016}
 \usage{fLoadEuroFlux16(siteName, dirName = "", additionalColumnNames = character(0))}
 \arguments{
   \item{siteName}{scalar string: the name of the site, i.e. start of the filename before _<year>_}

@@ -19,7 +19,7 @@ If only one value is given, it is used for all records.}
   \item{uStarSuffix}{Different suffixes required are for
 different u * scenarios}
   \item{isFlagEntryAfterLowTurbulence}{Set to TRUE for flagging the
-first entry after low turbulance as bad condition (by value of 2).}
+first entry after low turbulence as bad condition (by value of 2).}
   \item{isFilterDayTime}{Set to TRUE to also filter day-time values,
 default only filters night-time data}
   \item{swThr}{threshold of solar radiation below which data is

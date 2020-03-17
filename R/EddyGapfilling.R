@@ -599,7 +599,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
   , uStarSuffix = 'uStar'   ##<< Different suffixes required are for
   ## different u * scenarios
   , isFlagEntryAfterLowTurbulence = FALSE  ##<< Set to TRUE for flagging the
-  ## first entry after low turbulance as bad condition (by value of 2).
+  ## first entry after low turbulence as bad condition (by value of 2).
   , isFilterDayTime = FALSE		##<< Set to TRUE to also filter day-time values,
   ## default only filters night-time data
   , swThr = 10			  ##<< threshold of solar radiation below which data is
@@ -724,7 +724,7 @@ sEddyProc$methods(sMDSGapFillAfterUstar = sEddyProc_sMDSGapFillAfterUstar)
 
 #' @export
 sEddyProc_sMDSGapFillAfterUStarDistr <- function(
-  ### GapFilling for several filters of estimated friction velocity Ustar thresholds.
+  ### gapfilling for several filters of estimated friction velocity Ustar thresholds.
   ...                 ##<< other arguments to
   ## \code{\link{sEddyProc_sMDSGapFillAfterUstar}} and \code{\link{sEddyProc_sMDSGapFill}}
   ## such as \code{fluxVar}
@@ -738,7 +738,7 @@ sEddyProc_sMDSGapFillAfterUStarDistr <- function(
   ## Its length must correspond to column numbers in \code{UstarThres.m.n}.
   # return value function \code{\link{sEddyProc_sEstUstarThresholdDistribution}}
 ) {
-  ##details<< This method is superseedec by
+  ##details<< This method is superseded by
   ##\code{\link{sEddyProc_sMDSGapFillUStarScens}} and only there
   ## for backward portability.
   warning(
@@ -760,7 +760,7 @@ sEddyProc$methods(
 
 #' @export
 sEddyProc_sMDSGapFillUStarScens <- function(
-  ### GapFilling for several filters of estimated friction velocity Ustar thresholds.
+  ### gapfilling for several filters of estimated friction velocity Ustar thresholds.
   ...                 ##<< other arguments to
   ## \code{\link{sEddyProc_sMDSGapFillAfterUstar}} and
   ## \code{\link{sEddyProc_sMDSGapFill}}

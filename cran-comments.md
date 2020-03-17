@@ -1,10 +1,10 @@
 ## Notes
 Dear CRAN maintainers,
 
-We fixed an issue of relying on strptime returning NA for implausible doy 
-(day-of-year).
-This caused a warning in some architectures. We now explicitely check 
-for leap-years and compare each doy exceeding 365 or 366 respectively.
+In addition to the requested fix of passing implausible day-of-year
+to strptime that was submitted recently, 
+we take the chance to submit to CRAN a bunch of accumulated minor adjustments of
+the REddyProc package as described in the NEWS file.
 
 Could you, please, publish the most recent version of the REddyProc package
 on CRAN?
