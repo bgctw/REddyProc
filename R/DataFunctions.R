@@ -80,8 +80,6 @@ fConvertTimeToPosix <- function(
       Data.F, Year, c('<', 1000, '|', '>', 3000), 'fConvertTimeToPosix')
     fCheckOutsideRange(
       Data.F, Day, c('<', 1, '|', '>', 366), 'fConvertTimeToPosix')
-    fCheckOutsideRange(
-      Data.F, Hour, c('<', 0.0, '|', '>', 24.0), 'fConvertTimeToPosix')
     ## 366d-correction and 24h-correction to the first day in next year,
     ## see unit test in test_fConvertTimeToPosix.R for details.
     lYear.V.n <- Data.F[, Year]
@@ -91,23 +89,38 @@ fConvertTimeToPosix <- function(
     #Check time format
     #Important to set time zone to GMT to avoid problems
     # with daylight savings timeshifts
-    lTime.V.p <- strptime(
-      paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
-      , format = '%Y-%j-%H-%M', tz = tz)
+    # twutz 200316: the following caused chrashes instead of NA on leap years
+    # Professor Ripley: As it will cause corruption in R 3.x, you must not call 
+    # strptime() with these particular invalid values.
+    # lTime.V.p <- strptime(
+    #   paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
+    #   , format = '%Y-%j-%H-%M', tz = tz)
     #24h-correction: strptime will be NA for hour 24.0
     #(needs to be before 366d-correction since DoY changes!)
-    Hour24.b <- is.na(lTime.V.p) & (lHour.V.n == 24.0)
+    #Hour24.b <- is.na(lTime.V.p) & (lHour.V.n == 24.0)
+    Hour24.b <- (lHour.V.n == 24.0)
     lDoY.V.n[Hour24.b] <- 1 + lDoY.V.n[Hour24.b] #succeding day
     lHour.V.n[Hour24.b] <- 0.0
-    #Recheck time format
-    lTime.V.p <- strptime(
-      paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
-      , format = '%Y-%j-%H-%M', tz = tz)
+    #Recheck time format (twutz2003: errors on non-correct format)
+    # lTime.V.p <- strptime(
+    #   paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
+    #   , format = '%Y-%j-%H-%M', tz = tz)
     #366d-correction: strptime will be NA for day 366 (or 367 in leap years)
-    DoY366.b <- is.na(lTime.V.p) &
-      (lDoY.V.n == 366 | lDoY.V.n == 367) & (lHour.V.n == 0.0)
+    # DoY366.b <- is.na(lTime.V.p) &
+    #   (lDoY.V.n == 366 | lDoY.V.n == 367) & (lHour.V.n == 0.0)
+    max_doy <- ifelse(is_leap_year(lYear.V.n), 366, 365)
+    DoY366.b <- (lDoY.V.n == max_doy+1) & (lHour.V.n == 0.0)
     lYear.V.n[DoY366.b] <- 1 + lYear.V.n[DoY366.b] #succeding year
     lDoY.V.n[DoY366.b] <- 1 #first day
+    # check doy after correction for 24 hour leap year and next year
+    max_doy <- ifelse(is_leap_year(lYear.V.n), 366, 365)
+    is_invalid_doy <- lDoY.V.n < 1 | lDoY.V.n > max_doy
+    if (sum(is_invalid_doy) > 0) {
+      warning('fConvertTimeToPosix day of year outside (plausible) ',
+              'range (1,365) or (1,366) for ',
+              sum(is_invalid_doy),' cases! Invalid values with column \'', Day)
+      lYear.V.n[is_invalid_doy] <- NA 
+    }
     #Set time format
     lTime.V.p <- strptime(
       paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
@@ -202,6 +215,16 @@ fConvertTimeToPosix <- function(
 attr(fConvertTimeToPosix, 'ex') <- function() {
   # See unit test in test_fConvertTimeToPosix for example
 }
+
+is_leap_year_of_date <- function(d){
+  y <- as.POSIXlt(d)$year + 1900
+  is_leap_year(y)
+}
+
+is_leap_year <- function (y){
+  # https://r.789695.n4.nabble.com/Count-days-of-current-year-td875319.html  
+  y%%4 == 0 & (y%%100 != 0 | y%%400 == 0)
+} 
 
 #' @export
 getTZone <- function(
