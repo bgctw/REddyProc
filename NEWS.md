@@ -1,3 +1,8 @@
+# REddyProc 1.2.1
+
+- fix bug in time conversion: explicitely check for leap-years instead of
+  relying on strptime returning NA for implausible day-of-year. 
+
 # REddyProc 1.2
 
 - move geofunctions functionality to packages solartime and bigleaf
