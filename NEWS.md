@@ -1,6 +1,17 @@
+# REddyProc 1.2.2
+
+- improved error messages on uStar problems
+- deal with missing night-time data during day-time partitioning
+- provide option to select uStar case for which to keep detailed results when 
+  computing several scenarios 
+  and explain the new argument uStarScenKeep in uStarCases vignette.
+- fix error in aggUncertainty vignette of requiring nEff of at least one 
+  instead of zero.
+- check assumption of non-missing VPD at entry of daytime partitioning.
+
 # REddyProc 1.2.1
 
-- fix bug in time conversion: explicitely check for leap-years instead of
+- fix bug in time conversion: explicitly check for leap-years instead of
   relying on strptime returning NA for implausible day-of-year. 
 
 # REddyProc 1.2
