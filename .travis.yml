@@ -7,11 +7,11 @@ cache: packages
 env: _R_CHECK_FORCE_SUGGESTS_=false
 
 # failures: Unable to locate package r-cran-dplyr
-r_binary_packages:
-  - segmented
-  - testthat
+#r_binary_packages:
 
 r_packages:
+  - segmented
+  - testthat
   - dplyr
   - purrr
   - tibble
