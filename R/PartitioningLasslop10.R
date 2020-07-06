@@ -1,6 +1,6 @@
 #' @export
 partitionNEEGL <- function(
-		### Partitioning NEE fluxes into GP and Reco after daytime method.
+		### Partition NEE fluxes into GP and Reco using the daytime method.
 		ds							##<< dataset with all the specified input columns
 		  ## and full days in equidistant times
 		, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0('NEE', suffixDash, '_f')		##<< Variable of NEE

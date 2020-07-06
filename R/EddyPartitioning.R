@@ -6,13 +6,18 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
   ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
   ## Defaults to the first scenario.
+  , isWarnReplaceColumns = FALSE  ##<< overriding defaul to avoid
+  ## the warning on replacing output columns, because this is intended when
+  ## processing several uStar scenarios.
+
 ) {
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
   tmp <- sApplyUStarScen(
-    .self$sGLFluxPartition, ..., uStarScenKeep = uStarScenKeep)
+    .self$sGLFluxPartition, ..., uStarScenKeep = uStarScenKeep,
+    isWarnReplaceColumns = isWarnReplaceColumns)
   NULL
 }
 sEddyProc$methods(

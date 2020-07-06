@@ -1,7 +1,7 @@
 \name{partitionNEEGL}
 \alias{partitionNEEGL}
 \title{partitionNEEGL}
-\description{Partitioning NEE fluxes into GP and Reco after daytime method.}
+\description{Partition NEE fluxes into GP and Reco using the daytime method.}
 \usage{partitionNEEGL(ds, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0("NEE", 
     suffixDash, "_f"), TempVar = if (!missing(TempVar.s)) TempVar.s else "Tair_f", 
     VPDVar = if (!missing(VPDVar.s)) VPDVar.s else "VPD_f", 
