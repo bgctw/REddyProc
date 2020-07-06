@@ -1,3 +1,7 @@
+# REddyProc 1.2.1
+
+- new function sEddyProc_sGetUstarSuffixes
+
 # REddyProc 1.2
 
 - move geofunctions functionality to packages solartime and bigleaf
