@@ -1,6 +1,6 @@
 Package: REddyProc
 Type: Package
-Version: 1.2
+Version: 1.2.3
 Title: Post Processing of (Half-)Hourly Eddy-Covariance Measurements
 Authors@R: c( person( "Department for Biogeochemical Integration at MPI-BGC, Jena, Germany", role=c("cph"), email="REddyProc-help@bgc-jena.mpg.de" )
               ,person( "Thomas", "Wutzler", role=c("aut","cre"), email="twutz@bgc-jena.mpg.de" )
@@ -41,7 +41,7 @@ LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
 Imports: dplyr, purrr, rlang, mlegp, tibble, magrittr, solartime
 Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown, lognorm, ggplot2, 
-    tidyr, bigleaf (>= 0.7)
+    tidyr, bigleaf (>= 0.7), markdown
 Collate: 
     'CheckVal.R'
     'DataFunctions.R'
