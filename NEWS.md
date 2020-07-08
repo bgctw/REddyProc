@@ -1,3 +1,9 @@
+# REddyProc 1.2.1
+
+- new function sEddyProc_sGetUstarSuffixes to get current uStar suffixes
+- refactoring: replace deprecated select_ method by select
+- avoid warning on replacing columns during scenarios of daytime partitioning
+
 # REddyProc 1.2
 
 - move geofunctions functionality to packages solartime and bigleaf

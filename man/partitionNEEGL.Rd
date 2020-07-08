@@ -1,7 +1,7 @@
 \name{partitionNEEGL}
 \alias{partitionNEEGL}
 \title{partitionNEEGL}
-\description{Partitioning NEE fluxes into GP and Reco after daytime method.}
+\description{Partition NEE fluxes into GP and Reco using the daytime method.}
 \usage{partitionNEEGL(ds, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0("NEE", 
     suffixDash, "_f"), TempVar = if (!missing(TempVar.s)) TempVar.s else "Tair_f", 
     VPDVar = if (!missing(VPDVar.s)) VPDVar.s else "VPD_f", 
@@ -96,7 +96,7 @@ net ecosystem exchange into assimilation and respiration using
 a light response curve approach: critical issues and global evaluation.
 Global Change Biology, Volume 16, Issue 1, Pages 187-208}
 \author{TW
-Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-help@bgc-jena.mpg.de> [cph], Thomas Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Olaf Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Kerstin Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Ladislav Šigut <sigut.l@czechglobe.cz> [ctb]}
+Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-help@bgc-jena.mpg.de> [cph], Thomas Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Olaf Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Kerstin Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Ladislav <U+0160>igut <sigut.l@czechglobe.cz> [ctb]}
 
 
 

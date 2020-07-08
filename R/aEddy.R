@@ -324,6 +324,19 @@ sEddyProc_sGetUstarScenarios <- function(
 sEddyProc$methods(sGetUstarScenarios = sEddyProc_sGetUstarScenarios)
 
 #' @export
+sEddyProc_sGetUstarSuffixes <- function(
+  ### get the current uStar suffixes
+){
+  ##seealso<<
+  ## \code{\link{sEddyProc_sGetUstarScenarios}}
+  ##value<< a character vector of suffixes.
+  ## If no uStar thresholds have been estimated, returns character(0)
+  if (nrow(.self$sUSTAR_SCEN) == 0) return(character(0))
+  names(.self$sGetUstarScenarios())[-1L]
+}
+sEddyProc$methods(sGetUstarSuffixes = sEddyProc_sGetUstarSuffixes)
+
+#' @export
 sEddyProc_sGetData <- function(
   ### Get class internal sDATA data frame
 ) {
