@@ -44,3 +44,76 @@ fLoadEuroFlux16 <- function(
 	ans <- fConvertGapsToNA(ans)
 	ans
 }
+
+
+#' extract processing results with columns corresponding to Fluxnet15 release
+#'
+#' @param EProc sEddyProc class with uncertainty also in meteo variables and
+#' both nighttime and daytime partitioning columns present
+#'
+#' @return data.frame with columns names of Fluxnet15. Timestamps are
+#'   in ISO string format \code{\link{posix_to_isostring}}
+#' @export
+extract_FN15 <- function(EProc) {
+  input <- EProc$sTEMP
+  replace_patterns <- tribble(
+    ~pattern, ~replacement, ~flux, ~method,
+    "^NEE_U(\\d\\d)_f$", "NEE_VUT_\\1", "NEE", "",
+    "^GPP_U(\\d\\d)_f$", "GPP_NT_VUT_\\1", "GPP", "NT",
+    "^GPP_DT_U(\\d\\d)$", "GPP_DT_VUT_\\1", "GPP", "DT",
+    "^Reco_U(\\d\\d)$", "RECO_NT_VUT_\\1", "GPP", "NT",
+    "^Reco_DT_U(\\d\\d)$", "RECO_DT_VUT_\\1", "GPP", "DT"
+  )
+  # do not import stringr for dependencies
+  str_replace <- function(x,pattern,replacement) gsub(pattern, replacement, x)
+  replaceFun <- function(pattern, replacement,...){
+    tmp <- input %>% select(matches(pattern))
+    names(tmp) <- names(tmp) %>% str_replace(pattern, replacement)
+    tmp
+  }
+  output_ustar <- replace_patterns %>% pmap(replaceFun) %>% bind_cols()
+  #summary(output_ustar)
+  #
+  output_add <- cbind(EProc$sDATA, EProc$sTEMP[-1]) %>% select(
+    NEE_VUT_USTAR50_QC = .data$NEE_U50_fqc,
+    NEE_VUT_USTAR50_RANDUNC	= .data$NEE_U50_fsd,
+    NEE_VUT_USTAR50_RANDUNC_N	= .data$NEE_U50_fnum,
+    NIGHT	= .data$night,
+    SW_IN_F_MDS	= .data$Rg_f,
+    SW_IN_F_MDS_QC = .data$Rg_fqc,
+    SW_IN_POT = .data$PotRad_NEW,
+    TA_F_MDS = .data$Tair_f,
+    TA_F_MDS_QC = .data$Tair_fqc,
+    USTAR = .data$Ustar,
+    VPD_F_MDS = .data$VPD_f,
+    VPD_F_MDS_QC = .data$VPD_fqc,
+    USTAR_THRESHOLD = .data$Ustar_uStar_Thres
+  )
+  #summary(output_add)
+  #
+  time <- EProc$sDATA$sDateTime
+  timestep <- difftime(time[2],time[1], units = "hours")
+  output_time <- tibble(
+    TIMESTAMP_START = posix_to_isostring(time - timestep/2),
+    TIMESTAMP_END = posix_to_isostring(time + timestep/2)
+  )
+  bind_cols(output_time, output_ustar, output_add)
+}
+
+
+#' convert between timestamp formats
+#'
+#' @describeIn posix_to_isostring
+#'   convert POSIX format to ISO string format used in Fluxnet15: YYYYMMDDHHMM
+#' @param x vector of timestamps in input format
+#' @return fector of timestamps in output format
+#' @export
+posix_to_isostring <- function(x) strftime(x, format = "%Y%m%d%H%M")
+
+#' @describeIn posix_to_isostring
+#'   convert ISO string format used in Fluxnet15: YYYYMMDDHHMM to POSIXct
+#' @export
+isostring_to_posix <- function(x) as.POSIXct(strptime(x, format = "%Y%m%d%H%M"))
+
+
+

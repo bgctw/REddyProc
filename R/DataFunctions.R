@@ -220,6 +220,17 @@ attr(getTZone, "ex") <- function() {
   getTZone(Sys.time())
 }
 
+#' Get the timestep in fractional hours
+#'
+#' @param x Vector of POSIX timestamps of at least length 2.
+#' @return Nmeric scalar of the time difference of the first two entries
+#'   in fraction hours.
+#' @export
+get_timestep_hours <- function(x){
+  as.numeric(difftime(x[2],x[1], units = "hours"))
+}
+
+
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
