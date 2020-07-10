@@ -62,7 +62,8 @@ extract_FN15 <- function(EProc) {
     "^GPP_U(\\d\\d)_f$", "GPP_NT_VUT_\\1", "GPP", "NT",
     "^GPP_DT_U(\\d\\d)$", "GPP_DT_VUT_\\1", "GPP", "DT",
     "^Reco_U(\\d\\d)$", "RECO_NT_VUT_\\1", "GPP", "NT",
-    "^Reco_DT_U(\\d\\d)$", "RECO_DT_VUT_\\1", "GPP", "DT"
+    "^Reco_DT_U(\\d\\d)$", "RECO_DT_VUT_\\1", "GPP", "DT",
+    "^Ustar_Thresh_U(\\d\\d)$", "USTAR_THRESHOLD_VUT_\\1", "", ""
   )
   # do not import stringr for dependencies
   str_replace <- function(x,pattern,replacement) gsub(pattern, replacement, x)
@@ -86,8 +87,8 @@ extract_FN15 <- function(EProc) {
     TA_F_MDS_QC = .data$Tair_fqc,
     USTAR = .data$Ustar,
     VPD_F_MDS = .data$VPD_f,
-    VPD_F_MDS_QC = .data$VPD_fqc,
-    USTAR_THRESHOLD = .data$Ustar_uStar_Thres
+    VPD_F_MDS_QC = .data$VPD_fqc
+    #USTAR_THRESHOLD = .data$Ustar_uStar_Thres
   )
   #summary(output_add)
   #

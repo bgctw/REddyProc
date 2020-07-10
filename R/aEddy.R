@@ -348,6 +348,22 @@ sEddyProc_sGetData <- function(
 }
 sEddyProc$methods( sGetData = sEddyProc_sGetData)
 
+#' Add columns reporting the uStar threshold for each scenario to sDATA
+#'
+#' @return side effect in .self$sDATA new columns Ustar_Thresh_<ustarsuffix>
+#' @seealso \code{\link{sEddyProc_sGetUstarScenarios}}
+#' @export
+sEddyProc_update_ustarthreshold_columns <- function(){
+  uStarScen <- .self$sGetUstarScenarios()
+  prefix <- "Ustar_Thresh_"
+  names(uStarScen)[-1] <- paste0(prefix, names(uStarScen)[-1])
+  .self$sTEMP <- .self$sTEMP %>% select(-grep(paste0("^",prefix), names(.self$sTEMP)))
+  .self$sTEMP <- left_join(.self$sTEMP, uStarScen, by="season")
+  invisible(.self)
+}
+sEddyProc$methods(update_ustarthreshold_columns =
+                     sEddyProc_update_ustarthreshold_columns)
+
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
