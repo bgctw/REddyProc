@@ -86,13 +86,13 @@ sEddyProc_initialize <- function(
   ## The time stamp must be provided in POSIX format, see also
   ## \code{\link{fConvertTimeToPosix}}.
   ## For required properties of the time series, see \code{\link{fCheckHHTimeSeries}}.
-  fCheckHHTimeSeries(Data[, ColPOSIXTime], DTS = DTS, 'sEddyProc.initialize')
+  fCheckHHTimeSeries(Data[[ColPOSIXTime]], DTS = DTS, 'sEddyProc.initialize')
 
   ##details<<
   ## Internally the half-hour time stamp is shifted to the middle of the
   ## measurement period (minus 15 minutes or 30 minutes).
   #half-period time offset in seconds
-  Time.V.p <- Data[, ColPOSIXTime] - (0.5 * 24 / DTS * 60 * 60)
+  Time.V.p <- Data[[ColPOSIXTime]] - (0.5 * 24 / DTS * 60 * 60)
 
   ##details<<
   ## All other columns may only contain numeric data.
@@ -107,7 +107,7 @@ sEddyProc_initialize <- function(
   ##details<< sID is a string for the site ID.
   sID <<- ID
   ##details<< sDATA is a data frame with site data.
-  sDATA <<- cbind(sDateTime = Time.V.p, Data[, ColNames, drop = FALSE])
+  sDATA <<- cbind(sDateTime = Time.V.p, as.data.frame(Data[, ColNames, drop = FALSE]))
   ##details<< sTEMP is a temporal data frame with the processing results.
   sTEMP <<- data.frame(sDateTime = Time.V.p)
   #Initialization of site data information from POSIX time stamp.
