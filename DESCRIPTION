@@ -64,6 +64,5 @@ Collate:
     'RcppExports.R'
     'imports.R'
     'logitnorm.R'
-    'update_ustarthreshold_columns.R'
     'variableNames.R'
     'zzzDebugCode.R'

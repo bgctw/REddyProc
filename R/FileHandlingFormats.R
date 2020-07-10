@@ -95,26 +95,11 @@ extract_FN15 <- function(EProc) {
   time <- EProc$sDATA$sDateTime
   timestep <- difftime(time[2],time[1], units = "hours")
   output_time <- tibble(
-    TIMESTAMP_START = posix_to_isostring(time - timestep/2),
-    TIMESTAMP_END = posix_to_isostring(time + timestep/2)
+    TIMESTAMP_START = POSIXctToBerkeleyJulianDate(time - timestep/2),
+    TIMESTAMP_END = POSIXctToBerkeleyJulianDate(time + timestep/2)
   )
   bind_cols(output_time, output_ustar, output_add)
 }
-
-
-#' convert between timestamp formats
-#'
-#' @describeIn posix_to_isostring
-#'   convert POSIX format to ISO string format used in Fluxnet15: YYYYMMDDHHMM
-#' @param x vector of timestamps in input format
-#' @return fector of timestamps in output format
-#' @export
-posix_to_isostring <- function(x) strftime(x, format = "%Y%m%d%H%M")
-
-#' @describeIn posix_to_isostring
-#'   convert ISO string format used in Fluxnet15: YYYYMMDDHHMM to POSIXct
-#' @export
-isostring_to_posix <- function(x) as.POSIXct(strptime(x, format = "%Y%m%d%H%M"))
 
 
 
