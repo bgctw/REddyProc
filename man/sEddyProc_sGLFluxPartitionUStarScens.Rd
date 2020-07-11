@@ -3,7 +3,8 @@
 \title{sEddyProc sGLFluxPartitionUStarScens}
 \description{Flux partitioning after Lasslop et al. (2010)}
 \usage{sEddyProc_sGLFluxPartitionUStarScens(..., 
-    uStarScenKeep = character(0), isWarnReplaceColumns = FALSE)}
+    uStarScenKeep = character(0), isWarnReplaceColumns = FALSE, 
+    warnOnOtherErrors = FALSE)}
 \arguments{
   \item{\dots}{arguments to \code{\link{sEddyProc_sGLFluxPartition}}}
   \item{uStarScenKeep}{Scalar string specifying the scenario
@@ -12,6 +13,8 @@ Defaults to the first scenario.}
   \item{isWarnReplaceColumns}{overriding defaul to avoid
 the warning on replacing output columns, because this is intended when
 processing several uStar scenarios.}
+  \item{warnOnOtherErrors}{Set to only display a warning on errors in
+uStarScneraios other than uStarScenKeep instead of stopping.}
 }
 \details{Daytime-based partitioning of measured net ecosystem fluxes into
 gross primary production (GPP) and ecosystem respiration (Reco)

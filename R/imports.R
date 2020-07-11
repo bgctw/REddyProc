@@ -16,6 +16,7 @@ NULL
 #' @importFrom stats aggregate anova approx coef cor cov lm median na.omit
 #'        nls nls.control optim predict quantile resid rnorm sd setNames
 #' @importFrom utils capture.output download.file read.csv recover write.table
+#'        warnErrList
 #' @importFrom stats plogis qlogis
 NULL
 

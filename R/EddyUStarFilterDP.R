@@ -1275,6 +1275,8 @@ sEddyProc_sEstimateUstarScenarios <- function(
   , probs = c(0.05, 0.5, 0.95)	##<< the quantiles of the bootstrap sample
   ## to return. Default is the 5%, median and 95% of the bootstrap
   , isVerbose = TRUE				##<< set to FALSE to omit printing progress
+  , suppressWarningsAfterFirst = TRUE ##<< set to FALSE to show also warnings
+  ## for all bootstrap esimates instead of only the first bootstrap sample
 ) {
   ##author<< TW
   ##details<<
@@ -1346,9 +1348,15 @@ sEddyProc_sEstimateUstarScenarios <- function(
   }
   # collect into one big matrix
   Ustar.l0 <- res0$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
-  Ustar.l <- suppressMessages(
-    Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
-  )
+  if(isTRUE(suppressWarningsAfterFirst)) {
+    Ustar.l <- suppressWarnings(suppressMessages(
+      Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
+    ))
+  } else {
+    Ustar.l <- suppressMessages(
+      Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
+    )
+  }
   if (isTRUE(isVerbose) ) message("")	# line break
   stat <- do.call(rbind, c(list(Ustar.l0), Ustar.l))
   ##details<< \describe{\item{Quality Assurance}{
@@ -1414,6 +1422,8 @@ sEddyProc_sApplyUStarScen <- function(
   , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
   ## for which to keep parameters. If not specified defaults to the first
   ## entry in \code{uStarSuffixes}.
+  , warnOnOtherErrors = FALSE ##<< Set to only display a warning on errors in
+  ## uStarScneraios other than uStarScenKeep instead of stopping.
 ) {
   ##details<<
   ## When repeating computations, some of the
@@ -1426,10 +1436,21 @@ sEddyProc_sApplyUStarScen <- function(
   if (is.na(iKeep)) stop(
     "Provided uStarScenKeep=",uStarScenKeep," was not among Scenarios: "
     ,paste(uStarSuffixes,collapse = ","))
-  uStarSuffixesOrdered = c(uStarSuffixes[iKeep], uStarSuffixes[-iKeep])
-  resScen <- setNames(rev(lapply(rev(uStarSuffixesOrdered), function(suffix){
-    FUN(..., suffix = suffix)
-  })), uStarSuffixesOrdered)
+  uStarSuffixesOther <- uStarSuffixes[-iKeep]
+  resScenOther <- setNames(
+    if (isTRUE(warnOnOtherErrors)) {
+      warnErrList(lapply(uStarSuffixesOther, function(suffix){
+        try(FUN(..., suffix = suffix),silent = TRUE)}))
+    } else {
+      lapply(uStarSuffixesOther, function(suffix){
+        FUN(..., suffix = suffix)})
+    }
+    , uStarSuffixesOther)
+  # the one to keep must be called last, so that columns do not get overridden
+  resScenKeep <- setNames(list(
+    FUN(..., suffix = uStarSuffixes[iKeep])
+  ), uStarSuffixes[iKeep])
+  resScen <- c(resScenKeep, resScenOther)
 }
 sEddyProc$methods(sApplyUStarScen =
                     sEddyProc_sApplyUStarScen)

@@ -9,15 +9,18 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   , isWarnReplaceColumns = FALSE  ##<< overriding defaul to avoid
   ## the warning on replacing output columns, because this is intended when
   ## processing several uStar scenarios.
-
+  , warnOnOtherErrors = FALSE ##<< Set to only display a warning on errors in
+  ## uStarScneraios other than uStarScenKeep instead of stopping.
 ) {
   ##details<<
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  tmp <- sApplyUStarScen(
+  tmp <- .self$sApplyUStarScen(
     .self$sGLFluxPartition, ..., uStarScenKeep = uStarScenKeep,
-    isWarnReplaceColumns = isWarnReplaceColumns)
+    warnOnOtherErrors = warnOnOtherErrors,
+    isWarnReplaceColumns = isWarnReplaceColumns,
+    )
   NULL
 }
 sEddyProc$methods(
@@ -84,7 +87,7 @@ sEddyProc_sTKFluxPartitionUStarScens <- function(
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  tmp <- sApplyUStarScen(
+  tmp <- .self$sApplyUStarScen(
     .self$sTKFluxPartition, ..., uStarScenKeep = uStarScenKeep )
   NULL
 }
@@ -119,7 +122,7 @@ sEddyProc_sMRFluxPartitionUStarScens <- function(
   ## Nighttime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  tmp <- sApplyUStarScen(
+  tmp <- .self$sApplyUStarScen(
     .self$sMRFluxPartition, ..., uStarScenKeep = uStarScenKeep)
   ##value<< NULL, it adds output columns in the class
   invisible(tmp)

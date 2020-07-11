@@ -350,6 +350,8 @@ sEddyProc$methods( sGetData = sEddyProc_sGetData)
 
 #' Add columns reporting the uStar threshold for each scenario to sDATA
 #'
+#' Add columns reporting the uStar threshold for each scenario to sDATA
+#'
 #' @return side effect in .self$sDATA new columns Ustar_Thresh_<ustarsuffix>
 #' @seealso \code{\link{sEddyProc_sGetUstarScenarios}}
 #' @export

@@ -48,11 +48,13 @@ fLoadEuroFlux16 <- function(
 
 #' extract processing results with columns corresponding to Fluxnet15 release
 #'
+#' extract processing results with columns corresponding to Fluxnet15 release
+#'
 #' @param EProc sEddyProc class with uncertainty also in meteo variables and
 #' both nighttime and daytime partitioning columns present
 #'
 #' @return data.frame with columns names of Fluxnet15. Timestamps are
-#'   in ISO string format \code{\link{posix_to_isostring}}
+#'   in ISO string format \code{\link{POSIXctToBerkeleyJulianDate}}
 #' @export
 extract_FN15 <- function(EProc) {
   input <- EProc$sTEMP

@@ -847,10 +847,10 @@ partGLFitLRCOneWindow <- function(
 		idx <- sample(nrow(dsDay), replace = TRUE)
 		dsDayB <- dsDay[idx, ]
 		theta[iPosE0] <- E0[iBoot]
-		resOptBoot <- lrcFitter$optimLRCOnAdjustedPrior(theta, iOpt = iOpt
+		resOptBoot <- try(lrcFitter$optimLRCOnAdjustedPrior(theta, iOpt = iOpt
 		  , dsDay = dsDayB
-			, parameterPrior = parameterPrior, ctrl = controlGLPart)
-		if (resOptBoot$convergence == 0L) {
+			, parameterPrior = parameterPrior, ctrl = controlGLPart), silent = TRUE)
+		if (!inherits(resOptBoot, "try-error") && resOptBoot$convergence == 0L) {
 			#TODO: also remove the very bad cases?
 			ans[iBoot, ]<- resOptBoot$theta
 		}else{
