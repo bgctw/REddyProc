@@ -86,7 +86,7 @@ LightResponseCurveFitter_fitLRC <- function(
 		resOpt <- resOpt3Valid[[iBest <- which.min(optSSE)]] # select lowest cost
 		thetaOpt<- resOpt$theta
 		if (controlGLPart$nBootUncertainty == 0L) {
-			##details<< If \code{controlGLPart.l$nBootUncertainty == 0L} then the
+			##details<< If \code{controlGLPart$nBootUncertainty == 0L} then the
 			## covariance matrix of the
 			## parameters is estimated by the Hessian of the LRC curve at optimum.
 			## Then, the additional uncertainty and covariance with uncertainty E0

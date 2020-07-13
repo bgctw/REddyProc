@@ -100,7 +100,7 @@ sEddyProc_initialize <- function(
   ## be used in the processing.
   ## The columns are also checked for plausibility with warnings if outside range.
   fCheckColNum(
-    Data, setdiff(ColNames, ColNamesNonNumeric), 'sEddyProc.initialize')
+    Data, setdiff(ColNames, union(ColPOSIXTime,ColNamesNonNumeric)), 'sEddyProc.initialize')
   fCheckColPlausibility(Data, ColNames, 'sEddyProc.initialize')
 
   ##details<< There are several fields initialized within the class.

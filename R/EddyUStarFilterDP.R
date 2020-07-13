@@ -51,7 +51,7 @@ sEddyProc_sSetUStarSeasons <- function(
   ### factor for subsetting times with different uStar threshold (see details)
 ) {
   ##author<< TW
-  sTEMP$season <<- seasonFactor
+  sTEMP$season <<- as.factor(seasonFactor)
   ##value<< class with updated \code{seasonFactor}
   invisible(.self)
 }
@@ -1424,13 +1424,13 @@ sEddyProc_sApplyUStarScen <- function(
   ## entry in \code{uStarSuffixes}.
   , warnOnOtherErrors = FALSE ##<< Set to only display a warning on errors in
   ## uStarScneraios other than uStarScenKeep instead of stopping.
+  , uStarSuffixes = .self$sGetUstarSuffixes()
 ) {
   ##details<<
   ## When repeating computations, some of the
   ## output variables maybe replaced. Argument \code{uStarKeep}
   ## allows to select the scenario which is computed last,
   ## and hence to which ouptut columns refer to.
-  uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
   if (length(uStarScenKeep) != 1) uStarScenKeep = uStarSuffixes[1]
   iKeep = match(uStarScenKeep, uStarSuffixes)
   if (is.na(iKeep)) stop(

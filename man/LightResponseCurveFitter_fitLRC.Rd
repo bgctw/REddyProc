@@ -26,7 +26,7 @@ from nightTime estimate.
 \code{E0} is fixed to the night-time estimate, but varies for estimating
 parameter uncertainty.
 
-If \code{controlGLPart.l$nBootUncertainty == 0L} then the
+If \code{controlGLPart$nBootUncertainty == 0L} then the
 covariance matrix of the
 parameters is estimated by the Hessian of the LRC curve at optimum.
 Then, the additional uncertainty and covariance with uncertainty E0

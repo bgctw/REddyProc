@@ -3,7 +3,7 @@
 \title{sEddyProc sApplyUStarScen}
 \description{apply a function with changing the suffix argument}
 \usage{sEddyProc_sApplyUStarScen(FUN, ..., uStarScenKeep = character(0), 
-    warnOnOtherErrors = FALSE)}
+    warnOnOtherErrors = FALSE, uStarSuffixes = .self$sGetUstarSuffixes())}
 \arguments{
   \item{FUN}{function to be applied}
   \item{\dots}{further arguments to FUN}
@@ -12,6 +12,8 @@ for which to keep parameters. If not specified defaults to the first
 entry in \code{uStarSuffixes}.}
   \item{warnOnOtherErrors}{Set to only display a warning on errors in
 uStarScneraios other than uStarScenKeep instead of stopping.}
+  \item{uStarSuffixes}{
+}
 }
 \details{When repeating computations, some of the
 output variables maybe replaced. Argument \code{uStarKeep}
