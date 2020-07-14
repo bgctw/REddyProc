@@ -104,12 +104,18 @@ for the version on CRAN and for specific tags starting from 1.1.4.
 
 They are usually run with installed docker by typing at a shell:
 
-    docker run --rm -p 8787:8787 <imagename>
+    docker run --rm -p 8787:8787 -e PASSWORD=REddyProc <imagename>
 
 Then the loading url `localhost:8787` in a browser window should bring
 up RStudio  
-(default username and password are both rstudio), where you can type the
-above usage example.
+(default username is rstudio and password was set to REddyProc), where
+you can type the above usage example.
+
+For processing your own files in docker you need to mount local
+directories with the [–mount
+option](https://docs.docker.com/storage/bind-mounts/), e.g. `--mount
+type=bind,source=/home/twutz/devR,target=/home/rstudio/devR -e
+USERID=$UID`
 
 ## Reference
 
