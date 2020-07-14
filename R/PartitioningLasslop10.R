@@ -1,6 +1,6 @@
 #' @export
 partitionNEEGL <- function(
-		### Partitioning NEE fluxes into GP and Reco after daytime method.
+		### Partition NEE fluxes into GP and Reco using the daytime method.
 		ds							##<< dataset with all the specified input columns
 		  ## and full days in equidistant times
 		, NEEVar = if (!missing(NEEVar.s)) NEEVar.s else paste0('NEE', suffixDash, '_f')		##<< Variable of NEE
@@ -881,7 +881,7 @@ partGLInterpolateFluxes <- function(
 	# create a dataframe with index of rows of estimates before and after and
 	# corresponding weights
 	iValidWin <- which(is.finite(resParms$parms_out_range))
-	summaryLRC <- resParms %>% select_(~-resOpt) %>% slice(iValidWin)
+	summaryLRC <- resParms %>% select(-.data$resOpt) %>% slice(iValidWin)
     resOptList <- resParms$resOpt[iValidWin]
 	nLRC <- nrow(summaryLRC)
 	nRec <- length(Rg)

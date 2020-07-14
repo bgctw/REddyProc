@@ -9,7 +9,7 @@ Authors@R: c( person( "Department for Biogeochemical Integration at MPI-BGC, Jen
               ,person( "Olaf", "Menzer", role=c("ctb"), email="omenzer@bgc-jena.mpg.de" )
               ,person( "Mirco", "Migliavacca", role=c("aut"), email="mmiglia@bgc-jena.mpg.de" )
               ,person( "Kerstin", "Sickel", role=c("ctb","trl"), email="ksickel@bgc-jena.mpg.de" )
-              ,person( "Ladislav", "Šigut", role=c("ctb"), email="sigut.l@czechglobe.cz" )
+              ,person( "Ladislav", "<U+0160>igut", role=c("ctb"), email="sigut.l@czechglobe.cz" )
               )
 Description: Standard and extensible Eddy-Covariance data post-processing 
   (Wutzler et al. (2018) <doi:10.5194/bg-15-5015-2018>)
@@ -35,13 +35,13 @@ URL: https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb,
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
 Imports: dplyr, purrr, rlang, mlegp, tibble, magrittr, solartime
 Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown, lognorm, ggplot2, 
-    tidyr, bigleaf (>= 0.7)
+    tidyr, bigleaf (>= 0.7), markdown
 Collate: 
     'CheckVal.R'
     'DataFunctions.R'

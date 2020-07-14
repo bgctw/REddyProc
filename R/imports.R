@@ -39,3 +39,5 @@ NULL
 #' @export
 NULL
 #"%>%" <- magrittr::"%>%"
+
+NULL

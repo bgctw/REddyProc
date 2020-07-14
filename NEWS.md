@@ -13,6 +13,9 @@
 
 - fix bug in time conversion: explicitly check for leap-years instead of
   relying on strptime returning NA for implausible day-of-year. 
+- new function sEddyProc_sGetUstarSuffixes to get current uStar suffixes
+- refactoring: replace deprecated select_ method by select
+- avoid warning on replacing columns during scenarios of daytime partitioning
 
 # REddyProc 1.2
 

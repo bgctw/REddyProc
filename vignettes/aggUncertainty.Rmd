@@ -137,9 +137,12 @@ Computation of effective number of observations is provided by function
 autocorrelation function for given model-data residuals.
 
 ```{r}
-library(lognorm)
-autoCorr <- computeEffectiveAutoCorr(results$resid)
-nEff <- computeEffectiveNumObs(results$resid, na.rm = TRUE)
+if (!requireNamespace("lognorm")) {
+  cat("This vignette requires the lognorm package to be installed.")
+  knitr::knit_exit()
+}
+autoCorr <- lognorm::computeEffectiveAutoCorr(results$resid)
+nEff <- lognorm::computeEffectiveNumObs(results$resid, na.rm = TRUE)
 c( nEff = nEff, nObs = sum(is.finite(results$resid)))
 ```
 
@@ -180,7 +183,7 @@ aggDay <- results %>% group_by(DoY) %>%
   summarise(
     DateTime = first(DateTime)
     , nRec = sum( NEE_uStar_fqc == 0, na.rm = TRUE)
-    , nEff = computeEffectiveNumObs(
+    , nEff = lognorm::computeEffectiveNumObs(
        resid, effAcf = !!autoCorr, na.rm = TRUE)
     , NEE = mean(NEE_uStar_f, na.rm = TRUE)
     , sdNEE = if (nEff <= 1) NA_real_ else sqrt(
