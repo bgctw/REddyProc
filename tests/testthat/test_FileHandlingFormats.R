@@ -1,0 +1,37 @@
+#require(testthat)
+context("FileHandlingFormats")
+
+test_that("extract_FN15",{
+  ds <- Example_DETha98 %>%
+    filterLongRuns("NEE") %>%
+    fConvertTimeToPosix('YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+  EProc <- sEddyProc$new("DE-Tha", ds, c('NEE','Rg','Tair','VPD', 'Ustar'))
+  ds_fn15 <- extract_FN15(EProc)
+  expect_equal(nrow(ds_fn15), nrow(EProc$sExportData()))
+  expect_true( all(c("TIMESTAMP_START", "TIMESTAMP_END") %in% names(ds_fn15) ))
+  expect_true( all(c("NEE_ORIG", "SW_IN", "TA",
+                     "USTAR", "VPD") %in% names(ds_fn15) ))
+})
+
+test_that("read_from_fluxnet15",{
+  ds <- Example_DETha98 %>%
+    filterLongRuns("NEE") %>%
+    fConvertTimeToPosix('YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+  EProc <- sEddyProc$new("DE-Tha", ds, c('NEE','Rg','Tair','VPD', 'Ustar'))
+  ds_fn15 <- extract_FN15(EProc)
+  ds_fn15$season <- factor("199801")
+  ds_eproc <- read_from_fluxnet15(rename(ds_fn15, NEE = "NEE_ORIG"))
+	expect_true( all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar') %in% names(ds_eproc)) )
+	#
+	fname <- tempfile()
+	write_csv(mutate(ds_fn15, season = factor(199801), NEE = .data$NEE_ORIG), fname, na = "-9999")
+	ds_eproc <- fLoadFluxnet15(fname, "season")
+	expect_true( all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
+	write_csv(mutate(ds_fn15, season = factor(199801)), fname, na = "-9999")
+	ds_eproc <- fLoadFluxnet15(fname, colname_NEE = "NEE_ORIG",
+	                           additional_columns = cols(season = col_factor()))
+	expect_true( all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
+	# test creating REddyProc class with default names
+	EProc <- sEddyProc$new("DE-Tha", ds)
+})
+

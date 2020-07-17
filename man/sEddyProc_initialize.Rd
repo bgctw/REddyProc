@@ -3,7 +3,8 @@
 \title{sEddyProc initialize}
 \description{Initializing sEddyProc class during \code{sEddyProc$new}.}
 \usage{sEddyProc_initialize(ID = ID.s, Data = Data.F, 
-    ColNames = ColNames.V.s, ColPOSIXTime = "DateTime", 
+    ColNames = c("NEE", "Rg", "Tair", "VPD", 
+        "Ustar"), ColPOSIXTime = "DateTime", 
     DTS = if (!missing(DTS.n)) DTS.n else 48, 
     ColNamesNonNumeric = character(0), LatDeg = NA_real_, 
     LongDeg = if (!missing(Long_deg.n)) Long_deg.n else NA_real_, 
@@ -15,8 +16,9 @@
   \item{ID}{String with site ID}
   \item{Data}{Data frame with at least three month
 of (half-)hourly site-level eddy data}
-  \item{ColNames}{Vector with selected column names,
-the fewer columns the faster the processing}
+  \item{ColNames}{Vector with
+selected column names, the fewer columns the faster the processing.
+The default specifies column names assumed in further processing.}
   \item{ColPOSIXTime}{Column name with POSIX time stamp}
   \item{DTS}{Daily time steps}
   \item{ColNamesNonNumeric}{Names of columns that should not
