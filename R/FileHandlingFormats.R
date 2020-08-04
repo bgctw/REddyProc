@@ -151,7 +151,7 @@ read_from_fluxnet15 <- function(ds, colname_NEE = "NEE"){
   ds_eproc <- ds %>% mutate(
     DateTime = BerkeleyJulianDateToPOSIXct(.data$TIMESTAMP_END),
     NEE = .data[[colname_NEE]],
-    Ustar = ifelse(ustar_qc <= 2L, .data$USTAR, NA_real_),
+    Ustar = ifelse(ustar_qc <= 2L, .data$USTAR, NA_real_)
   )
   if ("TA" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Tair = .data$TA)
   if ("TS" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Tsoil = .data$TS)
@@ -206,6 +206,7 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
     ## 2: next parameter estimate is more than two weeks away
   )
   output_ustar <- replace_patterns_uStar %>% pmap(replaceFun) %>% bind_cols()
+  if (!ncol(output_ustar)) output_ustar <- NULL
   replace_patterns_filled <- tribble(
     ~pattern, ~replacement, ~variable, ~method,
     "^night", "NIGHT", "", "",
@@ -215,9 +216,10 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
     "^Tair_f$", "TA_F_MDS", "", "",
     "^Tair_fqc$", "TA_F_MDS_QC", "", "",
     "^VPD_f$", "VPD_F_MDS", "", "",
-    "^VPD_fqc$", "VPD_F_MDS_QC", "", "",
+    "^VPD_fqc$", "VPD_F_MDS_QC", "", ""
   )
   output_filled <- replace_patterns_filled %>% pmap(replaceFun) %>% bind_cols()
+  if (!ncol(output_filled)) output_filled <- NULL
   replace_patterns_orig <- tribble(
     ~pattern, ~replacement, ~variable, ~method,
     "^NEE$", "NEE_ORIG", "NEE", "",
@@ -229,6 +231,7 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
   output_orig <- if (isTRUE(is_export_nonfilled)){
     replace_patterns_orig %>% pmap(replaceFun) %>% bind_cols()
   } else NULL
+  if (!ncol(output_orig)) output_orig <- NULL
   #
   output <- bind_cols(output_time, output_orig, output_filled, output_ustar)
   if (isTRUE(keep_other_cols)) output <- bind_cols(
