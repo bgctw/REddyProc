@@ -7,13 +7,14 @@
 read_from_fluxnet15(ds, colname_NEE = "NEE")
 }
 \arguments{
-\item{ds}{data.frame with columns TIEMSTAMP_END (Time YYYYMMDDHHMM),
-NEE, USTAR, TA, VPD, SW_IN and optionally USTAR_QC}
+\item{ds}{data.frame with columns TIMESTAMP_END (Time YYYYMMDDHHMM),
+NEE, LE, H, USTAR, TA, TS, VPD, SW_IN and optionally USTAR_QC}
 
 \item{colname_NEE}{name (scalar string) of column that reports NEE observations}
 }
 \value{
-data.frame with additional columns 'DateTime', 'Rg','Tair','VPD', 'Ustar'
+data.frame with additional columns 'DateTime', 'NEE','Ustar' and
+  'Rg','Tair','Tsoil' if columns 'SW_IN','TA', or 'TS' are present respectively
 }
 \description{
 Column format as described at

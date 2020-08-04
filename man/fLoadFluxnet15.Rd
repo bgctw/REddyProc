@@ -33,17 +33,19 @@ Read a file in the format of Fluxnet 2015 reslease
         season = factor(199801)
      ) \%>\%
      dplyr::rename(SW_IN = .data$Rg, TA = .data$Tair, USTAR = .data$Ustar) \%>\%
-     dplyr::select(dplyr::one_of(c("TIMESTAMP_END","NEE","SW_IN","TA","VPD","USTAR","season")))
+     dplyr::select(dplyr::one_of(c(
+       "TIMESTAMP_END","NEE","SW_IN","TA","VPD","USTAR","season")))
   head(ds_fn15)
   fname <- tempfile()
   readr::write_csv(ds_fn15, fname)
 
+  # standard columns are renamed to REddyProc defaults
   ds_eproc <- fLoadFluxnet15(fname)
   head(ds_eproc)
   EProc <- sEddyProc$new("DE-Tha", ds_eproc)
   head(EProc$sExportData())
 
-  # with additional factor column season
+  # Additional columns can be specified, e.g. factor column season
   ds_eproc <- fLoadFluxnet15(fname,
     additional_columns = readr::cols(season = readr::col_factor()))
   head(ds_eproc)

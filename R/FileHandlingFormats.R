@@ -90,12 +90,17 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
   col <- col_standard <- cols_only(
     TIMESTAMP_END = col_character(),
     NEE = col_double(),
+    LE = col_double(),
+    H = col_double(),
     SW_IN = col_double(),
     TA = col_double(),
+    TS = col_double(),
     USTAR = col_double(),
     VPD = col_double()
   )
   names(col_standard$cols)[2] <- colname_NEE
+  colsInFile <- read_lines(file_path, n_max = 1L) %>% strsplit(",") %>%  "[["(1)
+  col$cols <- col$cols[names(col$cols) %in% colsInFile]
   if (length(additional_columns)) {
     col_add <- if (inherits(additional_columns,"col_spec")) {
       additional_columns
@@ -134,10 +139,11 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
 #' @details If input has numeric column USTAR_QC then USTAR of records
 #' with USTAR_QC > 2 are set to NA.
 #'
-#' @param ds data.frame with columns TIEMSTAMP_END (Time YYYYMMDDHHMM),
-#' NEE, USTAR, TA, VPD, SW_IN and optionally USTAR_QC
+#' @param ds data.frame with columns TIMESTAMP_END (Time YYYYMMDDHHMM),
+#' NEE, LE, H, USTAR, TA, TS, VPD, SW_IN and optionally USTAR_QC
 #' @param colname_NEE name (scalar string) of column that reports NEE observations
-#' @return data.frame with additional columns 'DateTime', 'Rg','Tair','VPD', 'Ustar'
+#' @return data.frame with additional columns 'DateTime', 'NEE','Ustar' and
+#'   'Rg','Tair','Tsoil' if columns 'SW_IN','TA', or 'TS' are present respectively
 #' @export
 read_from_fluxnet15 <- function(ds, colname_NEE = "NEE"){
   ustar_qc <- if (
@@ -146,10 +152,10 @@ read_from_fluxnet15 <- function(ds, colname_NEE = "NEE"){
     DateTime = BerkeleyJulianDateToPOSIXct(.data$TIMESTAMP_END),
     NEE = .data[[colname_NEE]],
     Ustar = ifelse(ustar_qc <= 2L, .data$USTAR, NA_real_),
-    Tair = .data$TA,
-    VPD = .data$VPD,
-    Rg = .data$SW_IN,
   )
+  if ("TA" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Tair = .data$TA)
+  if ("TS" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Tsoil = .data$TS)
+  if ("SW_IN" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Rg = .data$SW_IN)
   ds_eproc
 }
 

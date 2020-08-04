@@ -1,4 +1,9 @@
-#require(testthat)
+.tmp.f <- function(){
+  library(testthat)
+  library(dplyr)
+  library(purrr)
+  #library(tidyselect)
+}
 context("FileHandlingFormats")
 
 test_that("extract_FN15",{
