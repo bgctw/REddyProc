@@ -147,7 +147,8 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
 #' @export
 read_from_fluxnet15 <- function(ds, colname_NEE = "NEE"){
   ustar_qc <- if (
-    ("USTAR_QC" %in% names(ds)) && is.numeric(ds$USTAR_QC)) ds$USTAR_QC else 1L
+    ("USTAR_QC" %in% names(ds)) && is.numeric(ds$USTAR_QC)) ds$USTAR_QC else
+      rep(1L, nrow(ds))
   ds_eproc <- ds %>% mutate(
     DateTime = BerkeleyJulianDateToPOSIXct(.data$TIMESTAMP_END),
     NEE = .data[[colname_NEE]],
