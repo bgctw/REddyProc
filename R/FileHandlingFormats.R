@@ -89,7 +89,11 @@ extract_FN15 <- function(EProc) {
     TA_F_MDS_QC = .data$Tair_fqc,
     USTAR = .data$Ustar,
     VPD_F_MDS = .data$VPD_f,
-    VPD_F_MDS_QC = .data$VPD_fqc
+    VPD_F_MDS_QC = .data$VPD_fqc,
+    GPP_DT_U50_QC = .data$FP_qc		##<< quality flag: 0: good parameter fit,
+    ## 1: some parameters out of range, required refit,
+    ## 2: next parameter estimate is more than two weeks away
+
     #USTAR_THRESHOLD = .data$Ustar_uStar_Thres
   )
   #summary(output_add)
