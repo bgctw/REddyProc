@@ -39,7 +39,7 @@ RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
-Imports: dplyr, purrr, rlang, mlegp, tibble, magrittr, solartime
+Imports: dplyr, purrr, rlang, readr, mlegp, tibble, magrittr, solartime
 Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown, lognorm, ggplot2, 
     tidyr, bigleaf (>= 0.7), markdown
 Collate: 

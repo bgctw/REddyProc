@@ -7,6 +7,8 @@ NULL
 #' @importFrom tibble tibble as_tibble
 #' @importFrom mlegp mlegp predict.gp
 #' @importFrom rlang UQ sym syms
+#' @importFrom readr col_character col_double col_guess col_factor cols cols_only
+#'        read_csv write_csv read_lines
 NULL
 
 #' @importFrom grDevices adjustcolor colorRampPalette dev.off pdf png rgb

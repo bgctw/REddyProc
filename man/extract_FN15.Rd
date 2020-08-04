@@ -4,11 +4,19 @@
 \alias{extract_FN15}
 \title{extract processing results with columns corresponding to Fluxnet15 release}
 \usage{
-extract_FN15(EProc)
+extract_FN15(
+  EProc = .self,
+  is_export_nonfilled = TRUE,
+  keep_other_cols = FALSE
+)
 }
 \arguments{
 \item{EProc}{sEddyProc class with uncertainty also in meteo variables and
 both nighttime and daytime partitioning columns present}
+
+\item{is_export_nonfilled}{set to FALSE to not export columns before gapfilling}
+
+\item{keep_other_cols}{set to TRUE to report also other columns}
 }
 \value{
 data.frame with columns names of Fluxnet15. Timestamps are

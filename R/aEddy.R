@@ -36,8 +36,9 @@ sEddyProc_initialize <- function(
   ID = ID.s                ##<< String with site ID
   , Data = Data.F             ##<< Data frame with at least three month
   ## of (half-)hourly site-level eddy data
-  , ColNames = ColNames.V.s      ##<< Vector with selected column names,
-  ## the fewer columns the faster the processing
+  , ColNames = c('NEE','Rg','Tair','VPD', 'Ustar')  ##<< Vector with
+  ## selected column names, the fewer columns the faster the processing.
+  ## The default specifies column names assumed in further processing.
   , ColPOSIXTime = 'DateTime'    ##<<  Column name with POSIX time stamp
   , DTS = if (!missing(DTS.n)) DTS.n else 48           ##<< Daily time steps
   , ColNamesNonNumeric = character(0)	 ##<< Names of columns that should not
@@ -60,6 +61,7 @@ sEddyProc_initialize <- function(
   , ...                ##<< ('...' required for initialization of class fields)
   ##author<< AMM
 ) {
+  if (!missing(ColNames.V.s)) ColNames <- ColNames.V.s
   if (!missing(ColNamesNonNumeric.V.s)) ColNamesNonNumeric <- ColNamesNonNumeric.V.s
   if (!missing(ColPOSIXTime.s)) ColPOSIXTime <- ColPOSIXTime.s
   if (!missing(Lat_deg.n)) LatDet <- Lat_deg.n
@@ -360,7 +362,7 @@ sEddyProc_update_ustarthreshold_columns <- function(){
   prefix <- "Ustar_Thresh_"
   names(uStarScen)[-1] <- paste0(prefix, names(uStarScen)[-1])
   .self$sTEMP <- .self$sTEMP %>% select(-grep(paste0("^",prefix), names(.self$sTEMP)))
-  .self$sTEMP <- left_join(.self$sTEMP, uStarScen, by="season")
+  .self$sTEMP <- left_join(.self$sTEMP, uStarScen, by = "season")
   invisible(.self)
 }
 sEddyProc$methods(update_ustarthreshold_columns =
