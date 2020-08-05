@@ -1,16 +1,33 @@
+# REddyProc 1.2.3
+
+- provide reading and exporting from Fluxnet 2015 formatted files and datasets.
+
+# REddyProc 1.2.2
+
+- improved error messages on uStar problems
+- deal with missing night-time data during day-time partitioning
+- provide option to select uStar case for which to keep detailed results when 
+  computing several scenarios 
+  and explain the new argument uStarScenKeep in uStarCases vignette.
+- fix error in aggUncertainty vignette of requiring nEff of at least one 
+  instead of zero.
+- check assumption of non-missing VPD at entry of daytime partitioning.
+
 # REddyProc 1.2.1
 
+- fix bug in time conversion: explicitly check for leap-years instead of
+  relying on strptime returning NA for implausible day-of-year. 
 - new function sEddyProc_sGetUstarSuffixes to get current uStar suffixes
 - refactoring: replace deprecated select_ method by select
 - avoid warning on replacing columns during scenarios of daytime partitioning
 
 # REddyProc 1.2
 
-- move geofunctions functionality to packages solartime and bigleaf
+- move GeoFunctions functionality to packages solartime and bigleaf
 
 - implemented experimental modified daytime partitioning after Keenan et al. 2019
     where nighttime ecosystem respiration is estimated based on nighttime
-    estiamte of respiration at reference temperature.
+    estimate of respiration at reference temperature.
 
 # REddyProc 1.1.6
 
@@ -127,9 +144,9 @@ Gapfilling
 - not filtering day-time for low uStar (but kept option to do so)
 
 Daytime-Flux partitioning
-- estimating temperature E0 with Reference Temperatue at median of the data
+- estimating temperature E0 with reference temperature at median of the data
 - smoothing E0 estimates across time 
-- re-estimating prior and intial value of RRef for smoothed E0
+- re-estimating prior and initial value of RRef for smoothed E0
 
 ## Further changes
 

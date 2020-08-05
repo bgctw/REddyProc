@@ -92,7 +92,7 @@ Now we can inspect the the autocorrelation of the errors.
 
 ![](aggUncertainty_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
-The empiricical autocorrelation function shows strong positive
+The empirical autocorrelation function shows strong positive
 autocorrelation in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function

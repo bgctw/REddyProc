@@ -58,10 +58,53 @@ Date.F.x <- data.frame(
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+test_that("leap year",{
+  y <- c(1899,1900,1901) # 1900 is no leap year because it devides by 100
+  ans <- REddyProc:::is_leap_year(y)
+  expect_equal(c(FALSE, FALSE, FALSE), ans)
+  y <- c(1999,2000,2001) # 2100 additionally devides by 400
+  ans <- REddyProc:::is_leap_year(y)
+  expect_equal(c(FALSE, TRUE, FALSE), ans)
+})
+
+test_that("leap year of date",{
+  d <- ISOdate(c(1999,2000,NA),1,1)
+  ans <- REddyProc:::is_leap_year_of_date(d)
+  expect_equal(c(FALSE, TRUE, NA), ans)
+})
+
+test_that("Time Format YDH leap year with hour hour 0",{
+  df <- setNames(rbind(Date.F.x[FALSE,], list(
+    1995, 1996, 366,   1,  0.0,  0.0,  1,  1,  0,  0
+    ,"366d-correction to next year")), names(Date.F.x))
+  ResYDH.F <- fConvertTimeToPosix(df, "YDH", Year = "FluxnetYear.n", Day = "FluxnetDoY.n"
+  , Hour = "FluxnetHourDec.n" )
+  TimeYDH.p <- as.POSIXlt( ResYDH.F$DateTime ) #see DateTimeClass
+  expect_that( 1900 + TimeYDH.p$year, equals(df$Year.n) )
+  expect_that( 1 + TimeYDH.p$yday, equals(df$DoY.n) )
+  expect_that( TimeYDH.p$hour, equals(df$Hour.n) )
+  expect_that( TimeYDH.p$min, equals(df$Min.n) )
+})
+
+test_that("Time Format YDH leap year with wrong day",{
+  df <- setNames(rbind(Date.F.x[FALSE,], list(
+    1995, 1996, 366,   1,  2,  2,  1,  1,  0,  0
+    ,"day 366 in non-leap year hour 2")), names(Date.F.x))
+  expect_error(
+    expect_warning(
+    ResYDH.F <- fConvertTimeToPosix(df, "YDH", Year = "FluxnetYear.n", Day = "FluxnetDoY.n"
+                                    , Hour = "FluxnetHourDec.n" ),
+    "day of year"),
+    "timestamp"
+  )
+})
+
 test_that("Time Format YDH",{
-	expect_warning(ResYDH.F <- fConvertTimeToPosix(
+	expect_warning(
+	  ResYDH.F <- fConvertTimeToPosix(
 	  Date.F.x, "YDH", Year = "FluxnetYear.n", Day = "FluxnetDoY.n"
-	  , Hour = "FluxnetHourDec.n" ))
+	  , Hour = "FluxnetHourDec.n" )
+	  )
 	TimeYDH.p <- as.POSIXlt( ResYDH.F$DateTime ) #see DateTimeClass
 	expect_that( 1900 + TimeYDH.p$year, equals(Date.F.x$Year.n) )
 	expect_that( 1 + TimeYDH.p$yday, equals(Date.F.x$DoY.n) )

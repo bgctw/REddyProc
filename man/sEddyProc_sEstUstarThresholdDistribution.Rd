@@ -7,7 +7,7 @@
   \item{\dots}{further parameters to
 \code{\link{sEddyProc_sEstimateUstarScenarios}}}
 }
-\details{This method returns the results directly, withhout modifying
+\details{This method returns the results directly, without modifying
 the class. It is there for portability reasons. Recommended is
 using method \code{\link{sEddyProc_sEstimateUstarScenarios}} to
 update the class and then getting the results from the class by

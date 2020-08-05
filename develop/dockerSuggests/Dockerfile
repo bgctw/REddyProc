@@ -1,5 +1,5 @@
 #FROM rocker/tidyverse:latest
-FROM rocker/tidyverse:3.4
+FROM rocker/tidyverse:3.6.3
 
 #RUN R -e "install.packages(c('mlegp'))"
 
@@ -30,6 +30,7 @@ RUN R -e "install.packages(c(\
 ,'RNetCDF'\
 ,'minpack.lm'\
 ,'segmented'\
+,'solartime'\
 ))"
 
 # when building with the stable stack, better install R-packages by install.packages

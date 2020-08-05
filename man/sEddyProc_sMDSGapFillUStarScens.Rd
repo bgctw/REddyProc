@@ -1,7 +1,7 @@
 \name{sEddyProc_sMDSGapFillUStarScens}
 \alias{sEddyProc_sMDSGapFillUStarScens}
 \title{sEddyProc sMDSGapFillUStarScens}
-\description{GapFilling for several filters of estimated friction velocity Ustar thresholds.}
+\description{gapfilling for several filters of estimated friction velocity Ustar thresholds.}
 \usage{sEddyProc_sMDSGapFillUStarScens(...)}
 \arguments{
   \item{\dots}{other arguments to
@@ -36,5 +36,5 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 
 
-\seealso{\href{useCase vignette}{../doc/useCase.html}}
+\seealso{\href{../doc/useCase.html}{useCase vignette}}
 

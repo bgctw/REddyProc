@@ -31,3 +31,4 @@
 ^inst/REddyProcExamples/
 ^\.travis\.yml$
 ^Dockerfile$
+^revdep$

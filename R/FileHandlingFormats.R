@@ -3,7 +3,7 @@
 
 #' @export
 fLoadEuroFlux16 <- function(
-	### reads a sequence of annual files in the format of europe-fluxdata 2016
+	### reads a sequence of annual files in the format of Europe-fluxdata 2016
 	siteName		##<< scalar string: the name of the site, i.e. start of the filename before _<year>_
 	, dirName = ''	##<< scalar string: the directory where the files reside
 	, additionalColumnNames = character(0)	##<< character vector: column names to read in addition to c("Month", "Day", "Hour", "NEE_st", "qf_NEE_st", "ustar", "Ta", 'Rg')

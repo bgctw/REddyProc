@@ -532,7 +532,7 @@ sEddyProc_sPlotHHFluxesY <- function(
   } else {
     # Plot empty box
     plot(
-      ep(0, length(Time.V.n)) ~ Julian.i, type = 'n', axes = F
+      rep(0, length(Time.V.n)) ~ Julian.i, type = 'n', axes = F
       , xlab = '', ylab = '', main = Year)
     axis(
       1, at = XAxis.V.n, cex.axis = 1.0, col.axis = 'dark violet'
