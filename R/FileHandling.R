@@ -49,11 +49,7 @@ fLoadTXTIntoDataframe <- function(
   Data.F <- read.csv(InputFile.s, header = F, skip = 2, sep = '', dec = '.')
   # Rename columns with header information
   names(Data.F) <- Header.V.s
-  # Add units (and also varnames) as attribute
-  for (Var.i in 1:length(Header.V.s)) {
-    attr(Data.F[, Header.V.s[Var.i]], 'varnames') <- Header.V.s[Var.i]
-    attr(Data.F[, Header.V.s[Var.i]], 'units') <- Units.V.s[Var.i]
-  }
+  Data.F <- set_varunit_attributes(Data.F, Header.V.s, Units.V.s)
   message('Loaded file ', FileName, ' with the following variables (units):')
   message(' *** ', paste(colnames(Data.F), '(', as.character(lapply(
     Data.F, attr, which = 'units')), ')', collapse = ' ', sep = ''))
@@ -68,6 +64,19 @@ fLoadTXTIntoDataframe <- function(
   ## EddyData.F <- fLoadTXTIntoDataframe(examplePath)
   ## }
 }
+
+set_varunit_attributes <- function(df, varnames, units) {
+  # Add units (and also varnames) as attribute
+  if (length(units) != length(varnames)) stop(
+    "Expected arguments varnames to be of same length but was ",
+    length(varnames)," != ", length(units),".")
+  for (i in 1:length(varnames)) {
+    attr(df[,varnames[i]], 'varnames') <- varnames[i]
+    attr(df[,varnames[i]], 'units') <- units[i]
+  }
+  df
+}
+
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Write data to file

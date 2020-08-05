@@ -23,7 +23,8 @@ Can be a character vector or a object return by \code{\link{cols}}}
 \item{...}{further arguments to \code{\link{read_csv}}}
 }
 \description{
-Read a file in the format of Fluxnet 2015 reslease
+Assigns default units to the columns and keeps variable name attributes
+as in original file.
 }
 \examples{
   ds_fn15 <- Example_DETha98 \%>\%

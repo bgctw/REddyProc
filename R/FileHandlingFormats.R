@@ -48,6 +48,9 @@ fLoadEuroFlux16 <- function(
 
 #' Read a file in the format of Fluxnet 2015 reslease
 #'
+#' Assigns default units to the columns and keeps variable name attributes
+#' as in original file.
+#'
 #' @param file_path scalar string: the path to the csv file
 #' @param additional_columns character vector of columns to
 #'   read in addition of standard columns of \code{\link{read_from_fluxnet15}}.
@@ -98,6 +101,17 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
     USTAR = col_double(),
     VPD = col_double()
   )
+  df_units <- tribble(
+    ~varname, ~unit,
+    colname_NEE, "umolm-2s-1",
+    "LE", "Wm-2",
+    "H", "Wm-2",
+    "SW_IN", "Wm-2",
+    "TA", "degC",
+    "TS", "degC",
+    "USTAR", "ms-1",
+    "VPD", "hPa",
+  )
   names(col_standard$cols)[2] <- colname_NEE
   colsInFile <- read_lines(file_path, n_max = 1L) %>% strsplit(",") %>%  "[["(1)
   col$cols <- col$cols[names(col$cols) %in% colsInFile]
@@ -114,6 +128,9 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
   # df_fn15 <- read_csv(file_path, ...)
   # df_fn15 <- read_csv(file_path, col_types = col_standard, ...)
   df_fn15 <- read_csv(file_path, col_types = col, ...)
+  df_unitsin <- df_units %>% filter(.data$varname %in% names(df_fn15))
+  df_fn15 <- df_fn15 %>% as.data.frame() %>%
+    set_varunit_attributes(df_unitsin$varname, df_unitsin$unit)
   read_from_fluxnet15(df_fn15, colname_NEE = colname_NEE)
 }
 
@@ -154,6 +171,7 @@ read_from_fluxnet15 <- function(ds, colname_NEE = "NEE"){
     NEE = .data[[colname_NEE]],
     Ustar = ifelse(ustar_qc <= 2L, .data$USTAR, NA_real_)
   )
+
   if ("TA" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Tair = .data$TA)
   if ("TS" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Tsoil = .data$TS)
   if ("SW_IN" %in% names(ds_eproc)) ds_eproc <- ds_eproc %>% mutate( Rg = .data$SW_IN)

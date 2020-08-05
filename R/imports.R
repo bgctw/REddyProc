@@ -4,7 +4,7 @@ NULL
 # #' @importFrom Rcpp sourceCpp evalCpp
 #' @import dplyr
 #' @importFrom purrr map map_df map_dbl map_lgl pmap
-#' @importFrom tibble tibble as_tibble
+#' @importFrom tibble tibble as_tibble tribble
 #' @importFrom mlegp mlegp predict.gp
 #' @importFrom rlang UQ sym syms
 #' @importFrom readr col_character col_double col_guess col_factor cols cols_only
