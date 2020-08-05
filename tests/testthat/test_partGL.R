@@ -1052,3 +1052,23 @@ test_that("no nighttime data",{
     E0 = 150, sdE0 = 50, RRef = 20)))
 })
 
+.test_sEddyProc_sGLFluxPartitionUStarScens <- function(){}
+test_that("sEddyProc_sGLFluxPartitionUStarScens",{
+  dsTest <- Example_DETha98_Filled %>% mutate(
+    NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
+    NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd
+    ) %>% 
+    select(-.data$sDateTime)
+  EProc <- sEddyProc$new(
+    'DE-Tha', dsTest, setdiff(names(dsTest), c("NEE_fnum","NEE_fwin")))
+  EProc$sSetUStarSeasons(1L)
+  EProc$sSetUstarScenarios(data.frame(season = 1L, uStar = 0.28, U50 = 0.38))
+  EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
+  #EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)     
+  #EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)     
+  #EProc$trace(sGLFluxPartitionUStarScens, recover); # EProc$untrace(sGLFluxPartitionUStarScens)
+  EProc$sGLFluxPartitionUStarScens(uStarScenKeep = "U50")
+  expect_true(all(c("GPP_DT_uStar","GPP_DT_U50", "GPP_DT_U50_SD") %in% 
+                    names(EProc$sTEMP)))
+})
+

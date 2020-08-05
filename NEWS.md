@@ -1,3 +1,7 @@
+# REddyProc 1.2.3
+
+- provide reading and exporting from Fluxnet 2015 formatted files and datasets.
+
 # REddyProc 1.2.2
 
 - improved error messages on uStar problems

@@ -8,7 +8,7 @@
     TempColName = "Tair", RgColName = "Rg", 
     ..., seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime), 
     nSample = 200L, probs = c(0.05, 0.5, 
-        0.95), isVerbose = TRUE)}
+        0.95), isVerbose = TRUE, suppressWarningsAfterFirst = TRUE)}
 \arguments{
   \item{ctrlUstarEst}{control parameters
 for estimating uStar on a single binned series,
@@ -28,6 +28,8 @@ omitting night time data}
   \item{probs}{the quantiles of the bootstrap sample
 to return. Default is the 5\%, median and 95\% of the bootstrap}
   \item{isVerbose}{set to FALSE to omit printing progress}
+  \item{suppressWarningsAfterFirst}{set to FALSE to show also warnings
+for all bootstrap esimates instead of only the first bootstrap sample}
 }
 \details{The choice of the criterion for sufficiently turbulent conditions
 (u * > chosen threshold)

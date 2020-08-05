@@ -185,6 +185,15 @@ test_that("reading Berkeley",{
   res$berkeleyDate <- POSIXctToBerkeleyJulianDate(res$DateTime)
   time2 <- BerkeleyJulianDateToPOSIXct(res$berkeleyDate)
   expect_equal( as.numeric(time2), as.numeric(res$DateTime))
+})
 
+test_that("reading Berkeley",{
+  res  <- fConvertTimeToPosix(
+    Date.F.x, "YMDH", Year = "Year.n", Day = "Day.n", Month = "Month.n"
+    , Hour = "HourDec.n" )
+  TimeYMDH.p <- as.POSIXlt( res$DateTime )
+  res$berkeleyDate <- POSIXctToBerkeleyJulianDate(res$DateTime)
+  time2 <- BerkeleyJulianDateToPOSIXct(res$berkeleyDate)
+  expect_equal( as.numeric(time2), as.numeric(res$DateTime))
 })
 

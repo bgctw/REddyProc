@@ -2,9 +2,10 @@
 output: 
   rmarkdown::html_vignette:
     keep_md: true
+title: REddyProc typical workflow    
 vignette: >
   %\VignetteEngine{knitr::rmarkdown_notangle}
-  %\VignetteIndexEntry{typical use case}
+  %\VignetteIndexEntry{REddyProc typical workflow}
   %\usepackage[UTF-8]{inputenc}
 ---
 

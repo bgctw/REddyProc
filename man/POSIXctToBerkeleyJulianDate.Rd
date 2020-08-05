@@ -2,9 +2,11 @@
 \alias{POSIXctToBerkeleyJulianDate}
 \title{POSIXctToBerkeleyJulianDate}
 \description{convert POSIXct to JulianDate format used in Berkeley release}
-\usage{POSIXctToBerkeleyJulianDate(sDateTime)}
+\usage{POSIXctToBerkeleyJulianDate(sDateTime, tz = getTZone(sDateTime))}
 \arguments{
   \item{sDateTime}{POSIXct vector}
+  \item{tz}{
+}
 }
 \details{In the Berkeley-Release of the Fluxnet data, the time is stored as an number
 with base10-digits representing YYYYMMddhhmm}

@@ -36,8 +36,9 @@ sEddyProc_initialize <- function(
   ID = ID.s                ##<< String with site ID
   , Data = Data.F             ##<< Data frame with at least three month
   ## of (half-)hourly site-level eddy data
-  , ColNames = ColNames.V.s      ##<< Vector with selected column names,
-  ## the fewer columns the faster the processing
+  , ColNames = c('NEE','Rg','Tair','VPD', 'Ustar')  ##<< Vector with
+  ## selected column names, the fewer columns the faster the processing.
+  ## The default specifies column names assumed in further processing.
   , ColPOSIXTime = 'DateTime'    ##<<  Column name with POSIX time stamp
   , DTS = if (!missing(DTS.n)) DTS.n else 48           ##<< Daily time steps
   , ColNamesNonNumeric = character(0)	 ##<< Names of columns that should not
@@ -60,6 +61,7 @@ sEddyProc_initialize <- function(
   , ...                ##<< ('...' required for initialization of class fields)
   ##author<< AMM
 ) {
+  if (!missing(ColNames.V.s)) ColNames <- ColNames.V.s
   if (!missing(ColNamesNonNumeric.V.s)) ColNamesNonNumeric <- ColNamesNonNumeric.V.s
   if (!missing(ColPOSIXTime.s)) ColPOSIXTime <- ColPOSIXTime.s
   if (!missing(Lat_deg.n)) LatDet <- Lat_deg.n
@@ -86,13 +88,13 @@ sEddyProc_initialize <- function(
   ## The time stamp must be provided in POSIX format, see also
   ## \code{\link{fConvertTimeToPosix}}.
   ## For required properties of the time series, see \code{\link{fCheckHHTimeSeries}}.
-  fCheckHHTimeSeries(Data[, ColPOSIXTime], DTS = DTS, 'sEddyProc.initialize')
+  fCheckHHTimeSeries(Data[[ColPOSIXTime]], DTS = DTS, 'sEddyProc.initialize')
 
   ##details<<
   ## Internally the half-hour time stamp is shifted to the middle of the
   ## measurement period (minus 15 minutes or 30 minutes).
   #half-period time offset in seconds
-  Time.V.p <- Data[, ColPOSIXTime] - (0.5 * 24 / DTS * 60 * 60)
+  Time.V.p <- Data[[ColPOSIXTime]] - (0.5 * 24 / DTS * 60 * 60)
 
   ##details<<
   ## All other columns may only contain numeric data.
@@ -100,14 +102,14 @@ sEddyProc_initialize <- function(
   ## be used in the processing.
   ## The columns are also checked for plausibility with warnings if outside range.
   fCheckColNum(
-    Data, setdiff(ColNames, ColNamesNonNumeric), 'sEddyProc.initialize')
+    Data, setdiff(ColNames, union(ColPOSIXTime,ColNamesNonNumeric)), 'sEddyProc.initialize')
   fCheckColPlausibility(Data, ColNames, 'sEddyProc.initialize')
 
   ##details<< There are several fields initialized within the class.
   ##details<< sID is a string for the site ID.
   sID <<- ID
   ##details<< sDATA is a data frame with site data.
-  sDATA <<- cbind(sDateTime = Time.V.p, Data[, ColNames, drop = FALSE])
+  sDATA <<- cbind(sDateTime = Time.V.p, as.data.frame(Data[, ColNames, drop = FALSE]))
   ##details<< sTEMP is a temporal data frame with the processing results.
   sTEMP <<- data.frame(sDateTime = Time.V.p)
   #Initialization of site data information from POSIX time stamp.
@@ -347,6 +349,24 @@ sEddyProc_sGetData <- function(
     ## Return data frame sDATA.
 }
 sEddyProc$methods( sGetData = sEddyProc_sGetData)
+
+#' Add columns reporting the uStar threshold for each scenario to sDATA
+#'
+#' Add columns reporting the uStar threshold for each scenario to sDATA
+#'
+#' @return side effect in .self$sDATA new columns Ustar_Thresh_<ustarsuffix>
+#' @seealso \code{\link{sEddyProc_sGetUstarScenarios}}
+#' @export
+sEddyProc_update_ustarthreshold_columns <- function(){
+  uStarScen <- .self$sGetUstarScenarios()
+  prefix <- "Ustar_Thresh_"
+  names(uStarScen)[-1] <- paste0(prefix, names(uStarScen)[-1])
+  .self$sTEMP <- .self$sTEMP %>% select(-grep(paste0("^",prefix), names(.self$sTEMP)))
+  .self$sTEMP <- left_join(.self$sTEMP, uStarScen, by = "season")
+  invisible(.self)
+}
+sEddyProc$methods(update_ustarthreshold_columns =
+                     sEddyProc_update_ustarthreshold_columns)
 
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -95,13 +95,13 @@ getAmerifluxToBGC05VariableNameMapping <- function(
 POSIXctToBerkeleyJulianDate <- function(
     ### convert POSIXct to JulianDate format used in Berkeley release
     sDateTime  ##<< POSIXct vector
+    ,tz = getTZone(sDateTime)
 ) {
   ##author<< TW,
   ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}},
   ##details<<
   ## In the Berkeley-Release of the Fluxnet data, the time is stored as an number
   ## with base10-digits representing YYYYMMddhhmm
-  tz <- getTZone(sDateTime)
   charRep <- strftime(sDateTime, format = "%Y%m%d%H%M", tz = tz)
   ans <- as.numeric(charRep)
   ans
@@ -111,8 +111,8 @@ POSIXctToBerkeleyJulianDate <- function(
 BerkeleyJulianDateToPOSIXct <- function(
   ### convert JulianDate format used in Berkeley release to POSIXct
   julianDate  ##<< numeric vector representing times (see details for format)
-  , tz = "GMT"  ##<< time zone used to represent the dates
-  , ...    ##<< further arguments to \code{\link{strptime}}, such as tz
+  , tz = "UTC"  ##<< time zone used to represent the dates
+  , ...    ##<< further arguments to \code{\link{strptime}}
 ) {
   ##author<< TW,
   ##seealso<< \code{\link{POSIXctToBerkeleyJulianDate}}
