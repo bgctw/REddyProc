@@ -230,10 +230,16 @@ The partitioning needs to distinguish carefully between night-time and day-time.
 Therefore it needs a specification of geographical coordinates and time zone 
 to allow computing sunrise and sunset. Further, the missing values in the 
 used meteorological data need to be filled. 
+
+For VPD, which is important for daytime flux partitioning, and additional
+gap-filling of longer gaps based on minimum daily temperature (assumed dewpoint)
+is available.
+
 ```{r, message = FALSE}
 EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
 EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)     
 EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)     
+EProc$estimate_vpd_from_dew() # fill longer gaps still present in VPD_f
 ```
 
 Now we are ready to invoke the partitioning, here by the night-time approach, 

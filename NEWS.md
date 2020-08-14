@@ -1,3 +1,7 @@
+
+- estimate VPD of longer gaps by assuming daily minimum temperature at
+  dewpoint.
+
 # REddyProc 1.2.3
 
 - provide reading and exporting from Fluxnet 2015 formatted files and datasets.

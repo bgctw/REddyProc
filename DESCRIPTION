@@ -39,9 +39,10 @@ RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods
-Imports: dplyr, purrr, rlang, readr, mlegp, tibble, magrittr, solartime
+Imports: dplyr, purrr, rlang, readr, mlegp, tibble, magrittr, solartime, 
+    bigleaf (>= 0.7)
 Suggests: testthat, minpack.lm, segmented, knitr, rmarkdown, lognorm, ggplot2, 
-    tidyr, bigleaf (>= 0.7), markdown
+    tidyr, markdown
 Collate: 
     'CheckVal.R'
     'DataFunctions.R'
@@ -62,6 +63,7 @@ Collate:
     'PartitioningLasslop10.R'
     'PartitioningLasslop10Nighttime.R'
     'RcppExports.R'
+    'estimate_vpd_from_dew.R'
     'imports.R'
     'logitnorm.R'
     'variableNames.R'

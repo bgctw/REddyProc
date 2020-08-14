@@ -31,6 +31,9 @@ NULL
 #importFrom(minpack.lm, nlsLM, nls.lm.control)
 
 
+#' @importFrom bigleaf Esat.slope
+NULL
+
 # https://www.r-bloggers.com/re-exporting-the-magrittr-pipe-operator/
 
 # does not work without rd roclet

@@ -200,7 +200,9 @@ partitionNEEGL <- function(
 	    controlGLPart$isRefitMissingVPDWithNeglectVPDEffect) {
 		##details<<
 		## While the extrapolation uses filled data, the parameter optimization
-		## uses only measured data, i.e. with specified quality flag.
+		## may use only measured data, i.e. with specified quality flag.
+		## Even with using filled VPD, there may be large gaps that have not been
+		## filled.
 		## With the common case where VPD is missing for fitting the LRC, by default
 		## (with \code{controlGLPart$isRefitMissingVPDWithNeglectVPDEffect = TRUE})
 		## is to redo the estimation of LRC parameters with neglecting the VPD-effect.
