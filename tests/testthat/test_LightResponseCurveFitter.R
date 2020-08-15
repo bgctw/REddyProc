@@ -1043,7 +1043,8 @@ lastGoodParameters = c(
 test_that("error on inverting hessian",{
   lrcFitter <- RectangularLRCFitter$new()
   #lrcFitter$trace(fitLRC, browser)
+  #lrcFitter$trace(optimLRCBounds, browser)
   ans <- do.call(lrcFitter$fitLRC, args)
   expect_true(all(is.na(ans$thetaOpt)))
-  expect_equal(ans$convergence, 1006)
+  #expect_equal(ans$convergence, 1006) # now with this data isFixedVPD is used
 })
