@@ -6,10 +6,10 @@
 #'
 #' @return side effect of updated column VPDfromDew in class
 #' @export
-sEddyProc_estimate_vpd_from_dew <- function(...){
+sEddyProc_sFillVPDFromDew <- function(...){
   VPDfromDew <- cbind(.self$sDATA, select(.self$sTEMP, -.data$sDateTime)) %>%
      mutate(DateTime = .data$sDateTime) %>%
-     REddyProc::estimate_vpd_from_dew(...)
+     estimate_vpd_from_dew(...)
   .self$sTEMP$VPDfromDew <- VPDfromDew
   if (!("VPD_f" %in% names(.self$sTEMP))) {
     warning(
@@ -21,8 +21,8 @@ sEddyProc_estimate_vpd_from_dew <- function(...){
   .self$sTEMP$VPD_f[iNA] <- VPDfromDew[iNA]
   invisible(.self)
 }
-sEddyProc$methods(estimate_vpd_from_dew =
-                    sEddyProc_estimate_vpd_from_dew)
+sEddyProc$methods(sFillVPDFromDew =
+                    sEddyProc_sFillVPDFromDew)
 
 
 #' Estimate VPD from assuming dewpoint at daily minimum temperature
