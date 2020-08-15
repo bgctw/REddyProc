@@ -92,16 +92,19 @@ LightResponseCurveFitter_fitLRC <- function(
 			## Then, the additional uncertainty and covariance with uncertainty E0
 			## is neglected.
 			#seParmsHess <- seParmsHess0 <- sqrt(abs(diag(solve(resOpt$hessian))))
-			covParmsLRC <- if ( (resOpt$hessian[1L, 1L] < 1e-8) ) {
-						# case where k = 0 and not varying: cov(k, :) = cov(:, ) = 0
-						covParmsLRC <- structure(diag(0, nrow = nrow(resOpt$hessian))
-						                         , dimnames = dimnames(resOpt$hessian))
-						covParmsLRC[-1L, -1L] <- solve(resOpt$hessian[-1L, -1L])
-						covParmsLRC
-					} else {
-						solve(resOpt$hessian)
-					}
-			covParms <- structure(diag(0, nrow = length(resOpt$theta))
+		  covParmsLRC <- try(if ( (resOpt$hessian[1L, 1L] < 1e-8) ) {
+		    # case where k = 0 and not varying: cov(k, :) = cov(:, ) = 0
+		    covParmsLRC <- structure(diag(0, nrow = nrow(resOpt$hessian))
+		                             , dimnames = dimnames(resOpt$hessian))
+		    covParmsLRC[-1L, -1L] <- solve(resOpt$hessian[-1L, -1L])
+		    covParmsLRC
+		  } else {
+		    solve(resOpt$hessian)
+		  }, silent = TRUE)
+		  if (inherits(covParmsLRC, "try-error")) {
+		    return(getNAResult(1006L)) # count not invert the Hessian
+		  }
+		  covParms <- structure(diag(0, nrow = length(resOpt$theta))
 			                      , dimnames = list(parNames, parNames))
 			covParms[5L, 5L] <- sdE0^2
 			covParms[resOpt$iOpt, resOpt$iOpt] <- covParmsLRC
