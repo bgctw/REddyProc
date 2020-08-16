@@ -72,11 +72,13 @@ estimate_vpd_from_dew <- function(df, pNonMissing = 0.1){
       TmaxOftheDay = suppressWarnings(max(.data$Tair_f, na.rm = TRUE)),
       TRangeDay = .data$TmaxOftheDay - .data$TminOftheDay,
       EminDew = Esat.slope(.data$TminOftheDay)$Esat*10,
-      VPDfromDew = Esat.slope(.data$Tair)$Esat*10 - .data$EminDew # here use only Tair
+      VPDfromDew = Esat.slope(.data$Tair_f)$Esat*10 - .data$EminDew 
     ) %>%
     ungroup()
-  # ok to use Tair_f here because VPDfromDew is NA when Tair is NA
-  lm1 <- lm(VPD ~ 0 + VPDfromDew * Tair_f * hourOfDay *  TminOftheDay * TRangeDay, df_f)
+  # VPDfromDew is computed using Tair_f, but for the correction only use
+  # those cases where original Tair is finite to avoid confounding issues
+  lm1 <- lm(VPD ~ 0 + VPDfromDew * Tair_f * hourOfDay *  TminOftheDay * TRangeDay, 
+            filter(df_f, is.finite(Tair)))
   # create column in original data.frame (do not return the intermediate vars)
   # the order in df and df_f should not have changed with grouping/ungrouping
   VPDfromDew = predict(lm1, df_f)
