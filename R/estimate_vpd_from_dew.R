@@ -81,7 +81,7 @@ estimate_vpd_from_dew <- function(df, pNonMissing = 0.1){
             filter(df_f, is.finite(.data$Tair)))
   # create column in original data.frame (do not return the intermediate vars)
   # the order in df and df_f should not have changed with grouping/ungrouping
-  VPDfromDew = predict(lm1, df_f)
+  VPDfromDew = pmax(0,predict(lm1, df_f))
 }
 
 getCumDay <- function(
