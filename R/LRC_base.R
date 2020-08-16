@@ -247,8 +247,9 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		### Optimize parameters with refitting with some fixed parameters if outside bounds
 		theta0			##<< initial parameter estimate
 		, parameterPrior	##<< prior estimate of model parameters
-		, ...			  ##<< further parameters to \code{.optimLRC}, such as \code{dsDay}
-		, dsDay
+		, ...			  ##<< further parameters to \code{.optimLRC}, 
+		, dsDay     ##<< argument to \code{.optimLRC}, here checked
+		## for occurrence of high VPD
 		, lastGoodParameters ##<< parameters vector of last successful fit
 		, ctrl					##<< list of further controls, such as
 		  ## \code{isNeglectVPDEffect = TRUE}

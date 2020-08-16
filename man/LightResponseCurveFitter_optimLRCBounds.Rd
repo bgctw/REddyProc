@@ -3,12 +3,14 @@
 \title{LightResponseCurveFitter optimLRCBounds}
 \description{Optimize parameters with refitting with some fixed parameters if outside bounds}
 \usage{LightResponseCurveFitter_optimLRCBounds(theta0, 
-    parameterPrior, ..., lastGoodParameters, 
+    parameterPrior, ..., dsDay, lastGoodParameters, 
     ctrl)}
 \arguments{
   \item{theta0}{initial parameter estimate}
   \item{parameterPrior}{prior estimate of model parameters}
-  \item{\dots}{further parameters to \code{.optimLRC}, such as \code{dsDay}}
+  \item{\dots}{further parameters to \code{.optimLRC},}
+  \item{dsDay}{argument to \code{.optimLRC}, here checked
+for occurrence of high VPD}
   \item{lastGoodParameters}{parameters vector of last successful fit}
   \item{ctrl}{list of further controls, such as
 \code{isNeglectVPDEffect = TRUE}}

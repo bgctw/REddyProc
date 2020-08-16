@@ -1,6 +1,6 @@
 #' Estimate VPD from daily minimum temperature
 #'
-#' of the data in the class funciton using \code{\link{estimate_vpd_from_dew}}.
+#' of the data in the class function using \code{\link{estimate_vpd_from_dew}}.
 #'
 #' @param ... further arguments to \code{\link{estimate_vpd_from_dew}}
 #'
@@ -78,7 +78,7 @@ estimate_vpd_from_dew <- function(df, pNonMissing = 0.1){
   # VPDfromDew is computed using Tair_f, but for the correction only use
   # those cases where original Tair is finite to avoid confounding issues
   lm1 <- lm(VPD ~ 0 + VPDfromDew * Tair_f * hourOfDay *  TminOftheDay * TRangeDay, 
-            filter(df_f, is.finite(Tair)))
+            filter(df_f, is.finite(.data$Tair)))
   # create column in original data.frame (do not return the intermediate vars)
   # the order in df and df_f should not have changed with grouping/ungrouping
   VPDfromDew = predict(lm1, df_f)

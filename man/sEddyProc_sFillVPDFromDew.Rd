@@ -13,5 +13,5 @@ sEddyProc_sFillVPDFromDew(...)
 side effect of updated column VPDfromDew in class
 }
 \description{
-of the data in the class funciton using \code{\link{estimate_vpd_from_dew}}.
+of the data in the class function using \code{\link{estimate_vpd_from_dew}}.
 }
