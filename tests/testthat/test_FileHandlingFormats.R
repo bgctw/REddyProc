@@ -13,10 +13,26 @@ test_that("extract_FN15",{
   EProc <- sEddyProc$new("DE-Tha", ds, c('NEE','Rg','Tair','VPD', 'Ustar'))
   ds_fn15 <- extract_FN15(EProc)
   expect_equal(nrow(ds_fn15), nrow(EProc$sExportData()))
-  expect_true( all(c("TIMESTAMP_START", "TIMESTAMP_END") %in% names(ds_fn15) ))
+  expect_equal(nrow(ds_fn15), nrow(EProc$sExportData()))
   expect_true( all(c("NEE_ORIG", "SW_IN", "TA",
                      "USTAR", "VPD") %in% names(ds_fn15) ))
 })
+
+test_that("extract_FN15_QC",{
+  skip("testing exporting (after filling) QC of several uStar thresholds takes too long")
+  EddyDataWithPosix <- fConvertTimeToPosix(
+    Example_DETha98, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') %>%
+    filterLongRuns("NEE")
+  EProc <- sEddyProc$new(
+    'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
+  EProc$sSetUStarSeasons()
+  EProc$sSetUstarScenarios(data.frame(season = "all", U50 = 0.2, U75 = 0.25))
+  #EProc$sGetUstarScenarios()
+  EProc$sMDSGapFillUStarScens("NEE")
+  ds_fn15 <- extract_FN15(EProc)
+  expect_true( all(c("NEE_VUT_USTAR50_QC", "NEE_VUT_USTAR75_QC") %in% names(ds_fn15) ))
+})
+
 
 test_that("read_from_fluxnet15",{
   ds <- Example_DETha98 %>%

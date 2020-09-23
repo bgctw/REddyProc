@@ -215,9 +215,10 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
     "^Reco_U(\\d\\d)$", "RECO_NT_VUT_\\1", "GPP", "NT",
     "^Reco_DT_U(\\d\\d)$", "RECO_DT_VUT_\\1", "GPP", "DT",
     "^Ustar_Thresh_U(\\d\\d)$", "USTAR_THRESHOLD_VUT_\\1", "", "",
+    "^NEE_U(\\d\\d)_fqc$", "NEE_VUT_USTAR\\1_QC", "NEE", "",
     # the following extract only one column
     # by putting them as a pattern it works also if the column does not exist
-    "^NEE_U50_fqc$", "NEE_VUT_USTAR50_QC", "NEE", "",
+    #better add fqc for all ustar "^NEE_U50_fqc$", "NEE_VUT_USTAR50_QC", "NEE", "",
     "^NEE_U50_fsd$", "NEE_VUT_USTAR50_RANDUNC", "NEE", "",
     "^NEE_U50_fnum$", "NEE_VUT_USTAR50_RANDUNC_N", "NEE", "",
     "^FP_qc$", "GPP_DT_U50_QC", "GPP", ""		##<< quality flag: 0: good parameter fit,
