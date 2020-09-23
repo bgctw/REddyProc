@@ -1,6 +1,9 @@
+# REddyProc 1.2.4
 
-- estimate VPD of longer gaps by assuming daily minimum temperature at
+- Provided VPD estimate of longer gaps by assuming daily minimum temperature at
   dewpoint.
+- Daytime partitioning: now uses reduced LRC model if there is no 
+  large VPD in daily subset.
 
 # REddyProc 1.2.3
 

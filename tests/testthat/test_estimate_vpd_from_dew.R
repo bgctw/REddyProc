@@ -47,8 +47,8 @@ test_that("error or missing columns",{
 test_that("class method",{
   EProc <- sEddyProc$new("DE-Tha", df_ex, ColNames = c('Tair','VPD', 'Tair_f'))
   EProc$sTEMP$VPD_f <- EProc$sDATA$VPD # pretend to have gapfilled
-  #EProc$trace(estimate_vpd_from_dew, browser)
-  EProc$estimate_vpd_from_dew()
+  #EProc$trace(sFillVPDFromDew, browser)
+  EProc$sFillVPDFromDew()
   expect_true(sum(is.na(EProc$sDATA$VPD_f)) < 100)
   VPD_f <- EProc$sTEMP$VPD_f
   lm1 <- lm(df_ex$VPDorig ~ 0 +VPD_f)
@@ -58,7 +58,7 @@ test_that("class method",{
 test_that("class method warning on missing VPD_f",{
   EProc <- sEddyProc$new("DE-Tha", df_ex, ColNames = c('Tair','VPD', 'Tair_f'))
   expect_warning(
-    EProc$estimate_vpd_from_dew()
+    EProc$sFillVPDFromDew()
   )
   expect_true(sum(is.na(EProc$sDATA$VPD_f)) < 100)
   VPD_f <- EProc$sTEMP$VPD_f

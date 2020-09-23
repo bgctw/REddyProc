@@ -92,16 +92,19 @@ LightResponseCurveFitter_fitLRC <- function(
 			## Then, the additional uncertainty and covariance with uncertainty E0
 			## is neglected.
 			#seParmsHess <- seParmsHess0 <- sqrt(abs(diag(solve(resOpt$hessian))))
-			covParmsLRC <- if ( (resOpt$hessian[1L, 1L] < 1e-8) ) {
-						# case where k = 0 and not varying: cov(k, :) = cov(:, ) = 0
-						covParmsLRC <- structure(diag(0, nrow = nrow(resOpt$hessian))
-						                         , dimnames = dimnames(resOpt$hessian))
-						covParmsLRC[-1L, -1L] <- solve(resOpt$hessian[-1L, -1L])
-						covParmsLRC
-					} else {
-						solve(resOpt$hessian)
-					}
-			covParms <- structure(diag(0, nrow = length(resOpt$theta))
+		  covParmsLRC <- try(if ( (resOpt$hessian[1L, 1L] < 1e-8) ) {
+		    # case where k = 0 and not varying: cov(k, :) = cov(:, ) = 0
+		    covParmsLRC <- structure(diag(0, nrow = nrow(resOpt$hessian))
+		                             , dimnames = dimnames(resOpt$hessian))
+		    covParmsLRC[-1L, -1L] <- solve(resOpt$hessian[-1L, -1L])
+		    covParmsLRC
+		  } else {
+		    solve(resOpt$hessian)
+		  }, silent = TRUE)
+		  if (inherits(covParmsLRC, "try-error")) {
+		    return(getNAResult(1006L)) # count not invert the Hessian
+		  }
+		  covParms <- structure(diag(0, nrow = length(resOpt$theta))
 			                      , dimnames = list(parNames, parNames))
 			covParms[5L, 5L] <- sdE0^2
 			covParms[resOpt$iOpt, resOpt$iOpt] <- covParmsLRC
@@ -244,7 +247,9 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		### Optimize parameters with refitting with some fixed parameters if outside bounds
 		theta0			##<< initial parameter estimate
 		, parameterPrior	##<< prior estimate of model parameters
-		, ...			  ##<< further parameters to \code{.optimLRC}, such as \code{dsDay}
+		, ...			  ##<< further parameters to \code{.optimLRC}, 
+		, dsDay     ##<< argument to \code{.optimLRC}, here checked
+		## for occurrence of high VPD
 		, lastGoodParameters ##<< parameters vector of last successful fit
 		, ctrl					##<< list of further controls, such as
 		  ## \code{isNeglectVPDEffect = TRUE}
@@ -254,14 +259,17 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 	# twutz 161014: default alpha
 	if (!is.finite(lastGoodParameters[3L]) ) lastGoodParameters[3L] <- 0.22
 	isNeglectVPDEffect <- isTRUE(ctrl$isNeglectVPDEffect)
-	isUsingFixedVPD <- isNeglectVPDEffect
+	VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa
+	## according to Lasslop et al 2010
+	isUsingFixedVPD <- isNeglectVPDEffect || 
+	  (sum(dsDay$VPD >= VPD0, na.rm = TRUE) == 0)
 	isUsingFixedAlpha <- FALSE
 	getIOpt <- .self$getOptimizedParameterPositions
 	theta0Adj <- theta0	# initial estimate with some parameters adjusted to bounds
 	if (isNeglectVPDEffect) theta0Adj[1] <- 0
 	resOpt <- resOpt0 <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt =
         getIOpt(isUsingFixedVPD, isUsingFixedAlpha)
-        , parameterPrior = parameterPrior, ctrl, ...)
+        , parameterPrior = parameterPrior, ctrl, dsDay = dsDay, ...)
 	##details<<
 	## If parameters alpha or k are outside bounds (Table A1 in Lasslop 2010),
 	## refit with some parameters fixed
@@ -272,7 +280,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		theta0Adj[1L] <- 0
 		resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt = getIOpt(
 		    isUsingFixedVPD, isUsingFixedAlpha)
-		    , parameterPrior = parameterPrior, ctrl, ...)
+		    , parameterPrior = parameterPrior, ctrl, dsDay = dsDay, ...)
 		# check alpha, in case refit with fixed alpha of last window
 		if ( (is.na(resOpt$theta[3L]) || (resOpt$theta[3L] > 0.22)) &&
 		     is.finite(lastGoodParameters[3L]) ) {
@@ -280,7 +288,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 			theta0Adj[3L] <- lastGoodParameters[3L]
 			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt = getIOpt(
 			  isUsingFixedVPD, isUsingFixedAlpha)
-			  , parameterPrior = parameterPrior, ctrl, ...)
+			  , parameterPrior = parameterPrior, ctrl, dsDay = dsDay, ...)
 		}
 	} else {
 		# check alpha, if gt 0.22 estimate parameters with fixed alpha of last window
@@ -291,7 +299,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 			theta0Adj[3L] <- lastGoodParameters[3L]
 			resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt = getIOpt(
 			    isUsingFixedVPD, isUsingFixedAlpha)
-				, parameterPrior = parameterPrior, ctrl, ...)
+				, parameterPrior = parameterPrior, ctrl, dsDay = dsDay, ...)
 			# check k, if less than zero estimate parameters without VPD effect
 			# and with fixed alpha of last window
 			if (is.na(resOpt$theta[1L]) || (resOpt$theta[1L] < 0)) {
@@ -299,7 +307,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 				theta0Adj[1L] <- 0
 				resOpt <- .self$optimLRCOnAdjustedPrior(theta0Adj, iOpt = getIOpt(
 				  isUsingFixedVPD, isUsingFixedAlpha)
-				  , parameterPrior = parameterPrior, ctrl, ...)
+				  , parameterPrior = parameterPrior, ctrl, dsDay = dsDay, ...)
 			}
 		}
 	}

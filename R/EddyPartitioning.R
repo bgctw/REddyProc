@@ -10,7 +10,7 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   ## the warning on replacing output columns, because this is intended when
   ## processing several uStar scenarios.
   , warnOnOtherErrors = FALSE ##<< Set to TRUE to only display a warning on 
-  ## errors inuStarScneraios other than uStarScenKeep instead of stopping.
+  ## errors inuStarScenarios other than uStarScenKeep instead of stopping.
   , controlGLPart = partGLControl()	##<< further default parameters
 ) {
   ##details<<

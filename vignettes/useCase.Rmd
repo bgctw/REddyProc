@@ -239,7 +239,7 @@ is available.
 EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)  
 EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)     
 EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)     
-EProc$estimate_vpd_from_dew() # fill longer gaps still present in VPD_f
+EProc$sFillVPDFromDew() # fill longer gaps still present in VPD_f
 ```
 
 Now we are ready to invoke the partitioning, here by the night-time approach, 
