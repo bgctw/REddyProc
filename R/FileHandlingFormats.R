@@ -229,8 +229,8 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
   if (!ncol(output_ustar)) output_ustar <- NULL
   replace_patterns_filled <- tribble(
     ~pattern, ~replacement, ~variable, ~method,
-    "^night", "NIGHT", "", "",
-    "^Rg_f", "SW_IN_F_MDS", "Rg", "",
+    "^night$", "NIGHT", "", "",
+    "^Rg_f$", "SW_IN_F_MDS", "Rg", "",
     "^Rg_fqc$", "SW_IN_F_MDS_QC", "Rg", "",
     "^PotRad_NEW$", "SW_IN_POT", "Rg", "",
     "^Tair_f$", "TA_F_MDS", "", "",
