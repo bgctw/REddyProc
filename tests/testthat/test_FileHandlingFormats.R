@@ -34,7 +34,6 @@ test_that("extract_FN15_QC",{
 })
 
 test_that("extract_Rg_VPD_Tair",{
-  skip("testing (after filling) of Tair takes too long")
   EddyDataWithPosix <- fConvertTimeToPosix(
     Example_DETha98, 'YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') %>%
     filterLongRuns("NEE")
