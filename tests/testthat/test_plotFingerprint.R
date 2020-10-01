@@ -23,6 +23,18 @@ test_that("plotting NEE with class method",{
   EddyProc.C$sPlotFingerprintY("NEE", Year = 1998)
 })
 
+test_that("plotting NEE with different range",{
+  EddyProc.C$sPlotFingerprintY(
+    "NEE", Year = 1998,
+    valueLimits = quantile(EddyProc.C$sDATA$NEE,
+                           prob = c( 0.05, 0.99), na.rm = TRUE))
+})
+
+
+test_that("plotting legend only",{
+  EddyProc.C$sPlotFingerprintY("NEE", Year = 1998, onlyLegend = TRUE)
+})
+
 test_that("plotting NEE",{
   sEddyProc_sPlotFingerprintY("NEE", Year = 1998, data = data, dts = dts)
 })
