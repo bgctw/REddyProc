@@ -67,11 +67,28 @@ EProc <- sEddyProc$new(
   'DE-Tha', EddyDataWithPosix, c('NEE','Rg','Tair','VPD', 'Ustar'))
 EProc$sMDSGapFillAfterUstar('NEE', uStarTh = 0.3, FillAll = TRUE)
 results <- EProc$sExportResults() 
-summary(results$NEE_uStar_fsd)
+results_good <- results %>% filter(NEE_uStar_fqc == 0) 
+summary(results_good$NEE_uStar_fsd)
 ```
 We can inspect, how the uncertainty scales with the flux magnitude.
 ```{r}
-plot( NEE_uStar_fsd ~ NEE_uStar_fall, slice(results, sample.int(nrow(results),400)))
+plot( NEE_uStar_fsd ~ NEE_uStar_fall, 
+      slice(results_good, sample.int(nrow(results_good),400)))
+```
+
+## Omitting problematic records
+REddyProc flags problematic data with a qualtiy flag in `NEE_<uStar>_f` > 0 but 
+still reports the fluxes. Hence, one should filter these records before
+aggratation to exclude these data and their uncertainty from analysis. 
+This can be done by `results %>% filter(NEE_uStar_fqc == 0)`.
+
+Alternatively, one can explicitly set these values to missing.
+```{r}
+results_good2 <- EProc$sExportResults() %>% 
+  mutate(
+    NEE_uStar_f = ifelse(NEE_uStar_fqc == 0, NA, .data$NEE_uStar_f),
+    NEE_uStar_fsd = ifelse(NEE_uStar_fqc == 0, NA, .data$NEE_uStar_fsd)
+)
 ```
 
 ## Wrong aggregation without correlations
@@ -115,7 +132,10 @@ $$
 First we need to quantify the error terms, i.e. model-data residuals. 
 For all the records of good quality, we have an original
 measured value `NEE_uStar_orig` and modelled value from MDS gapfilling, 
-`NEE_uStar_fall`. The residual of bad-quality data is set to missing.
+`NEE_uStar_fall`. 
+
+For computing autocorrelation, equidistant time steps are important.
+Hence, instead of filtering, the residuals of bad-quality data are set to missing.
 
 ```{r}
 results <- EProc$sExportResults() %>% 
@@ -136,11 +156,14 @@ Computation of effective number of observations is provided by function
 `computeEffectiveNumObs` from package `lognorm` based on the empirical 
 autocorrelation function for given model-data residuals.
 
-```{r}
+```{r include=FALSE}
 if (!requireNamespace("lognorm")) {
   cat("This vignette requires the lognorm package to be installed.")
   knitr::knit_exit()
 }
+```
+
+```{r}
 autoCorr <- lognorm::computeEffectiveAutoCorr(results$resid)
 nEff <- lognorm::computeEffectiveNumObs(results$resid, na.rm = TRUE)
 c( nEff = nEff, nObs = sum(is.finite(results$resid)))
@@ -172,6 +195,7 @@ estimated on longer time series of residuals (`autoCorr` computed above)
 in `computeEffectiveNumObs` instead of estimating them 
 from the residuals of each day.
 
+
 ```{r}
 results <- results %>% mutate(
   DateTime = EddyDataWithPosix$DateTime
@@ -180,19 +204,27 @@ results <- results %>% mutate(
 ```
 ```{r}
 aggDay <- results %>% group_by(DoY) %>% 
+  filter(NEE_uStar_fqc == 0) %>% 
   summarise(
     DateTime = first(DateTime)
-    , nRec = sum( NEE_uStar_fqc == 0, na.rm = TRUE)
+    , nRec = n()
     , nEff = lognorm::computeEffectiveNumObs(
        resid, effAcf = !!autoCorr, na.rm = TRUE)
     , NEE = mean(NEE_uStar_f, na.rm = TRUE)
     , sdNEE = if (nEff <= 1) NA_real_ else sqrt(
       mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nEff - 1)) 
-    , sdNEEuncorr = if (nRec == 0) NA_real_ else sqrt(
+    , sdNEEuncorr = if (nRec <= 1) NA_real_ else sqrt(
        mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nRec - 1))
+    , .groups = "drop_last"
   )
 aggDay
 ```
+
+Take care of estimating the autocorrelation function on a dataset with
+equidistant time steps. Since, in the above code the autocorrelation 
+function was supplied as
+an argument to `computeEffectiveNumObs`, filtering was legitimate.
+
 ```{r uncBand, echo=FALSE}
 aggDay %>% 
   filter(between(DoY, 150, 200)) %>% 
