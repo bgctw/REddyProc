@@ -154,7 +154,9 @@ in residuals up to a lag of 10 records.
 
 Computation of effective number of observations is provided by function 
 `computeEffectiveNumObs` from package `lognorm` based on the empirical 
-autocorrelation function for given model-data residuals.
+autocorrelation function for given model-data residuals. Note that this
+function needs to be applied to the series including all records, i.e. 
+not filtering quality flag before.
 
 ```{r include=FALSE}
 if (!requireNamespace("lognorm")) {
@@ -202,14 +204,30 @@ results <- results %>% mutate(
   , DoY = as.POSIXlt(DateTime - 15*60)$yday # midnight belongs to the previous
 )
 ```
+
+First we need to to compute `nEff` for each day on the unfiltered series
 ```{r}
-aggDay <- results %>% group_by(DoY) %>% 
-  filter(NEE_uStar_fqc == 0) %>% 
+aggDayNEff <- results %>% group_by(DoY) %>% 
   summarise(
     DateTime = first(DateTime)
-    , nRec = n()
-    , nEff = lognorm::computeEffectiveNumObs(
+    ,nEff = lognorm::computeEffectiveNumObs(
        resid, effAcf = !!autoCorr, na.rm = TRUE)
+  )
+head(aggDayNEff,3)
+```
+
+For computing the mean and sd we filter for quality flag to avoid
+compromising the mean with finite but bad-quality data.
+```{r}
+aggDay <- results %>% 
+  filter(NEE_uStar_fqc == 0) %>% 
+  # join the daily information of nEff from unfiltered data
+  select(-"DateTime") %>% right_join(aggDayNEff, by = "DoY") %>% 
+  group_by(DoY) %>% 
+  summarise(
+    DateTime = first(DateTime) # from join with aggDayNEff before
+    , nEff = first(nEff)
+    , nRec = sum(is.finite(NEE_uStar_f))
     , NEE = mean(NEE_uStar_f, na.rm = TRUE)
     , sdNEE = if (nEff <= 1) NA_real_ else sqrt(
       mean(NEE_uStar_fsd^2, na.rm = TRUE) / (nEff - 1)) 
@@ -219,11 +237,6 @@ aggDay <- results %>% group_by(DoY) %>%
   )
 aggDay
 ```
-
-Take care of estimating the autocorrelation function on a dataset with
-equidistant time steps. Since, in the above code the autocorrelation 
-function was supplied as
-an argument to `computeEffectiveNumObs`, filtering was legitimate.
 
 ```{r uncBand, echo=FALSE}
 aggDay %>% 
