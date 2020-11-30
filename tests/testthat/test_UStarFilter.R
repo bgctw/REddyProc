@@ -134,6 +134,22 @@ test_that("sEstUstarThold: using ChangePointDetection",{
 			}
 		})
 
+test_that("sEstUstarThold distribution: using ChangePointDetection ",{
+  eddyC <- sEddyProc$new(
+    'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
+  eddyC$sEstimateUstarScenarios(
+    nSample = 3L, probs = c(0.05, 0.5, 0.95),
+    ctrlUstarEst = usControlUstarEst(isUsingCPTSeveralT = TRUE)
+  )
+  if (!requireNamespace("segmented", quietly = TRUE)) {
+    expect_true(inherits(resUStar,"try-error"))
+  } else {
+    uStarDist <- eddyC$sGetEstimatedUstarThresholdDistribution()
+    expect_true( all(is.finite(as.matrix(uStarDist[4:7]))))
+    expect_true( all(uStarDist[["5%"]] < uStarDist[["95%"]]))
+  }
+})
+
 test_that("sEstUstarThold: multi-year and One-big-season",{
 			EddyData.F99 <- EddyData.F
 			EddyData.F99$Year <- EddyData.F$Year + 1

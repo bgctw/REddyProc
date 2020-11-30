@@ -123,6 +123,9 @@ usEstUstarThreshold = function(
 		    ## see \code{\link{usEstUstarThresholdSingleFw2Binned}}
 		, isCleaned = FALSE			##<< set to TRUE, if the data was cleaned already,
 		    ## to avoid expensive call to \code{usGetValidUstarIndices}.
+		, isInBootstrap = FALSE  ##<< set to TRUE if this is called from
+		    ## \code{\link{sEddyProc_sEstimateUstarScenarios}} to avoid further
+		    ## bootstraps in change-point detection
 ) {
 	##author<<
 	## TW, OM
@@ -233,7 +236,8 @@ usEstUstarThreshold = function(
 			##
 			## Note, that this method often gives higher estimates of the u * threshold.
 			## }}
-			.estimateUStarSeasonCPTSeveralT(...)
+			nBootSegmented <- if (isTRUE(isInBootstrap)) {0L} else 3L
+			.estimateUStarSeasonCPTSeveralT(..., nBootSegmented = nBootSegmented)
 		} else .estimateUStarSeason(...)
 	}
 	UstarSeasonsTempL <- dsc %>% split(.$season) %>% map(fEstimateUStarSeason
@@ -1301,6 +1305,11 @@ sEddyProc_sEstimateUstarScenarios <- function(
   ds <- sDATA[, c("sDateTime", UstarColName, NEEColName, TempColName, RgColName)]
   colnames(ds) <- c("sDateTime", "Ustar", "NEE", "Tair", "Rg")
   ds$seasonFactor <- .self$sTEMP$season
+  # the segmented regression somehow seems to reset the random generator
+  # hence we need to initialize by different seeds to avoid repeating the same
+  # sample.
+  # Need to be done before the first call to .self$sEstUstarThold
+  bootSeeds <- sample.int(.Machine$integer.max, nSample - 1L)
   res0 <- suppressMessages(.self$sEstUstarThold(
     UstarColName = UstarColName
     , NEEColName = NEEColName
@@ -1314,8 +1323,9 @@ sEddyProc_sEstimateUstarScenarios <- function(
   iPosSeasons <- which(res0$aggregationMode == "season")
   years0 <- res0$seasonYear[iPosYears]
   seasons0 <- res0$season[iPosSeasons]
-  fWrapper <- function(iSample, ...) {
-    dsBootWithinSeason <- ds2 <- ds %>%
+  fWrapper <- function(seed, ...) {
+    set.seed(seed)
+    dsBootWithinSeason <- ds %>%
       split(.$seasonFactor) %>%
       map_df(function(dss) {
         iSample <- sample.int(nrow(dss), replace = TRUE)
@@ -1325,6 +1335,7 @@ sEddyProc_sEstimateUstarScenarios <- function(
     res <- usEstUstarThreshold(
       dsBootWithinSeason, ...
       , seasonFactor = dsBootWithinSeason$season
+      , isInBootstrap = TRUE
       , ctrlUstarEst = ctrlUstarEst, ctrlUstarSub = ctrlUstarSub	)
     gc()
     # need to check if years and seasons have been calculated
@@ -1348,13 +1359,13 @@ sEddyProc_sEstimateUstarScenarios <- function(
   }
   # collect into one big matrix
   Ustar.l0 <- res0$uStar[c(iPosAgg, iPosYears, iPosSeasons)]
-  if(isTRUE(suppressWarningsAfterFirst)) {
+  if (isTRUE(suppressWarningsAfterFirst)) {
     Ustar.l <- suppressWarnings(suppressMessages(
-      Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
+      Ustar.l <- map(bootSeeds, fWrapper, ...)
     ))
   } else {
     Ustar.l <- suppressMessages(
-      Ustar.l <- lapply(1:(nSample - 1), fWrapper, ...)
+      Ustar.l <- map(bootSeeds, fWrapper, ...)
     )
   }
   if (isTRUE(isVerbose) ) message("")	# line break

@@ -3,25 +3,28 @@
 		x
 		, y
 		, n = length(x)
+		, nBootSegmented = 3
 ) {
   # check upstream once instead of in each loop
   # if (!requireNamespace("segmented")) stop(
   #   "functionality is only supported if segmented package is installed.")
 	xr <- -x
 	lm1 <- lm(y~1)
-	seg1 <- segmented::segmented(lm1, seg.Z =~xr, psi = xr[n%/%2]
-			#, segmented::seg.control(toll = 0.005) 	# precision of 0.01 / 2 is sufficient
-			#, segmented::seg.control(toll = 0.005, n.boot = 0) 	# precision of 0.01 / 2 is sufficient
-			, segmented::seg.control(toll = 0.005, n.boot = 3) 	# precision of 0.01 / 2 is sufficient
+	seg1 <- segmented::segmented(lm1, seg.Z = ~xr, psi = xr[n %/% 2]
+	    # precision of 0.01 / 2 is sufficient
+			#, segmented::seg.control(toll = 0.005)
+			#, segmented::seg.control(toll = 0.005, n.boot = 0)
+			, segmented::seg.control(tol = 0.005, n.boot = nBootSegmented)
 	)
 	cf <- as.numeric(coef(seg1))
 	##value<< numeric vector with entries
 	c(
 			b0 = cf[1]			##<< intercept of second part
-			, b1 =-cf[2]		##<< first slope (second slope is fixed to zero)
-			, cp =-seg1$psi[2]	##<< estimated breakpoint
+			, b1 = -cf[2]		##<< first slope (second slope is fixed to zero)
+			, cp = -seg1$psi[2]	  ##<< estimated breakpoint
 			, sdCp = seg1$psi[3]	##<< estimated standard error of cp
-			, p = anova(lm(y~xr), seg1, test = "LRT")[[5]][2]	##<< probability of F test that segmented model is better than a linear model
+			, p = anova(lm(y~xr), seg1, test = "LRT")[[5]][2]	##<< probability of
+			## F test that segmented model is better than a linear model
 	)
 }
 
@@ -80,6 +83,8 @@ attr(.fitSeg2, "ex") <- function() {
 		, ctrlUstarSub
 		, ctrlUstarEst
 		, fEstimateUStarBinned
+		, nBootSegmented = 3L ##<< number of bootstrap samples used in segmented.
+		## may set to zero, if called already within a bootstrap
 ) {
   if (!requireNamespace("segmented", quietly = TRUE)) stop(
     "uStar threshold change point detection is only supported "
@@ -115,26 +120,37 @@ attr(.fitSeg2, "ex") <- function() {
 	TIdUnsorted[orderTemp] <- TId0
 	# plot(TIdUnsorted ~ dsi$Tair) # for checking Temperature binning
 	#
-	thresholdsTList <- lapply(ctrlUstarSub$taClasses - (0L:min(2L, ctrlUstarSub$taClasses-1L)) , function(taClasses) {
-		TId <- if (taClasses ==  ctrlUstarSub$taClasses) TId0 else .binWithEqualValuesBalanced(dsiSort[, "Tair"], taClasses)
-		#k <- 1L
-		thresholds <- vapply(1:taClasses, function(k) {
-					dsiSortTclass <- dsiSort[TId == k, ]
-					##details<<
-					## Temperature classes, where NEE is still correlated to temperature
-					## are not used for uStar threshold estimation.
-					Cor1 = suppressWarnings(abs(cor(dsiSortTclass[, "Ustar"], dsiSortTclass[, "Tair"])) ) # maybe too few or degenerate cases
-					# TODO: check more correlations here? [check C code]
-					#      Cor2 = abs(cor(dataMthTsort$Ustar, dataMthTsort$nee))
-					#      Cor3 = abs(cor(dataMthTsort$tair, dataMthTsort$nee))
-					if ( (!is.finite(Cor1)) || (Cor1 > ctrlUstarEst$corrCheck)) return(NA_real_)
-					resCPT <- try(suppressWarnings(.fitSeg1(dsiSortTclass[, "Ustar"], dsiSortTclass[, "NEE"])), silent = TRUE)
-					threshold <- if (inherits(resCPT, "try-error") || !is.finite(resCPT["p"]) || resCPT["p"] > 0.05)
-								#c(NA_real_, NA_real_) else resCPT[c("cp", "sdCp")]	# testing weighted mean, no improment, simplify again
-								c(NA_real_) else resCPT[c("cp")]
-					return(threshold)
-				}, FUN.VALUE = numeric(1L), USE.NAMES = FALSE)
-	}  )
+	thresholdsTList <- lapply(
+	  ctrlUstarSub$taClasses - (0L:min(2L, ctrlUstarSub$taClasses - 1L)),
+	  function(taClasses) {
+	    TId <- if (taClasses ==  ctrlUstarSub$taClasses) TId0 else
+	      .binWithEqualValuesBalanced(dsiSort[, "Tair"], taClasses)
+	    #k <- 1L
+	    thresholds <- vapply(1:taClasses, function(k) {
+	      dsiSortTclass <- dsiSort[TId == k, ]
+	      ##details<<
+	      ## Temperature classes, where NEE is still correlated to temperature
+	      ## are not used for uStar threshold estimation.
+	      # maybe too few or degenerate cases
+	      Cor1 = suppressWarnings(
+	        abs(cor(dsiSortTclass[, "Ustar"], dsiSortTclass[, "Tair"])) )
+	      # TODO: check more correlations here? [check C code]
+	      #      Cor2 = abs(cor(dataMthTsort$Ustar, dataMthTsort$nee))
+	      #      Cor3 = abs(cor(dataMthTsort$tair, dataMthTsort$nee))
+	      if ((!is.finite(Cor1)) || (Cor1 > ctrlUstarEst$corrCheck)) return(NA_real_)
+	      resCPT <- try(suppressWarnings(
+	        .fitSeg1(dsiSortTclass$Ustar, dsiSortTclass$NEE,
+	                 nBootSegmented = nBootSegmented)),
+	        silent = TRUE)
+	      threshold <- if (inherits(resCPT, "try-error") ||
+	                       !is.finite(resCPT["p"]) ||
+	                       resCPT["p"] > 0.05)
+	        # testing weighted mean, no improment, simplify again
+	        #c(NA_real_, NA_real_) else resCPT[c("cp", "sdCp")]
+	        c(NA_real_) else resCPT[c("cp")]
+	      return(threshold)
+	    }, FUN.VALUE = numeric(1L), USE.NAMES = FALSE)
+	  }  )
 	##value<< and list with entries (invisible, because might be large)
 	invisible(list(
 			UstarTh.v = do.call(c, thresholdsTList) 	##<< vector of uStar for temperature classes

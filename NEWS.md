@@ -1,3 +1,7 @@
+- workaround bug in changepont detection (package segmented) that
+  reset random generator and caused resampling the same "random" bootstrap sample
+  repeatedly.
+
 # REddyProc 1.2.4
 
 - Provided VPD estimate of longer gaps by assuming daily minimum temperature at
