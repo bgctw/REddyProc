@@ -129,6 +129,7 @@ partitionNEEGL <- function(
 				dsTempSens <- partGLFitNightTimeTRespSens(dsR
 						, nRecInDay = nRecInDay
 						, controlGLPart = controlGLPart
+						, isVerbose = isVerbose
 				)
 			} else	{
 				dsTempSens <- controlGLPart$fixedTempSens
@@ -147,6 +148,7 @@ partitionNEEGL <- function(
 									, nRecInDay = nRecInDay
 									, E0Win = dsTempSens
 									, controlGLPart = controlGLPart
+									, isVerbose = isVerbose
 							))
 					dsTempSens$RRef <- resRef15$RRef
 				}
@@ -163,6 +165,7 @@ partitionNEEGL <- function(
 			, dsTempSens = dsTempSens
 			, controlGLPart = controlGLPart
 			, lrcFitter = lrcFitter
+			, isVerbose = isVerbose
 	)
 	# if no windows was fitted, return error. Else error on missing columns
 	# (no parameter columns returned)
@@ -195,6 +198,7 @@ partitionNEEGL <- function(
 					, resParms
 					, controlGLPart = controlGLPart
 					, lrcFitter = lrcFitter
+					, isVerbose = isVerbose
 			)
 	if (!controlGLPart$isNeglectVPDEffect &&
 	    controlGLPart$isRefitMissingVPDWithNeglectVPDEffect) {
@@ -873,6 +877,7 @@ partGLInterpolateFluxes <- function(
 		, controlGLPart = partGLControl()	##<< further default parameters,
 		  ## see \code{\link{partGLControl}}
 		, lrcFitter	##<< R5 class instance responsible for fitting the LRC curve
+		, isVerbose = TRUE		##<< set to FALSE to suppress messages
 ) {
 	##author<< TW
 	##seealso<< \code{link{partitionNEEGL}}

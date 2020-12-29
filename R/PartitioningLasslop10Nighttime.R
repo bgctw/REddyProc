@@ -86,6 +86,7 @@ partGLFitNightTimeTRespSens = function(
 	  #
 	  , E0Win = E0Smooth
 	  , controlGLPart = controlGLPart
+	  , isVerbose = isVerbose
 	))
 	# fill those NA caused by not enough night-time records
 	E0Smooth$RRef <- fillNAForward(resRef15$RRef, firstValue =
