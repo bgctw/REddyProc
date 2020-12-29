@@ -19,7 +19,7 @@ fConvertCtoK <- function(
   if (!missing(Celsius.V.n)) warning(
     "fConvertCtoK: argument name Celsius.V.n is deprecated, use instead Celsius.")
   fCheckOutsideRange(
-    cbind(Celsius = Celsius), 'Celsius', c('<', -273.15), 'fConvertCtoK')
+    data.frame(Celsius = Celsius), 'Celsius', c('<', -273.15), 'fConvertCtoK')
   Kelvin <-  Celsius + 273.15
   attr(Kelvin, 'varnames') <- 'Temp_K'
   attr(Kelvin, 'units') <- 'degK'
