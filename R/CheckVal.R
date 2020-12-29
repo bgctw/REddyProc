@@ -82,20 +82,32 @@ fCheckColNum <- function(
   Data.F                ##<< Data frame
   , ColNames.V.s         ##<< Vector of variables to be checked, with 'none' as dummy
   , CallFunction.s = ''    ##<< Name of function called from
-)
-  ##author<<
-  ## AMM
-  # TEST: Data.F <- Date.F.x; ColNames.V.s <- c('FluxnetYear.n', 'none', 'FluxnetDoY.n', 'Description.s'); CallFunction.s <- 'Dummy'
-{
-  #Exclude dummy 'none'
-  NoneCols.b <- ColNames.V.s %in% 'none'
-  #Check if specified columns are numeric
-  NumCols.b <- sapply(Data.F[, ColNames.V.s[!NoneCols.b]], is.numeric)
-  if (!all(NumCols.b) ) {
-    ColNames.s <- paste(ColNames.V.s[!NoneCols.b][!NumCols.b], collapse = ', ')
-    stop(CallFunction.s, ':::fCheckColNum::: Detected following columns in dataset to be non numeric: ', ColNames.s, '!')
+  , isWarnMissing = TRUE  ##<< set to FALSE to avoid warning when columns to
+  ##  to check are missing
+) {
+  ##author<< TW
+  #Exclude dummy 'none' from checking
+  ColNames.V.s <- ColNames.V.s[ColNames.V.s != "none"]
+  #Exclude columns not present in dataset from checking
+  iMissing <- which(!(ColNames.V.s %in% names(Data.F)))
+  colNamesCheck <- if (length(iMissing)) {
+    if (isTRUE(isWarnMissing)) warning(
+      "missing columns ", paste(ColNames.V.s[iMissing], collapse = ","))
+    ColNames.V.s[-iMissing]
+  } else ColNames.V.s
+  isNotNumeric <- map_lgl(colNamesCheck, ~!is.numeric(Data.F[[.]]))
+  if (sum(isNotNumeric)) {
+    # report the first occurence of a nonnumeric
+    colNameFirst <- colNamesCheck[isNotNumeric][1]
+    x <- Data.F[[colNameFirst]]
+    xn <- suppressWarnings(as.numeric(x))
+    indexFirst <- which(!is.na(x) & is.na(xn))[1]
+    stop(CallFunction.s, ":::fCheckColNum::: Detected following columns in ",
+         "dataset to be non numeric: ",
+         paste(colNamesCheck[isNotNumeric], collapse = ","), '! ',
+         "First occurence of non-numeric value at column '",colNameFirst,
+         "' at row ", indexFirst, " is '",x[indexFirst],"'.")
   }
-
   ##value<<
   ## Function stops on errors.
 }

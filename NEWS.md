@@ -1,6 +1,9 @@
 - workaround bug in changepont detection (package segmented) that
   reset random generator and caused resampling the same "random" bootstrap sample
   repeatedly.
+- report the row and value of first non-numeric entry when checking for 
+  numeric columns
+  
 
 # REddyProc 1.2.4
 
