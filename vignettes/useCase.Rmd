@@ -114,6 +114,11 @@ on the x and and day of the year on the y axis.
 EProc$sPlotFingerprintY('NEE', Year = 1998)
 ```
 
+```{r eval=FALSE, include=FALSE}
+# plot with custom color palette
+EProc$sPlotFingerprintY('NEE', Year = 1998, colors = rainbow(50), valueLimits = c(-300,300))
+```
+
 For writing plots of data of several years to pdf see also
 
 * [`sEddyProc_sPlotFingerprint`](../html/sEddyProc_sPlotFingerprint.html),
