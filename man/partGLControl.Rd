@@ -79,8 +79,13 @@ computations. This may help when VPD is rarely measured.}
 repeating estimation
 with \code{isNeglectVPDEffect = TRUE} trying to predict when VPD
 is missing}
-  \item{fixedTempSens}{
-}
+  \item{fixedTempSens}{data.frame
+of one row or nRow = nWindow
+corresponding to return value of \code{partGLFitNightTimeTRespSens}
+While column \code{RRef} is used only as a  prior and initial value for
+the daytime-fitting and can be NA,
+\code{E0} is used as given temperature sensitivity and varied according
+to \code{sdE0} in the bootstrap.}
   \item{replaceMissingSdNEEParms}{parameters for
 replacing missing standard deviation of NEE.
 see \code{replaceMissingSdByPercentage}.
