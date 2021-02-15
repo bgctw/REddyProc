@@ -251,7 +251,8 @@ aggDay
 aggDay %>% 
   filter(between(DoY, 150, 200)) %>% 
   select(DateTime, NEE, sdNEE, sdNEEuncorr) %>% 
-  gather("scenario","sdValue", sdNEE, sdNEEuncorr) %>% 
+  #gather("scenario","sdValue", sdNEE, sdNEEuncorr) %>% 
+  pivot_longer(c(sdNEE, sdNEEuncorr), names_to = "scenario", values_to = "sdValue") %>% 
   ggplot(aes(DateTime, NEE)) +
   geom_line() +
   geom_ribbon(aes(
