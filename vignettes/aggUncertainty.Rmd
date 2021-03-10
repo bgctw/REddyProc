@@ -227,7 +227,7 @@ results <- results %>% mutate(
 )
 ```
 
-Now the aggretation can be done on data grouped by DoY. The notation `!!` tells
+Now the aggregation can be done on data grouped by DoY. The notation `!!` tells
 `summarise` to use the variable `autoCorr` instead of a column with that name.
 ```{r}
 aggDay <- results %>% 
