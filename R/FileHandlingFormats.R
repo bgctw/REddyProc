@@ -46,7 +46,7 @@ fLoadEuroFlux16 <- function(
 }
 
 
-#' Read a file in the format of Fluxnet 2015 reslease
+#' Read a file in the format of Fluxnet 2015 release
 #'
 #' Assigns default units to the columns and keeps variable name attributes
 #' as in original file.

@@ -11,7 +11,7 @@
 for which to keep parameters. If not specified defaults to the first
 entry in \code{uStarSuffixes}.}
   \item{warnOnOtherErrors}{Set to only display a warning on errors in
-uStarScneraios other than uStarScenKeep instead of stopping.}
+uStarScenarios other than uStarScenKeep instead of stopping.}
   \item{uStarSuffixes}{
 }
 }

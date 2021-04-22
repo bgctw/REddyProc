@@ -77,7 +77,7 @@ plot( NEE_uStar_fsd ~ NEE_uStar_fall, data = . )
 ```
 
 ## Omitting problematic records
-REddyProc flags filled data with poor gap-filling by a qualtiy flag 
+REddyProc flags filled data with poor gap-filling by a quality flag 
 in `NEE_<uStar>_fqc` > 0 but 
 still reports the fluxes. For aggregation we recommend computing the mean
 including those gap-filled records, i.e. using `NEE_<uStar>_f` instead of 
@@ -97,7 +97,7 @@ results <- EProc$sExportResults() %>%
 )
 ```
 
-If the aggregated mean should be computed excluding poor quality-fap-filled
+If the aggregated mean should be computed excluding poor quality-gap-filled
 data, then its best to use a column with values set to missing
 for poor quality, e.g. using `NEE_<uStar>_fgood` instead of `NEE_<uStar>_f`.
 However, the bias in aggregated results can be larger when omitting records, 

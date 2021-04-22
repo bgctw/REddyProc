@@ -1280,7 +1280,7 @@ sEddyProc_sEstimateUstarScenarios <- function(
   ## to return. Default is the 5%, median and 95% of the bootstrap
   , isVerbose = TRUE				##<< set to FALSE to omit printing progress
   , suppressWarningsAfterFirst = TRUE ##<< set to FALSE to show also warnings
-  ## for all bootstrap esimates instead of only the first bootstrap sample
+  ## for all bootstrap estimates instead of only the first bootstrap sample
 ) {
   ##author<< TW
   ##details<<
@@ -1434,7 +1434,7 @@ sEddyProc_sApplyUStarScen <- function(
   ## for which to keep parameters. If not specified defaults to the first
   ## entry in \code{uStarSuffixes}.
   , warnOnOtherErrors = FALSE ##<< Set to only display a warning on errors in
-  ## uStarScneraios other than uStarScenKeep instead of stopping.
+  ## uStarScenarios other than uStarScenKeep instead of stopping.
   , uStarSuffixes = .self$sGetUstarSuffixes()
 ) {
   ##details<<

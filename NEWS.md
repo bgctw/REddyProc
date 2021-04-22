@@ -1,9 +1,15 @@
-- workaround bug in changepont detection (package segmented) that
+# REddyProc 1.3.0
+Accumulations of improvements warrant a new version and new CRAN release
+
+- workaround bug in changepoint detection (package segmented) that
   reset random generator and caused resampling the same "random" bootstrap sample
   repeatedly.
 - report the row and value of first non-numeric entry when checking for 
   numeric columns
-  
+- update vignette of aggregating uncertainty  
+- clarifying several points in function documentations
+- improving several error messages and warnings
+- allow for custom color palette in fingerprint plots
 
 # REddyProc 1.2.4
 

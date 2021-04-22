@@ -2,7 +2,7 @@
 % Please edit documentation in R/FileHandlingFormats.R
 \name{fLoadFluxnet15}
 \alias{fLoadFluxnet15}
-\title{Read a file in the format of Fluxnet 2015 reslease}
+\title{Read a file in the format of Fluxnet 2015 release}
 \usage{
 fLoadFluxnet15(
   file_path,

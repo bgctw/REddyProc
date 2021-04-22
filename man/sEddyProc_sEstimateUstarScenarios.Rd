@@ -29,7 +29,7 @@ omitting night time data}
 to return. Default is the 5\%, median and 95\% of the bootstrap}
   \item{isVerbose}{set to FALSE to omit printing progress}
   \item{suppressWarningsAfterFirst}{set to FALSE to show also warnings
-for all bootstrap esimates instead of only the first bootstrap sample}
+for all bootstrap estimates instead of only the first bootstrap sample}
 }
 \details{The choice of the criterion for sufficiently turbulent conditions
 (u * > chosen threshold)

@@ -29,6 +29,6 @@ Esat(Tair) - Esat(Tair_{min})}
 \details{
 Since sometimes Esat_daymin is lower than Esat(Tair_min)
 the estimated VPDfromDew is underestimated. This function applies a
-linear model of the exisitng VPD and estimated VPD to correct for this bias:
+linear model of the existing VPD and estimated VPD to correct for this bias:
 VPD ~ 0 + VPDfromDew * Tair_f * hourOfDay *  TminOftheDay * TRangeDay
 }

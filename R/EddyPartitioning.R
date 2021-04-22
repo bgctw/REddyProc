@@ -9,8 +9,8 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   , isWarnReplaceColumns = FALSE  ##<< overriding default to avoid
   ## the warning on replacing output columns, because this is intended when
   ## processing several uStar scenarios.
-  , warnOnOtherErrors = FALSE ##<< Set to TRUE to only display a warning on 
-  ## errors inuStarScenarios other than uStarScenKeep instead of stopping.
+  , warnOnOtherErrors = FALSE ##<< Set to TRUE to only display a warning on
+  ## errors in uStarScenarios other than uStarScenKeep instead of stopping.
   , controlGLPart = partGLControl()	##<< further default parameters
 ) {
   ##details<<
@@ -25,14 +25,14 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   suffixes_other <- setdiff(suffixes, uStarScenKeep)
   controlGLPartNoBoot <- within(controlGLPart, nBootUncertainty <- 0L)
   tmp <- .self$sApplyUStarScen(
-    .self$sGLFluxPartition, ..., 
+    .self$sGLFluxPartition, ...,
     warnOnOtherErrors = warnOnOtherErrors,
     uStarSuffixes = suffixes_other,
     isWarnReplaceColumns = isWarnReplaceColumns,
     controlGLPart = controlGLPartNoBoot
     )
   tmp2 <- .self$sGLFluxPartition(
-    ..., 
+    ...,
     suffix = uStarScenKeep,
     isWarnReplaceColumns = isWarnReplaceColumns,
     controlGLPart = controlGLPart

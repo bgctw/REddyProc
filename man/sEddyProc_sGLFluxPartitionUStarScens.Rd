@@ -14,7 +14,7 @@ Defaults to the first scenario.}
 the warning on replacing output columns, because this is intended when
 processing several uStar scenarios.}
   \item{warnOnOtherErrors}{Set to TRUE to only display a warning on
-errors inuStarScenarios other than uStarScenKeep instead of stopping.}
+errors in uStarScenarios other than uStarScenKeep instead of stopping.}
   \item{controlGLPart}{further default parameters}
 }
 \details{Daytime-based partitioning of measured net ecosystem fluxes into

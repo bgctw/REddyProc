@@ -1,6 +1,6 @@
 Package: REddyProc
 Type: Package
-Version: 1.2.4
+Version: 1.3.0
 Title: Post Processing of (Half-)Hourly Eddy-Covariance Measurements
 Authors@R: c( person( "Department for Biogeochemical Integration at MPI-BGC, Jena, Germany", role=c("cph"), email="REddyProc-help@bgc-jena.mpg.de" )
               ,person( "Thomas", "Wutzler", role=c("aut","cre"), email="twutz@bgc-jena.mpg.de" )

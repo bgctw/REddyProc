@@ -10,7 +10,7 @@ get_timestep_hours(x)
 \item{x}{Vector of POSIX timestamps of at least length 2.}
 }
 \value{
-Nmeric scalar of the time difference of the first two entries
+Numeric scalar of the time difference of the first two entries
   in fraction hours.
 }
 \description{

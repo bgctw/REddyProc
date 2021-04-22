@@ -90,7 +90,7 @@ fConvertTimeToPosix <- function(
     #Important to set time zone to GMT to avoid problems
     # with daylight savings timeshifts
     # twutz 200316: the following caused chrashes instead of NA on leap years
-    # Professor Ripley: As it will cause corruption in R 3.x, you must not call 
+    # Professor Ripley: As it will cause corruption in R 3.x, you must not call
     # strptime() with these particular invalid values.
     # lTime.V.p <- strptime(
     #   paste(lYear.V.n, lDoY.V.n, lHour.V.n, lMin.V.n, sep = '-')
@@ -119,7 +119,7 @@ fConvertTimeToPosix <- function(
       warning('fConvertTimeToPosix day of year outside (plausible) ',
               'range (1,365) or (1,366) for ',
               sum(is_invalid_doy),' cases! Invalid values with column \'', Day)
-      lYear.V.n[is_invalid_doy] <- NA 
+      lYear.V.n[is_invalid_doy] <- NA
     }
     #Set time format
     lTime.V.p <- strptime(
@@ -222,9 +222,9 @@ is_leap_year_of_date <- function(d){
 }
 
 is_leap_year <- function (y){
-  # https://r.789695.n4.nabble.com/Count-days-of-current-year-td875319.html  
+  # https://r.789695.n4.nabble.com/Count-days-of-current-year-td875319.html
   y%%4 == 0 & (y%%100 != 0 | y%%400 == 0)
-} 
+}
 
 #' @export
 getTZone <- function(
@@ -248,7 +248,7 @@ attr(getTZone, "ex") <- function() {
 #' Get the timestep in fractional hours
 #'
 #' @param x Vector of POSIX timestamps of at least length 2.
-#' @return Nmeric scalar of the time difference of the first two entries
+#' @return Numeric scalar of the time difference of the first two entries
 #'   in fraction hours.
 #' @export
 get_timestep_hours <- function(x){
