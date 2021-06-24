@@ -276,7 +276,7 @@ The confidence bounds (+-1.96 stdDev) computed with accounting for correlations
 in this case are about twice the ones computed with neglecting correlations.
 
 ## u* threshold uncertainty
-There is also uncertainty due to unknown u* threshold. Since, the same threshold 
+There is also flux uncertainty due to uncertainty in u* threshold estimation. Since the same threshold 
 is used for all times in a given uStar scenario, the relative uncertainty 
 of this component does not decrease when aggregating across time.
 
@@ -300,8 +300,8 @@ expensive.
 unknown uStar threshold.
 
 ```{r  message=FALSE, warning=FALSE}
-# for run-time of the vignette creation, here we use only few uStar quantiles
-# For real-world applications, a larger sample is required.
+# for run-time of the vignette creation, here we use only few (3) uStar quantiles 
+# For real-world applications, a larger sample (> 30) is required.
 nScen <- 3 # nScen <- 39
 
 EddyDataWithPosix <- Example_DETha98 %>% 
