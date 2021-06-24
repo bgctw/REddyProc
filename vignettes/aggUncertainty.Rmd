@@ -282,21 +282,21 @@ of this component does not decrease when aggregating across time.
 
 The strategy is to 
 
-1) estimate distribution of u* threshold
+1\. estimate distribution of u* threshold
 
-2) compute time series of NEE (or other values of interest) for draws from 
+2\. compute time series of NEE (or other values of interest) for draws from 
    this distribution, i.e. for many uStar-scenarios
 
-3) compute each associated aggregated value
+3\. compute each associated aggregated value
 
-4) and then look at the distribution of the aggregated values. 
+4\. and then look at the distribution of the aggregated values. 
 
 Note that the entire processing down to the aggregated value
 has to be repeated for each uStar scenario.
 Hence, obtaining a good estimate of this uncertainty is computationally 
 expensive.
 
-1) First, we estimate many samples of the probability density of the 
+1\. First, we estimate many samples of the probability density of the 
 unknown uStar threshold.
 
 ```{r  message=FALSE, warning=FALSE}
@@ -304,7 +304,6 @@ unknown uStar threshold.
 # For real-world applications, a larger sample is required.
 nScen <- 3 # nScen <- 39
 
-# estimate many u
 EddyDataWithPosix <- Example_DETha98 %>% 
   filterLongRuns("NEE") %>% 
   fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
@@ -315,14 +314,14 @@ EProc$sEstimateUstarScenarios(
 uStarSuffixes <- colnames(EProc$sGetUstarScenarios())[-1]
 uStarSuffixes # in real world should use > 30
 ```
-2) Produce time series of gapfilled NEE for each scenario. They are
+2\. Produce time series of gapfilled NEE for each scenario. They are
 stored in columns distinguished by a suffix with the quantile.
 
 ```{r message=FALSE, warning=FALSE}
 EProc$sMDSGapFillUStarScens('NEE')
 ```
 
-3) Compute the annual mean for each scenario. 
+3\. Compute the annual mean for each scenario. 
 Method `sEddyProc_sApplyUStarScen` calls a user-provided function that takes
 an argument suffix for each u*-threshold scenario. Here, we use it to
 create the corresponding NEE column name and compute mean across this column
@@ -337,7 +336,7 @@ FilledEddyData <- EProc$sExportResults()
 NEEagg <- unlist(EProc$sApplyUStarScen(computeMeanNEE, FilledEddyData))
 NEEagg
 ```
-4) compute uncertainty across aggregated values
+4\. compute uncertainty across aggregated values
 ```{r}
 sdNEEagg_ustar <- sd(NEEagg)
 sdNEEagg_ustar

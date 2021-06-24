@@ -242,29 +242,26 @@ time.
 
 The strategy is to
 
-1.  estimate distribution of u\* threshold
+1\. estimate distribution of u\* threshold
 
-2.  compute time series of NEE (or other values of interest) for draws
-    from this distribution, i.e. for many uStar-scenarios
+2\. compute time series of NEE (or other values of interest) for draws
+from this distribution, i.e. for many uStar-scenarios
 
-3.  compute each associated aggregated value
+3\. compute each associated aggregated value
 
-4.  and then look at the distribution of the aggregated values.
+4\. and then look at the distribution of the aggregated values.
 
 Note that the entire processing down to the aggregated value has to be
 repeated for each uStar scenario. Hence, obtaining a good estimate of
 this uncertainty is computationally expensive.
 
-1.  First, we estimate many samples of the probability density of the
-    unknown uStar threshold.
-
-<!-- -->
+1\. First, we estimate many samples of the probability density of the
+unknown uStar threshold.
 
     # for run-time of the vignette creation, here we use only few uStar quantiles
     # For real-world applications, a larger sample is required.
     nScen <- 3 # nScen <- 39
 
-    # estimate many u
     EddyDataWithPosix <- Example_DETha98 %>% 
       filterLongRuns("NEE") %>% 
       fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour')
@@ -277,20 +274,16 @@ this uncertainty is computationally expensive.
 
     ## [1] "uStar" "U2.5"  "U50"   "U97.5"
 
-1.  Produce time series of gapfilled NEE for each scenario. They are
-    stored in columns distinguished by a suffix with the quantile.
-
-<!-- -->
+2\. Produce time series of gapfilled NEE for each scenario. They are
+stored in columns distinguished by a suffix with the quantile.
 
     EProc$sMDSGapFillUStarScens('NEE')
 
-1.  Compute the annual mean for each scenario. Method
-    `sEddyProc_sApplyUStarScen` calls a user-provided function that
-    takes an argument suffix for each u\*-threshold scenario. Here, we
-    use it to create the corresponding NEE column name and compute mean
-    across this column in the data exported from REddyProc.
-
-<!-- -->
+3\. Compute the annual mean for each scenario. Method
+`sEddyProc_sApplyUStarScen` calls a user-provided function that takes an
+argument suffix for each u\*-threshold scenario. Here, we use it to
+create the corresponding NEE column name and compute mean across this
+column in the data exported from REddyProc.
 
     computeMeanNEE <- function(ds, suffix){
       column_name <- paste0("NEE_",suffix,"_f")
@@ -301,16 +294,14 @@ this uncertainty is computationally expensive.
     NEEagg
 
     ##     uStar      U2.5       U50     U97.5 
-    ## -1.616926 -1.631296 -1.614860 -1.633955
+    ## -1.616926 -1.630803 -1.618933 -1.646267
 
-1.  compute uncertainty across aggregated values
-
-<!-- -->
+4\. compute uncertainty across aggregated values
 
     sdNEEagg_ustar <- sd(NEEagg)
     sdNEEagg_ustar
 
-    ## [1] 0.009757757
+    ## [1] 0.01349296
 
 ## Combined aggregated uncertainty
 
@@ -324,5 +315,5 @@ from the random uncertainty, the variances add.
     )
     sdAnnual
 
-    ##       sdRand     sdUstar    sdComb
-    ## 1 0.04798329 0.009757757 0.0489654
+    ##       sdRand    sdUstar     sdComb
+    ## 1 0.04798329 0.01349296 0.04984432
