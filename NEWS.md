@@ -10,6 +10,7 @@ Accumulations of improvements warrant a new version and new CRAN release
 - clarifying several points in function documentations
 - improving several error messages and warnings
 - allow for custom color palette in fingerprint plots
+- adapt C-code to work wit R4.x
 
 # REddyProc 1.2.4
 

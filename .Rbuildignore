@@ -32,3 +32,4 @@
 ^\.travis\.yml$
 ^Dockerfile$
 ^revdep$
+^\.github$
