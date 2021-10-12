@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // RHLightResponseCostC
 NumericVector RHLightResponseCostC(NumericVector theta, NumericVector flux, NumericVector sdFlux, NumericVector parameterPrior, NumericVector sdParameterPrior, NumericVector Rg, NumericVector VPD, NumericVector Temp, NumericVector VPD0, LogicalVector fixVPD);
 RcppExport SEXP _REddyProc_RHLightResponseCostC(SEXP thetaSEXP, SEXP fluxSEXP, SEXP sdFluxSEXP, SEXP parameterPriorSEXP, SEXP sdParameterPriorSEXP, SEXP RgSEXP, SEXP VPDSEXP, SEXP TempSEXP, SEXP VPD0SEXP, SEXP fixVPDSEXP) {

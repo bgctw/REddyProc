@@ -583,6 +583,7 @@ test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
 
 #resLRCEx1
 test_that("partitionNEEGL",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   resEx <- resLRCEx1
   #DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
@@ -630,6 +631,7 @@ test_that("partitionNEEGL",{
 })
 
 test_that("partitionNEEGL with Lasslop options",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #ds <- data.frame( NEE = dsNEE1$NEE_f, sdNEE = dsNEE1$NEE_fsd, Rg = dsNEE1$Rg_f, VPD = dsNEE1$VPD_f, Temp = dsNEE1$Temp, isDay = dsNEE1$isDay, isNight = dsNEE$isNight )
   resEx <- resLRCEx1
@@ -696,6 +698,7 @@ isTimeInTestPeriod <- function(sDateTime){
 }
 
 test_that("partitionNEEGL sparse data",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #flag  all data except one day bad in order  to associate the same
   #data with several windows
@@ -737,6 +740,7 @@ test_that("partitionNEEGL sparse data",{
 })
 
 test_that("partitionNEEGL isNeglectVPDEffect",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #flag all VPD data except one day as bad to associate the same data with several windows
   dsNEE1$VPD_fqc[ (dsNEE$sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz = tzEx)) &
@@ -902,6 +906,7 @@ test_that("partGLPartitionFluxes missing prediction VPD",{
 
 
 test_that("partitionNEEGL fixed tempSens",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #
   ds <- dsNEE1
@@ -968,6 +973,7 @@ test_that("partitionNEEGL long gap",{
 })
 
 test_that("partitionNEETK",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   resEx <- resLRCEx1
   #DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
