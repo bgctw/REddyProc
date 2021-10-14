@@ -11,6 +11,7 @@ Accumulations of improvements warrant a new version and new CRAN release
 - improving several error messages and warnings
 - allow for custom color palette in fingerprint plots
 - adapt C-code to work wit R4.x
+- bugfix in fLoadFluxnet15 with argument additional_columns
 
 # REddyProc 1.2.4
 

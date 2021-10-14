@@ -90,7 +90,7 @@ fLoadEuroFlux16 <- function(
 #' @export
 fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
                            colname_NEE = "NEE", ...) {
-  col <- col_standard <- cols_only(
+  col <- cols_only(
     TIMESTAMP_END = col_character(),
     NEE = col_double(),
     LE = col_double(),
@@ -101,6 +101,7 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
     USTAR = col_double(),
     VPD = col_double()
   )
+  names(col$cols)[names(col$cols) == "NEE"] <- colname_NEE
   df_units <- tribble(
     ~varname, ~unit,
     colname_NEE, "umolm-2s-1",
@@ -112,7 +113,6 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
     "USTAR", "ms-1",
     "VPD", "hPa",
   )
-  names(col_standard$cols)[2] <- colname_NEE
   colsInFile <- read_lines(file_path, n_max = 1L) %>% strsplit(",") %>%  "[["(1)
   col$cols <- col$cols[names(col$cols) %in% colsInFile]
   if (length(additional_columns)) {
@@ -123,7 +123,7 @@ fLoadFluxnet15 <- function(file_path, additional_columns = character(0),
       names(col_add$cols) <- additional_columns
       col_add
     }
-    col$cols <- c(col_standard$cols, col_add$cols)
+    col$cols <- c(col$cols, col_add$cols)
   }
   # df_fn15 <- read_csv(file_path, ...)
   # df_fn15 <- read_csv(file_path, col_types = col_standard, ...)
