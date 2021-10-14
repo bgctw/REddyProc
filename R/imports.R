@@ -22,6 +22,7 @@ NULL
 #' @importFrom stats plogis qlogis
 NULL
 
+#' @import Rcpp
 #' @useDynLib REddyProc _REddyProc_whichValueGreaterEqualC
 NULL
 
