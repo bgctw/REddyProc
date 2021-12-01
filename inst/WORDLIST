@@ -111,6 +111,7 @@ bgc
 bgctw
 bgi
 bigleaf
+bugfix
 calendaryear
 changepoint
 circ
@@ -155,6 +156,7 @@ fConvertTimeToPosix
 fConvertVisibleWm
 fLoadEuroFlux
 fLoadFluxNCIntoDataframe
+fLoadFluxnet
 fWriteDataframeToFile
 filterLongRuns
 filterLongRunsInVector
