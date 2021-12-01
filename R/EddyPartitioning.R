@@ -96,7 +96,7 @@ sEddyProc$methods(sGLFluxPartition = sEddyProc_sGLFluxPartition)
 
 #' @export
 sEddyProc_sTKFluxPartitionUStarScens <- function(
-  ### Flux partitioning after Lasslop 2015
+  ### Flux partitioning after Keenan et al., 2019
   ...  ##<< arguments to \code{\link{sEddyProc_sTKFluxPartition}}
   , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
   ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
@@ -106,6 +106,8 @@ sEddyProc_sTKFluxPartitionUStarScens <- function(
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
+  ##note<<
+  ## Currently only experimental.
   tmp <- .self$sApplyUStarScen(
     .self$sTKFluxPartition, ..., uStarScenKeep = uStarScenKeep )
   NULL
