@@ -1,6 +1,6 @@
 Package: REddyProc
 Type: Package
-Version: 1.3.0
+Version: 1.3.1
 Title: Post Processing of (Half-)Hourly Eddy-Covariance Measurements
 Authors@R: c( person( "Department for Biogeochemical Integration at MPI-BGC, Jena, Germany", role=c("cph"), email="REddyProc-help@bgc-jena.mpg.de" )
               ,person( "Thomas", "Wutzler", role=c("aut","cre"), email="twutz@bgc-jena.mpg.de" )
@@ -35,7 +35,7 @@ URL: https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb,
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 Depends: R (>= 3.0.0), methods

@@ -3,13 +3,14 @@
 \title{sEddyProc sGLFluxPartitionUStarScens}
 \description{Flux partitioning after Lasslop et al. (2010)}
 \usage{sEddyProc_sGLFluxPartitionUStarScens(..., 
-    uStarScenKeep = character(0), isWarnReplaceColumns = FALSE, 
+    uStarScenKeep = suffixes[1], isWarnReplaceColumns = FALSE, 
     warnOnOtherErrors = FALSE, controlGLPart = partGLControl())}
 \arguments{
   \item{\dots}{arguments to \code{\link{sEddyProc_sGLFluxPartition}}}
   \item{uStarScenKeep}{Scalar string specifying the scenario
 for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
-Defaults to the first scenario.}
+Defaults to the first scenario, 
+which is usually the uStar without bootstrap: "uStar".}
   \item{isWarnReplaceColumns}{overriding default to avoid
 the warning on replacing output columns, because this is intended when
 processing several uStar scenarios.}

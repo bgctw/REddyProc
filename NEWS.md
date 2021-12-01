@@ -1,3 +1,8 @@
+# REddyProc 1.3.1
+- bug fix for day-time partitioning: Adapt default of argument uStarScenKeep
+  to reflect changes in naming the uStar threshold scenarios 
+  [#55](https://github.com/bgctw/REddyProc/issues/55#issue-1068184211).
+
 # REddyProc 1.3.0
 Accumulations of improvements warrant a new version and new CRAN release
 

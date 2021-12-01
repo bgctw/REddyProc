@@ -1,10 +1,6 @@
 ## Notes
 Dear CRAN maintainers,
 
-In addition to the requested fix (adding Rcpp to imports) of issues at https://cloud.r-project.org/web/checks/check_results_REddyProc.html, 
-we take the chance to submit to CRAN a bunch of accumulated adjustments of
-the REddyProc package as described in the NEWS file.
-
 Could you, please, publish the most recent version of the REddyProc package
 on CRAN?
 

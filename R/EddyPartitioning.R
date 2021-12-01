@@ -3,9 +3,10 @@
 sEddyProc_sGLFluxPartitionUStarScens <- function(
   ### Flux partitioning after Lasslop et al. (2010)
   ...  ##<< arguments to \code{\link{sEddyProc_sGLFluxPartition}}
-  , uStarScenKeep = character(0) ##<< Scalar string specifying the scenario
+  , uStarScenKeep = suffixes[1] ##<< Scalar string specifying the scenario
   ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
-  ## Defaults to the first scenario.
+  ## Defaults to the first scenario, 
+  ## which is usually the uStar without bootstrap: "uStar".
   , isWarnReplaceColumns = FALSE  ##<< overriding default to avoid
   ## the warning on replacing output columns, because this is intended when
   ## processing several uStar scenarios.
@@ -22,6 +23,9 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   ## For the uStarScenKeep, a full set of output columns is returned.
   ## For the other scenarios, the bootstrap of GPP uncertainty is omitted
   ## and columns "FP_<x>" are overridden.
+  if (!(uStarScenKeep %in% suffixes)) stop(
+    "Expected argument uStarScenKeep to specify an existing uStar scenario (",
+    paste(suffixes, collapse = ","),") but was '",uStarScenKeep,"'")
   suffixes_other <- setdiff(suffixes, uStarScenKeep)
   controlGLPartNoBoot <- within(controlGLPart, nBootUncertainty <- 0L)
   tmp <- .self$sApplyUStarScen(
