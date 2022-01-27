@@ -108,10 +108,10 @@ fCalcVPDfromRHandTair <- function(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
   fCheckOutsideRange(
-    cbind(RelHumidity_Percent = rH), 'RelHumidity_Percent'
+    data.frame(RelHumidity_Percent = rH), 'RelHumidity_Percent'
     , c('<', 0, '|', '>', 100), 'fCalcVPDfromRHandTair')
   fCheckOutsideRange(
-    cbind(AirTemp_degC = Tair), 'AirTemp_degC'
+    data.frame(AirTemp_degC = Tair), 'AirTemp_degC'
     , c('<', -70, '|', '>', 60), 'fCalcVPDfromRHandTair')
   # See Kolle Logger Tools Software 2012 (Magnus coefficients for
   # water between 0 and 100 degC)

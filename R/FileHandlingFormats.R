@@ -259,5 +259,29 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
   output
 }
 
+#' @export
+read_from_ameriflux22 <- function(filepath){
+  col <- col_standard <- cols_only(
+    TIMESTAMP_END = col_character(),
+    FC = col_double(),
+    LE = col_double(),
+    H = col_double(),
+    SW_IN = col_double(),
+    TA = col_double(),
+    #TS = col_double(),
+    USTAR = col_double(),
+    #VPD = col_double()
+    RH = col_double()
+  )
+  df <- read_csv(filepath, col_types = col, na =  c("-9999","","NA"), comment="#")
+  ds_eproc <- df %>% mutate(
+    DateTime = BerkeleyJulianDateToPOSIXct(.data$TIMESTAMP_END),
+    RH = ifelse(between(RH,100.0,105.0),100.0, RH),
+    VPD = fCalcVPDfromRHandTair(RH, TA)
+  ) %>%
+    select(DateTime, NEE = "FC",	Rg = "SW_IN",	Tair="TA",	rH="RH",	VPD, Ustar = "USTAR", LE, H )
+  ds_eproc
+}
+
 
 
