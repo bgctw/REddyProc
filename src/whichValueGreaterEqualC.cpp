@@ -6,7 +6,8 @@ IntegerVector whichValueGreaterEqualC(IntegerVector x, IntegerVector threshold, 
 	int _threshold  = as<int>(threshold);
 	int i = (as<int>(iStart)) - 1L;		// note indexing in C starts from 0
 	// using && (logical and), rather than & (bitwise and)
-	while( (i < x.size()) && (x[i] < _threshold) ) i++;
+	// in addition use ++i, because i++ causes problems with R 4.x
+	while( (i < x.size()) && (x[i] < _threshold) ) ++i;
 	//wrong: while( (i < x.size()) & (x[i] < _threshold) ) i++;
 	if( i < x.size() ) {
 	  // return index, but counting from 1

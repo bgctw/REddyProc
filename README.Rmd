@@ -20,9 +20,10 @@ knitr::opts_chunk$set(
 ```
 
 
+<!-- badges: start -->
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
-[![Travis-CI Build Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
-
+[![R-CMD-check](https://github.com/bgctw/REddyProc/workflows/R-CMD-check/badge.svg)](https://github.com/bgctw/REddyProc/actions)
+<!-- badges: end -->
 
 ## Overview
 

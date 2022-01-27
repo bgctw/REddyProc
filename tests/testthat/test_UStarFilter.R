@@ -135,6 +135,7 @@ test_that("sEstUstarThold: using ChangePointDetection",{
 		})
 
 test_that("sEstUstarThold distribution: using ChangePointDetection ",{
+  skip_on_cran()
   eddyC <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD','Ustar'))
   eddyC$sEstimateUstarScenarios(
@@ -151,56 +152,57 @@ test_that("sEstUstarThold distribution: using ChangePointDetection ",{
 })
 
 test_that("sEstUstarThold: multi-year and One-big-season",{
-			EddyData.F99 <- EddyData.F
-			EddyData.F99$Year <- EddyData.F$Year + 1
-			EddyDataWithPosix.F99 <- fConvertTimeToPosix(
-			  EddyData.F99, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
-			dsAll <- EddyDataWithPosix.F # rbind(EddyDataWithPosix.F, EddyDataWithPosix.F99)
-			# construct in a way so that that in each seasons there are not enough
-			# valid values in 98
-			nRec <- max(usControlUstarSubsetting()$minRecordsWithinSeason
-			            , usControlUstarSubsetting()$taClasses *
-			              usControlUstarSubsetting()$minRecordsWithinTemp) - 50
-			dsAll$seasonFactor <- usCreateSeasonFactorMonthWithinYear(dsAll$DateTime)
-			dsFew <- dsAll %>% split(.$seasonFactor) %>% purrr::map_df(function(dss){
-				isValid <- REddyProc:::usGetValidUstarIndices(dss)
-				if (sum(isValid) >= nRec)
-					dss$NEE[isValid][(nRec):sum(isValid)] <- NA
-				#print(dss$seasonFactor[1])
-				#print(nrow(dss))
-				dss
-			})
-			dsFew$seasonFactor <- NULL
-			dsFew <- dplyr:::arrange(dsFew, DateTime)
-			dsComb <- rbind(dsFew,EddyDataWithPosix.F99)
-			eddyC <- sEddyProc$new(
-			  'DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
-			expect_warning(
-			res <- eddyC$sEstUstarThold(
-								seasonFactor =
-								  usCreateSeasonFactorMonthWithinYear(eddyC$sDATA$sDateTime)
-								))
-			expect_true(
-			  all(eddyC$sUSTAR_DETAILS$seasonAggregation$seasonAgg ==
-			        eddyC$sUSTAR_DETAILS$seasonAggregation$seasonAgg[1] ))
-			# regresssion test: 0.42 by former run
-			expect_equal( res$uStar[1], 0.43, tolerance = 0.01, scale = 1 )
-			res98 <- subset(eddyC$sUSTAR_DETAILS$seasonYear, seasonYear == 1998)
-			# result for 98 taken from pooled, i.e. from 99
-			expect_equal(
-			  res98$uStarAggr[1], res98$uStarPooled, tolerance = 0.01, scale = 1 )
-			res99 <- subset(eddyC$sUSTAR_DETAILS$seasonYear, seasonYear == 1999)
-			# regresssion test: 0.42 by former run
-			expect_equal(
-			  res99$uStarAggr[1], res99$uStarMaxSeason, tolerance = 0.01, scale = 1 )
-			expect_equal(eddyC$sDATA$tempBin, res$bins$tempBin)
-			#
-		  .tmp.f <- function(){
-		    eddyC$sGetUstarScenarios()
-		    eddyC$sPlotNEEVersusUStarForSeason("1998003")
-		    str(eddyC$sUSTAR_DETAILS)
-		  }
-			#
-		})
+  skip_on_cran()
+  EddyData.F99 <- EddyData.F
+	EddyData.F99$Year <- EddyData.F$Year + 1
+	EddyDataWithPosix.F99 <- fConvertTimeToPosix(
+	  EddyData.F99, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+	dsAll <- EddyDataWithPosix.F # rbind(EddyDataWithPosix.F, EddyDataWithPosix.F99)
+	# construct in a way so that that in each seasons there are not enough
+	# valid values in 98
+	nRec <- max(usControlUstarSubsetting()$minRecordsWithinSeason
+	            , usControlUstarSubsetting()$taClasses *
+	              usControlUstarSubsetting()$minRecordsWithinTemp) - 50
+	dsAll$seasonFactor <- usCreateSeasonFactorMonthWithinYear(dsAll$DateTime)
+	dsFew <- dsAll %>% split(.$seasonFactor) %>% purrr::map_df(function(dss){
+		isValid <- REddyProc:::usGetValidUstarIndices(dss)
+		if (sum(isValid) >= nRec)
+			dss$NEE[isValid][(nRec):sum(isValid)] <- NA
+		#print(dss$seasonFactor[1])
+		#print(nrow(dss))
+		dss
+	})
+	dsFew$seasonFactor <- NULL
+	dsFew <- dplyr:::arrange(dsFew, DateTime)
+	dsComb <- rbind(dsFew,EddyDataWithPosix.F99)
+	eddyC <- sEddyProc$new(
+	  'DE-Tha', dsComb, c('NEE','Rg','Tair','VPD','Ustar'))
+	expect_warning(
+	res <- eddyC$sEstUstarThold(
+						seasonFactor =
+						  usCreateSeasonFactorMonthWithinYear(eddyC$sDATA$sDateTime)
+						))
+	expect_true(
+	  all(eddyC$sUSTAR_DETAILS$seasonAggregation$seasonAgg ==
+	        eddyC$sUSTAR_DETAILS$seasonAggregation$seasonAgg[1] ))
+	# regresssion test: 0.42 by former run
+	expect_equal( res$uStar[1], 0.43, tolerance = 0.01, scale = 1 )
+	res98 <- subset(eddyC$sUSTAR_DETAILS$seasonYear, seasonYear == 1998)
+	# result for 98 taken from pooled, i.e. from 99
+	expect_equal(
+	  res98$uStarAggr[1], res98$uStarPooled, tolerance = 0.01, scale = 1 )
+	res99 <- subset(eddyC$sUSTAR_DETAILS$seasonYear, seasonYear == 1999)
+	# regresssion test: 0.42 by former run
+	expect_equal(
+	  res99$uStarAggr[1], res99$uStarMaxSeason, tolerance = 0.01, scale = 1 )
+	expect_equal(eddyC$sDATA$tempBin, res$bins$tempBin)
+	#
+  .tmp.f <- function(){
+    eddyC$sGetUstarScenarios()
+    eddyC$sPlotNEEVersusUStarForSeason("1998003")
+    str(eddyC$sUSTAR_DETAILS)
+  }
+	#
+})
 
 

@@ -1,23 +1,18 @@
 ## Notes
 Dear CRAN maintainers,
 
-In addition to the requested fix of passing implausible day-of-year
-to strptime that was submitted recently, 
-we take the chance to submit to CRAN a bunch of accumulated minor adjustments of
-the REddyProc package as described in the NEWS file.
-
-Could you, please, publish the most recent version of the REddyProc package
+Could you, please, publish the most recent bug fix version of the REddyProc package
 on CRAN?
 
 ## Test environments
-* local Mint 18, R 3.6.2
-* Travis ci: Ubuntu 16.04.6 LTS
+* local Linux-Mint, R 4.1.2
+* Github actions: Ubuntu 20.04.3 LTS, R version 4.1.2 (2021-11-01)
 * win_builder: x86_64-w64-mingw32 (64-bit)
-* r_hub: Debian Linux, R-devel, GCC (debian-gcc-devel)
+* r_hub: all default platforms
 
 ## R CMD check results
 No warnings, nor errors.
 
 1 Note:
-on maintainer 
+REddyProcExamples in the inst folder is on purpose and not detritus
 

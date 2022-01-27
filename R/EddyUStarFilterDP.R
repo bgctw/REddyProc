@@ -1071,10 +1071,11 @@ usGetYearOfSeason <- function(
 	##details<<
 	## searches a sorted integer vector for the next element
 	## that is >= a threshold in fast C-code
+	#wutz211013: breaks ci - stalls - no cue - revert to R
   ans <- whichValueGreaterEqualC(
 	  as.integer(x), as.integer(threshold), as.integer(iStart) )
   return(ans)
-  #if (iStart > length(x)) return(NA_integer_)
+  # if (iStart > length(x)) return(NA_integer_)
   #  return(iStart - 1 + which(x[iStart:length(x)] >= threshold)[1])
   ##value<<
 	## Scalar integer: first index in x, that is >= iStart,

@@ -583,6 +583,7 @@ test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
 
 #resLRCEx1
 test_that("partitionNEEGL",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   resEx <- resLRCEx1
   #DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
@@ -630,6 +631,7 @@ test_that("partitionNEEGL",{
 })
 
 test_that("partitionNEEGL with Lasslop options",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #ds <- data.frame( NEE = dsNEE1$NEE_f, sdNEE = dsNEE1$NEE_fsd, Rg = dsNEE1$Rg_f, VPD = dsNEE1$VPD_f, Temp = dsNEE1$Temp, isDay = dsNEE1$isDay, isNight = dsNEE$isNight )
   resEx <- resLRCEx1
@@ -696,6 +698,7 @@ isTimeInTestPeriod <- function(sDateTime){
 }
 
 test_that("partitionNEEGL sparse data",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #flag  all data except one day bad in order  to associate the same
   #data with several windows
@@ -737,6 +740,7 @@ test_that("partitionNEEGL sparse data",{
 })
 
 test_that("partitionNEEGL isNeglectVPDEffect",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #flag all VPD data except one day as bad to associate the same data with several windows
   dsNEE1$VPD_fqc[ (dsNEE$sDateTime >= as.POSIXct("1998-06-03 00:00:00",tz = tzEx)) &
@@ -902,6 +906,7 @@ test_that("partGLPartitionFluxes missing prediction VPD",{
 
 
 test_that("partitionNEEGL fixed tempSens",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   #
   ds <- dsNEE1
@@ -968,6 +973,7 @@ test_that("partitionNEEGL long gap",{
 })
 
 test_that("partitionNEETK",{
+  skip_on_cran()
   dsNEE1 <- dsNEE
   resEx <- resLRCEx1
   #DoY.V.n <- as.POSIXlt(dsNEE1$sDateTime)$yday + 1L
@@ -1055,7 +1061,7 @@ test_that("no nighttime data",{
 })
 
 .test_sEddyProc_sGLFluxPartitionUStarScens <- function(){}
-test_that("sEddyProc_sGLFluxPartitionUStarScens",{
+test_that("sEddyProc_sGLFluxPartitionUStarScens wrong suffix",{
   dsTest <- Example_DETha98_Filled %>% mutate(
     NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
     NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd
@@ -1066,11 +1072,29 @@ test_that("sEddyProc_sGLFluxPartitionUStarScens",{
   EProc$sSetUStarSeasons(1L)
   EProc$sSetUstarScenarios(data.frame(season = 1L, uStar = 0.28, U50 = 0.38))
   EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
+  expect_error(
+    EProc$sGLFluxPartitionUStarScens(uStarScenKeep = "nonexisting")
+    ,"nonexisting")
+})
+
+test_that("sEddyProc_sGLFluxPartitionUStarScens",{
+  dsTest <- Example_DETha98_Filled %>% mutate(
+    NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
+    NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd
+  ) %>%
+    select(-.data$sDateTime)
+  EProc <- sEddyProc$new(
+    'DE-Tha', dsTest, setdiff(names(dsTest), c("NEE_fnum","NEE_fwin")))
+  EProc$sSetUStarSeasons(1L)
+  EProc$sSetUstarScenarios(data.frame(season = 1L, uStar = 0.28, U50 = 0.38))
+  EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   #EProc$sMDSGapFill('Tair', FillAll = FALSE,  minNWarnRunLength = NA)
   #EProc$sMDSGapFill('VPD', FillAll = FALSE,  minNWarnRunLength = NA)
   #EProc$trace(sGLFluxPartitionUStarScens, recover); # EProc$untrace(sGLFluxPartitionUStarScens)
-  EProc$sGLFluxPartitionUStarScens(uStarScenKeep = "U50")
+  #EProc$sGLFluxPartitionUStarScens(uStarScenKeep = "U50")
+  EProc$sGLFluxPartitionUStarScens()
   expect_true(all(c("GPP_DT_uStar","GPP_DT_U50", "GPP_DT_U50_SD") %in%
                     names(EProc$sTEMP)))
 })
+
 

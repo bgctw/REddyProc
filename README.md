@@ -6,9 +6,11 @@ rmarkdown::render("README.Rmd")
 maybe clear cache before
 -->
 
+<!-- badges: start -->
+
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
-[![Travis-CI Build
-Status](https://travis-ci.org/bgctw/REddyProc.svg?branch=master)](https://travis-ci.org/bgctw/REddyProc)
+[![R-CMD-check](https://github.com/bgctw/REddyProc/workflows/R-CMD-check/badge.svg)](https://github.com/bgctw/REddyProc/actions)
+<!-- badges: end -->
 
 ## Overview
 
@@ -30,7 +32,7 @@ install.packages("REddyProc")
 devtools::install_github("bgctw/REddyProc")
 ```
 
-The REddyProc~package requires a quite recent versions of the tidyverse
+The REddyProc\~package requires a quite recent versions of the tidyverse
 packages. On encountering problems on installations with older versions
 should run the following code before installing REddyProc.
 
@@ -62,6 +64,10 @@ if (length(examplePath)) {
 }
 #+++ If not provided, calculate VPD from Tair and rH
 EddyData$VPD <- fCalcVPDfromRHandTair(EddyData$rH, EddyData$Tair)
+#> Warning in fCheckColNum(Data.F, VarName.s, paste(CallFunction.s,
+#> "fCheckOutsideRange", : missing columns RelHumidity_Percent
+#> Warning in fCheckColNum(Data.F, VarName.s, paste(CallFunction.s,
+#> "fCheckOutsideRange", : missing columns AirTemp_degC
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix <- EddyData %>% 
   filterLongRuns("NEE") %>% 

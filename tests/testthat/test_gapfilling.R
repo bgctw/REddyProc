@@ -90,6 +90,7 @@ test_that("filterLongRuns",{
 
 
 test_that("sMDSGapFill",{
+  skip_on_cran()
   EddyDataWithPosix2 <- cbind(EddyDataWithPosix, QF = c(1,0,1,0,1,0,0,0,0,0))
   #EddyDataWithPosix2$NEE[1397+(0:10)] <- 0.965
   EP <- sEddyProc$new(

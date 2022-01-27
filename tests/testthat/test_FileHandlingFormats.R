@@ -58,16 +58,23 @@ test_that("read_from_fluxnet15",{
   ds_fn15 <- extract_FN15(EProc)
   ds_fn15$season <- factor("199801")
   ds_eproc <- read_from_fluxnet15(rename(ds_fn15, NEE = "NEE_ORIG"))
-	expect_true( all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar') %in% names(ds_eproc)) )
+	expect_true(
+	  all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar') %in% names(ds_eproc)) )
 	#
 	fname <- tempfile()
-	write_csv(mutate(ds_fn15, season = factor(199801), NEE = .data$NEE_ORIG), fname, na = "-9999")
+	write_csv(mutate(ds_fn15, season = factor(199801), NEE = .data$NEE_ORIG),
+	          fname, na = "-9999")
+	on.exit(unlink(fname)) # in case the test fails clean up
 	ds_eproc <- fLoadFluxnet15(fname, "season")
-	expect_true( all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
+	expect_true(
+	  all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
+	fname <- tempfile()
 	write_csv(mutate(ds_fn15, season = factor(199801)), fname, na = "-9999")
+	on.exit(unlink(fname)) # in case the test fails clean up
 	ds_eproc <- fLoadFluxnet15(fname, colname_NEE = "NEE_ORIG",
 	                           additional_columns = cols(season = col_factor()))
-	expect_true( all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
+	expect_true(
+	  all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
 	# test creating REddyProc class with default names
 	EProc <- sEddyProc$new("DE-Tha", ds)
 })

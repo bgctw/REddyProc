@@ -1,3 +1,8 @@
+# REddyProc 1.3.1
+- bug fix for day-time partitioning: Adapt default of argument uStarScenKeep
+  to reflect changes in naming the uStar threshold scenarios 
+  [#55](https://github.com/bgctw/REddyProc/issues/55#issue-1068184211).
+
 # REddyProc 1.3.0
 Accumulations of improvements warrant a new version and new CRAN release
 
@@ -10,6 +15,8 @@ Accumulations of improvements warrant a new version and new CRAN release
 - clarifying several points in function documentations
 - improving several error messages and warnings
 - allow for custom color palette in fingerprint plots
+- adapt C-code to work wit R4.x
+- bugfix in fLoadFluxnet15 with argument additional_columns
 
 # REddyProc 1.2.4
 
