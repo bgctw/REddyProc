@@ -2,6 +2,7 @@
   library(testthat)
   library(dplyr)
   library(purrr)
+  library(readr)
   #library(tidyselect)
 }
 context("FileHandlingFormats")
@@ -77,5 +78,27 @@ test_that("read_from_fluxnet15",{
 	  all(c('DateTime','NEE','Rg','Tair','VPD', 'Ustar','season') %in% names(ds_eproc)) )
 	# test creating REddyProc class with default names
 	EProc <- sEddyProc$new("DE-Tha", ds)
+})
+
+test_that("read_from_ameriflux22",{
+  ds <- Example_DETha98 %>%
+    filterLongRuns("NEE") %>%
+    fConvertTimeToPosix('YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
+  ds_af22 <- ds %>% 
+    mutate(TIMESTAMP_END= POSIXctToBerkeleyJulianDate(.data$DateTime)) %>% 
+    select(TIMESTAMP_END, FC = "NEE",	SW_IN = "Rg",	TA = "Tair",	RH = "rH",	USTAR="Ustar", LE, H )
+  ds2 = read_from_ameriflux22(ds_af22)
+  varsequal = c("NEE","Rg","Tair","rH","Ustar","LE","H")
+  expect_equal(select(ds2,all_of(varsequal)), select(ds,all_of(varsequal)))
+  # VPD may vary because it was computed from Temperature and rh
+  expect_equal(ds2$VPD[is.finite(ds2$VPD)], ds$VPD[is.finite(ds2$VPD)], tolerance=0.2)
+  #
+  fname <- tempfile()
+  write_csv(ds_af22, fname, na = "-9999")
+  on.exit(unlink(fname)) # in case the test fails clean up
+  ds2 <- fLoadAmeriflux22(fname)
+  expect_equal(data.frame(select(ds2,all_of(varsequal))), select(ds,all_of(varsequal)))
+  # VPD may vary because it was computed from Temperature and rh
+  expect_equal(ds2$VPD[is.finite(ds2$VPD)], ds$VPD[is.finite(ds2$VPD)], tolerance=0.2)
 })
 

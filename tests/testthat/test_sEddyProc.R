@@ -138,7 +138,7 @@ test_that("Test sMDSGapFillAfterUStar default case",{
   #EddyProc.C$trace("sMDSGapFillAfterUstar", recover)
   #EddyProc.C$untrace("sMDSGapFillAfterUstar")
   EddyProc.C$sMDSGapFillAfterUstar(
-    'NEE', FillAll.b = FALSE, uStarTh	= uStar98)
+    'NEE', FillAll = FALSE, uStarTh	= uStar98)
   expect_equal(
     uStar98, min(EddyProc.C$sDATA$Ustar[
       EddyProc.C$sTEMP$NEE_uStar_fqc == 0 &
@@ -151,7 +151,7 @@ test_that("Test sMDSGapFillAfterUStar single value",{
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
   uStarFixed <- 0.46
   EddyProc.C$sMDSGapFillAfterUstar(
-    'NEE', FillAll.b = FALSE, uStarTh = uStarFixed)
+    'NEE', FillAll = FALSE, uStarTh = uStarFixed)
   expect_equal( uStarFixed, min(EddyProc.C$sDATA$Ustar[
     EddyProc.C$sTEMP$NEE_uStar_fqc == 0 & (EddyProc.C$sDATA$Rg < 10)]
     , na.rm = TRUE), tolerance = 0.05  )
@@ -197,8 +197,8 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes))
   #expUStarScen <- usGetAnnualSeasonUStarMap(uStarRes)
   #expect_equal( EddySetups.C$sUSTAR_SCEN, expUStarScen)
-  EProc$sMDSGapFillAfterUStarDistr(
-    'NEE', uStarTh = uStarTh, FillAll.b = FALSE )
+  EProc$sSetUstarScenarios(uStarTh) 
+  EProc$sMDSGapFillUStarScens('NEE', FillAll = FALSE)
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
   cNames <- grep("U50", colnames(EProc$sExportResults()), value = TRUE)
@@ -208,7 +208,7 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
     "NEE_U50_fsd", "NEE_U50_fmeth", "NEE_U50_fwin")
     %in% cNames) )
   #
-  EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
+  EProc$sMDSGapFill('Tair', FillAll = FALSE)
   EProc$sSetLocationInfo(
     LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   # EddySetups.C <- sEddyProc$new(
@@ -249,8 +249,8 @@ test_that("Test sMDSGapFillAfterUStarDistr single row",{
   # take only the first row, would throw an error in test on season mismatch,
   # but with one row applied for all
   (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes)[1, c(1,3,4),drop = FALSE])
-  EProc$sMDSGapFillAfterUStarDistr(
-    'NEE', uStarTh = uStarTh, FillAll = FALSE)
+  EProc$sSetUstarScenarios(uStarTh) 
+  EProc$sMDSGapFillUStarScens('NEE', FillAll = FALSE)
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
   cNames <- grep("U50", colnames(EProc$sExportResults()), value = TRUE)

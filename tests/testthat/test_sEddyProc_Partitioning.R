@@ -116,9 +116,9 @@ test_that("Using fixed E0",{
   EddyHour.C$sTEMP$E_0 <- NULL
   EddyHour.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   # warning on duplicted columns with former test
-  #suppressWarnings(
+  suppressWarnings(
     EddyHour.C$sMRFluxPartition( debug = list(fixedE0 = E0) )
-    #)   # calling sRegrE0fromShortTerm
+    )   # calling sRegrE0fromShortTerm
   expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance = 1e-6)
   #colnames(EddyHour.C$sTEMP)
 })
@@ -128,10 +128,10 @@ test_that("Tuning the temperature range",{
   EddyHour.C$sTEMP$E_0 <- NULL
   EddyHour.C$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
   # warning on duplicted columns with former test
-  #suppressWarnings(
+  suppressWarnings(
   EddyHour.C$sMRFluxPartition(
     parsE0Regression = list(TempRange = 3))
-  #)   # calling sRegrE0fromShortTerm
+  )   # calling sRegrE0fromShortTerm
   # regression test
   E0 <- 138
   expect_equal( EddyHour.C$sTEMP$E_0[1], E0, tolerance = 1e-2)

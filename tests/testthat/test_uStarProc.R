@@ -8,7 +8,7 @@ context("sEddyProc-Class")
 # Example is accessible if package is installed, otherwise need to load it from
 # data directory below package root
 if (!exists("Example_DETha98")) load("data/Example_DETha98.RData")
-EddyData.F <- Example_DETha98
+EddyData.F <- filterLongRuns(Example_DETha98, "NEE")
 
 #Include POSIX time stamp column
 EddyDataWithPosix.F <- suppressMessages(fConvertTimeToPosix(
@@ -43,8 +43,8 @@ test_that("UStarProcessing",{
   expect_true(!any(c("NEE_f","NEE_uStar_f") %in% colnames(dsFilled)))
   # MR flux partitioning
   EProc$sSetLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1)
-  EProc$sMDSGapFill('Tair', FillAll.b = FALSE)
-  EProc$sMDSGapFill('VPD', FillAll.b = FALSE)
+  EProc$sMDSGapFill('Tair', FillAll = FALSE)
+  EProc$sMDSGapFill('VPD', FillAll = FALSE)
   #EProc$sApplyUStarScen( EProc$sMRFluxPartition )
   EProc$sMRFluxPartitionUStarScens()
   dsFilled <- EProc$sExportResults()

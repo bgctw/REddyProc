@@ -1,3 +1,5 @@
+- support reading basic variables from Ameriflux data files
+
 # REddyProc 1.3.1
 - bug fix for day-time partitioning: Adapt default of argument uStarScenKeep
   to reflect changes in naming the uStar threshold scenarios 

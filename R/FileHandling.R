@@ -65,14 +65,38 @@ fLoadTXTIntoDataframe <- function(
   ## }
 }
 
+#' Get the default units for given variables 
+#'
+#' @param variable_names  string vector of variables to query units for
+#' @return string vector with units, NA for non-standard variables.
+#' @export
+REddyProc_defaultunits <- function(variable_names) {
+  df_all_units <-tribble(
+    ~varname, ~unit,
+    "NEE", "umolm-2s-1",
+    "LE", "Wm-2",
+    "H", "Wm-2",
+    "Rg", "Wm-2",
+    "Tair", "degC",
+    "Tsoil", "degC",
+    "Ustar", "ms-1",
+    "VPD", "hPa",
+    "rH", "%",
+  ) 
+  df_units <- data.frame(varname = variable_names) %>% 
+    left_join(df_all_units, by = "varname")
+  df_units$unit
+}
+
+
 set_varunit_attributes <- function(df, varnames, units) {
   # Add units (and also varnames) as attribute
   if (length(units) != length(varnames)) stop(
     "Expected arguments varnames to be of same length but was ",
     length(varnames)," != ", length(units),".")
   for (i in 1:length(varnames)) {
-    attr(df[,varnames[i]], 'varnames') <- varnames[i]
-    attr(df[,varnames[i]], 'units') <- units[i]
+    attr(df[[varnames[i] ]], 'varnames') <- varnames[i]
+    attr(df[[varnames[i] ]], 'units') <- units[i]
   }
   df
 }
