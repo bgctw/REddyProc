@@ -12,10 +12,9 @@ fLoadAmeriflux22(file_path, ...)
 \item{...}{further arguments to \code{\link{read_csv}}}
 }
 \value{
-Data.Frame with columns 
-  DateTime, NEE,	Rg,	Tair,	rH,	VPD, Ustar, LE, H
+see \code{\link{read_from_ameriflux22}}
 }
 \description{
-NEE is read from FC, Rg from SW_in, VPD is computed from RH and Tair.
-Non-storage corrected LE and H are read.
+Reads Variables from file into data.frame from file and passes 
+it to \code{\link{read_from_ameriflux22}}.
 }

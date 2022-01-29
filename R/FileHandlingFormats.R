@@ -261,14 +261,13 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
 
 #' Read basic variables from Ameriflux standard (as of 2022) files
 #'
-#' NEE is read from FC, Rg from SW_in, VPD is computed from RH and Tair.
-#' Non-storage corrected LE and H are read.
+#' Reads Variables from file into data.frame from file and passes 
+#' it to \code{\link{read_from_ameriflux22}}.
 #'
 #' @param file_path scalar string: the path to the csv file
 #' @param ... further arguments to \code{\link{read_csv}}
 #' 
-#' @return Data.Frame with columns 
-#'   DateTime, NEE,	Rg,	Tair,	rH,	VPD, Ustar, LE, H
+#' @return see \code{\link{read_from_ameriflux22}}
 #' 
 #' @export
 fLoadAmeriflux22 <- function(file_path, ...) {
@@ -288,6 +287,16 @@ fLoadAmeriflux22 <- function(file_path, ...) {
   read_from_ameriflux22(df)  
 }
 
+#' Extract basic variables from Ameriflux standard (as of 2022) data.frames
+#'
+#' NEE is read from FC, Rg from SW_in, VPD is computed from RH and Tair.
+#' Non-storage corrected LE and H are read.
+#'
+#' @param df data.frame: with columne FC, SW_IN, RH, TA, USTAR, L and E
+#' 
+#' @return Data.Frame with columns 
+#'   DateTime, NEE,	Rg,	Tair,	rH,	VPD, Ustar, LE, H
+#' 
 #' @export
 read_from_ameriflux22 <- function(df){
   ds_eproc <- df %>% mutate(
