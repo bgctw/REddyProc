@@ -142,6 +142,9 @@ EProc$sGetEstimatedUstarThresholdDistribution()
 ```
 
 ```{r fpNEEUStar, include = FALSE, eval = FALSE}
+# EProc$sPlotNEEVersusUStarForSeason()
+
+
 str(uStarTh)
 signif(unlist(uStarTh[1,5:7]),2)
 EProc$sDATA$NEE_low <- EProc$sDATA$NEE_median <- EProc$sDATA$NEE_orig <- 

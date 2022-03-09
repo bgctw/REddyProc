@@ -859,7 +859,7 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
     screen(1L + tempBinI)
     tempBinLevel <- tempBinLevels[tempBinI]
     uStarTh <- sUSTAR_DETAILS$tempInSeason[tempBinLevel, season]
-    dss <- filter_(dsSeason,  ~tempBin == tempBinLevel)
+    dss <- filter(dsSeason,  .data$tempBin == tempBinLevel)
     par(las = 1)                   #also y axis labels horizontal
     par(mar = c(2.0, 3.3, 0, 0) + 0.3)  #margins
     par(tck = 0.02)                          #axe-tick length inside plots
