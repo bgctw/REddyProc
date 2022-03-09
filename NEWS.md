@@ -1,4 +1,10 @@
+
+# REddyProc 1.3.2
+- Avoid strong dependency on mlegp (https://github.com/bgctw/REddyProc/issues/58).
+  Daytime partitioning, unfortunately, now requires users to install package 
+  mlegp by hand.
 - support reading basic variables from Ameriflux data files
+- adapt plotting NEE vs. ustar to recent dplyr (avoid deprecation warning)
 
 # REddyProc 1.3.1
 - bug fix for day-time partitioning: Adapt default of argument uStarScenKeep
