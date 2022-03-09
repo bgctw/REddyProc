@@ -7,7 +7,7 @@
 read_from_ameriflux22(df)
 }
 \arguments{
-\item{df}{data.frame: with columne FC, SW_IN, RH, TA, USTAR, L and E}
+\item{df}{data.frame: with columns FC, SW_IN, RH, TA, USTAR, L and E}
 }
 \value{
 Data.Frame with columns 
