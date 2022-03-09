@@ -293,6 +293,7 @@ test_that("replaceMissingSdByPercentage",{
 })
 
 test_that("estimating temperature sensitivity oneWindow are in accepted range",{
+  skip_if_not_installed("mlegp") 
   dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0
                 & as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
   dss <- dss[ order(dss$Temp), ]
@@ -315,6 +316,7 @@ test_that("estimating temperature sensitivity oneWindow are in accepted range",{
 })
 
 test_that("estimating temperature sensitivity on record with some freezing temperatures",{
+  skip_if_not_installed("mlegp") 
   dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 &
                   as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:8, ]
   dss$NEE <- dss$NEE_f
@@ -436,6 +438,7 @@ test_that("simplifyApplyWindows",{
 })
 
 test_that("estimating temperature sensitivity windows outputs are in accepted range",{
+  skip_if_not_installed("mlegp") 
   dss <- dsNEE[ dsNEE$Rg_f <= 0 & dsNEE$PotRad_NEW <= 0 &
                   as.POSIXlt(dsNEE$sDateTime)$mday %in% 1:12, ]
   dss$NEE <- dss$NEE_f
@@ -454,6 +457,7 @@ test_that("estimating temperature sensitivity windows outputs are in accepted ra
 
 
 test_that("partGLFitLRCWindows outputs are in accepted range",{
+  skip_if_not_installed("mlegp") 
   ds <- partGLExtractStandardData(dsNEE)
   #
   #yday <- as.POSIXlt(dsNEE$sDateTime)$yday
@@ -500,6 +504,7 @@ test_that("partGLFitLRCWindows outputs are in accepted range",{
 })
 
 test_that("partGLFitLRCWindows error on low uncertainty",{
+  skip_if_not_installed("mlegp") 
   # see LightResponseCurveFitter_optimLRCOnAdjustedPrior
   ds <- partGLExtractStandardData(dsNEE)
   ds$sdNEE[100:200] <- 0
@@ -523,6 +528,7 @@ test_that("partGLFitLRCWindows error on low uncertainty",{
 
 
 test_that(".partGPAssociateSpecialRows correct next lines",{
+  skip_if_not_installed("mlegp") 
   expect_error(
     res <- REddyProc:::.partGPAssociateSpecialRows(integer(0),9)
   )
@@ -583,6 +589,7 @@ test_that("partGLInterpolateFluxes runs with rectangular LRCFitter",{
 
 #resLRCEx1
 test_that("partitionNEEGL",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   dsNEE1 <- dsNEE
   resEx <- resLRCEx1
@@ -631,6 +638,7 @@ test_that("partitionNEEGL",{
 })
 
 test_that("partitionNEEGL with Lasslop options",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   dsNEE1 <- dsNEE
   #ds <- data.frame( NEE = dsNEE1$NEE_f, sdNEE = dsNEE1$NEE_fsd, Rg = dsNEE1$Rg_f, VPD = dsNEE1$VPD_f, Temp = dsNEE1$Temp, isDay = dsNEE1$isDay, isNight = dsNEE$isNight )
@@ -698,6 +706,7 @@ isTimeInTestPeriod <- function(sDateTime){
 }
 
 test_that("partitionNEEGL sparse data",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   dsNEE1 <- dsNEE
   #flag  all data except one day bad in order  to associate the same
@@ -740,6 +749,7 @@ test_that("partitionNEEGL sparse data",{
 })
 
 test_that("partitionNEEGL isNeglectVPDEffect",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   dsNEE1 <- dsNEE
   #flag all VPD data except one day as bad to associate the same data with several windows
@@ -793,6 +803,7 @@ test_that("partitionNEEGL isNeglectVPDEffect",{
 })
 
 test_that("partGLPartitionFluxes missing night time data",{
+  skip_if_not_installed("mlegp") 
   dsNEE1 <- dsNEE
   #set all data except one day to NA to associate the same data
   #with several windows
@@ -820,6 +831,7 @@ test_that("partGLPartitionFluxes missing night time data",{
 
 
 test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
+  skip_if_not_installed("mlegp") 
   dsNEE1 <- dsNEE
   # test setting VPD_fqc to other than zero, for omitting those rows
   dsNEE1$VPD_fqc[ isTimeInTestPeriod(dsNEE1$sDateTime) ] <- 1L
@@ -861,6 +873,7 @@ test_that("partGLPartitionFluxes filter Meteo flag not enough without VPD",{
 })
 
 test_that("partGLPartitionFluxes missing prediction VPD",{
+  skip_if_not_installed("mlegp") 
   dsNEE1 <- dsNEE
   # test setting VPD_fqc to other than zero, for omitting those rows
   dsNEE1$VPD_fqc[ (dsNEE1$sDateTime > as.POSIXct("1998-06-03 00:00:00",tz = tzEx)) &
@@ -906,6 +919,7 @@ test_that("partGLPartitionFluxes missing prediction VPD",{
 
 
 test_that("partitionNEEGL fixed tempSens",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   dsNEE1 <- dsNEE
   #
@@ -940,6 +954,7 @@ test_that("partitionNEEGL fixed tempSens",{
 })
 
 test_that("partitionNEEGL: missing sdNEE",{
+  skip_if_not_installed("mlegp") 
   dsNEE1 <- dsNEE
   #summary(dsNEE1)
   dsNEE1$NEE_fsd <- NA_real_
@@ -960,6 +975,7 @@ test_that("partitionNEEGL: missing sdNEE",{
 # see .profilePartGL in develop/profile/profile.R
 
 test_that("partitionNEEGL long gap",{
+  skip_if_not_installed("mlegp") 
   skip("cannot repoduce SmoothTempSens failing")
   dsNEE1 <- Example_DETha98_Filled
   # introduce a long four month gap
@@ -973,6 +989,7 @@ test_that("partitionNEEGL long gap",{
 })
 
 test_that("partitionNEETK",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   dsNEE1 <- dsNEE
   resEx <- resLRCEx1
@@ -1044,6 +1061,7 @@ test_that("report missing VPD_f column in error",{
 })
 
 test_that("no nighttime data",{
+  skip_if_not_installed("mlegp") 
   skip_on_cran()
   cols <- c('NEE','Rg','Tair','VPD', 'Ustar'
             ,"Tair_f","VPD_f","Rg_f","NEE_f"
@@ -1062,6 +1080,7 @@ test_that("no nighttime data",{
 
 .test_sEddyProc_sGLFluxPartitionUStarScens <- function(){}
 test_that("sEddyProc_sGLFluxPartitionUStarScens wrong suffix",{
+  skip_if_not_installed("mlegp") 
   dsTest <- Example_DETha98_Filled %>% mutate(
     NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
     NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd
@@ -1078,6 +1097,7 @@ test_that("sEddyProc_sGLFluxPartitionUStarScens wrong suffix",{
 })
 
 test_that("sEddyProc_sGLFluxPartitionUStarScens",{
+  skip_if_not_installed("mlegp") 
   dsTest <- Example_DETha98_Filled %>% mutate(
     NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
     NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd

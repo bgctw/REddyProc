@@ -33,3 +33,4 @@
 ^Dockerfile$
 ^revdep$
 ^\.github$
+^CRAN-SUBMISSION$
