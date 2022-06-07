@@ -292,7 +292,7 @@ fLoadAmeriflux22 <- function(file_path, ...) {
 #' NEE is read from FC, Rg from SW_in, VPD is computed from RH and Tair.
 #' Non-storage corrected LE and H are read.
 #'
-#' @param df data.frame: with columne FC, SW_IN, RH, TA, USTAR, L and E
+#' @param df data.frame: with columns FC, SW_IN, RH, TA, USTAR, L and E
 #' 
 #' @return Data.Frame with columns 
 #'   DateTime, NEE,	Rg,	Tair,	rH,	VPD, Ustar, LE, H

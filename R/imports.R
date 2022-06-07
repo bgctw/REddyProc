@@ -5,7 +5,7 @@ NULL
 #' @import dplyr
 #' @importFrom purrr map map_df map_dbl map_lgl pmap
 #' @importFrom tibble tibble as_tibble tribble
-#' @importFrom mlegp mlegp predict.gp
+# #' @importFrom mlegp mlegp predict.gp
 #' @importFrom rlang UQ sym syms
 #' @importFrom readr col_character col_double col_guess col_factor cols cols_only
 #'        read_csv write_csv read_lines

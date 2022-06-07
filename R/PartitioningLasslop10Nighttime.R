@@ -417,8 +417,14 @@ partGLSmoothTempSens <- function(
         "No respiration-temperature relationship for any period of the ",yr,"th year. "
         , "Using mean temperature sensitivity of other years for this year.")
     } else {
+      if (!requireNamespace("mlegp")) stop(
+        "package mlegp is required for Lasslop daytime partitioning.",
+        "Unfortunately, it is removed from CRAN.",
+        "In order to still use daytime partitioning, please, install mlegp ",
+        "(maybe an archived version) from ",
+        "https://cran.r-project.org/package=mlegp")
       output <- capture.output(
-        gpFit <- mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
+        gpFit <- mlegp::mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
                        , nugget = E0WinFinite$sdE0^2)
         #gpFit <- mlegp(X = E0WinFinite$iCentralRec, Z = E0WinFinite$E0
         #              , nugget = (E0WinFinite$sdE0 * 2)^2, nugget.known = 1L)

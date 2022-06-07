@@ -1,13 +1,24 @@
 ## Notes
 Dear CRAN maintainers,
 
-Could you, please, publish the most recent bug fix version of the REddyProc package
-on CRAN?
+following up the email from Prof. Ripley 3/6/2022, we converted the strong
+dependency on package mlegp, which might be archived from CRAN, to a weak 
+dependency (SUGGESTS). 
+The parts that use mlegp now use "requireNamespace" and in case display
+an error requesting users to install a version of mlegp by hand.
+
+Could you, please, have a look at the current version and tell us if
+this weak dependency is ok with CRAN.
+
+Please, do not publish this version on CRAN yet. We still hope that 
+mlegp gets fixed.
+Otherwise we will submit this version again on Fri 18th of March, i.e.
+shortly before REddyProc would be archived due to strong dependendy on mlegp.
 
 ## Test environments
 * local Linux-Mint, R 4.1.2
-* Github actions: Ubuntu 20.04.3 LTS, R version 4.1.2 (2021-11-01)
-* win_builder: x86_64-w64-mingw32 (64-bit)
+* Github actions, current Ubuntu
+* current win_builder
 * r_hub: all default platforms
 
 ## R CMD check results

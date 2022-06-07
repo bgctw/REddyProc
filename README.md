@@ -5,7 +5,6 @@ README.md is generated from README.Rmd. Please edit that file
 rmarkdown::render("README.Rmd") 
 maybe clear cache before
 -->
-
 <!-- badges: start -->
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
@@ -24,6 +23,11 @@ including description at
 ## Installation
 
 ``` r
+# install mlegp dependency which unfortunately is going to be archived from CRAN
+install.packages("https://cran.r-project.org/src/contrib/mlegp_3.1.8.tar.gz", repos=NULL)
+# or 
+install.packages("https://cran.r-project.org/src/contrib/Archive/mlegp/mlegp_3.1.7.tar.gz", repos=NULL)
+
 # Release stable version from CRAN
 install.packages("REddyProc")
 
@@ -64,10 +68,6 @@ if (length(examplePath)) {
 }
 #+++ If not provided, calculate VPD from Tair and rH
 EddyData$VPD <- fCalcVPDfromRHandTair(EddyData$rH, EddyData$Tair)
-#> Warning in fCheckColNum(Data.F, VarName.s, paste(CallFunction.s,
-#> "fCheckOutsideRange", : missing columns RelHumidity_Percent
-#> Warning in fCheckColNum(Data.F, VarName.s, paste(CallFunction.s,
-#> "fCheckOutsideRange", : missing columns AirTemp_degC
 #+++ Add time stamp in POSIX time format
 EddyDataWithPosix <- EddyData %>% 
   filterLongRuns("NEE") %>% 
@@ -104,9 +104,9 @@ Docker images are provided that comprise rstudio, rocker/tidyverse, and
 REddyProc. There are different version for the latest push to github,
 for the version on CRAN and for specific tags starting from 1.1.4.
 
-  - bgctw/reddyproc:latest  
-  - bgctw/reddyproc\_cran
-  - bgctw/reddyproc:`tag`
+-   bgctw/reddyproc:latest  
+-   bgctw/reddyproc\_cran
+-   bgctw/reddyproc:`tag`
 
 They are usually run with installed docker by typing at a shell:
 
@@ -119,9 +119,8 @@ you can type the above usage example.
 
 For processing your own files in docker you need to mount local
 directories with the [–mount
-option](https://docs.docker.com/storage/bind-mounts/), e.g. `--mount
-type=bind,source=/home/twutz/devR,target=/home/rstudio/devR -e
-USERID=$UID`
+option](https://docs.docker.com/storage/bind-mounts/), e.g.
+`--mount type=bind,source=/home/twutz/devR,target=/home/rstudio/devR -e USERID=$UID`
 
 ## Reference
 
