@@ -8,6 +8,7 @@
 Develop.b <- F #True if in development mode: Load individual scripts, if false test REddyProc as package
 ShortTest.b <- F #Short test only
 LongTest.b <- F #True if in intensive test mode including NC files, all plots and ...
+#LongTest.b <- T #True if in intensive test mode including NC files, all plots and ...
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Load package or source files (development mode)
@@ -66,10 +67,10 @@ EddyData.F <- if (exists("Example_DETha98") ) {
 # Run short test
 
 if (ShortTest.b ) {
-  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+  EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
   EPTha.C$sMDSGapFill('NEE')
-  EPTha.C$sMDSGapFill('Tair',FillAll.b = F)
+  EPTha.C$sMDSGapFill('Tair',FillAll = F)
   EPTha.C$setLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1.0)
   EPTha.C$sMRFluxPartition()
   View(EPTha.C$sTEMP)
@@ -94,7 +95,7 @@ if (FALSE ) { #Short example from above with ustar filtering
   EPTha.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'Rg', 'Tair', 'VPD', 'Ustar'))
   EPTha.C$sUstarMM() # Apply filter
   EPTha.C$sMDSGapFill('NEE','UstarMM_fqc',0) #Use ustar flag
-  EPTha.C$sMDSGapFill('Tair',FillAll.b = F)
+  EPTha.C$sMDSGapFill('Tair',FillAll = F)
   EPTha.C$setLocationInfo(LatDeg = 51.0, LongDeg = 13.6, TimeZoneHour = 1.0)
   EPTha.C$sMRFluxPartition()
   View(EPTha.C$sTEMP)
@@ -109,7 +110,7 @@ EddyData.F <- cbind(EddyData.F, QF = structure(rep(c(1,0,1,0,1,0,0,0,0,0),nrow(E
 # Test calculation of VPD
 EddyData.F$VPDnew <- fCalcVPDfromRHandTair(EddyData.F$rH, EddyData.F$Tair)
 # Add POSIX time stamp
-EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year.s = 'Year', Day.s = 'DoY', Hour.s = 'Hour')
+EddyDataWithPosix.F <- fConvertTimeToPosix(EddyData.F, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Load netcdf datasets in BGI format
@@ -184,26 +185,26 @@ if (LongTest.b) {
 # Fill gaps with MDS algorithm
 
 #system.time(...)
-EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll.b = T, Verbose.b = T)
-EPTha.C$sMDSGapFill('NEE', V1.s = 'none', FillAll.b = T, Verbose.b = T)
-EPThaH.C$sMDSGapFill('NEE','QF', 0, FillAll.b = T, Verbose.b = T)
-EPThaS.C$sMDSGapFill('NEE','QF', 0, FillAll.b = T, Verbose.b = T)
-EPThaL1.C$sMDSGapFill('NEE', V1.s = 'none', T1.n = NA_real_, V2.s = 'none', T2.n = NA_real_, V3.s = 'none', T3.n = NA_real_, FillAll.b = T, Verbose.b = T)
-EPThaL1.C$sMDSGapFill('NEE', V1.s = 'none', FillAll.b = T, Verbose.b = T)
-EPThaL1.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
-EPThaL2.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
-EPThaL3.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
+EPTha.C$sMDSGapFill('NEE','QF', 0, FillAll = T, isVerbose = T)
+EPTha.C$sMDSGapFill('NEE', V1.s = 'none', FillAll = T, isVerbose = T)
+EPThaH.C$sMDSGapFill('NEE','QF', 0, FillAll = T, isVerbose = T)
+EPThaS.C$sMDSGapFill('NEE','QF', 0, FillAll = T, isVerbose = T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s = 'none', T1.n = NA_real_, V2.s = 'none', T2.n = NA_real_, V3.s = 'none', T3.n = NA_real_, FillAll = T, isVerbose = T)
+EPThaL1.C$sMDSGapFill('NEE', V1.s = 'none', FillAll = T, isVerbose = T)
+EPThaL1.C$sMDSGapFill('NEE', FillAll = T, isVerbose = T)
+EPThaL2.C$sMDSGapFill('NEE', FillAll = T, isVerbose = T)
+EPThaL3.C$sMDSGapFill('NEE', FillAll = T, isVerbose = T)
 
 # Fill also other variables
-EPTha.C$sMDSGapFill('Rg', FillAll.b = T, Verbose.b = T)
-EPTha.C$sMDSGapFill('VPD', FillAll.b = T, Verbose.b = T)
-EPTha.C$sMDSGapFill('Tair', FillAll.b = T, Verbose.b = T)
+EPTha.C$sMDSGapFill('Rg', FillAll = T, isVerbose = T)
+EPTha.C$sMDSGapFill('VPD', FillAll = T, isVerbose = T)
+EPTha.C$sMDSGapFill('Tair', FillAll = T, isVerbose = T)
 
 # Fill multiple years
 if (LongTest.b) {
-  EPThaNC.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
-  EPThaNC96.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
-  EPThaNCsub.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
+  EPThaNC.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll = T, isVerbose = T)
+  EPThaNC96.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll = T, isVerbose = T)
+  EPThaNCsub.C$sMDSGapFill('NEE_f', 'NEE_fqc', 0, FillAll = T, isVerbose = T)
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -284,12 +285,14 @@ if (LongTest.b) {
   fPlots('EPThaNCsub.C', 'NEE')
 }
 
+
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #Re-set class on previously filled data for plotting, e.g. to avoid rerunning MDS each time...
 if (LongTest.b) {
-  EPTha.C <- sEddyProc$new('DE-Tha', ThaFilled.F, c('NEE','Rg', 'Tair', 'VPD', 'QF', 'NEE_f', 'NEE_fqc', 'NEE_fmeth', 'NEE_fwin', 'NEE_fsd', 'NEE_fnum'))
-  EPThaC.C$sPlotDailySums('NEE_f_f','NEE_f_fsd')
+  EPTha.C <- sEddyProc$new('DE-Tha', cbind(EddyDataWithPosix.F,ThaFilled.F), c('NEE','Rg', 'Tair', 'VPD', 'QF', 'NEE_f', 'NEE_fqc', 'NEE_fmeth', 'NEE_fwin', 'NEE_fsd', 'NEE_fnum'))
+  EPTha.C$sPlotDailySums('NEE_f','NEE_fsd')
 }
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -298,7 +301,7 @@ if (LongTest.b) {
 if (LongTest.b) {
   # Standard filling - without ustar filtering
   EPTha98.C <- sEddyProc$new('DE-Tha', EddyDataWithPosix.F, c('NEE', 'QF', 'Rg', 'Tair', 'VPD'))
-  EPTha98.C$sMDSGapFill('NEE', FillAll.b = T, Verbose.b = T)
+  EPTha98.C$sMDSGapFill('NEE', FillAll = T, isVerbose = T)
 
   # Load MDS output data from old PV-Wave online tool - without ustar filtering
   MDSData.F <- fLoadTXTIntoDataframe('Example_DETha98_PVWave_DataSetafterGapfill.txt','inst/examples')
@@ -314,7 +317,7 @@ if (LongTest.b) {
   EddyNCData.F <- cbind(EddyNCData.F, NEEnew = EddyNCData.F$NEE)
   EPThaNC.C <- sEddyProc$new('DE-Tha', EddyNCData.F, c('NEEnew', 'Rg', 'Tair', 'VPD', 'NEE_f', 'NEE_fqc', 'NEE_fmet', 'NEE_fwin', 'NEE_fs', 'NEE_fn'))
   # Fill gaps - with ustar through NEE_fqc = 0
-  EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll.b = T, Verbose.b = T)
+  EPThaNC.C$sMDSGapFill('NEEnew', 'NEE_fqc', 0, FillAll = T, isVerbose = T)
 
   # Plot difference between old and new MDS
   plot(EPThaNC.C$sTEMP$NEEnew_f ~ EPThaNC.C$sDATA$NEE_f, col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
@@ -323,5 +326,7 @@ if (LongTest.b) {
   plot(EPTha98.C$sTEMP$NEE_f ~ EPThaNC.C$sTEMP$NEEnew_f[35089:52608], col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
   plot(MDSData.F$NEE_f ~ EPThaNC.C$sDATA$NEE_f[35089:52608], col = rgb(0.4,0.4,0.4,alpha = 0.2), pch = 20, cex = 0.3)
 }
+
+
 
 

@@ -1,3 +1,8 @@
+# REddyProc 1.3.2_DEV
+- Fixed bug in plotting daily sums, where default scale (gC / day) was of by
+  a factor nRecInDays.
+- Plotting daily sums: Uncertainty computation conservatively assumes fully
+  correlated errors rather than fully independent errors
 
 # REddyProc 1.3.2
 - Avoid strong dependency on mlegp (https://github.com/bgctw/REddyProc/issues/58).

@@ -60,8 +60,35 @@ test_that("sPlotHHFluxes",{
   EddyProc.C$sPlotHHFluxes("NEE", Dir = tempdir())
 })
 
+test_that("compute_daily_mean",{
+  nday = 5
+  nRecInDay = 48
+  x0 = 1.2  # mumol CO2 / s
+  x0_sd = 0.1*x0
+  x = rep(x0, nday*nRecInDay)
+  x_sd = rep(x0_sd, nday*nRecInDay)
+  # no noise, 
+  res = REddyProc:::compute_daily_mean(x, x_sd, nRecInDay, 1, 1)
+  expect_equal(res$x, rep(x0,5))
+  expect_equal(res$x_sd, rep(x0_sd,5)) # no uncertainty decrease: correlated
+  # convert to mumol CO2 per day 
+  timeFactor = 3600 * 24
+  res = REddyProc:::compute_daily_mean(x, x_sd, nRecInDay, timeFactor, 1)
+  expect_equal(res$x, rep(x0,5)*timeFactor)
+  expect_equal(res$x_sd, rep(x0_sd,5)*timeFactor) # correlated
+  # convert to gCO2 per second: (g CO2/mumol CO2) * (gC/gCO2)
+  massFactor =  (44.0096 / 1e6) * (12.011 / 44.0096) 
+  ## conversion factor with default from mumol CO2 to g C
+  res = REddyProc:::compute_daily_mean(x, x_sd, nRecInDay, 1, massFactor)
+  expect_equal(res$x, rep(x0,5)*massFactor)
+  expect_equal(res$x_sd, rep(x0_sd,5)*massFactor) # correlated
+})
+
 test_that("sPlotDailySums",{
   skip_on_cran()
+  df = cbind(EddyProc.C$sDATA, EddyProc.C$sTEMP)
+  REddyProc:::plotDailySumsY(df, "NEE", Year=1998)
+  #
   EddyProc.C$sPlotDailySums("NEE", Dir = tempdir())
 })
 

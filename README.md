@@ -1,3 +1,7 @@
+---
+output: 
+  github_document
+---
 
 <!-- 
 README.md is generated from README.Rmd. Please edit that file
@@ -5,24 +9,23 @@ README.md is generated from README.Rmd. Please edit that file
 rmarkdown::render("README.Rmd") 
 maybe clear cache before
 -->
-<!-- badges: start -->
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
+<!-- badges: start -->
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/REddyProc)](http://cran.r-project.org/package=REddyProc)
 [![R-CMD-check](https://github.com/bgctw/REddyProc/workflows/R-CMD-check/badge.svg)](https://github.com/bgctw/REddyProc/actions)
 <!-- badges: end -->
 
 ## Overview
 
-`REddyProc` package supports processing (half)hourly data from
-Eddy-Covariance sensors.
+`REddyProc` package supports processing (half)hourly data from Eddy-Covariance sensors.
 
-There is an online-formular to use the functionality of the package
-including description at
+There is an online-formular to use the functionality of the package including
+description at
 <https://www.bgc-jena.mpg.de/bgi/index.php/Services/REddyProcWeb>.
 
 ## Installation
 
-``` r
+```r
 # install mlegp dependency which unfortunately is going to be archived from CRAN
 install.packages("https://cran.r-project.org/src/contrib/mlegp_3.1.8.tar.gz", repos=NULL)
 # or 
@@ -36,11 +39,11 @@ install.packages("REddyProc")
 devtools::install_github("bgctw/REddyProc")
 ```
 
-The REddyProc\~package requires a quite recent versions of the tidyverse
-packages. On encountering problems on installations with older versions
-should run the following code before installing REddyProc.
+The REddyProc~package requires a quite recent 
+versions of the tidyverse packages. On encountering problems on installations 
+with older versions should run the following code before installing REddyProc.
 
-``` r
+```r
 install.packages("tidyverse")
 update.packages(oldPkgs="dplyr")
 ```
@@ -48,10 +51,11 @@ update.packages(oldPkgs="dplyr")
 ## Usage
 
 A simple example performs Lookuptable-based gapfilling of
-Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the
-filled values.
+Net-Ecosystem-Exchange (NEE) and plotting a fingerprint plot of the filled
+values.
 
-``` r
+
+```r
 library(REddyProc)
 #+++ Input data from csv (example needs to be downloaded)
 examplePath <- getExamplePath('Example_DETha98.txt', isTryDownload = TRUE)
@@ -89,46 +93,44 @@ FilledEddyData <- EProc$sExportResults()
 EProc$sPlotFingerprintY('NEE_f', Year = 1998)
 ```
 
-![](README-example-1.png)<!-- -->
+![plot of chunk example](README-example-1.png)
+
+
 
 Further examples are in
 [vignette(useCase)](https://github.com/bgctw/REddyProc/blob/master/vignettes/useCase.md)
 and
 [vignette(DEGebExample)](https://github.com/bgctw/REddyProc/blob/master/vignettes/DEGebExample.md)
-and further md-files of the [vignettes
-directory](https://github.com/bgctw/REddyProc/blob/master/vignettes).
+and further md-files of the 
+[vignettes directory](https://github.com/bgctw/REddyProc/blob/master/vignettes).
+
 
 ## Docker images
+Docker images are provided that comprise rstudio, rocker/tidyverse, and REddyProc.
+There are different version for the latest push to github, for the version on CRAN and for specific tags starting 
+from 1.1.4.
 
-Docker images are provided that comprise rstudio, rocker/tidyverse, and
-REddyProc. There are different version for the latest push to github,
-for the version on CRAN and for specific tags starting from 1.1.4.
-
--   bgctw/reddyproc:latest  
--   bgctw/reddyproc\_cran
--   bgctw/reddyproc:`tag`
+- bgctw/reddyproc:latest   
+- bgctw/reddyproc_cran
+- bgctw/reddyproc:`tag`
 
 They are usually run with installed docker by typing at a shell:
-
-    docker run --rm -p 8787:8787 -e PASSWORD=REddyProc <imagename>
-
-Then the loading url `localhost:8787` in a browser window should bring
-up RStudio  
+```
+docker run --rm -p 8787:8787 -e PASSWORD=REddyProc <imagename>
+```
+Then the loading url `localhost:8787` in a browser window should bring up RStudio  
 (default username is rstudio and password was set to REddyProc), where
 you can type the above usage example.
 
-For processing your own files in docker you need to mount local
-directories with the [–mount
-option](https://docs.docker.com/storage/bind-mounts/), e.g.
+For processing your own files in docker you need to mount local directories
+with the [--mount option](https://docs.docker.com/storage/bind-mounts/), e.g.
 `--mount type=bind,source=/home/twutz/devR,target=/home/rstudio/devR -e USERID=$UID`
 
 ## Reference
+The methodology and benchmark of `REddyProc` 1.1.3 is described 
+in the following paper:
 
-The methodology and benchmark of `REddyProc` 1.1.3 is described in the
-following paper:
+ Wutzler, T., Lucas-Moffat, A., Migliavacca, M., Knauer, J., Sickel, K., Šigut, L., Menzer, O., and Reichstein, M. (2018): Basic and extensible post-processing of eddy covariance flux data with REddyProc, Biogeosciences, 15, 5015-5030, [https://doi.org/10.5194/bg-15-5015-2018](https://doi.org/10.5194/bg-15-5015-2018). 
 
-Wutzler, T., Lucas-Moffat, A., Migliavacca, M., Knauer, J., Sickel, K.,
-Šigut, L., Menzer, O., and Reichstein, M. (2018): Basic and extensible
-post-processing of eddy covariance flux data with REddyProc,
-Biogeosciences, 15, 5015-5030,
-<https://doi.org/10.5194/bg-15-5015-2018>.
+
+
