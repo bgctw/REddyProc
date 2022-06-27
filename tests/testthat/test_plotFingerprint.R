@@ -87,7 +87,7 @@ test_that("compute_daily_mean",{
 test_that("sPlotDailySums",{
   skip_on_cran()
   df = cbind(EddyProc.C$sDATA, EddyProc.C$sTEMP)
-  REddyProc:::plotDailySumsY(df, "NEE", Year=1998)
+  REddyProc:::sEddyProc_sPlotDailySumsY("NEE", Year=1998, data=df, dts=48)
   #
   EddyProc.C$sPlotDailySums("NEE", Dir = tempdir())
 })

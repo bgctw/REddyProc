@@ -610,7 +610,7 @@ sEddyProc$methods(sPlotHHFluxes = sEddyProc_sPlotHHFluxes)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
-sEddyProc_sPlotDailySumsY <- function(
+sEddyProc_sPlotDailySumsY_depr <- function(
   ##title<<
   ## sEddyProc$sPlotDailySumsY - Plot daily sum of specified year
   ##description<<
@@ -738,11 +738,10 @@ sEddyProc_sPlotDailySumsY <- function(
     }
   }
 }
-sEddyProc$methods(sPlotDailySumsY = sEddyProc_sPlotDailySumsY)
 
-plotDailySumsY <- function(
-  data #= cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
-  , Var               ##<< (Filled) variable to plot
+#' @export
+sEddyProc_sPlotDailySumsY <- function(
+   Var               ##<< (Filled) variable to plot
   , VarUnc = 'none'    ##<< Uncertainty
   ## estimates for variable
   , Year              ##<< Year to plot
@@ -752,7 +751,8 @@ plotDailySumsY <- function(
     ## conversion factor with default from mumol CO2 to g C
   , unit = 'gC/m2/day' ##<< unit
   ##  of the daily sums
-  , dts = 48 #sINFO$DTS              ##<< numeric integer
+  , dts = sINFO$DTS              ##<< numeric integer
+  , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
 ) {
   ##author<< AMM, KS
   ##description<<
@@ -790,6 +790,7 @@ plotDailySumsY <- function(
   daily_sums = compute_daily_mean(Plot.V.n, PlotSD.V.n, nRecInDay, timeFactor, massFactor)
   plotDailySumsY_(daily_sums$x, CountMissingUnc.n, DoY.V.d, Year, unit, VarUnc, daily_sums$x_sd,  month.abb, Var)
 }
+sEddyProc$methods(sPlotDailySumsY = sEddyProc_sPlotDailySumsY)
 
 compute_daily_mean <- function(x, x_sd, nRecInDay, timeFactor, massFactor) {
   #twutz: 220507: removed (1/dts)
