@@ -94,7 +94,7 @@ results <- EProc$sExportResults() %>%
     NEE_orig_sd = ifelse(
       is.finite(.data$NEE_uStar_orig), .data$NEE_uStar_fsd, NA),
     NEE_uStar_fgood = ifelse(
-      is.finite(.data$NEE_uStar_fqc <= 1), .data$NEE_uStar_f, NA)
+      is.finite(.data$NEE_uStar_fqc) & (.data$NEE_uStar_fqc <= 1), .data$NEE_uStar_f, NA)
 )
 ```
 
@@ -157,7 +157,8 @@ measured value `NEE_uStar_orig` and modelled value from MDS gapfilling,
 `NEE_uStar_fall`. 
 
 For computing autocorrelation, equidistant time steps are important.
-Hence, instead of filtering, the residuals of bad-quality data are set to missing.
+Hence, instead of filtering, the residuals of non-observation, i.e. gap-filled, 
+data are set to missing.
 
 ```{r}
 results <- EProc$sExportResults() %>% 
