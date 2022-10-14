@@ -610,136 +610,6 @@ sEddyProc$methods(sPlotHHFluxes = sEddyProc_sPlotHHFluxes)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #' @export
-sEddyProc_sPlotDailySumsY_depr <- function(
-  ##title<<
-  ## sEddyProc$sPlotDailySumsY - Plot daily sum of specified year
-  ##description<<
-  ## The daily sums for a single year are plotted to the current device,
-  ## scaled to all data.
-  ## The daily sums are only calculated for days with complete data.
-  Var = Var.s               ##<< (Filled) variable to plot
-  , VarUnc = 'none'    ##<< Uncertainty
-  ## estimates for variable
-  , Year = Year.i             ##<< Year to plot
-  , timeFactor = if (!missing(timeFactor.n)) timeFactor.n else 3600 * 24	##<< time
-  ## conversion factor with default per second to per day
-  , massFactor = if (!missing(massFactor.n)) massFactor.n else ##<< mass
-    ## conversion factor with default from mumol CO2 to g C
-    (44.0096 / 1000000) * (12.011 / 44.0096)
-  , unit = if (!missing(unit.s)) unit.s else 'gC/m2/day' ##<< unit
-  ##  of the daily sums
-  , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
-  , dts = sINFO$DTS              ##<< numeric integer
-  , Var.s   ##deprecated
-  , VarUnc.s   ##deprecated
-  , Year.i   ##deprecated
-  , timeFactor.n   ##deprecated
-  , massFactor.n    ##deprecated
-  , unit.s    ##deprecated
-) {
-  if (!missing(VarUnc.s)) VarUnc <- VarUnc.s
-  varNamesDepr <- c("Var.s","VarUnc.s","Year.i","timeFactor.n","massFactor.n","unit.s")
-  varNamesNew <- c("Var","VarUnc","Year","timeFactor","massFactor","unit")
-  iDepr = which(!c(
-    missing(Var.s),missing(VarUnc.s),missing(Year.i),missing(timeFactor.n)
-    ,missing(massFactor.n),missing(unit.s)))
-  if (length(iDepr)) warning(
-    "Argument names ",paste(varNamesDepr[iDepr], collapse = ",")
-    ," have been deprecated."
-    ," Please, use instead ", paste(varNamesNew[iDepr], collapse = ","))
-  ##author<< AMM, KS
-  ##description<<
-  ## This function first computes the average flux for each day.
-  ## If the original unit is not "per day", then it need to be converted to
-  ## "per day" by argument \code{timeFactor}.
-  ## Furthermore, a change of the mass unit is provided by argument
-  ## \code{massFactor}.
-  ## The default parameters assume original units of mumol CO2 / m2 / second
-  ## and convert to gC / m2 / day.
-  ## The conversion factors allow plotting variables with different units
-  # Set plot contents
-  Data.V.n <- fSetQF(data, Var, 'none', NA, 'sPlotDailySumsY')
-  FullYearData.F <- fExpandToFullYear(
-    data$sDateTime, Data.V.n, Year, dts, 'sPlotDailySumsY')
-  Time.V.n <- FullYearData.F$DateTime
-  Plot.V.n <- FullYearData.F$Data
-
-  if (VarUnc != 'none') {
-    DataSD.V.n <- fSetQF(data, VarUnc, 'none', NA, 'sPlotDailySumsY')
-    PlotSD.V.n <- fExpandToFullYear(
-      data$sDateTime, DataSD.V.n, Year, dts, 'sPlotDailySumsY')$Data
-  } else {
-    # Set uncertainties to Zero
-    PlotSD.V.n <- (rep(0, length(Plot.V.n)))
-  }
-  # Uncertainty only used where data
-  PlotSD.V.n <- ifelse(is.na(Plot.V.n), NA, PlotSD.V.n)
-  # If there is data but no uncertainty estimates, an empty box will be plotted
-  CountMissingUnc.n <- sum(!is.na(Plot.V.n) & is.na(PlotSD.V.n))
-  # Compute daily sums
-  nRecInDay <- dts
-  DYear.V.d <- matrix(as.numeric(format(Time.V.n, '%Y')), nrow = dts)[1, ]
-  DoY.V.d  <- matrix(as.numeric(format(Time.V.n, '%j')) , nrow = dts)[1, ]
-  DAvg.V.d <- (1 / dts) * apply(matrix(Plot.V.n, nrow = nRecInDay), 2, mean)
-  DSum.V.d <- DAvg.V.d * timeFactor * massFactor
-  fSumOfSquares <- function(x, ...) {sum(x^2, ...)}
-  #DUnc.V.d <- (1 / dts) * sqrt(
-  # apply(matrix(PlotSD.V.n, nrow = dts), 2, fSumOfSquares))
-  # twutz: 160729:  * timeFactor * massFactor
-  DUnc.V.d <- (1 / nRecInDay) * sqrt(
-    apply(matrix(PlotSD.V.n, nrow = nRecInDay), 2, fSumOfSquares)) *
-    timeFactor * massFactor
-
-  # Scale to all data
-  YMin.n <- min(DSum.V.d - DUnc.V.d, na.rm = T)
-  YMax.n <- max(DSum.V.d + DUnc.V.d, na.rm = T)
-  # Axis settings
-  XAxis.V.n <- seq(15, 345, by = 30)
-
-  # Plot daily sums
-  par(mai = c(0.7, 0.7, 0.7, 0.4)) #Set margin
-  if (!sum(!is.na(DSum.V.d)) == 0 && CountMissingUnc.n == 0) {
-    # Plot
-    plot(DSum.V.d ~ DoY.V.d, type = 'n', ylim = c(YMin.n, YMax.n),
-         axes = F, xlab = '', ylab = '', main = Year)
-    mtext(unit, 2, 2.2)
-
-    if (VarUnc != 'none') {
-      t.b <- !is.na(DUnc.V.d) #Polygons sensitive to NAs
-      polygon(
-        c(DoY.V.d[t.b], rev(DoY.V.d[t.b]))
-        , c(DSum.V.d[t.b] + DUnc.V.d[t.b], rev(DSum.V.d[t.b] - DUnc.V.d[t.b]))
-        , col = 'dark grey', border = NA)
-    }
-    abline(h = 0, col = 'grey')
-    lines(DSum.V.d, lty = 'solid', lwd = 1, col = 'dark green')
-    points(DSum.V.d, pch = 20, cex = 0.7, col = 'dark green')
-    axis(
-      1, at = XAxis.V.n, cex.axis = 1.0, labels = month.abb
-      , col.axis = 'dark violet')
-    axis(2, cex.axis = 1.0)
-    box()
-  } else {
-    # Plot empty box
-    plot(
-      rep(0, length(DSum.V.d)) ~ DoY.V.d, type = 'n', axes = F, xlab = ''
-      , ylab = '', main = Year)
-    axis(
-      1, at = XAxis.V.n, cex.axis = 1.0, labels = month.abb
-      , col.axis = 'dark violet')
-    box()
-    if (CountMissingUnc.n != 0) {
-      warning(
-        'sPlotDailySumsY::: Uncertainty estimates missing for '
-        , CountMissingUnc.n, ' data points of ', Var
-        , ' in year: ', Year, 'This will cause an empty plot!')
-    } else {
-      warning('sPlotDailySumsY::: Missing data in year: ', Year, '!')
-    }
-  }
-}
-
-#' @export
 sEddyProc_sPlotDailySumsY <- function(
    Var               ##<< (Filled) variable to plot
   , VarUnc = 'none'    ##<< Uncertainty
@@ -770,7 +640,7 @@ sEddyProc_sPlotDailySumsY <- function(
     data$sDateTime, Data.V.n, Year, dts, 'sPlotDailySumsY')
   Time.V.n <- FullYearData.F$DateTime
   Plot.V.n <- FullYearData.F$Data
-  
+
   if (VarUnc != 'none') {
     DataSD.V.n <- fSetQF(data, VarUnc, 'none', NA, 'sPlotDailySumsY')
     PlotSD.V.n <- fExpandToFullYear(
@@ -801,10 +671,10 @@ compute_daily_mean <- function(x, x_sd, nRecInDay, timeFactor, massFactor) {
   #DUnc.V.d <- (1 / dts) * sqrt(
   # apply(matrix(PlotSD.V.n, nrow = dts), 2, fSumOfSquares))
   # twutz: 160729:  * timeFactor * massFactor
-  # twutz: 220507: if fully independent variances addd and 1/nRecInDay would be inside sqrt, 
+  # twutz: 220507: if fully independent variances addd and 1/nRecInDay would be inside sqrt,
   #   if fully dependen, sd_s add
-  # mx_sd0 <- sqrt(apply(matrix(x_sd, nrow = nRecInDay), 2, fSumOfSquares) / nRecInDay) 
-  mx_sd0 <- apply(matrix(x_sd, nrow = nRecInDay), 2, mean) # assume fully dependent 
+  # mx_sd0 <- sqrt(apply(matrix(x_sd, nrow = nRecInDay), 2, fSumOfSquares) / nRecInDay)
+  mx_sd0 <- apply(matrix(x_sd, nrow = nRecInDay), 2, mean) # assume fully dependent
   mx_sd = mx_sd0 * timeFactor * massFactor
   list(x = mx, x_sd = mx_sd)
 }
@@ -821,7 +691,7 @@ plotDailySumsY_ <- function(DSum.V.d, CountMissingUnc.n, DoY.V.d, Year, unit, Va
     plot(DSum.V.d ~ DoY.V.d, type = 'n', ylim = c(YMin.n, YMax.n),
          axes = F, xlab = '', ylab = '', main = Year)
     mtext(unit, 2, 2.2)
-    
+
     if (VarUnc != 'none') {
       t.b <- !is.na(DUnc.V.d) #Polygons sensitive to NAs
       polygon(

@@ -1443,7 +1443,7 @@ sEddyProc_sApplyUStarScen <- function(
   ## output variables maybe replaced. Argument \code{uStarKeep}
   ## allows to select the scenario which is computed last,
   ## and hence to which output columns refer to.
-  uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
+  #uStarSuffixes = colnames(.self$sGetUstarScenarios())[-1]
   if (length(uStarScenKeep) != 1) uStarScenKeep = uStarSuffixes[1]
   iKeep = match(uStarScenKeep, uStarSuffixes)
   if (is.na(iKeep)) stop(

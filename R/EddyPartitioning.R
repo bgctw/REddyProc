@@ -3,10 +3,6 @@
 sEddyProc_sGLFluxPartitionUStarScens <- function(
   ### Flux partitioning after Lasslop et al. (2010)
   ...  ##<< arguments to \code{\link{sEddyProc_sGLFluxPartition}}
-  , uStarScenKeep = suffixes[1] ##<< Scalar string specifying the scenario
-  ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
-  ## Defaults to the first scenario, 
-  ## which is usually the uStar without bootstrap: "uStar".
   , isWarnReplaceColumns = FALSE  ##<< overriding default to avoid
   ## the warning on replacing output columns, because this is intended when
   ## processing several uStar scenarios.
@@ -18,28 +14,20 @@ sEddyProc_sGLFluxPartitionUStarScens <- function(
   ## Daytime-based partitioning of measured net ecosystem fluxes into
   ## gross primary production (GPP) and ecosystem respiration (Reco)
   ## for all u* threshold scenarios.
-  suffixes <- .self$sGetUstarSuffixes()
-  ##details<<
+  ##
+  ## argument \code{uStarScenKeep} in ... is a scalar string specifying the scenario
+  ## for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+  ## Defaults to the first scenario,
+  ## which is usually the uStar without bootstrap: "uStar".
   ## For the uStarScenKeep, a full set of output columns is returned.
   ## For the other scenarios, the bootstrap of GPP uncertainty is omitted
   ## and columns "FP_<x>" are overridden.
-  if (!(uStarScenKeep %in% suffixes)) stop(
-    "Expected argument uStarScenKeep to specify an existing uStar scenario (",
-    paste(suffixes, collapse = ","),") but was '",uStarScenKeep,"'")
-  suffixes_other <- setdiff(suffixes, uStarScenKeep)
   controlGLPartNoBoot <- within(controlGLPart, nBootUncertainty <- 0L)
   tmp <- .self$sApplyUStarScen(
     .self$sGLFluxPartition, ...,
     warnOnOtherErrors = warnOnOtherErrors,
-    uStarSuffixes = suffixes_other,
     isWarnReplaceColumns = isWarnReplaceColumns,
     controlGLPart = controlGLPartNoBoot
-    )
-  tmp2 <- .self$sGLFluxPartition(
-    ...,
-    suffix = uStarScenKeep,
-    isWarnReplaceColumns = isWarnReplaceColumns,
-    controlGLPart = controlGLPart
     )
 }
 sEddyProc$methods(

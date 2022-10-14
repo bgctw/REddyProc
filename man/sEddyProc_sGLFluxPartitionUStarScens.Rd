@@ -3,14 +3,10 @@
 \title{sEddyProc sGLFluxPartitionUStarScens}
 \description{Flux partitioning after Lasslop et al. (2010)}
 \usage{sEddyProc_sGLFluxPartitionUStarScens(..., 
-    uStarScenKeep = suffixes[1], isWarnReplaceColumns = FALSE, 
-    warnOnOtherErrors = FALSE, controlGLPart = partGLControl())}
+    isWarnReplaceColumns = FALSE, warnOnOtherErrors = FALSE, 
+    controlGLPart = partGLControl())}
 \arguments{
   \item{\dots}{arguments to \code{\link{sEddyProc_sGLFluxPartition}}}
-  \item{uStarScenKeep}{Scalar string specifying the scenario
-for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
-Defaults to the first scenario, 
-which is usually the uStar without bootstrap: "uStar".}
   \item{isWarnReplaceColumns}{overriding default to avoid
 the warning on replacing output columns, because this is intended when
 processing several uStar scenarios.}
@@ -22,6 +18,10 @@ errors in uStarScenarios other than uStarScenKeep instead of stopping.}
 gross primary production (GPP) and ecosystem respiration (Reco)
 for all u* threshold scenarios.
 
+argument \code{uStarScenKeep} in ... is a scalar string specifying the scenario
+for which to keep parameters (see \code{\link{sEddyProc_sApplyUStarScen}}.
+Defaults to the first scenario,
+which is usually the uStar without bootstrap: "uStar".
 For the uStarScenKeep, a full set of output columns is returned.
 For the other scenarios, the bootstrap of GPP uncertainty is omitted
 and columns "FP_<x>" are overridden.}
