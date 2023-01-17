@@ -5,13 +5,15 @@
 \usage{fWriteDataframeToFile(Data.F, FileName = FileName.s, 
     Dir = if (!missing(Dir.s)) Dir.s else "", 
     Digits = if (!missing(Digits.n)) Digits.n else 5, 
-    FileName.s, Dir.s, Digits.n)}
+    isSplitDatetime = FALSE, FileName.s, 
+    Dir.s, Digits.n)}
 \arguments{
   \item{Data.F}{Data frame}
   \item{FileName}{File base name as a string}
   \item{Dir}{Directory as a string}
   \item{Digits}{
 }
+  \item{isSplitDatetime}{set to true to create columns Year, DoY and Hour}
   \item{FileName.s}{deprecated}
   \item{Dir.s}{deprecated}
   \item{Digits.n}{deprecated}

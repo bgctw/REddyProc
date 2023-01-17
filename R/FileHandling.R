@@ -65,7 +65,7 @@ fLoadTXTIntoDataframe <- function(
   ## }
 }
 
-#' Get the default units for given variables 
+#' Get the default units for given variables
 #'
 #' @param variable_names  string vector of variables to query units for
 #' @return string vector with units, NA for non-standard variables.
@@ -82,8 +82,8 @@ REddyProc_defaultunits <- function(variable_names) {
     "Ustar", "ms-1",
     "VPD", "hPa",
     "rH", "%",
-  ) 
-  df_units <- data.frame(varname = variable_names) %>% 
+  )
+  df_units <- data.frame(varname = variable_names) %>%
     left_join(df_all_units, by = "varname")
   df_units$unit
 }
@@ -115,6 +115,7 @@ fWriteDataframeToFile <- function(
   , Dir = if (!missing(Dir.s)) Dir.s else ''          ##<< Directory as a string
   , Digits = if (!missing(Digits.n)) Digits.n else 5			##<<
   ## (integer) number of digits, i.e. precision, for numeric values
+  , isSplitDatetime = FALSE ##<< set to TRUE to create columns Year, DoY and Hour
   , FileName.s         ##<< deprecated
   , Dir.s              ##<< deprecated
   , Digits.n			     ##<< deprecated
@@ -127,6 +128,7 @@ fWriteDataframeToFile <- function(
   # Set file name
   OutputFile.s <- fSetFile(FileName, Dir, F, 'fWriteDataframeToFile')
   # Convert NAs to gap flag
+  if (isTRUE(isSplitDatetime)) Data.F <- fSplitDateTime(Data.F)
   Data.F <- fConvertNAsToGap(Data.F)
   # Write tab delimited file
   Lines.V.s <- vector(mode = 'character', length = 2)
@@ -150,6 +152,23 @@ fWriteDataframeToFile <- function(
 attr(fWriteDataframeToFile, 'ex') <- function() {
   (Dir <- tempdir())   # directory where output is written to
   fWriteDataframeToFile(Example_DETha98, 'OutputTest.txt', Dir = Dir)
+}
+
+#' @export
+fSplitDateTime <- function(
+  ### Replace Column DateTime by columns Year, DoY, and Hour
+  df ##<< DataFrame with column DateTime
+) {
+  ##details<<
+  ## This function helps exporting to the format required by the
+  ## REddyProc web interface with columns Year, DoY, and Hour
+  df_ydh <- df %>% mutate(
+    Year = as.POSIXlt(.data$DateTime)$year + 1900,
+    DoY = as.POSIXlt(.data$DateTime)$yday + 1 ,
+    Hour = as.POSIXlt(.data$DateTime)$hour + as.POSIXlt(.data$DateTime)$min/60
+  ) %>%
+    select(.data$Year, .data$DoY, .data$Hour, !.data$DateTime)
+  df_ydh
 }
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -7,6 +7,26 @@
 }
 context("FileHandlingFormats")
 
+test_that("fSplitDateTime",{
+  ds0 <- Example_DETha98[-nrow(Example_DETha98),]
+  ds_t <- ds0 %>%
+    fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') %>%
+    select(-one_of(c('Year', 'DoY', 'Hour')))
+  ds_ydh <- fSplitDateTime(ds_t)
+  expect_equivalent(ds_ydh, ds0)
+})
+
+test_that("fWriteDataframeToFile",{
+  fname = tempfile()
+  ds0 <- Example_DETha98[-nrow(Example_DETha98),]
+  ds_t <- ds0 %>%
+    fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') %>%
+    select(-one_of(c('Year', 'DoY', 'Hour')))
+  fWriteDataframeToFile(ds_t, fname, isSplitDatetime=TRUE)
+  ds_in <- fLoadTXTIntoDataframe(fname)
+  expect_equivalent(ds_in, ds0)
+})
+
 test_that("extract_FN15",{
   ds <- Example_DETha98 %>%
     filterLongRuns("NEE") %>%
@@ -84,8 +104,8 @@ test_that("read_from_ameriflux22",{
   ds <- Example_DETha98 %>%
     filterLongRuns("NEE") %>%
     fConvertTimeToPosix('YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour')
-  ds_af22 <- ds %>% 
-    mutate(TIMESTAMP_END= POSIXctToBerkeleyJulianDate(.data$DateTime)) %>% 
+  ds_af22 <- ds %>%
+    mutate(TIMESTAMP_END= POSIXctToBerkeleyJulianDate(.data$DateTime)) %>%
     select(TIMESTAMP_END, FC = "NEE",	SW_IN = "Rg",	TA = "Tair",	RH = "rH",	USTAR="Ustar", LE, H )
   ds2 = read_from_ameriflux22(ds_af22)
   varsequal = c("NEE","Rg","Tair","rH","Ustar","LE","H")

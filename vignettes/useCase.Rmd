@@ -331,6 +331,12 @@ input data, and write this data.frame to text file in a temporary directory.
 FilledEddyData <- EProc$sExportResults()
 CombinedData <- cbind(EddyData, FilledEddyData)
 fWriteDataframeToFile(CombinedData, 'DE-Tha-Results.txt', Dir = tempdir())
+# or without relying on data.frame EddyData
+# with replacing column DateTime by Year, DoY, and Hour:
+fWriteDataframeToFile(
+  cbind(EProc$sExportData(), EProc$sExportResults()), 'DE-Tha-Results_ydh.txt', 
+  isSplitDatetime=TRUE, Dir = tempdir())
+# tmp <- fLoadTXTIntoDataframe(file.path(tempdir(),'DE-Tha-Results_ydh.txt'))
 ```
 
 
