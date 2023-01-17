@@ -15,18 +15,21 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v1
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: rcmdcheck
+          extra-packages: any::rcmdcheck
+          needs: check
 
-      - uses: r-lib/actions/check-r-package@v1
-        timeout-minutes: 30
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+          timeout-minutes: 30
 
       - name: Show testthat output
         if: always()
