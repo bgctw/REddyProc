@@ -85,13 +85,13 @@ EProc$sGetEstimatedUstarThresholdDistribution()
 
 ```
 ##   aggregationMode seasonYear  season     uStar        5%       50%       95%
-## 1          single         NA    <NA> 0.4162500 0.3777120 0.4590000 0.6045474
-## 2            year       1998    <NA> 0.4162500 0.3777120 0.4590000 0.6045474
-## 3          season       1998 1998001 0.4162500 0.3777120 0.4590000 0.6045474
-## 4          season       1998 1998003 0.4162500 0.3265341 0.4009375 0.5566597
-## 5          season       1998 1998006 0.3520000 0.3253286 0.3807500 0.4730125
-## 6          season       1998 1998009 0.3369231 0.2999583 0.4023077 0.5364763
-## 7          season       1998 1998012 0.1740000 0.2482881 0.4451667 0.6045474
+## 1          single         NA    <NA> 0.4162500 0.3855867 0.4479808 0.5768934
+## 2            year       1998    <NA> 0.4162500 0.3855867 0.4479808 0.5768934
+## 3          season       1998 1998001 0.4162500 0.3855867 0.4479808 0.5768934
+## 4          season       1998 1998003 0.4162500 0.3136443 0.4048836 0.5513104
+## 5          season       1998 1998006 0.3520000 0.3196000 0.3900000 0.4654333
+## 6          season       1998 1998009 0.3369231 0.2626420 0.3959722 0.5377187
+## 7          season       1998 1998012 0.1740000 0.2354000 0.4375556 0.5768934
 ```
 
 
@@ -99,7 +99,7 @@ EProc$sGetEstimatedUstarThresholdDistribution()
 The output reports annually aggregated uStar estimates of 
 0.42 for 
 the original data and 
-0.38, 0.46, 0.6 
+0.39, 0.45, 0.58 
 for lower, median, 
 and upper quantile of the estimated distribution. The threshold can vary between
 periods of different surface roughness, e.g. before and after harvest.
@@ -119,12 +119,12 @@ EProc$sGetUstarScenarios()
 ```
 
 ```
-##    season   uStar      U05   U50       U95
-## 1 1998001 0.41625 0.377712 0.459 0.6045474
-## 2 1998003 0.41625 0.377712 0.459 0.6045474
-## 3 1998006 0.41625 0.377712 0.459 0.6045474
-## 4 1998009 0.41625 0.377712 0.459 0.6045474
-## 5 1998012 0.41625 0.377712 0.459 0.6045474
+##    season   uStar       U05       U50       U95
+## 1 1998001 0.41625 0.3855867 0.4479808 0.5768934
+## 2 1998003 0.41625 0.3855867 0.4479808 0.5768934
+## 3 1998006 0.41625 0.3855867 0.4479808 0.5768934
+## 4 1998009 0.41625 0.3855867 0.4479808 0.5768934
+## 5 1998012 0.41625 0.3855867 0.4479808 0.5768934
 ```
 
 ## Gap-filling
@@ -212,8 +212,7 @@ grep("GPP.*_f$|Reco",names(EProc$sExportResults()), value = TRUE)
 ```
 
 ```
-## [1] "Reco_U05"    "GPP_U05_f"   "Reco_U50"    "GPP_U50_f"   "Reco_U95"    "GPP_U95_f"   "Reco_uStar" 
-## [8] "GPP_uStar_f"
+## [1] "Reco_U05"    "GPP_U05_f"   "Reco_U50"    "GPP_U50_f"   "Reco_U95"    "GPP_U95_f"   "Reco_uStar"  "GPP_uStar_f"
 ```
 
 Visualizations of the results by a fingerprint plot gives a compact overview. 
@@ -252,7 +251,7 @@ print(GPPAgg)
 
 ```
 ##    uStar      U05      U50      U95 
-## 1919.176 1897.384 1956.716 1904.557
+## 1919.176 1903.914 1958.870 1903.933
 ```
 
 The difference between those aggregated values is a first estimate of 
@@ -262,7 +261,7 @@ uncertainty range in GPP due to uncertainty of the $u_*$ threshold.
 (max(GPPAgg) - min(GPPAgg)) / median(GPPAgg) 
 ```
 In this run of the example a relative error of about 
-3.1% 
+2.9% 
 is inferred.
 
 For a better but more time consuming uncertainty estimate, specify a larger
@@ -286,6 +285,12 @@ input data, and write this data.frame to text file in a temporary directory.
 FilledEddyData <- EProc$sExportResults()
 CombinedData <- cbind(EddyData, FilledEddyData)
 fWriteDataframeToFile(CombinedData, 'DE-Tha-Results.txt', Dir = tempdir())
+# or without relying on data.frame EddyData
+# with replacing column DateTime by Year, DoY, and Hour:
+fWriteDataframeToFile(
+  cbind(EProc$sExportData(), EProc$sExportResults()), 'DE-Tha-Results_ydh.txt', 
+  isSplitDatetime=TRUE, Dir = tempdir())
+# tmp <- fLoadTXTIntoDataframe(file.path(tempdir(),'DE-Tha-Results_ydh.txt'))
 ```
 
 
