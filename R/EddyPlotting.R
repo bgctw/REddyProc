@@ -180,6 +180,11 @@ sEddyProc_sPlotFingerprintY <- function(
   Data.V.n <- fSetQF(data, Var, QFVar, QFValue, 'sPlotFingerprintY')
   # Scale to all data
   YMin.n <- min(Data.V.n, na.rm = T)
+  if (!is.finite(YMin.n)) {
+    # if no valid data, warn and return
+    warning(paste("No valid data to plot for year", Year))
+    return()
+  }
   YMax.n <- max(Data.V.n, na.rm = T)
   #Set yearly data
   FullYearData.F <- fExpandToFullYear(
@@ -190,6 +195,11 @@ sEddyProc_sPlotFingerprintY <- function(
   # set outliers to range limits in order to not distort colour scale
   Plot.V.n <- pmax(pmin(Plot.V.n, valueLimits[2]), valueLimits[1])
   YMin.n <- max(YMin.n, min(Plot.V.n, na.rm = T))
+  if (!is.finite(YMin.n)) {
+    # if no valid data, warn and return
+    warning(paste("No valid data to plot for year", Year))
+    return()
+  }
   YMax.n <- min(YMax.n, max(Plot.V.n, na.rm = T))
   # Calculate plot parameters
   XAxis.V.n <- seq(0, 24, by = 2)
@@ -355,6 +365,12 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
 
   # Scale to all data
   YMin.n <- min(Mean.F.m[, c(-1, -2)], na.rm = T)
+  if (!is.finite(YMin.n)) {
+    # if no valid data, warn and return
+    warning(paste("No valid data to plot for month", Month))
+    return()
+  }
+
   YMax.n <- max(Mean.F.m[, c(-1, -2)], na.rm = T)
   # Axis settings
   XAxis.V.n <- seq(0, 24, by = 2)
@@ -507,6 +523,11 @@ sEddyProc_sPlotHHFluxesY <- function(
     apply(matrix(Plot.V.n, nrow = dts), 2, mean, na.rm = T), each = dts)
   #Scale to all data
   YMin.n <- min(Plot.V.n, na.rm = T)
+  if (!is.finite(YMin.n)) {
+    # if no valid data, warn and return
+    warning(paste("No valid data to plot for year", Year))
+    return()
+  }
   YMax.n <- max(Plot.V.n, na.rm = T)
   # Axis settings
   Julian.i <- julian(Time.V.n, origin = as.POSIXct(
@@ -682,6 +703,11 @@ compute_daily_mean <- function(x, x_sd, nRecInDay, timeFactor, massFactor) {
 plotDailySumsY_ <- function(DSum.V.d, CountMissingUnc.n, DoY.V.d, Year, unit, VarUnc, DUnc.V.d, month.abb, Var) {
   # Scale to all data
   YMin.n <- min(DSum.V.d - DUnc.V.d, na.rm = T)
+  if (!is.finite(YMin.n)) {
+    # if no valid data, warn and return
+    warning(paste("No valid data to plot for year", Year))
+    return()
+  }
   YMax.n <- max(DSum.V.d + DUnc.V.d, na.rm = T)
   # Axis settings
   XAxis.V.n <- seq(15, 345, by = 30)
