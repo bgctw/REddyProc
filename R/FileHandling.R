@@ -121,7 +121,8 @@ fWriteDataframeToFile <- function(
   , Digits.n			     ##<< deprecated
 ) {
   ##author<<
-  ## AMM, KS
+  ## AMM, KS, TW
+  ##seealso<< \code{\link{fSplitDateTime}}
   ##details<<
   ## Missing values are flagged as -9999.0
   # TEST: Data.F <- EddyData.F; FileName = 'none'; Dir <- 'inst / examples';
@@ -156,9 +157,10 @@ attr(fWriteDataframeToFile, 'ex') <- function() {
 
 #' @export
 fSplitDateTime <- function(
-  ### Replace Column DateTime by columns Year, DoY, and Hour
+  ### Replace Column DateTime by columns Year, DoY, and Hour in a DataFrame
   df ##<< DataFrame with column DateTime
 ) {
+  ##seealso<< \code{\link{fWriteDataframeToFile}}
   ##details<<
   ## This function helps exporting to the format required by the
   ## REddyProc web interface with columns Year, DoY, and Hour

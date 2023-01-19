@@ -46,7 +46,7 @@ fConvertTimeToPosix <- function(
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
   ## column is prefixed to the data frame
   #
-  ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}
+  ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}, \code{\link{get_day_boundaries}}
   #Check if specified columns exist and are in data frame, with 'none' as dummy
   NoneCols.b <- c(Year, Month, Day, Hour, Min) %in% 'none'
   fCheckColNames(Data.F, c(Year, Month, Day, Hour, Min)[!NoneCols.b]
@@ -699,3 +699,32 @@ filterLongRuns <- function(
   ##value<< data.frame \code{ans} with long runs in specified columns replaced by NA
   ans
 }
+
+#' @export
+get_day_boundaries <- function(
+    ### Return the first timestamp in the vector at 00:30 and the last at 00:00
+    dt ##<< vector of equidistant POSIXt timestamps with several records a day, usually 48
+    ) {
+  ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}
+  #daily time steps
+  DTS <- 24/as.numeric(difftime(dt[2],dt[1], units="hours"))
+  dts_start = head(dt, DTS)
+  dt_daystart = dts_start[which(
+    as.POSIXlt(dts_start)$hour + as.POSIXlt(dts_start)$min/60 == 24/DTS)]
+  dts_end = tail(dt, DTS)
+  dt_dayend =  dts_end[which(
+    as.POSIXlt(dts_end)$hour + as.POSIXlt(dts_end)$min/60 == 0)]
+  c(dt_daystart, dt_dayend)
+}
+
+#' @export
+subset_entire_days <- function(
+  ### Omit records before the start of the first full day and the end of the last full day
+  df                       ##<< DataFrame with column col_time of equidistant
+  , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
+) {
+  ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{get_day_boundaries}}
+  daybounds = get_day_boundaries(df[[col_time]])
+  df[between(df[[col_time]], daybounds[1], daybounds[2]),]
+}
+

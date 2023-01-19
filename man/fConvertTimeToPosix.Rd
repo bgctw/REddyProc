@@ -59,7 +59,7 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 
 
-\seealso{\code{\link{BerkeleyJulianDateToPOSIXct}}}
+\seealso{\code{\link{BerkeleyJulianDateToPOSIXct}}, \code{\link{get_day_boundaries}}}
 \examples{
 # See unit test in test_fConvertTimeToPosix for example
 }

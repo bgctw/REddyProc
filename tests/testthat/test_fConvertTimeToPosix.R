@@ -197,3 +197,19 @@ test_that("reading Berkeley",{
   expect_equal( as.numeric(time2), as.numeric(res$DateTime))
 })
 
+test_that("get_day_boundaries, subset_entire_days",{
+  ds <- suppressMessages(fConvertTimeToPosix(
+    Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
+  dss <- ds[4:(nrow(ds)-5),]
+  db <- get_day_boundaries(dss$DateTime)
+  expect_equal(db, as.POSIXct(c("1998-01-02 00:30:00","1998-12-31 00:00:00"),
+                              tz = attr(dss$DateTime,"tzone")))
+  #
+  dse <- subset_entire_days(dss, "DateTime")
+  expect_true(all(diff(dse$DateTime, units="mins") == 30))
+  expect_equal(dse$DateTime[1], db[1])
+  expect_equal(dse$DateTime[nrow(dse)], db[2])
+})
+
+
+
