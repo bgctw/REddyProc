@@ -105,7 +105,7 @@ test_that("sPlotFingerprintY with all missing: error caught",{
   data2$NEE[data2$Year == 1999] <- NA
   EProc2 <- sEddyProc$new('DE-Tha', data2, c('NEE','Rg', 'Tair', 'VPD'))
   EProc2$sPlotFingerprintY("NEE", Year = 1999)
-  EProc2$sPlotFingerprint("NEE", Dir.s=tempdir())
+  EProc2$sPlotFingerprint("NEE", Dir=tempdir())
 })
 
 

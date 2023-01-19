@@ -429,4 +429,14 @@ sEddyProc$methods(sPrintFrames = sEddyProc_sPrintFrames)
 
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+sEddyProc_sUpdateMethod <- function(x){
+  # https://stackoverflow.com/a/22845207/17096551
+  # EProc$sUpdateMethod('sExportData')
+  selfEnv <- as.environment(.self)
+  .class <- as.character(class(.self))
+  for (e in x){
+    v <- get(e,eval(parse(text=sprintf("%s@generator$def@refMethods",.class))))
+    assign(e,v,envir=selfEnv)
+  }
+}
+sEddyProc$methods(sUpdateMethod = sEddyProc_sUpdateMethod)
