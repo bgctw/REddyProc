@@ -211,5 +211,20 @@ test_that("get_day_boundaries, subset_entire_days",{
   expect_equal(dse$DateTime[nrow(dse)], db[2])
 })
 
+test_that("subset_years",{
+  # construct multiyear dataset
+  ds99 <- ds00 <- Example_DETha98
+  ds99$Year <- 1999
+  ds00$Year <- 2000
+  ds2yr <- suppressMessages(
+    fConvertTimeToPosix(rbind(Example_DETha98, ds99, ds00)
+                        , 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
+  dss <- subset_years(ds2yr, 1998:1999)
+  expect_equal(dss$DateTime[c(1,nrow(dss))],
+               as.POSIXct(c("1998-01-01 00:30:00","2000-01-01 00:00:00"),
+                          tz = attr(dss$DateTime,"tzone")))
+})
+
+
 
 

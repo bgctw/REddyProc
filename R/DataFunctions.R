@@ -39,10 +39,28 @@ fConvertTimeToPosix <- function(
   if (length(iDepr)) warning(
     "Argument names ",varNamesDepr[iDepr]," have been deprecated."
     ," Please, use instead ", varNamesNew[iDepr])
-  ##author<< AMM
+  ##author<< AMM, TW
   #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year)
   # is 366 but year is already the next year, use YMDHM instead!
   ##details<<
+  ## Functions helping with preparing and subsetting timestamps:
+  ## \itemize{
+  ## \item Convert different time formats to POSIX: this function
+  ## \item convert JulianDate format used in Berkeley release to POSIXct
+  ##   \code{\link{BerkeleyJulianDateToPOSIXct}}
+  ## \item Return the first timestap at (end_of_first_record_in_day) and the
+  ## last at midnight
+  ##  \code{\link{get_day_boundaries}}
+  ## \item Omit records before the start of the first full day and the end of
+  ## the last full day
+  ##  \code{\link{subset_entire_days}}
+  ## \item Subset data.frame to given years respecting the end-of-half-hour convention
+  ##  \code{\link{subset_years}}
+  ## }
+  #
+  ##details<<
+  ## \code{fConvertTimeToPosix}
+  ##
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
   ## column is prefixed to the data frame
   #
@@ -72,6 +90,7 @@ fConvertTimeToPosix <- function(
   ## The minute format is (0-59)
   ## }
   ## }
+  ##
   if (TFormat == 'YDH') {
     if (any(c(Year, Day, Hour) == 'none') ) stop(
       'With time format \'YDH\' year, day of year (DoY), and hour '
@@ -702,7 +721,7 @@ filterLongRuns <- function(
 
 #' @export
 get_day_boundaries <- function(
-    ### Return the first timestamp in the vector at 00:30 and the last at 00:00
+    ### Return the first timestap at (end_of_first_record_in_day) and the last at midnight
     dt ##<< vector of equidistant POSIXt timestamps with several records a day, usually 48
     ) {
   ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}
@@ -727,4 +746,21 @@ subset_entire_days <- function(
   daybounds = get_day_boundaries(df[[col_time]])
   df[between(df[[col_time]], daybounds[1], daybounds[2]),]
 }
+
+#' @export
+subset_years <- function(
+  ### Subset data.frame to given years respecting the end-of-half-hour convention
+  df                       ##<< DataFrame with column col_time of equidistant
+  , years                  ##<< integer vector of years of the form \code{c(1998, 1998)}
+  , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
+) {
+  ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}
+  ##details<<
+  ## The end-of-half-hour convention in the Fluxnet community results in midnight
+  ## and new-year being the last record of the previous day or the year respectively,
+  ## although POSIXt function will report the next day or year respectively.
+  # shift time-stamp by 1 minute to the past to move midnight to previous day
+  df %>% filter((as.POSIXlt(.data[[col_time]]-1*60)$year+1900) %in% years)
+}
+
 

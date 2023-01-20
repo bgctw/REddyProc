@@ -31,7 +31,24 @@ see details}
   \item{tz}{timezone used to store the data. Advised to keep
 GMT to avoid daytime shifting issues}
 }
-\details{The different time formats are converted to POSIX (GMT) and a 'TimeDate'
+\details{Functions helping with preparing and subsetting timestamps:
+\itemize{
+\item Convert different time formats to POSIX: this function
+\item convert JulianDate format used in Berkeley release to POSIXct
+\code{\link{BerkeleyJulianDateToPOSIXct}}
+\item Return the first timestap at (end_of_first_record_in_day) and the
+last at midnight
+\code{\link{get_day_boundaries}}
+\item Omit records before the start of the first full day and the end of
+the last full day
+\code{\link{subset_entire_days}}
+\item Subset data.frame to given years respecting the end-of-half-hour convention
+\code{\link{subset_years}}
+}
+
+\code{fConvertTimeToPosix}
+
+The different time formats are converted to POSIX (GMT) and a 'TimeDate'
 column is prefixed to the data frame
 
 Implemented time formats:
@@ -51,10 +68,11 @@ The day (of month) format is (1-31).
 The hour format is (0-23)
 The minute format is (0-59)
 }
-}}
+}
+}
 \value{Data frame with prefixed POSIX time column.}
 
-\author{AMM
+\author{AMM, TW
 Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-help@bgc-jena.mpg.de> [cph], Thomas Wutzler <twutz@bgc-jena.mpg.de> [aut, cre], Markus Reichstein <mreichstein@bgc-jena.mpg.de> [aut], Antje Maria Moffat <antje.moffat@bgc.mpg.de> [aut, trl], Olaf Menzer <omenzer@bgc-jena.mpg.de> [ctb], Mirco Migliavacca <mmiglia@bgc-jena.mpg.de> [aut], Kerstin Sickel <ksickel@bgc-jena.mpg.de> [ctb, trl], Ladislav <U+0160>igut <sigut.l@czechglobe.cz> [ctb]}
 
 
