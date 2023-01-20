@@ -143,7 +143,7 @@ EProc$sGetEstimatedUstarThresholdDistribution()
 
 ```{r fpNEEUStar, include = FALSE, eval = FALSE}
 # EProc$sPlotNEEVersusUStarForSeason()
-
+uStarTh <- EProc$sGetEstimatedUstarThresholdDistribution()
 
 str(uStarTh)
 signif(unlist(uStarTh[1,5:7]),2)
@@ -154,10 +154,11 @@ EProc$sDATA$NEE_low[ EProc$sDATA$Ustar < unlist(uStarTh[1,5])] <- NA
 EProc$sDATA$NEE_median[ EProc$sDATA$Ustar < unlist(uStarTh[1,6])] <- NA
 EProc$sDATA$NEE_upper[ EProc$sDATA$Ustar < unlist(uStarTh[1,7])] <- NA
 # need to produce fingerprints by hand in console - if exeucted from chunk it does not safe a pdf
-EProc$sPlotFingerprint('NEE_orig', Dir.s = "plots_fingerprint", Format.s = "png")
-EProc$sPlotFingerprint('NEE_low', Dir.s = "plots_fingerprint", Format.s = "png")
-EProc$sPlotFingerprint('NEE_median', Dir.s = "plots_fingerprint", Format.s = "png")
-EProc$sPlotFingerprint('NEE_upper', Dir.s = "plots_fingerprint", Format.s = "png")
+if (!dir.exists("tmp")) dir.create("tmp")
+EProc$sPlotFingerprint('NEE_orig', Dir = "tmp/plots_fingerprint", Format = "png")
+EProc$sPlotFingerprint('NEE_low', Dir = "tmp/plots_fingerprint", Format = "png")
+EProc$sPlotFingerprint('NEE_median', Dir = "tmp/plots_fingerprint", Format = "png")
+EProc$sPlotFingerprint('NEE_upper', Dir = "tmp/plots_fingerprint", Format = "png")
 EProc$sDATA$NEE_median <- EProc$sDATA$NEE_orig <- 
   EProc$sDATA$NEE_low <- EProc$sDATA$NEE_upper <- NULL
 ```
