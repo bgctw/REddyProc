@@ -888,7 +888,7 @@ partGLInterpolateFluxes <- function(
 	# create a dataframe with index of rows of estimates before and after and
 	# corresponding weights
 	iValidWin <- which(is.finite(resParms$parms_out_range))
-	summaryLRC <- resParms %>% select(-.data$resOpt) %>% slice(iValidWin)
+	summaryLRC <- resParms %>% select(!"resOpt") %>% slice(iValidWin)
     resOptList <- resParms$resOpt[iValidWin]
 	nLRC <- nrow(summaryLRC)
 	nRec <- length(Rg)

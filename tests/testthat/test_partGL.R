@@ -1085,7 +1085,7 @@ test_that("sEddyProc_sGLFluxPartitionUStarScens wrong suffix",{
     NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
     NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd
     ) %>%
-    select(-.data$sDateTime)
+    select(!"sDateTime")
   EProc <- sEddyProc$new(
     'DE-Tha', dsTest, setdiff(names(dsTest), c("NEE_fnum","NEE_fwin")))
   EProc$sSetUStarSeasons(1L)
@@ -1102,7 +1102,7 @@ test_that("sEddyProc_sGLFluxPartitionUStarScens",{
     NEE_uStar_f = NEE, NEE_uStar_fqc = NEE_fqc, NEE_uStar_fsd = NEE_fsd,
     NEE_U50_f = NEE, NEE_U50_fqc = NEE_fqc, NEE_U50_fsd = NEE_fsd
   ) %>%
-    select(-.data$sDateTime)
+    select(!"sDateTime")
   EProc <- sEddyProc$new(
     'DE-Tha', dsTest, setdiff(names(dsTest), c("NEE_fnum","NEE_fwin")))
   EProc$sSetUStarSeasons(1L)

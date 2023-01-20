@@ -7,7 +7,7 @@
 #' @return side effect of updated column VPDfromDew in class
 #' @export
 sEddyProc_sFillVPDFromDew <- function(...){
-  VPDfromDew <- cbind(.self$sDATA, select(.self$sTEMP, -.data$sDateTime)) %>%
+  VPDfromDew <- cbind(.self$sDATA, select(.self$sTEMP, !"sDateTime")) %>%
      mutate(DateTime = .data$sDateTime) %>%
      estimate_vpd_from_dew(...)
   .self$sTEMP$VPDfromDew <- VPDfromDew

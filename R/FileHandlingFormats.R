@@ -304,7 +304,7 @@ read_from_ameriflux22 <- function(df){
     RH = ifelse(between(.data$RH,100.0,105.0),100.0, .data$RH),
     VPD = fCalcVPDfromRHandTair(.data$RH, .data$TA)
   ) %>%
-    select(.data$DateTime, NEE = "FC",	Rg = "SW_IN",	Tair="TA",	rH="RH",	
+    select("DateTime", NEE = "FC",	Rg = "SW_IN",	Tair="TA",	rH="RH",	
            .data$VPD, Ustar = "USTAR", .data$LE, .data$H )
   varnames = names(ds_eproc)[-1] # all except DateTime  
   units = REddyProc_defaultunits(varnames)  
