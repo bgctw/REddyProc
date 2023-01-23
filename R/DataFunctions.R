@@ -55,7 +55,7 @@ fConvertTimeToPosix <- function(
   ## the last full day
   ##  \code{\link{subset_entire_days}}
   ## \item Subset data.frame to given years respecting the end-of-half-hour convention
-  ##  \code{\link{subset_years}}
+  ##  \code{\link{filter_years_eop}}
   ## }
   #
   ##details<<
@@ -748,7 +748,7 @@ subset_entire_days <- function(
 }
 
 #' @export
-subset_years <- function(
+filter_years_eop <- function(
   ### Subset data.frame to given years respecting the end-of-half-hour convention
   df                       ##<< DataFrame with column col_time of equidistant
   , years                  ##<< integer vector of years of the form \code{c(1998, 1998)}

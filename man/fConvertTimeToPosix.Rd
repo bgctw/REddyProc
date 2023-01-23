@@ -43,7 +43,7 @@ last at midnight
 the last full day
 \code{\link{subset_entire_days}}
 \item Subset data.frame to given years respecting the end-of-half-hour convention
-\code{\link{subset_years}}
+\code{\link{filter_years_eop}}
 }
 
 \code{fConvertTimeToPosix}
