@@ -3,6 +3,56 @@
 #+++ Dependencies: DataFunctions.R
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
+help_export <- function(
+  ### Overview of functions helping with exporting Data and Results
+){
+  ##author<< TW
+  ##details<<
+  ## Functions helping with exporting data
+  ## \itemize{
+  ## \item Export Input data from REddyProc class:
+  ##   \code{\link{sEddyProc_sExportData}}
+  ## \item Export Computed results from REddyProc class:
+  ##   \code{\link{sEddyProc_sExportResults}}
+  ## \item Write data frame to ASCII tab-separated text file:
+  ##   \code{\link{fWriteDataframeToFile}}
+  ## }
+  ##
+  ## Writing a file that can be supplied to the REddyProc webservice at
+  ## MPI-BGC Jena can be done by exporting data from REddyProc class \code{EProc}.
+  ##
+  ## \preformatted{
+  ## df <- EProc$sExportData()
+  ## fWriteDataframeToFile(df, "myfilename.txt", isSplitDatetime = TRUE)
+  ## }
+  ##
+  ## For preparing minimal working examples also consider
+  ## \itemize{
+  ## \item Omit records before the start of the first full day and the end of
+  ##   the last full day:
+  ##   \code{df <- \link{subset_entire_days}(df)}
+  ## \item Subset data.frame to one or two years:
+  ##   \code{df <- \link{filter_years_eop}(df, c(1998))}
+  ## }
+  ##
+  ## There are several functions that import from file of different formats.
+  ## \itemize{
+  ## \item Load text file with one header and one unit row into data frame:
+  ##   \code{\link{fLoadTXTIntoDataframe}}
+  ## \item Reads sequence of annual files in the format of Europe-fluxdata 2016:
+  ##   \code{\link{fLoadEuroFlux16}}
+  ## \item Read basic variables from Ameriflux standard (as of 2022) files:
+  ##   \code{\link{fLoadAmeriflux22}}
+  ## \item Read NetCDF files -> moved to separate package REddyProcNCDF
+  ##   (https://github.com/bgctw/REddyProcNCDF)
+  ## }
+  ##
+  ## Back to \link{REddyProc-package}.
+  "type ?help_export"
+}
+
+
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Load ascii format data
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -13,6 +63,8 @@ fLoadTXTIntoDataframe <- function(
   ## Load text file with one header and one unit row into data frame
   ##description<<
   ## If gaps with the flag -9999.0 exist, these are set to NA.
+  ##seealso<<
+  ##  \code{\link{help_export}}
   FileName  = FileName.s  ##<< File name as a character string
   , Dir = if (!missing(Dir.s)) Dir.s else ''##<< Directory as a character string
   , FileName.s             ##<< deprecated
@@ -122,7 +174,7 @@ fWriteDataframeToFile <- function(
 ) {
   ##author<<
   ## AMM, KS, TW
-  ##seealso<< \code{\link{fSplitDateTime}}
+  ##seealso<< \code{\link{help_export}} \code{\link{fSplitDateTime}}
   ##details<<
   ## Missing values are flagged as -9999.0
   # TEST: Data.F <- EddyData.F; FileName = 'none'; Dir <- 'inst / examples';

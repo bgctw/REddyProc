@@ -3,6 +3,33 @@
 #+++ Dependencies: <none>
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+#' @export
+help_DateTimes <- function(
+  ### Overview of functions helping with Timestamps and Dates
+){
+  ##author<< TW
+  ##details<<
+  ## Functions helping with preparing and subsetting timestamps:
+  ## \itemize{
+  ## \item Convert different time formats to POSIX:
+  ##   \code{\link{fConvertTimeToPosix}}
+  ## \item Convert JulianDate format used in Berkeley release to POSIXct:
+  ##   \code{\link{BerkeleyJulianDateToPOSIXct}}
+  ## \item Return the first timestap at (end_of_first_record_in_day) and the
+  ## last at midnight:
+  ##  \code{\link{get_day_boundaries}}
+  ## \item Omit records before the start of the first full day and the end of
+  ## the last full day:
+  ##  \code{\link{subset_entire_days}}
+  ## \item Subset data.frame to given years respecting the end-of-period
+  ##   convention: \code{\link{filter_years_eop}}
+  ## }
+  ##
+  ## Back to \link{REddyProc-package}.
+  "type ?help_DateTimes"
+}
+
+
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #+++ Time format conversion to POSIX
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -43,28 +70,10 @@ fConvertTimeToPosix <- function(
   #!Attention with MDS pwwave output file: Do not use YDH since julday (day of year)
   # is 366 but year is already the next year, use YMDHM instead!
   ##details<<
-  ## Functions helping with preparing and subsetting timestamps:
-  ## \itemize{
-  ## \item Convert different time formats to POSIX: this function
-  ## \item convert JulianDate format used in Berkeley release to POSIXct
-  ##   \code{\link{BerkeleyJulianDateToPOSIXct}}
-  ## \item Return the first timestap at (end_of_first_record_in_day) and the
-  ## last at midnight
-  ##  \code{\link{get_day_boundaries}}
-  ## \item Omit records before the start of the first full day and the end of
-  ## the last full day
-  ##  \code{\link{subset_entire_days}}
-  ## \item Subset data.frame to given years respecting the end-of-half-hour convention
-  ##  \code{\link{filter_years_eop}}
-  ## }
-  #
-  ##details<<
-  ## \code{fConvertTimeToPosix}
-  ##
   ## The different time formats are converted to POSIX (GMT) and a 'TimeDate'
   ## column is prefixed to the data frame
   #
-  ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}}, \code{\link{get_day_boundaries}}
+  ##seealso<< \code{\link{help_DateTimes}}
   #Check if specified columns exist and are in data frame, with 'none' as dummy
   NoneCols.b <- c(Year, Month, Day, Hour, Min) %in% 'none'
   fCheckColNames(Data.F, c(Year, Month, Day, Hour, Min)[!NoneCols.b]
@@ -724,7 +733,7 @@ get_day_boundaries <- function(
     ### Return the first timestap at (end_of_first_record_in_day) and the last at midnight
     dt ##<< vector of equidistant POSIXt timestamps with several records a day, usually 48
     ) {
-  ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}
+  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}
   #daily time steps
   DTS <- 24/as.numeric(difftime(dt[2],dt[1], units="hours"))
   dts_start = head(dt, DTS)
@@ -742,21 +751,22 @@ subset_entire_days <- function(
   df                       ##<< DataFrame with column col_time of equidistant
   , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
 ) {
-  ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{get_day_boundaries}}
+  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{get_day_boundaries}}
   daybounds = get_day_boundaries(df[[col_time]])
   df[between(df[[col_time]], daybounds[1], daybounds[2]),]
 }
 
 #' @export
 filter_years_eop <- function(
-  ### Subset data.frame to given years respecting the end-of-half-hour convention
+  ### Subset data.frame to given years respecting the end-of-period convention
   df                       ##<< DataFrame with column col_time of equidistant
   , years                  ##<< integer vector of years of the form \code{c(1998, 1998)}
   , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
 ) {
-  ##seealso<< \code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}
+  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}
   ##details<<
-  ## The end-of-half-hour convention in the Fluxnet community results in midnight
+  ## The end-of-period (usually end-of-half-hour) convention
+  ## in the Fluxnet community results in midnight
   ## and new-year being the last record of the previous day or the year respectively,
   ## although POSIXt function will report the next day or year respectively.
   # shift time-stamp by 1 minute to the past to move midnight to previous day

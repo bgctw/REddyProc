@@ -9,7 +9,8 @@ fLoadEuroFlux16 <- function(
 	, additionalColumnNames = character(0)	##<< character vector: column names to read in addition to c("Month", "Day", "Hour", "NEE_st", "qf_NEE_st", "ustar", "Ta", 'Rg')
 ) {
 	##author<< TW
-	##details<< The filenames should correspond to the pattern <sitename>_<YYYY>_. * .txt
+  ##seealso<< \code{\link{help_export}}
+  ##details<< The filenames should correspond to the pattern <sitename>_<YYYY>_. * .txt
 	## And hold columns c("Month", "Day", "Hour", "NEE_st", "qf_NEE_st", "ustar", "Ta", 'Rg').
 	## By default only those columns are read and reported only
 	## c("DateTime", "NEE", "Ustar", "Tair", "Rg", "qf_NEE_st" (Note the renaming).
@@ -20,7 +21,7 @@ fLoadEuroFlux16 <- function(
 	fileNames <- dir(dirName, filenamePattern)
 	fileName <- fileNames[1]
 	colNames <- union(c("Month", "Day", "Hour", "NEE_st", "qf_NEE_st", "ustar", "Ta", 'Rh', 'Rg'), additionalColumnNames)
-	# by settting colClasses at a given position to NULL the column is skipped
+	# by setting colClasses at a given position to NULL the column is skipped
 	header <- as.character(read.csv(file.path(dirName, fileName), header = FALSE, nrows = 1, stringsAsFactors = F))
 	iCols <- match(colNames, header)
 	if (length(iNACols <- which(is.na(iCols))) ) stop("unknown columns ", colNames[iNACols], " in file ", fileName)
@@ -261,14 +262,14 @@ extract_FN15 <- function(EProc = .self, is_export_nonfilled = TRUE, keep_other_c
 
 #' Read basic variables from Ameriflux standard (as of 2022) files
 #'
-#' Reads Variables from file into data.frame from file and passes 
+#' Reads Variables from file into data.frame from file and passes
 #' it to \code{\link{read_from_ameriflux22}}.
 #'
 #' @param file_path scalar string: the path to the csv file
 #' @param ... further arguments to \code{\link{read_csv}}
-#' 
-#' @return see \code{\link{read_from_ameriflux22}}
-#' 
+#'
+#' @seealso \code{\link{read_from_ameriflux22}} \code{\link{help_export}}
+#'
 #' @export
 fLoadAmeriflux22 <- function(file_path, ...) {
   col <- col_standard <- cols_only(
@@ -284,7 +285,7 @@ fLoadAmeriflux22 <- function(file_path, ...) {
     RH = col_double()
   )
   df <- read_csv(file_path, col_types = col, na =  c("-9999","","NA"), comment="#", ...)
-  read_from_ameriflux22(df)  
+  read_from_ameriflux22(df)
 }
 
 #' Extract basic variables from Ameriflux standard (as of 2022) data.frames
@@ -293,10 +294,10 @@ fLoadAmeriflux22 <- function(file_path, ...) {
 #' Non-storage corrected LE and H are read.
 #'
 #' @param df data.frame: with columns FC, SW_IN, RH, TA, USTAR, L and E
-#' 
-#' @return Data.Frame with columns 
+#'
+#' @return Data.Frame with columns
 #'   DateTime, NEE,	Rg,	Tair,	rH,	VPD, Ustar, LE, H
-#' 
+#'
 #' @export
 read_from_ameriflux22 <- function(df){
   ds_eproc <- df %>% mutate(
@@ -304,11 +305,11 @@ read_from_ameriflux22 <- function(df){
     RH = ifelse(between(.data$RH,100.0,105.0),100.0, .data$RH),
     VPD = fCalcVPDfromRHandTair(.data$RH, .data$TA)
   ) %>%
-    select("DateTime", NEE = "FC",	Rg = "SW_IN",	Tair="TA",	rH="RH",	
+    select("DateTime", NEE = "FC",	Rg = "SW_IN",	Tair="TA",	rH="RH",
            .data$VPD, Ustar = "USTAR", .data$LE, .data$H )
-  varnames = names(ds_eproc)[-1] # all except DateTime  
-  units = REddyProc_defaultunits(varnames)  
-  ds_eproc <- ds_eproc %>%   
+  varnames = names(ds_eproc)[-1] # all except DateTime
+  units = REddyProc_defaultunits(varnames)
+  ds_eproc <- ds_eproc %>%
     set_varunit_attributes(varnames, units)
 }
 

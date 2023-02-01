@@ -39,7 +39,7 @@ A first overview of the REddyProc functions:
 These functions help with the preparation of your data for the analysis:
 \itemize{
 \item{ Loading text files into dataframes: \code{\link{fLoadTXTIntoDataframe}} }
-\item{ Preparing a proper time stamp: \code{\link{fConvertTimeToPosix}} }
+\item{ Preparing a proper time stamp: \code{\link{help_DateTimes}} }
 \item{ Calculating latent variables, e.g. VPD: \code{\link{fCalcVPDfromRHandTair}} }
 }%itemize
 
@@ -85,6 +85,8 @@ Before or after processing, the data can be plotted:
 \item{ Daily sums (and their uncertainties): \code{\link{sEddyProc_sPlotDailySums}} }
 \item{ Diurnal cycle: \code{\link{sEddyProc_sPlotDiurnalCycle}} }
 }%itemize
+
+For exporting data and results see \code{\link{help_export}}.
 
 A \bold{complete list} of REddyProc functions be viewed by clicking on the
 \bold{Index} link at the bottom of this help page.

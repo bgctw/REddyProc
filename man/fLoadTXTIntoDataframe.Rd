@@ -24,7 +24,7 @@ units attributes.}
 
 
 
-
+\seealso{\code{\link{help_export}}}
 \examples{\donttest{
 examplePath <- getExamplePath('Example_DETha98.txt', TRUE)
 EddyData.F <- fLoadTXTIntoDataframe(examplePath)

@@ -10,7 +10,7 @@ read_from_ameriflux22(df)
 \item{df}{data.frame: with columns FC, SW_IN, RH, TA, USTAR, L and E}
 }
 \value{
-Data.Frame with columns 
+Data.Frame with columns
   DateTime, NEE,	Rg,	Tair,	rH,	VPD, Ustar, LE, H
 }
 \description{

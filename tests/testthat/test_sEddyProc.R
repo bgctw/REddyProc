@@ -26,19 +26,19 @@ rm( EddyData99.F )
 
 #Check sEddyProc initialization: POSIX time stamp
 test_that("POSIX time stamp: correct format",{
-  EddyProc.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
-  expect_that(as.numeric(EddyProc.C$sDATA$sDateTime[1]), equals(883613700))
+  expect_that(as.numeric(EProc$sDATA$sDateTime[1]), equals(883613700))
 })
 test_that("POSIX time stamp: missing column",{
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyData.F, c('NEE','Rg', 'Tair', 'VPD'))
   )
 })
 test_that("POSIX time stamp: wrong column type",{
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyData.F, c('NEE','Rg', 'Tair', 'VPD'), 'Year')
   )
 })
@@ -48,13 +48,13 @@ test_that("POSIX time stamp: wrong column type",{
 #Check sEddyProc initialization: Time series problems
 test_that("Invalid number of daily time steps",{
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'), DTS = 12)
   )
 })
 test_that("Time series not in equidistant steps",{
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[c(-50,-60),], c('NEE','Rg', 'Tair', 'VPD'))
   )
   expect_error( #Pseudo hourly by [c(F,T),]
@@ -68,11 +68,11 @@ test_that("Time series not stamped on the (half-)hour",{
   EddyDataShiftedPosix.F <- EddyDataWithPosix.F
   EddyDataShiftedPosix.F$DateTime <- EddyDataShiftedPosix.F$DateTime - (15 * 60)
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataShiftedPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
   )
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataShiftedPosix.F[c(F,T),]
       , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
@@ -80,23 +80,23 @@ test_that("Time series not stamped on the (half-)hour",{
 test_that("Time series not in full days and starting at end of first (half-)hour",{
   # (and ending at midnight).
   expect_warning(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[1:(nrow(EddyDataWithPosix.F) - 1),]
       , c('NEE','Rg', 'Tair', 'VPD'))
   )
   expect_warning(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha'
       , EddyDataWithPosix.F[c(F,T),][1:(nrow(EddyDataWithPosix.F[c(F,T),]) - 1),]
       , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
   expect_warning(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[2:(nrow(EddyDataWithPosix.F) - 47),]
       , c('NEE','Rg', 'Tair', 'VPD'))
   )
   expect_warning(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha'
       , EddyDataWithPosix.F[c(F,T),][2:(nrow(EddyDataWithPosix.F[c(F,T),]) - 23),]
       , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
@@ -104,12 +104,12 @@ test_that("Time series not in full days and starting at end of first (half-)hour
 })
 test_that("Time series less than three month of data",{
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[1:(48*(3*30 - 1)),]
       , c('NEE','Rg', 'Tair', 'VPD'))
   )
   expect_error(
-    EddyProc.C <- sEddyProc$new(
+    EProc <- sEddyProc$new(
       'DE-Tha', EddyDataWithPosix.F[c(F,T),][1:(24*(3*30 - 1)),]
       , c('NEE','Rg', 'Tair', 'VPD'), DTS = 24)
   )
@@ -118,10 +118,10 @@ test_that("Time series less than three month of data",{
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 test_that("Test sGetData",{
-  EddyProc.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg', 'Tair', 'VPD'))
-  Data.F <- EddyProc.C$sGetData()
-  expect_that(Data.F[,1], equals(EddyProc.C$sDATA[,1]))
+  Data.F <- EProc$sGetData()
+  expect_that(Data.F[,1], equals(EProc$sDATA[,1]))
 })
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -130,52 +130,52 @@ test_that("Test sGetData",{
 
 test_that("Test sMDSGapFillAfterUStar default case",{
   skip_on_cran()
-  EddyProc.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThold()
+  uStarTh <- EProc$sEstUstarThold()
   uStar98 <- subset(
     uStarTh, aggregationMode == "year" & seasonYear == 1998, "uStar" )[1,1]
-  #EddyProc.C$trace("sMDSGapFillAfterUstar", recover)
-  #EddyProc.C$untrace("sMDSGapFillAfterUstar")
-  EddyProc.C$sMDSGapFillAfterUstar(
+  #EProc$trace("sMDSGapFillAfterUstar", recover)
+  #EProc$untrace("sMDSGapFillAfterUstar")
+  EProc$sMDSGapFillAfterUstar(
     'NEE', FillAll = FALSE, uStarTh	= uStar98)
   expect_equal(
-    uStar98, min(EddyProc.C$sDATA$Ustar[
-      EddyProc.C$sTEMP$NEE_uStar_fqc == 0 &
-        (EddyProc.C$sDATA$Rg < 10)], na.rm = TRUE), tolerance = 0.05  )
+    uStar98, min(EProc$sDATA$Ustar[
+      EProc$sTEMP$NEE_uStar_fqc == 0 &
+        (EProc$sDATA$Rg < 10)], na.rm = TRUE), tolerance = 0.05  )
 })
 
 test_that("Test sMDSGapFillAfterUStar single value",{
   skip_on_cran()
-  EddyProc.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
   uStarFixed <- 0.46
-  EddyProc.C$sMDSGapFillAfterUstar(
+  EProc$sMDSGapFillAfterUstar(
     'NEE', FillAll = FALSE, uStarTh = uStarFixed)
-  expect_equal( uStarFixed, min(EddyProc.C$sDATA$Ustar[
-    EddyProc.C$sTEMP$NEE_uStar_fqc == 0 & (EddyProc.C$sDATA$Rg < 10)]
+  expect_equal( uStarFixed, min(EProc$sDATA$Ustar[
+    EProc$sTEMP$NEE_uStar_fqc == 0 & (EProc$sDATA$Rg < 10)]
     , na.rm = TRUE), tolerance = 0.05  )
 })
 
 test_that("Test sMDSGapFillAfterUStar error on season mismatch",{
-  EddyProc.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThold()
+  uStarTh <- EProc$sEstUstarThold()
   uStarTh <- usGetAnnualSeasonUStarMap(uStarTh)[-1, ,drop = FALSE]
   expect_error(
-    EddyProc.C$sMDSGapFillAfterUstar(
+    EProc$sMDSGapFillAfterUstar(
       'NEE', uStarTh = uStarTh, FillAll.b = FALSE)
   )
 })
 
 test_that("Test sMDSGapFillAfterUStar error on na-values",{
-  EddyProc.C <- sEddyProc$new(
+  EProc <- sEddyProc$new(
     'DE-Tha', EddyDataWithPosix.F, c('NEE','Rg','Tair','VPD', 'Ustar'))
-  uStarTh <- EddyProc.C$sEstUstarThold()
+  uStarTh <- EProc$sEstUstarThold()
   uStarTh <- usGetAnnualSeasonUStarMap(uStarTh)
   uStarTh[1,2] <- NA
   expect_error(
-    EddyProc.C$sMDSGapFillAfterUstar(
+    EProc$sMDSGapFillAfterUstar(
       'NEE', uStarTh = uStarTh, FillAll.b = FALSE)
   )
 })
@@ -197,7 +197,7 @@ test_that("Test sMDSGapFillAfterUStarDistr standard and colnames in FluxPartitio
   (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes))
   #expUStarScen <- usGetAnnualSeasonUStarMap(uStarRes)
   #expect_equal( EddySetups.C$sUSTAR_SCEN, expUStarScen)
-  EProc$sSetUstarScenarios(uStarTh) 
+  EProc$sSetUstarScenarios(uStarTh)
   EProc$sMDSGapFillUStarScens('NEE', FillAll = FALSE)
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)
@@ -249,7 +249,7 @@ test_that("Test sMDSGapFillAfterUStarDistr single row",{
   # take only the first row, would throw an error in test on season mismatch,
   # but with one row applied for all
   (uStarTh <- usGetAnnualSeasonUStarMap(uStarRes)[1, c(1,3,4),drop = FALSE])
-  EProc$sSetUstarScenarios(uStarTh) 
+  EProc$sSetUstarScenarios(uStarTh)
   EProc$sMDSGapFillUStarScens('NEE', FillAll = FALSE)
   # Note the columns with differnt suffixes for different uStar
   # estimates (uStar, U05, U50, U95)

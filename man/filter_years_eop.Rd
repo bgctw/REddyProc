@@ -1,14 +1,15 @@
 \name{filter_years_eop}
 \alias{filter_years_eop}
 \title{filter years eop}
-\description{Subset data.frame to given years respecting the end-of-half-hour convention}
+\description{Subset data.frame to given years respecting the end-of-period convention}
 \usage{filter_years_eop(df, years, col_time = "DateTime")}
 \arguments{
   \item{df}{DataFrame with column col_time of equidistant}
   \item{years}{integer vector of years of the form \code{c(1998, 1998)}}
   \item{col_time}{Name of the column with the equidistant timesteps}
 }
-\details{The end-of-half-hour convention in the Fluxnet community results in midnight
+\details{The end-of-period (usually end-of-half-hour) convention
+in the Fluxnet community results in midnight
 and new-year being the last record of the previous day or the year respectively,
 although POSIXt function will report the next day or year respectively.}
 
@@ -17,5 +18,5 @@ although POSIXt function will report the next day or year respectively.}
 
 
 
-\seealso{\code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}}
+\seealso{\code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}}
 

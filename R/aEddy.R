@@ -374,7 +374,8 @@ sEddyProc$methods(update_ustarthreshold_columns =
 #' @export
 sEddyProc_sExportData <- function()
   ### Export class internal sDATA data frame
-  ##author<< AMM
+  ##author<< AMM, TW
+  ##seealso<< \code{\link{help_export}}
 {
 	lDATA <- sDATA
 	lDATA$sDateTime <- lDATA$sDateTime + (15L * 60L)
@@ -394,8 +395,9 @@ sEddyProc_sExportResults <- function(
 	  ## to numeric columns,
 		## such as the covariance matrices of the the day-time-partitioning LRC fits
 ) {
-    ##author<< AMM
-    'Export class internal sTEMP data frame with result columns'
+  ##author<< AMM
+  ##seealso<< \code{\link{help_export}}
+  'Export class internal sTEMP data frame with result columns'
 	iListColumns <- which(sapply(sTEMP, is.list) )
 	iOmit <- if (isListColumnsExported) c(1L) else c(1L, iListColumns)
     sTEMP[, -iOmit]

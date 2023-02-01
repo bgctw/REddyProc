@@ -13,5 +13,5 @@
 
 
 
-\seealso{\code{\link{fConvertTimeToPosix}}, \code{\link{subset_entire_days}}}
+\seealso{\code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}}
 

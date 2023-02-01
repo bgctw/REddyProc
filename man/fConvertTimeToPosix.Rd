@@ -31,24 +31,7 @@ see details}
   \item{tz}{timezone used to store the data. Advised to keep
 GMT to avoid daytime shifting issues}
 }
-\details{Functions helping with preparing and subsetting timestamps:
-\itemize{
-\item Convert different time formats to POSIX: this function
-\item convert JulianDate format used in Berkeley release to POSIXct
-\code{\link{BerkeleyJulianDateToPOSIXct}}
-\item Return the first timestap at (end_of_first_record_in_day) and the
-last at midnight
-\code{\link{get_day_boundaries}}
-\item Omit records before the start of the first full day and the end of
-the last full day
-\code{\link{subset_entire_days}}
-\item Subset data.frame to given years respecting the end-of-half-hour convention
-\code{\link{filter_years_eop}}
-}
-
-\code{fConvertTimeToPosix}
-
-The different time formats are converted to POSIX (GMT) and a 'TimeDate'
+\details{The different time formats are converted to POSIX (GMT) and a 'TimeDate'
 column is prefixed to the data frame
 
 Implemented time formats:
@@ -77,7 +60,7 @@ Department for Biogeochemical Integration at MPI-BGC, Jena, Germany <REddyProc-h
 
 
 
-\seealso{\code{\link{BerkeleyJulianDateToPOSIXct}}, \code{\link{get_day_boundaries}}}
+\seealso{\code{\link{help_DateTimes}}}
 \examples{
 # See unit test in test_fConvertTimeToPosix for example
 }

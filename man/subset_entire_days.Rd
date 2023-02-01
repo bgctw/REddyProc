@@ -14,5 +14,5 @@
 
 
 
-\seealso{\code{\link{fConvertTimeToPosix}}, \code{\link{get_day_boundaries}}}
+\seealso{\code{\link{help_DateTimes}}, \code{\link{get_day_boundaries}}}
 

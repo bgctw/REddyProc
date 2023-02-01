@@ -11,10 +11,10 @@ fLoadAmeriflux22(file_path, ...)
 
 \item{...}{further arguments to \code{\link{read_csv}}}
 }
-\value{
-see \code{\link{read_from_ameriflux22}}
-}
 \description{
-Reads Variables from file into data.frame from file and passes 
+Reads Variables from file into data.frame from file and passes
 it to \code{\link{read_from_ameriflux22}}.
+}
+\seealso{
+\code{\link{read_from_ameriflux22}} \code{\link{help_export}}
 }
