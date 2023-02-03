@@ -31,3 +31,15 @@ test_that("fCheckColNum zero-length vector",{
   REddyProc:::fCheckColNum(df, c(), "test_fCheckColNum")
 })
 
+test_that("fKeepColumnAttributes",{
+  df1 <- Example_DETha98
+  # subset rows
+  df2 <- fKeepColumnAttributes(df1, function(x) filter(x, between(.data$DoY, 1,5)))
+  expect_equal(sapply(df2, attributes), sapply(df1, attributes))
+  # delete one column
+  df2 <- fKeepColumnAttributes(df1, function(x) select(x, !"DoY"))
+  expect_equal(sapply(df2, attributes), sapply(df1[names(df2)], attributes))
+  # add one column
+  df2 <- fKeepColumnAttributes(df1, function(x) mutate(x, newcol = 100*.data$DoY))
+  expect_equal(sapply(df2[names(df1)], attributes), sapply(df1, attributes))
+})

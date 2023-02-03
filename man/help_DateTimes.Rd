@@ -14,7 +14,7 @@ last at midnight:
 \code{\link{get_day_boundaries}}
 \item Omit records before the start of the first full day and the end of
 the last full day:
-\code{\link{subset_entire_days}}
+\code{\link{filter_entire_days}}
 \item Subset data.frame to given years respecting the end-of-period
 convention: \code{\link{filter_years_eop}}
 }

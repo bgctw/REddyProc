@@ -20,7 +20,7 @@ help_DateTimes <- function(
   ##  \code{\link{get_day_boundaries}}
   ## \item Omit records before the start of the first full day and the end of
   ## the last full day:
-  ##  \code{\link{subset_entire_days}}
+  ##  \code{\link{filter_entire_days}}
   ## \item Subset data.frame to given years respecting the end-of-period
   ##   convention: \code{\link{filter_years_eop}}
   ## }
@@ -661,6 +661,27 @@ fFilterAttr <- function(
   ans
 }
 
+#' @export
+fKeepColumnAttributes <- function(
+  ### Copy column attributes after processing a data.frame
+  x,    ##<< data.frame to be processed
+  FUN,  ##<< \code{function(x::data.frame, ...) -> data.frame} to be applied
+  ...   ##<< additional arguments to FUN
+) {
+  ##details<<
+  ## The columns of the resulting data.frame that match a column name in x
+  ## will get the same attributes as in x.
+  if (!is.data.frame(x)) stop(paste0(
+    "fKeepColumnAttributes: expected first argument to be a data.frame, ",
+    "but was ", class(x)))
+  ans <- FUN(x, ...)
+  for (i in names(x) ) {
+    if (!is.null(attributes(ans[[i]]))) attributes(ans[[i]]) <- attributes(x[[i]])
+  }
+  ##value<< result of \code{function(x, ...)} with column attributes preserved
+  ans
+}
+
 #---------------------------------------------
 .runLength <- function(
   ### detect runs of equal values
@@ -733,7 +754,7 @@ get_day_boundaries <- function(
     ### Return the first timestap at (end_of_first_record_in_day) and the last at midnight
     dt ##<< vector of equidistant POSIXt timestamps with several records a day, usually 48
     ) {
-  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}
+  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{filter_entire_days}}
   #daily time steps
   DTS <- 24/as.numeric(difftime(dt[2],dt[1], units="hours"))
   dts_start = head(dt, DTS)
@@ -746,14 +767,19 @@ get_day_boundaries <- function(
 }
 
 #' @export
-subset_entire_days <- function(
+filter_entire_days <- function(
   ### Omit records before the start of the first full day and the end of the last full day
   df                       ##<< DataFrame with column col_time of equidistant
   , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
 ) {
   ##seealso<< \code{\link{help_DateTimes}}, \code{\link{get_day_boundaries}}
+  ## \code{\link{fKeepColumnAttributes}}
+  ##details<<
+  ## Column attributes such as 'units' are kept.
   daybounds = get_day_boundaries(df[[col_time]])
-  df[between(df[[col_time]], daybounds[1], daybounds[2]),]
+  fKeepColumnAttributes(df, function(df){
+    df[between(df[[col_time]], daybounds[1], daybounds[2]),]
+  })
 }
 
 #' @export
@@ -763,14 +789,19 @@ filter_years_eop <- function(
   , years                  ##<< integer vector of years of the form \code{c(1998, 1998)}
   , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
 ) {
-  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}
+  ##seealso<< \code{\link{help_DateTimes}}, \code{\link{filter_entire_days}}
+  ## \code{\link{fKeepColumnAttributes}}
   ##details<<
   ## The end-of-period (usually end-of-half-hour) convention
   ## in the Fluxnet community results in midnight
   ## and new-year being the last record of the previous day or the year respectively,
   ## although POSIXt function will report the next day or year respectively.
+  ##
+  ## Column attributes such as 'units' are kept.
   # shift time-stamp by 1 minute to the past to move midnight to previous day
-  df %>% filter((as.POSIXlt(.data[[col_time]]-1*60)$year+1900) %in% years)
+  fKeepColumnAttributes(df, function(df){
+    df %>% filter((as.POSIXlt(.data[[col_time]]-1*60)$year+1900) %in% years)
+  })
 }
 
 

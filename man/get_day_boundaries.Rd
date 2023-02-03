@@ -13,5 +13,5 @@
 
 
 
-\seealso{\code{\link{help_DateTimes}}, \code{\link{subset_entire_days}}}
+\seealso{\code{\link{help_DateTimes}}, \code{\link{filter_entire_days}}}
 

@@ -31,7 +31,7 @@ help_export <- function(
   ## \itemize{
   ## \item Omit records before the start of the first full day and the end of
   ##   the last full day:
-  ##   \code{df <- \link{subset_entire_days}(df)}
+  ##   \code{df <- \link{filter_entire_days}(df)}
   ## \item Subset data.frame to one or two years:
   ##   \code{df <- \link{filter_years_eop}(df, c(1998))}
   ## }
