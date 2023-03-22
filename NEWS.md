@@ -5,6 +5,7 @@
   correlated errors rather than fully independent errors
 - Provide argument isSplitDatetime to fWriteDataframeToFile to write files
   consistent with the REddyProc web tool.
+- test breakpoint in Barr13 by more powerful pscore.test (Muggeo 2016)  
 
 # REddyProc 1.3.2
 - Avoid strong dependency on mlegp (https://github.com/bgctw/REddyProc/issues/58).

@@ -28,7 +28,7 @@ NULL
 
 # only checked in code by require(), let R CMD check complain (only NOTE)
 #importFrom(boot, boot)
-#importFrom(segmented, segmented, seg.control)
+#importFrom(segmented, segmented, seg.control, pscore.test)
 #importFrom(minpack.lm, nlsLM, nls.lm.control)
 
 

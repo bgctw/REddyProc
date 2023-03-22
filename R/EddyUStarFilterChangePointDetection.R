@@ -23,8 +23,10 @@
 			, b1 = -cf[2]		##<< first slope (second slope is fixed to zero)
 			, cp = -seg1$psi[2]	  ##<< estimated breakpoint
 			, sdCp = seg1$psi[3]	##<< estimated standard error of cp
-			, p = anova(lm(y~xr), seg1, test = "LRT")[[5]][2]	##<< probability of
+			#, p_anova = anova(lm(y~xr), seg1, test = "LRT")[[5]][2]	##<< probability of
 			## F test that segmented model is better than a linear model
+			, p = segmented::pscore.test(seg1,~xr)$p.value	##<< probability of
+			## difference in slope is by chance (null hypothesis: no difference)
 	)
 }
 
@@ -51,7 +53,9 @@
 		, a2 =-cf[2]		##<< second slope
 		, cp =-seg1$psi[2]	##<< estimated breakpoint
 		, sdCp = seg1$psi[3]	##<< estimated standard error of cp
-		, p = anova(lm1, seg1)[[6]][2]	##<< probability of F test that segmented model is better than linear model (with slope and intercept)
+		#, p_anova = anova(lm1, seg1)[[6]][2]	##<< probability of 
+		, p = segmented::pscore.test(seg1,~xr)$p.value	##<< probability of
+		## F test that segmented model is better than linear model (with slope and intercept)
 	)
 }
 attr(.fitSeg2, "ex") <- function() {
@@ -64,8 +68,10 @@ attr(.fitSeg2, "ex") <- function() {
 	y3[iSlope] <- 0.2 + (0.8 / 0.5) * x[iSlope] + noise[iSlope]
 	y <- y2
 	plot(y ~ x)
-	cf2 <- .fitSeg2(x, y)
-	cf1 <- .fitSeg1(x, y)
+	cf2 <- REddyProc:::.fitSeg2(x, y)
+	cf2
+	cf1 <- REddyProc:::.fitSeg1(x, y)
+	cf1
 }
 
 .tmp.f <- function() {
