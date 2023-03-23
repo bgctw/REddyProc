@@ -168,11 +168,13 @@ sEddyProc_sFillLUT <- function(
       if (Start.i <= 0) Start.i <- 1
       if (End.i > nrow(sTEMP) ) End.i <- nrow(sTEMP)
 
-      #! Special treatment of Rg to be congruent with MR PV-Wave, in paper not mentioned
+      # Special treatment of Rg to be congruent with MR PV-Wave,
+      # not mentioned in paper
       isV1Rg <- grepl('Rg', V1.s)
       T1red.n <- if (isV1Rg) {
         # Reduce tolerance of radiation if variable name contains 'Rg' to
         # [20, 50] depending on measurement
+        # at least 20, if Rg>20 then min(Rg, tol=50), larger than 20 for 20<Rg<50
         max(min(T1.n, sDATA[Gap.i, V1.s], na.rm = T), 20, na.rm = T)
       } else {
         T1.n
@@ -201,11 +203,22 @@ sEddyProc_sFillLUT <- function(
         Rows.V.b <- Rows.V.b & abs(V5.V.n - V5.V.n[SubGap.i]) < T5.n  & !is.na(V5.V.n)
       lLUT.V.n <- subset(sTEMP$VAR_orig[Start.i:End.i], Rows.V.b)
 
-      isV1belowT1 <- V1.V.n[Rows.V.b] <= V1.V.n[SubGap.i]
+      # Here using <=, alternative could use strict <
+      isV1belowT1 <- V1.V.n[Rows.V.b] < V1.V.n[SubGap.i]
+      #isV1belowT1 <- V1.V.n[Rows.V.b] <= V1.V.n[SubGap.i]
+
+      is_nighttime <- if (isV1Rg) {
+        # determine nighttime by radiation below 10W/m2 corresponding to uStar filter
+        sDATA[Gap.i, V1.s] < 10
+      } else {
+        # without radiation: assume daytime-record
+        FALSE
+      }
+
       # If enough available data, fill gap
       if (length(lLUT.V.n) > 1) {
         lVAR_index.i <- Gap.i
-        gapstats <- calculate_gapstats(lLUT.V.n, isV1belowT1)
+        gapstats <- calculate_gapstats(lLUT.V.n, isV1belowT1, is_nighttime)
         lVAR_mean.n <- gapstats[1]
         lVAR_fnum.n <- gapstats[2]
         lVAR_fsd.n <- gapstats[3]
@@ -269,42 +282,47 @@ sEddyProc_sFillLUT <- function(
 }
 sEddyProc$methods(sFillLUT = sEddyProc_sFillLUT)
 
-calculate_gapstats_Reichstein05 <- function(lLUT.V.n, islower) {
+calculate_gapstats_Reichstein05 <- function(lLUT.V.n, ...) {
   lVAR_mean.n <- mean(lLUT.V.n)
   lVAR_fnum.n <- length(lLUT.V.n)
   lVAR_fsd.n <- sd(lLUT.V.n)
   c(lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n)
 }
+
 calculate_gapstats_Vekuri23 <- function(
   ### Compute the gap statistic by separately aggregating reocrds lower or higher than the gap-covariate
   lLUT.V.n, ##<< numeric vector of observations
   islower,  ##<< logical vector indicating if the observation was lower than gaps covariate
+  is_nighttime, ##<< logical scalar indicating whether record to fill is nighttime
   n_min=1   ##<< minimum number of observations in each group.
   ## If there are fewer observations in on the groups
   ## return the (skewness-biased) Reichstein05 estimate.
   ) {
   ##details<<
   ## In order to reduce bias due to skewed distributions of covariate.
+  if (isTRUE(is_nighttime))
+    return(calculate_gapstats_Reichstein05(lLUT.V.n))
   vals_lower <- lLUT.V.n[islower]
   vals_higher <- lLUT.V.n[!islower]
   if ((length(vals_lower) < n_min) || (length(vals_higher) < n_min))
-    return(calculate_gapstats_Reichstein05(lLUT.V.n, islower))
+    return(calculate_gapstats_Reichstein05(lLUT.V.n))
   mean_lower <- mean(vals_lower)
   mean_higher <- mean(vals_higher)
   lVAR_mean.n <- (mean_lower  + mean_higher)/2
   lVAR_fnum.n <- length(lLUT.V.n)
-  ##details<<
-  ## Error propagation assumes upper and lower aggregate to be uncorrelated.
-  ## If uncertainty of one group could not be estimated, e.g. if it has only
-  ## one observation, then the uncertainty of
-  ## the mean across the two values is returned.
-  var_lower <- var(vals_lower)
-  var_higher <- var(vals_higher)
-  lVAR_fsd.n <- if (!is.finite(var_lower) || !is.finite(var_higher)) {
-    sd(c(mean_lower, mean_higher))
-  } else {
-    sqrt(var_lower + var_higher) / 2
-  }
+  lVAR_fsd.n <- sd(lLUT.V.n) # keep uncertainty of population instead of estimate
+  # ##details<<
+  # ## Error propagation assumes upper and lower aggregate to be uncorrelated.
+  # ## If uncertainty of one group could not be estimated, e.g. if it has only
+  # ## one observation, then the uncertainty of
+  # ## the mean across the two values is returned.
+  # var_lower <- var(vals_lower)
+  # var_higher <- var(vals_higher)
+  # lVAR_fsd.n <- if (!is.finite(var_lower) || !is.finite(var_higher)) {
+  #   sd(c(mean_lower, mean_higher))
+  # } else {
+  #   sqrt(var_lower + var_higher) / 2
+  # }
   c(lVAR_mean.n, lVAR_fnum.n, lVAR_fsd.n)
 }
 
@@ -467,7 +485,7 @@ sEddyProc_sMDSGapFill <- function(
   , Suffix.s ##<< deprecated
   #! , QF.V.b = TRUE        ##<< boolean vector of length nRow(sData),
   ## to allow specifying bad data directly (those entries that are set to FALSE)
-  , method = "Reichstein05" ##<< specify "Vekari23" to use the skewness-bias
+  , method = "Reichstein05" ##<< specify "Vekuri23" to use the skewness-bias
   ## reducing variant
 ) {
   varNamesDepr <- c(
@@ -543,15 +561,15 @@ sEddyProc_sMDSGapFill <- function(
   ##details<<
   ## Vekari et al. 2023 proposed a modification that reduces bias
   ## that results from skewed distribution of radiation Rg.
-  ## In order to use this modification, specify \code{method="Vekari23"}.
+  ## In order to use this modification, specify \code{method="Vekuri23"}.
   ##details<<
   calculate_gapstats <- if (method == "Reichstein05") {
     calculate_gapstats_Reichstein05
-  } else if (method == "Vekari23") {
+  } else if (method == "Vekuri23") {
     calculate_gapstats_Vekuri23
   } else
     stop(paste0(
-      "unknown MDS method '",method,"'. Specify 'Reichstein05' or 'Vekari23'"))
+      "unknown MDS method '",method,"'. Specify 'Reichstein05' or 'Vekuri23'"))
   ## To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}},
   ## set condition variable V1 to 'none'.
   # Check availablility of meteorological data for LUT
