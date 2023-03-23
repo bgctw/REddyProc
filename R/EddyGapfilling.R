@@ -567,6 +567,9 @@ sEddyProc_sMDSGapFill <- function(
   calculate_gapstats <- if (method == "Reichstein05") {
     calculate_gapstats_Reichstein05
   } else if (method == "Vekuri23") {
+    if (V1 != "Rg") warning(paste0(
+      "Method Vekuri23 requires incoming shortware radiation (Rg), ",
+      "but first covariate is called ", V1))
     calculate_gapstats_Vekuri23
   } else
     stop(paste0(

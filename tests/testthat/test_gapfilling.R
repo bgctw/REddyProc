@@ -179,8 +179,8 @@ test_that("sMDSGapFill Vekuri23",{
   # Regression test of results
   expect_that(ans[1,'NEE_fnum'], equals(54))
   expect_that(ans[1,'Tair_fnum'], equals(173))
-  # the following differs from Reichstein gapfilling method
-  expect_equal(ans[3,'NEE_f'], 0.6079485, tolerance = 1e-6)
+  # the following differs from Reichstein gapfilling method, regression to prev.
+  expect_equal(ans[19,'NEE_f'], -1.857619, tolerance = 1e-6)
 })
 
 tmp.f <- function(){
