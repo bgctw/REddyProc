@@ -204,8 +204,9 @@ sEddyProc_sFillLUT <- function(
       lLUT.V.n <- subset(sTEMP$VAR_orig[Start.i:End.i], Rows.V.b)
 
       # Here using <=, alternative could use strict <
-      isV1belowT1 <- V1.V.n[Rows.V.b] < V1.V.n[SubGap.i]
-      #isV1belowT1 <- V1.V.n[Rows.V.b] <= V1.V.n[SubGap.i]
+      #isV1belowT1 <- V1.V.n[Rows.V.b] < V1.V.n[SubGap.i]
+      # usually fewer values with lower Rg -> use <=
+      isV1belowT1 <- V1.V.n[Rows.V.b] <= V1.V.n[SubGap.i]
 
       is_nighttime <- if (isV1Rg) {
         # determine nighttime by radiation below 10W/m2 corresponding to uStar filter
