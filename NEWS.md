@@ -5,6 +5,7 @@
   correlated errors rather than fully independent errors
 - Provide argument isSplitDatetime to fWriteDataframeToFile to write files
   consistent with the REddyProc web tool.
+- Implement Vekuri23 lookup-table variant of gapfilling  
 - test breakpoint in Barr13 by more powerful pscore.test (Muggeo 2016)  
 
 # REddyProc 1.3.2
