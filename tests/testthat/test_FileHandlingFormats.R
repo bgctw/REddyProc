@@ -122,3 +122,15 @@ test_that("read_from_ameriflux22",{
   expect_equal(ds2$VPD[is.finite(ds2$VPD)], ds$VPD[is.finite(ds2$VPD)], tolerance=0.2)
 })
 
+test_that("fWriteFrench23",{
+  fname = tempfile()
+  data = EddyDataWithPosix <- suppressMessages(fConvertTimeToPosix(
+    Example_DETha98, 'YDH', Year = 'Year', Day = 'DoY', Hour = 'Hour'))
+  fWriteFrench23(data, fname)
+  header <- read_lines(fname, n_max=2)
+  expect_equal(header[1], "DateTime,Year,DoY,Hour,NEE,LE,H,Rg,Tair,Tsoil,rH,VPD,Ustar")
+  expect_equal(header[2], "POSIXDate_Time,-,-,-,umolm-2s-1,Wm-2,Wm-2,Wm-2,degC,degC,percent,hPa,ms-1")
+  ds_in <- read_csv(fname, skip = 2, na=c("-9999","-9999.0"))
+  attr(ds_in$DateTime, "tzone") <- attr(data$DateTime, "tzone") # from UTC to GMT
+  expect_equivalent(ds_in, data)
+})
