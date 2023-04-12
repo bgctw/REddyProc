@@ -7,7 +7,8 @@
         c("season", uStarSuffix), drop = FALSE], 
     uStarSuffix = "uStar", isFlagEntryAfterLowTurbulence = FALSE, 
     isFilterDayTime = FALSE, swThr = 10, 
-    RgColName = "Rg", ...)}
+    RgColName = "Rg", fGapfill = .self$sMDSGapFill, 
+    ...)}
 \arguments{
   \item{fluxVar}{Flux variable to gap fill after ustar filtering}
   \item{uStarVar}{Column name of friction velocity u * (ms-1),
@@ -25,7 +26,11 @@ default only filters night-time data}
   \item{swThr}{threshold of solar radiation below which data is
 marked as night time respiration.}
   \item{RgColName}{Column name of incoming short wave radiation}
-  \item{\dots}{Other arguments passed to \code{\link{sEddyProc_sMDSGapFill}}}
+  \item{fGapfill}{function doing the actual gapfilling.
+Needs to have the same functions signature as \code{\link{sEddyProc_sMDSGapFill}}.
+Makes it possible to use modifications of sMDSGapfill with
+uStar uncertainty analysis.}
+  \item{\dots}{Other arguments passed to fGapfill (\code{\link{sEddyProc_sMDSGapFill}})}
 }
 \details{Calling \code{\link{sEddyProc_sMDSGapFill}} after filtering for
 (provided) friction velocity u*

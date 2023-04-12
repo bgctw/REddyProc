@@ -605,7 +605,11 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
   , swThr = 10			  ##<< threshold of solar radiation below which data is
   ## marked as night time respiration.
   , RgColName = "Rg" ##<< Column name of incoming short wave radiation
-  , ...              ##<< Other arguments passed to \code{\link{sEddyProc_sMDSGapFill}}
+  , fGapfill = .self$sMDSGapFill ##<< function doing the actual gapfilling.
+  ## Needs to have the same functions signature as \code{\link{sEddyProc_sMDSGapFill}}.
+  ## Makes it possible to use modifications of sMDSGapfill with
+  ## uStar uncertainty analysis.
+  , ...              ##<< Other arguments passed to fGapfill (\code{\link{sEddyProc_sMDSGapFill}})
 ) {
   'Calling sMDSGapFill after filtering for (provided) friction velocity u * '
   ##author<<
@@ -707,7 +711,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
             , " setups on the same dataset!')
   }
   # Gap fill data after applying ustar filtering
-  sMDSGapFill(
+  fGapfill(
     fluxVar, QFVar = attr(qfUStar, 'varnames'), QFValue = 0, ...
     , suffix = uStarSuffix)
   ##value<<
