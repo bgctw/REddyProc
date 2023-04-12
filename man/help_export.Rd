@@ -11,6 +11,8 @@
 \code{\link{sEddyProc_sExportResults}}
 \item Write data frame to ASCII tab-separated text file:
 \code{\link{fWriteDataframeToFile}}
+\item Write data frame to ASCII comma-separated text file with units in header row:
+\code{\link{fWriteFrench23}}
 }
 
 Writing a file that can be supplied to the REddyProc webservice at

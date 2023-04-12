@@ -313,5 +313,41 @@ read_from_ameriflux22 <- function(df){
     set_varunit_attributes(varnames, units)
 }
 
+#' @export
+fWriteFrench23 <- function(
+    ##description<<
+  ## Write data frame to ASCII comma-separated text file
+  data                ##<< Data frame to be exported, with unit attributes attached to columns
+  , filename          ##<< (string)  name (including path) of the output file
+  , isSplitDatetime = FALSE ##<< set to TRUE to create columns Year, DoY and Hour
+  , digits = 5		  	##<< (integer) number of digits, i.e. precision, for numeric values
+) {
+  ##author<< TW
+  ##seealso<< \code{\link{fWriteDataframeToFile}}
+  ##details<<
+  ## Writes data.frame as comma-seperated file after two header rows.
+  ##
+  ## The first header row contains the column names, and the second units.
+  ##
+  ## Spaces in column names are replaced by underscore and % is replaced by
+  ## the word percent.
+  if (isTRUE(isSplitDatetime)) data <- fSplitDateTime(data)
+  data <- REddyProc:::fConvertNAsToGap(data)
+  # Write header
+  header <- vector(mode = 'character', length = 2)
+  header[1] <- paste(colnames(data), collapse = ',')
+  header[2] <- paste(as.character(lapply(
+    data, attr, which = 'units')), collapse = ',')
+  header <- gsub(' ', '_', header)
+  header[2] <- gsub('NULL', '-', header[2])
+  header[2] <- gsub('%', 'percent', header[2])
+  write(header, file = filename, append = F)
+  write_csv(
+    format(data, digits = digits, drop0trailing = T, trim = T),
+    filename, col_names=TRUE, append = TRUE)
+  message('Wrote output in French23 format to textfile: ', filename)
+}
+attr(fWriteFrench23, 'ex') <- function() {
+}
 
 

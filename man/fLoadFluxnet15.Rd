@@ -30,10 +30,10 @@ as in original file.
   ds_fn15 <- Example_DETha98 \%>\%
      fConvertTimeToPosix('YDH',Year = 'Year',Day = 'DoY', Hour = 'Hour') \%>\%
      dplyr::mutate(
-        TIMESTAMP_END = POSIXctToBerkeleyJulianDate(.data$DateTime),
+        TIMESTAMP_END = POSIXctToBerkeleyJulianDate(DateTime),
         season = factor(199801)
      ) \%>\%
-     dplyr::rename(SW_IN = .data$Rg, TA = .data$Tair, USTAR = .data$Ustar) \%>\%
+     dplyr::rename(SW_IN = "Rg", TA = "Tair", USTAR = "Ustar") \%>\%
      dplyr::select(dplyr::one_of(c(
        "TIMESTAMP_END","NEE","SW_IN","TA","VPD","USTAR","season")))
   head(ds_fn15)
