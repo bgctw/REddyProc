@@ -657,7 +657,7 @@ sEddyProc_sMDSGapFillAfterUstar <- function(
 
   # Filter data
   uStar <- sDATA[, uStarVar]
-  qfUStar <- integer(nrow(sDATA) )	# 0L
+  qfUStar <- integer(nrow(sDATA) )	# vector of 0L
   # if not filtering dayTimeValues, create a vector that is TRUE only for nightTime
   isRowFiltered <- if (isFilterDayTime) TRUE else
     (!is.finite(sDATA[, RgColName]) | sDATA[, RgColName] < swThr)

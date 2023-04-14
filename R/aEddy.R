@@ -112,6 +112,8 @@ sEddyProc_initialize <- function(
   sDATA <<- cbind(sDateTime = Time.V.p, as.data.frame(Data[, ColNames, drop = FALSE]))
   ##details<< sTEMP is a temporal data frame with the processing results.
   sTEMP <<- data.frame(sDateTime = Time.V.p)
+  # initialized column season in sTEMP, if it was specified with data
+  if (!is.null(sDATA$season)) sTEMP$season <<- sDATA$season
   #Initialization of site data information from POSIX time stamp.
   YStart.n <- as.numeric(format(sDATA$sDateTime[1], '%Y'))
   YEnd.n <- as.numeric(format(sDATA$sDateTime[length(sDATA$sDateTime)], '%Y'))
@@ -442,3 +444,26 @@ sEddyProc_sUpdateMethod <- function(x){
   }
 }
 sEddyProc$methods(sUpdateMethod = sEddyProc_sUpdateMethod)
+
+sEddyProc$methods(newMethod = function(...) {
+  # https://stackoverflow.com/a/26130789/17096551
+  env <- asNamespace("REddyProc")
+  on.exit({
+    lockBinding(classMetaName("sEddyProc"), env)
+    lockBinding(".__global__", env)
+    rlang::env_lock(env)
+  })
+  unlockBinding(classMetaName("sEddyProc"), env)
+  unlockBinding(".__global__", env)
+  rlang::env_unlock(env)
+  #
+  .call <- match.call()
+  .call[[1]] <- quote(sEddyProc$methods)
+  eval(.call, envir = parent.frame(2)) # function defined outside this function
+  DTS = 24/(diff(as.numeric(head(.self$sDATA$sDateTime,2)))/3600)
+  data = .self$sExportData()
+  sEddyProc$new(
+    .self$sID, data, colnames(data),
+    LatDeg=.self$sLOCATION$LatDeg, LongDeg=.self$sLOCATION$LongDeg,
+    TimeZoneHour=.self$sLOCATION$TimeZoneHour)
+})
