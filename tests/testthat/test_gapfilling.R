@@ -138,6 +138,40 @@ test_that("sMDSGapFill runs of equal values",{
 })
 
 
+sMDSGapFill_user = function(
+    var_tofill
+    , QFVar =  'none'
+    , QFValue = NA_real_
+    , FillAll = TRUE
+    , isVerbose =  TRUE
+    , suffix = ''
+    , minNWarnRunLength = NA_integer_
+) {
+  # initialized one output column
+  var_f = paste0(var_tofill,"_uStar_f")
+  .self$sTEMP[[var_f]] <- .self$sDATA[[var_tofill]]
+  # set bad quality (not apssing uStarTrheshold) to NA
+  .self$sTEMP[[var_f]][.self$sTEMP[[QFVar]] != QFValue] <- NA
+  # simulate gapfilling by setting all gaps to zero
+  .self$sTEMP[[var_f]][is.na(.self$sTEMP[[var_f]])] <- 0.0
+}
+# create a derived class and override sMDSGapFill
+sEddyProcGapfill <- setRefClass("sEddyProcGapfill", contains = "sEddyProc", inheritPackage=TRUE)
+sEddyProcGapfill$methods(sMDSGapFill = sMDSGapFill_user)
+
+test_that("sEddyProc_sMDSGapFillAfterUstar with user gafilling function",{
+  uStarTh <- 0.15
+  data <- EddyDataWithPosix[1:(48*3*30),]
+  # note, using the derived class
+  EP <- sEddyProcGapfill$new('DE-Tha', data, c('NEE','Rg', 'Tair', 'VPD', 'Ustar'))
+  EP$sMDSGapFillAfterUstar("NEE", uStarTh = uStarTh, isFilterDayTime = TRUE)
+  ans <- EP$sExportResults()
+  expect_true(all(ans$NEE_uStar_f[is.na(data$NEE)] == 0.0))
+  expect_true(all(ans$NEE_uStar_f[data$Ustar < uStarTh] == 0.0))
+  expect_true(all(ans$NEE_uStar_f[!is.na(data$NEE) & data$NEE != 0.0 & data$Ustar > uStarTh] != 0.0))
+})
+
+
 
 
 
