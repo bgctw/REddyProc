@@ -16,7 +16,7 @@ Otherwise we will submit this version again on Fri 18th of March, i.e.
 shortly before REddyProc would be archived due to strong dependendy on mlegp.
 
 ## Test environments
-* local Linux-Mint, R 4.1.2
+* local Linux-Mint, R 4.3.2
 * Github actions, current Ubuntu
 * current win_builder
 * r_hub: all default platforms
@@ -25,5 +25,8 @@ shortly before REddyProc would be archived due to strong dependendy on mlegp.
 No warnings, nor errors.
 
 1 Note:
-REddyProcExamples in the inst folder is on purpose and not detritus
+"checking for detritus in the temp directory ... NOTE
+  Found the following files/directories:
+    ‘REddyProcExamples’"
+REddyProcExamples is on purpose and not detritus
 
