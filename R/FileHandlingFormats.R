@@ -332,7 +332,7 @@ fWriteFrench23 <- function(
   ## Spaces in column names are replaced by underscore and % is replaced by
   ## the word percent.
   if (isTRUE(isSplitDatetime)) data <- fSplitDateTime(data)
-  data <- REddyProc:::fConvertNAsToGap(data)
+  data <- fConvertNAsToGap(data)
   # Write header
   header <- vector(mode = 'character', length = 2)
   header[1] <- paste(colnames(data), collapse = ',')
