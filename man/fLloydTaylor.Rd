@@ -11,10 +11,10 @@
   \item{E0}{Temperature sensitivity ("activation energy")
 in Kelvin (degK)}
   \item{TSoil}{Soil temperature in Kelvin (degK)}
-  \item{TRef}{
-}
-  \item{T0}{
-}
+  \item{TRef}{Reference
+temperature of 10 degC in Kelvin (degK)}
+  \item{T0}{Regression
+temperature as fitted by LloydTaylor (1994) in Kelvin (degK)}
   \item{R_ref.n}{deprecated way to specify RRef}
   \item{E_0.n}{deprecated way to specify E0}
   \item{Tsoil.n}{deprecated way to specify Tsoil}

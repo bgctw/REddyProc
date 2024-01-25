@@ -13,8 +13,8 @@
 omitting night time data}
   \item{\dots}{further arguments to
 \code{\link{usEstUstarThreshold}}}
-  \item{seasonFactor}{
-}
+  \item{seasonFactor}{factor of
+seasons to split}
 }
 
 \value{result component \code{uStarTh} of \code{\link{usEstUstarThreshold}}.

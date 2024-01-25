@@ -3,12 +3,11 @@
 \title{RectangularLRCFitterCVersion}
 
 \description{
-Constructs an instance of class \code{\link{RectangularLRCFitterCVersion-class}} 
+Constructs an instance of class \code{\link{RectangularLRCFitterCVersion-class}}
 }
 \usage{RectangularLRCFitterCVersion(...)}
 \arguments{
-  \item{\dots}{
-}
+  \item{\dots}{not used.}
 }
 
 

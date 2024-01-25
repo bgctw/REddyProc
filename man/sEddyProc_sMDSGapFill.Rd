@@ -17,13 +17,13 @@
         .self$sINFO$DTS/24 else NA_integer_, 
     Var.s, QFVar.s, QFValue.n, V1.s, T1.n, 
     V2.s, T2.n, V3.s, T3.n, FillAll.b, Verbose.b, 
-    Suffix.s)}
+    Suffix.s, method = "Reichstein05")}
 \arguments{
   \item{Var}{Variable to be filled}
-  \item{QFVar}{
-}
-  \item{QFValue}{
-}
+  \item{QFVar}{Quality flag
+of variable to be filled}
+  \item{QFValue}{Value of
+quality flag for _good_ (original) data, other data is set to missing}
   \item{V1}{Condition variable 1
 (default: Global radiation 'Rg' in  W m-2)}
   \item{T1}{Tolerance interval 1
@@ -60,22 +60,10 @@ defaults for "NEE" to records across 4 hours and no warning for others.}
   \item{FillAll.b}{deprecated}
   \item{Verbose.b}{deprecated}
   \item{Suffix.s}{deprecated}
+  \item{method}{specify "Vekuri23" to use the skewness-bias
+reducing variant}
 }
-\details{Initialize temporal data frame sTEMP for newly generated gap filled data and
-qualifiers, see \code{\link{sEddyProc_sFillInit}} for explanations on suffixes.
-
-Runs of numerically equal numbers hint to problems of the data and cause
-unreasonable estimates of uncertainty. This routine warns the user.
-
-MDS gap filling algorithm calls the subroutines Look Up Table
-\code{\link{sEddyProc_sFillLUT}}
-and Mean Diurnal Course \code{\link{sEddyProc_sFillMDC}} with different
-window sizes as described in the reference.
-
-To run dataset only with MDC algorithm \code{\link{sEddyProc_sFillMDC}},
-set condition variable V1 to 'none'.
-
-\describe{\item{Different processing setups on the same dataset}{
+\details{\describe{\item{Different processing setups on the same dataset}{
 Attention: When processing the same site data set with different setups for
 the gap filling or flux partitioning
 (e.g. due to different ustar filters),

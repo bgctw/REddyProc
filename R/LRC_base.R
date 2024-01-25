@@ -3,11 +3,7 @@
 #' @import methods
 #' @export LightResponseCurveFitter
 #' @exportClass LightResponseCurveFitter
-LightResponseCurveFitter <- setRefClass('LightResponseCurveFitter'
-## R5 reference parent class for describing the NEP ~ PAR relationship
-##author<<
-## TW, MM
-)
+LightResponseCurveFitter <- setRefClass('LightResponseCurveFitter')
 
 #' @export
 LightResponseCurveFitter_getParameterNames <- function(
@@ -247,7 +243,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 		### Optimize parameters with refitting with some fixed parameters if outside bounds
 		theta0			##<< initial parameter estimate
 		, parameterPrior	##<< prior estimate of model parameters
-		, ...			  ##<< further parameters to \code{.optimLRC}, 
+		, ...			  ##<< further parameters to \code{.optimLRC},
 		, dsDay     ##<< argument to \code{.optimLRC}, here checked
 		## for occurrence of high VPD
 		, lastGoodParameters ##<< parameters vector of last successful fit
@@ -261,7 +257,7 @@ LightResponseCurveFitter_optimLRCBounds <- function(
 	isNeglectVPDEffect <- isTRUE(ctrl$isNeglectVPDEffect)
 	VPD0 = 10 			##<< VPD0 [hPa] -> Parameters VPD0 fixed to 10 hPa
 	## according to Lasslop et al 2010
-	isUsingFixedVPD <- isNeglectVPDEffect || 
+	isUsingFixedVPD <- isNeglectVPDEffect ||
 	  (sum(dsDay$VPD >= VPD0, na.rm = TRUE) == 0)
 	isUsingFixedAlpha <- FALSE
 	getIOpt <- .self$getOptimizedParameterPositions

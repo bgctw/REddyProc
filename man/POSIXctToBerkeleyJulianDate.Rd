@@ -5,8 +5,7 @@
 \usage{POSIXctToBerkeleyJulianDate(sDateTime, tz = getTZone(sDateTime))}
 \arguments{
   \item{sDateTime}{POSIXct vector}
-  \item{tz}{
-}
+  \item{tz}{time zone attribute, such as "etc/GMT-1"}
 }
 \details{In the Berkeley-Release of the Fluxnet data, the time is stored as an number
 with base10-digits representing YYYYMMddhhmm}

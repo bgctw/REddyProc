@@ -167,8 +167,8 @@ fWriteDataframeToFile <- function(
   Data.F                ##<< Data frame
   , FileName = FileName.s           ##<< File base name as a string
   , Dir = if (!missing(Dir.s)) Dir.s else ''          ##<< Directory as a string
-  , Digits = if (!missing(Digits.n)) Digits.n else 5			##<<
-  ## (integer) number of digits, i.e. precision, for numeric values
+  , Digits = if (!missing(Digits.n)) Digits.n else 5			##<< (integer) number
+  ## of digits, i.e. precision, for numeric values
   , isSplitDatetime = FALSE ##<< set to TRUE to create columns Year, DoY and Hour
   , FileName.s         ##<< deprecated
   , Dir.s              ##<< deprecated
@@ -211,8 +211,8 @@ attr(fWriteDataframeToFile, 'ex') <- function() {
 
 #' @export
 fSplitDateTime <- function(
-  ### Replace Column DateTime by columns Year, DoY, and Hour in a DataFrame
-  df ##<< DataFrame with column DateTime
+  ### Replace Column DateTime by columns Year, DoY, and Hour in a data.frame
+  df ##<< data.frame with column DateTime
 ) {
   ##seealso<< \code{\link{fWriteDataframeToFile}}
   ##details<<

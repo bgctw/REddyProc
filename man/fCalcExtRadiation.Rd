@@ -5,9 +5,8 @@
 eccentricity correction}
 \usage{fCalcExtRadiation(DoY = DoY.V.n, DoY.V.n)}
 \arguments{
-  \item{DoY}{
-}
-  \item{DoY.V.n}{Data vector with day of year (DoY)}
+  \item{DoY}{Data vector with day of year (DoY)}
+  \item{DoY.V.n}{deprecated, use DoY}
 }
 
 \value{Data vector of extraterrestrial radiation (ExtRad, W_m-2)}

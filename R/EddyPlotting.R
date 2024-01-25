@@ -137,10 +137,10 @@ sEddyProc$methods(.sxClosePlot = .sEddyProc_sxClosePlot)
 sEddyProc_sPlotFingerprintY <- function(
   ### Plot fingerprint for a single year scaled to all data.
   Var = Var.s               ##<< Variable to plot
-  , QFVar = 'none'     ##<<
-  ## Quality flag of variable to be filled
-  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<<
-  ## Value of quality flag for data to plot
+  , QFVar = 'none'          ##<< Quality
+  ##  flag of variable to be filled
+  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<< Value
+  ## of quality flag for data to plot
   , Year = Year.i             ##<< Year to plot
   , onlyLegend = if (!missing(Legend.b)) Legend.b else  F         ##<< Plot
   ## only legend
@@ -266,8 +266,8 @@ sEddyProc_sPlotFingerprint <- function(
   , QFVar = 'none'     ##<< Quality flag of variable to be filled
   , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<< Value of
   ## quality flag for data to plot
-  , Format = if (!missing(Format.s)) Format.s else 'pdf'     ##<<
-  ## Graphics file format (e.g. 'pdf', 'png')
+  , Format = if (!missing(Format.s)) Format.s else 'pdf'     ##<< Graphics
+  ## file format (e.g. 'pdf', 'png')
   , Dir = if (!missing(Dir.s)) Dir.s else 'plots'      ##<< Directory
   ## for plotting
   , ...				##<< further arguments to \code{\link{sEddyProc_sPlotFingerprintY}}
@@ -490,10 +490,10 @@ sEddyProc$methods(sPlotDiurnalCycle = sEddyProc_sPlotDiurnalCycle)
 sEddyProc_sPlotHHFluxesY <- function(
   ### Plot half-hourly fluxes for a single year scaled to all data.
   Var = Var.s               ##<< Variable to plot
-  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'     ##<<
-  ## Quality flag of variable to be filled
-  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<<
-  ## Value of quality flag for data to plot
+  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'     ##<< Quality
+  ##  flag of variable to be filled
+  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<< Value
+  ##  of quality flag for data to plot
   , Year = Year.i             ##<< Year to plot
   , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
   , dts = sINFO$DTS              ##<< numeric integer
@@ -844,7 +844,7 @@ sEddyProc_sPlotNEEVersusUStarForSeason <- function(
   , HInchSingle = 6 * 0.394	##<< height of a subplot in inches, defaults to 6cm
   , ...						##<< other arguments to \code{.plotNEEVersusUStarTempClass},
   ## such as xlab and ylab axis label strings
-  , data = cbind(sDATA, sTEMP, sUSTAR_DETAILS$bins[,c("uStarBin","tempBin")]) ##<<
+  , data = cbind(sDATA, sTEMP, sUSTAR_DETAILS$bins[,c("uStarBin","tempBin")]) ##<< a
   ## data.frame with variables to plot
 ) {
   ##author<< TW

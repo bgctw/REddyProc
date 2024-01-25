@@ -9,7 +9,7 @@
 \code{\link{fConvertTimeToPosix}}
 \item Convert JulianDate format used in Berkeley release to POSIXct:
 \code{\link{BerkeleyJulianDateToPOSIXct}}
-\item Return the first timestap at (end_of_first_record_in_day) and the
+\item Return the first timestamp at (end_of_first_record_in_day) and the
 last at midnight:
 \code{\link{get_day_boundaries}}
 \item Omit records before the start of the first full day and the end of

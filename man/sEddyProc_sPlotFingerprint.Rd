@@ -14,8 +14,8 @@
   \item{QFVar}{Quality flag of variable to be filled}
   \item{QFValue}{Value of
 quality flag for data to plot}
-  \item{Format}{
-}
+  \item{Format}{Graphics
+file format (e.g. 'pdf', 'png')}
   \item{Dir}{Directory
 for plotting}
   \item{\dots}{further arguments to \code{\link{sEddyProc_sPlotFingerprintY}}}

@@ -1,7 +1,7 @@
 \name{get_day_boundaries}
 \alias{get_day_boundaries}
 \title{get day boundaries}
-\description{Return the first timestap at (end_of_first_record_in_day) and the last at midnight}
+\description{Return the first timestamp at (end_of_first_record_in_day) and the last at midnight}
 \usage{get_day_boundaries(dt)}
 \arguments{
   \item{dt}{vector of equidistant POSIXt timestamps with several records a day, usually 48}

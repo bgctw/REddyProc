@@ -3,13 +3,12 @@
 \title{LogisticSigmoidLRCFitter}
 
 \description{
-Constructs an instance of class \code{\link{LogisticSigmoidLRCFitter-class}} 
+Constructs an instance of class \code{\link{LogisticSigmoidLRCFitter-class}}
 }
 
 \usage{LogisticSigmoidLRCFitter(...)}
 \arguments{
-  \item{\dots}{
-}
+  \item{\dots}{not used}
 }
 
 
