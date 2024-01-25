@@ -20,8 +20,8 @@
   \item{HInchSingle}{height of a subplot in inches, defaults to 6cm}
   \item{\dots}{other arguments to \code{.plotNEEVersusUStarTempClass},
 such as xlab and ylab axis label strings}
-  \item{data}{
-}
+  \item{data}{a
+data.frame with variables to plot}
 }
 
 

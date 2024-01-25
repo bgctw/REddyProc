@@ -4,7 +4,7 @@
 \description{Omit records before the start of the first full day and the end of the last full day}
 \usage{filter_entire_days(df, col_time = "DateTime")}
 \arguments{
-  \item{df}{DataFrame with column col_time of equidistant}
+  \item{df}{data.frame with column col_time of equidistant}
   \item{col_time}{Name of the column with the equidistant timesteps}
 }
 \details{Column attributes such as 'units' are kept.}

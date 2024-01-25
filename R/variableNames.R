@@ -95,7 +95,7 @@ getAmerifluxToBGC05VariableNameMapping <- function(
 POSIXctToBerkeleyJulianDate <- function(
     ### convert POSIXct to JulianDate format used in Berkeley release
     sDateTime  ##<< POSIXct vector
-    ,tz = getTZone(sDateTime)
+    ,tz = getTZone(sDateTime) ##<< time zone attribute, such as "etc/GMT-1"
 ) {
   ##author<< TW,
   ##seealso<< \code{\link{BerkeleyJulianDateToPOSIXct}},

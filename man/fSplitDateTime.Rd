@@ -1,10 +1,10 @@
 \name{fSplitDateTime}
 \alias{fSplitDateTime}
 \title{fSplitDateTime}
-\description{Replace Column DateTime by columns Year, DoY, and Hour in a DataFrame}
+\description{Replace Column DateTime by columns Year, DoY, and Hour in a data.frame}
 \usage{fSplitDateTime(df)}
 \arguments{
-  \item{df}{DataFrame with column DateTime}
+  \item{df}{data.frame with column DateTime}
 }
 \details{This function helps exporting to the format required by the
 REddyProc web interface with columns Year, DoY, and Hour}

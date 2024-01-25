@@ -15,7 +15,7 @@ help_DateTimes <- function(
   ##   \code{\link{fConvertTimeToPosix}}
   ## \item Convert JulianDate format used in Berkeley release to POSIXct:
   ##   \code{\link{BerkeleyJulianDateToPOSIXct}}
-  ## \item Return the first timestap at (end_of_first_record_in_day) and the
+  ## \item Return the first timestamp at (end_of_first_record_in_day) and the
   ## last at midnight:
   ##  \code{\link{get_day_boundaries}}
   ## \item Omit records before the start of the first full day and the end of
@@ -292,8 +292,8 @@ fCheckHHTimeSeries <- function(
   ## Check half-hourly time series data
   Time = Time.V.p              ##<< Time vector in POSIX format
   , DTS = DTS.n                ##<< Number of daily time steps (24 or 48)
-  , CallFunction = if (!missing(CallFunction.s)) CallFunction.s else ''    ##<<
-  ## Name of function called from
+  , CallFunction = if (!missing(CallFunction.s)) CallFunction.s else '' ##<< Name
+  ## of function called from
   , Time.V.p          ##<< deprecated
   , DTS.n             ##<< deprecated
   , CallFunction.s    ##<< deprecated
@@ -751,7 +751,7 @@ filterLongRuns <- function(
 
 #' @export
 get_day_boundaries <- function(
-    ### Return the first timestap at (end_of_first_record_in_day) and the last at midnight
+    ### Return the first timestamp at (end_of_first_record_in_day) and the last at midnight
     dt ##<< vector of equidistant POSIXt timestamps with several records a day, usually 48
     ) {
   ##seealso<< \code{\link{help_DateTimes}}, \code{\link{filter_entire_days}}
@@ -769,7 +769,7 @@ get_day_boundaries <- function(
 #' @export
 filter_entire_days <- function(
   ### Omit records before the start of the first full day and the end of the last full day
-  df                       ##<< DataFrame with column col_time of equidistant
+  df                       ##<< data.frame with column col_time of equidistant
   , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
 ) {
   ##seealso<< \code{\link{help_DateTimes}}, \code{\link{get_day_boundaries}}
@@ -785,7 +785,7 @@ filter_entire_days <- function(
 #' @export
 filter_years_eop <- function(
   ### Subset data.frame to given years respecting the end-of-period convention
-  df                       ##<< DataFrame with column col_time of equidistant
+  df                       ##<< data.frame with column col_time of equidistant
   , years                  ##<< integer vector of years of the form \code{c(1998, 1998)}
   , col_time = "DateTime"  ##<< Name of the column with the equidistant timesteps
 ) {

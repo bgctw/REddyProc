@@ -244,10 +244,10 @@ fLloydTaylor <- function(
   , E0 = E_0.n            ##<< Temperature sensitivity ("activation energy")
   ## in Kelvin (degK)
   , TSoil = Tsoil.n       ##<< Soil temperature in Kelvin (degK)
-  , TRef = if (missing(T_ref.n)) 273.15 + 10 else T_ref.n ##<<
-  ## Reference temperature of 10 degC in Kelvin (degK)
-  , T0 = if (missing(T_0.n)) 227.13 else T_0.n        ##<<
-  ## Regression temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
+  , TRef = if (missing(T_ref.n)) 273.15 + 10 else T_ref.n ##<< Reference
+  ## temperature of 10 degC in Kelvin (degK)
+  , T0 = if (missing(T_0.n)) 227.13 else T_0.n        ##<< Regression
+  ## temperature as fitted by LloydTaylor (1994) in Kelvin (degK)
   , R_ref.n    ##<< deprecated way to specify RRef
   , E_0.n      ##<< deprecated way to specify E0
   , Tsoil.n    ##<< deprecated way to specify Tsoil
@@ -411,8 +411,8 @@ fCalcExtRadiation <- function(
   ##description<<
   ## Calculate the extraterrestrial solar radiation with the
   ## eccentricity correction
-  DoY = DoY.V.n
-  , DoY.V.n           ##<< Data vector with day of year (DoY)
+  DoY = DoY.V.n       ##<< Data vector with day of year (DoY)
+  , DoY.V.n           ##<< deprecated, use DoY
   ##author<<
   ## AMM
 ) {
@@ -450,8 +450,8 @@ fCalcPotRadiation <- function(
   , LatDeg = Lat_deg.n          ##<< Latitude in (decimal) degrees
   , LongDeg = Long_deg.n         ##<< Longitude in (decimal) degrees
   , TimeZone = TimeZone_h.n       ##<< Time zone (in hours)
-  , useSolartime = TRUE	##<<
-  ## by default corrects hour (given in local winter time) for latitude to solar time
+  , useSolartime = TRUE	##<< by default corrects hour (given in local winter time)
+  ##  for latitude to solar time
   ## (where noon is exactly at 12:00). Set this to FALSE to directly use local winter time
   , DoY.V.n            ##<< deprecated
   , Hour.V.n           ##<< deprecated

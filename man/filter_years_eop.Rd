@@ -4,7 +4,7 @@
 \description{Subset data.frame to given years respecting the end-of-period convention}
 \usage{filter_years_eop(df, years, col_time = "DateTime")}
 \arguments{
-  \item{df}{DataFrame with column col_time of equidistant}
+  \item{df}{data.frame with column col_time of equidistant}
   \item{years}{integer vector of years of the form \code{c(1998, 1998)}}
   \item{col_time}{Name of the column with the equidistant timesteps}
 }

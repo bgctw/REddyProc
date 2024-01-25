@@ -12,8 +12,8 @@ for which to keep parameters. If not specified defaults to the first
 entry in \code{uStarSuffixes}.}
   \item{warnOnOtherErrors}{Set to only display a warning on errors in
 uStarScenarios other than uStarScenKeep instead of stopping.}
-  \item{uStarSuffixes}{
-}
+  \item{uStarSuffixes}{Vector of suffixed
+<< describing the uStar scenarios}
 }
 \details{When repeating computations, some of the
 output variables maybe replaced. Argument \code{uStarKeep}

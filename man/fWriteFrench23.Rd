@@ -10,7 +10,7 @@
   \item{isSplitDatetime}{set to TRUE to create columns Year, DoY and Hour}
   \item{digits}{(integer) number of digits, i.e. precision, for numeric values}
 }
-\details{Writes data.frame as comma-seperated file after two header rows.
+\details{Writes data.frame as comma-separated file after two header rows.
 
 The first header row contains the column names, and the second units.
 

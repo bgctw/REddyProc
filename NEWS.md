@@ -1,12 +1,13 @@
-# REddyProc 1.3.2_DEV
+# REddyProc 1.3.3
 - Fixed bug in plotting daily sums, where default scale (gC / day) was of by
   a factor nRecInDays.
 - Plotting daily sums: Uncertainty computation conservatively assumes fully
   correlated errors rather than fully independent errors
 - Provide argument isSplitDatetime to fWriteDataframeToFile to write files
   consistent with the REddyProc web tool.
-- Implement Vekuri23 lookup-table variant of gapfilling  
+- Implement experimental version of Vekuri23 lookup-table variant of gapfilling  
 - test breakpoint in Barr13 by more powerful pscore.test (Muggeo 2016)  
+- include mlegp dependency again - its on CRAN again
 
 # REddyProc 1.3.2
 - Avoid strong dependency on mlegp (https://github.com/bgctw/REddyProc/issues/58).

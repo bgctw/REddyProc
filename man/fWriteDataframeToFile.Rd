@@ -11,8 +11,8 @@
   \item{Data.F}{Data frame}
   \item{FileName}{File base name as a string}
   \item{Dir}{Directory as a string}
-  \item{Digits}{
-}
+  \item{Digits}{(integer) number
+of digits, i.e. precision, for numeric values}
   \item{isSplitDatetime}{set to TRUE to create columns Year, DoY and Hour}
   \item{FileName.s}{deprecated}
   \item{Dir.s}{deprecated}

@@ -17,6 +17,7 @@ DEGebExample
 DETha
 DJF
 DateTime
+DateTimes
 Dez
 DoY
 EddyData
@@ -45,10 +46,12 @@ LRC
 LUT
 Lasslop
 LightResponseCurveFitter
+LloydTaylor
 LogisticSigmoidLRCFitter
 Lookuptable
 MDC
 MDS
+Muggeo
 NEEnight
 NEP
 NRHRF
@@ -58,6 +61,7 @@ NonrectangularLRCFitter
 POSIXct
 POSIXctToBerkeleyJulianDate
 POSIXlt
+POSIXt
 PPFD
 PV
 Papale
@@ -67,7 +71,6 @@ QFFluxVar
 README
 REco
 REddyProcNCDF
-REddyProcWeb
 RHLightResponseCostC
 RRef
 RStudio
@@ -98,6 +101,7 @@ VPD
 VPDfromDew
 Vapour
 VariableNameMapping
+Vekuri
 VisRad
 YYYY
 YYYYMMDDHHMM
@@ -110,7 +114,6 @@ antje
 bg
 bgc
 bgctw
-bgi
 bigleaf
 bugfix
 calendaryear
@@ -138,6 +141,7 @@ donttest
 downweighs
 dplyr
 eSat
+eop
 et
 eu
 europe
@@ -155,10 +159,13 @@ fConvertGlobalToVisible
 fConvertKtoC
 fConvertTimeToPosix
 fConvertVisibleWm
+fKeepColumnAttributes
 fLoadEuroFlux
 fLoadFluxNCIntoDataframe
 fLoadFluxnet
+fSplitDateTime
 fWriteDataframeToFile
+fWriteFrench
 filterLongRuns
 filterLongRunsInVector
 fitLRC
@@ -200,6 +207,7 @@ invlogit
 irradiance
 isFilterMeteoQualityFlag
 isParameterInBounds
+isSplitDatetime
 isTRUE
 isUsingCPTSeveralT
 isUsingLasslopQualityConstraints
@@ -227,6 +235,7 @@ nDay
 nEff
 nPar
 nRec
+nRecInDays
 nRow
 nTemp
 nWindow
@@ -245,13 +254,13 @@ partGLControlLasslopCompatible
 partGLExtractStandardData
 partGLFitLRCOneWindow
 partitionNEEGL
-php
 png
 ppfd
 pre
 predictGPP
 predictLRC
 preprocessed
+pscore
 pvWave
 qc
 qf
@@ -362,6 +371,7 @@ ustar
 ustarsuffix
 vapour
 varnames
+webservice
 whichValueGreaterEqualC
 withUstar
 writeable

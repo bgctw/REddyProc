@@ -386,8 +386,8 @@ sEddyProc$methods(sMRFluxPartition = sEddyProc_sMRFluxPartition)
 #' @export
 sEddyProc_sCalcPotRadiation <- function(
   ### compute potential radiation from position and time
-  useSolartime = TRUE	##<<
-  ## by default corrects hour (given in local winter time)
+  useSolartime = TRUE	##<< by default
+  ## corrects hour (given in local winter time)
   ## for latitude to solar time(where noon is exactly at 12:00).
   ## Set this to FALSE to directly use local winter time
   , useSolartime.b 	##<< by default corrects hour (given in local winter time)

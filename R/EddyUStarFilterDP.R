@@ -20,8 +20,8 @@ sEddyProc_sEstUstarThold <- function(
   ## omitting night time data
   , ...						          ##<< further arguments to
   ## \code{\link{usEstUstarThreshold}}
-  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<<
-  ## factor of seasons to split
+  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<< factor of
+  ## seasons to split
 ) {
   ##author<< TW
   if (length(seasonFactor) )
@@ -1274,8 +1274,8 @@ sEddyProc_sEstimateUstarScenarios <- function(
   , RgColName = "Rg"			    ##<< column name for solar radiation for
   ## omitting night time data
   , ...		##<< further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}
-  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<<
-  ## factor of seasons to split (data is resampled only within the seasons)
+  , seasonFactor = usCreateSeasonFactorMonth(sDATA$sDateTime) ##<< factor of
+  ## seasons to split (data is resampled only within the seasons)
   , nSample = 200L				      ##<< the number of repetitions in the bootstrap
   , probs = c(0.05, 0.5, 0.95)	##<< the quantiles of the bootstrap sample
   ## to return. Default is the 5%, median and 95% of the bootstrap
@@ -1436,7 +1436,8 @@ sEddyProc_sApplyUStarScen <- function(
   ## entry in \code{uStarSuffixes}.
   , warnOnOtherErrors = FALSE ##<< Set to only display a warning on errors in
   ## uStarScenarios other than uStarScenKeep instead of stopping.
-  , uStarSuffixes = .self$sGetUstarSuffixes()
+  , uStarSuffixes = .self$sGetUstarSuffixes() ##<< Vector of suffixed
+  ##<< describing the uStar scenarios
 ) {
   ##details<<
   ## When repeating computations, some of the

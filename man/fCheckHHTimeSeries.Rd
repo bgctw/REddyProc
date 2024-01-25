@@ -8,8 +8,8 @@
 \arguments{
   \item{Time}{Time vector in POSIX format}
   \item{DTS}{Number of daily time steps (24 or 48)}
-  \item{CallFunction}{
-}
+  \item{CallFunction}{Name
+of function called from}
   \item{Time.V.p}{deprecated}
   \item{DTS.n}{deprecated}
   \item{CallFunction.s}{deprecated}

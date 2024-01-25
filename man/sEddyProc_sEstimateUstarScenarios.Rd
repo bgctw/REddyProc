@@ -22,8 +22,8 @@ for subsetting time series (number of temperature and Ustar classes
   \item{RgColName}{column name for solar radiation for
 omitting night time data}
   \item{\dots}{further arguments to \code{\link{sEddyProc_sEstUstarThreshold}}}
-  \item{seasonFactor}{
-}
+  \item{seasonFactor}{factor of
+seasons to split (data is resampled only within the seasons)}
   \item{nSample}{the number of repetitions in the bootstrap}
   \item{probs}{the quantiles of the bootstrap sample
 to return. Default is the 5\%, median and 95\% of the bootstrap}

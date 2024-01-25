@@ -13,8 +13,9 @@
   \item{LatDeg}{Latitude in (decimal) degrees}
   \item{LongDeg}{Longitude in (decimal) degrees}
   \item{TimeZone}{Time zone (in hours)}
-  \item{useSolartime}{
-}
+  \item{useSolartime}{by default corrects hour (given in local winter time)
+for latitude to solar time
+(where noon is exactly at 12:00). Set this to FALSE to directly use local winter time}
   \item{DoY.V.n}{deprecated}
   \item{Hour.V.n}{deprecated}
   \item{Lat_deg.n}{deprecated}

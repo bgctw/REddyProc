@@ -14,10 +14,10 @@
     Col.V)}
 \arguments{
   \item{Var}{Variable to plot}
-  \item{QFVar}{
-}
-  \item{QFValue}{
-}
+  \item{QFVar}{Quality
+flag of variable to be filled}
+  \item{QFValue}{Value
+of quality flag for data to plot}
   \item{Year}{Year to plot}
   \item{onlyLegend}{Plot
 only legend}

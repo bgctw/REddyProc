@@ -443,10 +443,10 @@ sEddyProc$methods(sFillMDC = sEddyProc_sFillMDC)
 sEddyProc_sMDSGapFill <- function(
   ### MDS gap filling algorithm adapted after the PV-Wave code and paper by Markus Reichstein.
   Var = Var.s                 ##<< Variable to be filled
-  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'       ##<<
-  ## Quality flag of variable to be filled
-  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_   ##<<
-  ## Value of quality flag for _good_ (original) data, other data is set to missing
+  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'       ##<< Quality flag
+  ##  of variable to be filled
+  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_   ##<< Value of
+  ##  quality flag for _good_ (original) data, other data is set to missing
   , V1 = if (!missing(V1.s)) V1.s else 'Rg'            ##<< Condition variable 1
   ## (default: Global radiation 'Rg' in  W m-2)
   , T1 = if (!missing(T1.n)) T1.n else 50              ##<< Tolerance interval 1

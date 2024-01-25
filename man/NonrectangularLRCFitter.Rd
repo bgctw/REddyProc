@@ -3,13 +3,12 @@
 \title{NonrectangularLRCFitter}
 
 \description{
-Constructs an instance of class \code{\link{NonrectangularLRCFitter-class}} 
+Constructs an instance of class \code{\link{NonrectangularLRCFitter-class}}
 }
 
 \usage{NonrectangularLRCFitter(...)}
 \arguments{
-  \item{\dots}{
-}
+  \item{\dots}{not used.}
 }
 
 

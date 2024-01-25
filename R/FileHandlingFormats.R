@@ -325,7 +325,7 @@ fWriteFrench23 <- function(
   ##author<< TW
   ##seealso<< \code{\link{fWriteDataframeToFile}}
   ##details<<
-  ## Writes data.frame as comma-seperated file after two header rows.
+  ## Writes data.frame as comma-separated file after two header rows.
   ##
   ## The first header row contains the column names, and the second units.
   ##
