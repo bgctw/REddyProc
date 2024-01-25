@@ -1,24 +1,17 @@
 ## Notes
 Dear CRAN maintainers,
 
-following up the email from Prof. Ripley 3/6/2022, we converted the strong
-dependency on package mlegp, which might be archived from CRAN, to a weak 
-dependency (SUGGESTS). 
-The parts that use mlegp now use "requireNamespace" and in case display
-an error requesting users to install a version of mlegp by hand.
+following your email that noted empty documentation for some of the function 
+arguments, we submit a new version of the REddyProc package.
 
-Could you, please, have a look at the current version and tell us if
-this weak dependency is ok with CRAN.
-
-Please, do not publish this version on CRAN yet. We still hope that 
-mlegp gets fixed.
-Otherwise we will submit this version again on Fri 18th of March, i.e.
-shortly before REddyProc would be archived due to strong dependendy on mlegp.
+In addition to fixing the empty comments, we include a new features:
+- exporting the results in an additional format requested by a users
+- an experimental implementation of the gap-filling procedure by Vekuri et. al 2023
 
 ## Test environments
 * local Linux-Mint, R 4.3.2
 * Github actions, current Ubuntu
-* current win_builder
+* (win_builder was not reachable by curl from devtools::check_win_devel())
 * r_hub: all default platforms
 
 ## R CMD check results
@@ -28,5 +21,6 @@ No warnings, nor errors.
 "checking for detritus in the temp directory ... NOTE
   Found the following files/directories:
     ‘REddyProcExamples’"
-REddyProcExamples is on purpose and not detritus
+REddyProcExamples is there on purpose: It is created on a first call to
+getExamplePath(exampleId) and then reused by several tests.
 
