@@ -469,3 +469,4 @@ sEddyProc$methods(sUpdateMethod = sEddyProc_sUpdateMethod)
 #     LatDeg=.self$sLOCATION$LatDeg, LongDeg=.self$sLOCATION$LongDeg,
 #     TimeZoneHour=.self$sLOCATION$TimeZoneHour)
 # })
+

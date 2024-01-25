@@ -318,18 +318,18 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
 #+++ Diurnal cycles
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# #' @export
-.sEddyProc_sPlotDiurnalCycleM <- function(
+#' @export
+sEddyProc_sPlotDiurnalCycleM <- function(
   ### The diurnal cycles of a single month are plotted to the current device,
   ### scaled to all data. Each year is plotted as a different (coloured) line.
   Var = Var.s               ##<< Variable to plot
-  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'     ##<<
-  ## Quality flag of variable to be filled
-  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<<
-  ## Value of quality flag for data to plot
+  , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'     ##<< Quality
+  ##  flag of variable to be filled
+  , QFValue = if (!missing(QFValue.n)) QFValue.n else NA_real_ ##<< Value
+  ##  of quality flag for data to plot
   , Month = Month.i            ##<< Month to plot
-  , Legend = if (!missing(Legend.b)) Legend.b else T         ##<<
-  ## Plot with legend
+  , Legend = if (!missing(Legend.b)) Legend.b else T         ##<< Plot
+  ##  with legend
   , data = cbind(sDATA, sTEMP)   ##<< data.frame with variables to plot
   , dts = sINFO$DTS              ##<< numeric integer
   , Var.s               ##<< Variable to plot
@@ -409,7 +409,7 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
       , month.name[Month], '!')
   }
 }
-sEddyProc$methods(.sPlotDiurnalCycleM = .sEddyProc_sPlotDiurnalCycleM)
+sEddyProc$methods(.sPlotDiurnalCycleM = sEddyProc_sPlotDiurnalCycleM)
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
