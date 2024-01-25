@@ -318,9 +318,9 @@ sEddyProc$methods(sPlotFingerprint = sEddyProc_sPlotFingerprint)
 #+++ Diurnal cycles
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#' @export
+# #' @export
 .sEddyProc_sPlotDiurnalCycleM <- function(
-  ### The diurnal cycles of a single month are potted to the current device,
+  ### The diurnal cycles of a single month are plotted to the current device,
   ### scaled to all data. Each year is plotted as a different (coloured) line.
   Var = Var.s               ##<< Variable to plot
   , QFVar = if (!missing(QFVar.s)) QFVar.s else 'none'     ##<<
