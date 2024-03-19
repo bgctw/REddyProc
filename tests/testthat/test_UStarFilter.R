@@ -81,7 +81,8 @@ test_that("sEstUstarThold: standard case",{
 				, c( usControlUstarSubsetting()$taClasses
 				     , length(unique(usCreateSeasonFactorMonth(eddyC$sDATA$sDateTime))) ))
 			#REddyProc:::.plotNEEVersusUStarTempClass(
-			#subset(eddyC$sDATA, season == "1998001" & tempBin == 5 & is.finite(NEE)), uStarTh = 0.65)
+			#subset(cbind(eddyC$sDATA, season=eddyC$sTEMP$season), season == "1998001" & tempBin == 5 & is.finite(NEE)), uStarTh = 0.65)
+			#
 		})
 
 test_that("sEstUstarThold: missing Ustar column",{

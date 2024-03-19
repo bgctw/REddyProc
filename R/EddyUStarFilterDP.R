@@ -407,7 +407,8 @@ usEstUstarThreshold = function(
 	, NEEColName = "NEE"			##<< column name for NEE
 	, TempColName = "Tair"		##<< column name for air temperature
 	, xlab = bquote(u['*']*" (" * m~s^-1 * ")")
-	, ylab = bquote("NEE (" * gC~ m^-2~yr^-1 * ")")
+	#, ylab = bquote("NEE (" * gC~ m^-2~yr^-1 * ")")
+	, ylab = bquote("NEE (" * umol~C~m^-2~s^-1 * ")")
 ) {
 	##author<< TW
   dss <- NEEUStar.F[, c(NEEColName, UstarColName, TempColName, "uStarBin", "sDateTime")]
