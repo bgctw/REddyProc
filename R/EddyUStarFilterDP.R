@@ -1172,7 +1172,7 @@ usEstUstarThresholdSingleFw2Binned <- function(
 
 
 usGetValidUstarIndices <- function(
-		### remove non-finite cases and omit night time data.
+		### remove non-finite cases and constrain to night time data.
 		ds						            ##<< data.frame with columns
 		, UstarColName = "Ustar"	##<< column name for UStar
 		, NEEColName = "NEE"			##<< column name for NEE
@@ -1189,8 +1189,8 @@ usGetValidUstarIndices <- function(
 					is.finite(ds[, UstarColName]) &
 					is.finite(ds[, RgColName])
 	bo <- bo & ds[, RgColName] < swThr
-	##value<< boolean vector with non-finite cases and cases
-	## with radiation < swThr set to FALSE.
+	##value<< boolean vector with TRUE only for finite cases during
+	## night-time respiration.
 	bo
 }
 
